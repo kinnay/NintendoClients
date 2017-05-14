@@ -131,7 +131,7 @@ class AuthenticationClient(ServiceClient):
 		#--- request ---
 		stream = StreamOut()
 		call_id = self.init_message(stream, self.PROTOCOL_ID, self.METHOD_LOGIN)
-		stream.string(username)
+		stream.string(username, stream.u16)
 		self.send_message(stream)
 		
 		#--- response ---

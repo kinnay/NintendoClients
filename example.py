@@ -33,7 +33,7 @@ backend.login(nex_token.username, nex_token.password, nex_token.token)
 
 ranking_client = RankingClient(backend)
 rankings = ranking_client.get_ranking(
-	RankingClient.MODE_GLOBAL,	#Get the global leaderboard
+	RankingClient.MODE_GLOBAL, #Get the global leaderboard
 	0x893EB726, #Level id, this is 3-A (Magrove Cove)
 	RankingOrderParam(
 		RankingOrderParam.STANDARD, #"1224" ranking (https://en.wikipedia.org/wiki/Ranking)
