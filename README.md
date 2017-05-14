@@ -6,7 +6,7 @@ The goal of this project was a client that downloads rankings from DKC:TF, so yo
 To import this into your Python code, simply place the "proto" folder somewhere Python can find it.
 
 Requirements:
-* Python 3 (test with 3.5.2)
+* Python 3 (tested with 3.5.2)
 * Python requests (http://docs.python-requets.org)
 * BeautifulSoup4
 * Nintendo SSL certificate (see below)
