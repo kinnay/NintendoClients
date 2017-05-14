@@ -111,7 +111,7 @@ class AccountAPI:
 		
 	def get_nex_token(self, game_server_id):
 		request = Request(self)
-		request.auth(self.access_token)
+		request.auth(self.get_access_token())
 		response = request.get(
 			"provider/nex_token/@me",
 			params = {
