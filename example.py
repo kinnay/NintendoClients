@@ -1,6 +1,7 @@
 
 from proto.nintendo.service import BackEndClient
 from proto.nintendo.ranking import RankingClient, RankingOrderParam
+from proto.nintendo.datastore import DataStore, PrepareGetParam
 from proto.nintendo.act import AccountAPI
 from proto.nintendo.games import DKCTF
 from proto.common.scheduler import Scheduler
@@ -50,8 +51,21 @@ for rankdata in rankings.datas:
 	time = "%i:%02i.%02i" %(seconds / 60, seconds % 60, (seconds * 100) % 100)
 	damage = " Damaged " if rankdata.score & 1 else "No damage"
 	kong = ["No Kong", "Diddy", "Dixie", "Cranky"][rankdata.data[1]]
-	
+
 	print("\t%5i   %20s   %s (%s)   %s" %(rankdata.rank, rankdata.name, time, damage, kong))
+	
+	
+#Now download the world record replay file if available
+world_record = rankings.datas[0]
+if world_record.file_id: #If world record has a replay file	
+	datastore = DataStore(backend)
+	replay_data = datastore.get_object(
+		#I don't know what most of these values mean, this is what Donkey Kong does
+		PrepareGetParam(world_record.file_id, 0, 0, 0xFFFF, 0)
+	)
+	
+	with open("replay.bin", "wb") as f:
+		f.write(replay_data)
 
 backend.close()
 scheduler.stop()

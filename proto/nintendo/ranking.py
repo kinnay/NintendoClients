@@ -35,7 +35,7 @@ class RankingRankData(Encoder):
 		self.group_id = stream.u32()
 		self.score = stream.u32()
 		self.data = stream.read(stream.u32())
-		self.unk2 = stream.u64()
+		self.file_id = stream.u64()
 		self.name = stream.string(stream.u32)
 		
 		
