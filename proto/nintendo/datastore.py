@@ -73,8 +73,7 @@ class DataStoreClient:
 	PROTOCOL_ID = 0x73
 	
 	def __init__(self, back_end):
-		self.back_end = back_end
-		self.client = self.back_end.secure_client
+		self.client = back_end.secure_client
 		
 	def prepare_get_object(self, param):
 		#--- request ---

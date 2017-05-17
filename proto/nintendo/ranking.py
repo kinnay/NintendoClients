@@ -89,8 +89,7 @@ class RankingClient:
 	MODE_ME = 4 #Me ranking only
 
 	def __init__(self, back_end):
-		self.back_end = back_end
-		self.client = self.back_end.secure_client
+		self.client = back_end.secure_client
 		
 	#Untested, rankings should never be cheated
 	def upload_score(self, score_data, arg): #Donkey Kong passes 0 as arg
