@@ -116,6 +116,18 @@ class RankingClient:
 		#--- response ---
 		self.client.get_response(call_id)
 		
+	def get_common_data(self, arg):
+		logger.info("Ranking.get_common_data(%016X)", arg)
+		#--- request ---
+		stream = StreamOut()
+		call_id = self.client.init_message(stream, self.PROTOCOL_ID, self.METHOD_GET_COMMON_DATA)
+		stream.u64(arg)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		return stream.read(stream.u32())
+		
 	def get_ranking(self, mode, group_id, order, arg1, arg2):
 		logger.info("Retrieving rankings [%i, %08X, %i - %i]", mode, group_id, order.base_rank + 1, order.base_rank + order.count)
 		#--- request ---
