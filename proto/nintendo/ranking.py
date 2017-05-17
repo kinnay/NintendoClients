@@ -10,7 +10,7 @@ class RankingOrderParam(Encoder):
 	STANDARD = 0
 	ORDINAL = 1
 
-	def __init__(self, order_calc=None, filter_idx=None, filter_num=None, time_scope=None, base_rank=None, count=None):
+	def __init__(self, order_calc, filter_idx, filter_num, time_scope, base_rank, count):
 		self.order_calc = order_calc
 		self.filter_idx = filter_idx
 		self.filter_num = filter_num
@@ -46,6 +46,24 @@ class RankingResult(Encoder):
 		self.datetime = stream.u64()
 
 
+class RankingScoreData(Encoder):
+	def __init__(self, group_id, score, unk3, unk4, data, file_id):
+		self.group_id = group_id
+		self.score = score
+		self.unk3 = unk3
+		self.unk4 = unk4
+		self.data = data
+		self.file_id = file_id
+
+	def encode(self, stream):
+		stream.u32(self.group_id)
+		stream.u32(self.score)
+		stream.u8(self.unk3)
+		stream.u8(self.unk4)
+		stream.data(self.data, stream.u32)
+		stream.u64(self.file_id)
+		
+
 class RankingClient:
 
 	METHOD_UPLOAD_SCORE = 1
@@ -61,6 +79,8 @@ class RankingClient:
 	METHOD_GET_STATS = 11
 	METHOD_GET_RANKING_BY_PID_LIST = 12
 	METHOD_GET_RANKING_BY_UNIQUE_ID_LIST = 13
+	METHOD_GET_CACHED_TOP_RANKING = 14
+	METHOD_GET_CACHED_TOP_RANKINGS = 15
 
 	PROTOCOL_ID = 0x70
 	
@@ -72,6 +92,19 @@ class RankingClient:
 		self.back_end = back_end
 		self.client = self.back_end.secure_client
 		
+	#Untested, rankings should never be cheated
+	def upload_score(self, score_data, arg): #Donkey Kong passes 0 as arg
+		#--- request ---
+		stream = StreamOut()
+		call_id = self.client.init_message(stream, self.PROTOCOL_ID, self.METHOD_UPLOAD_SCORE)
+		score_data.encode(stream)
+		stream.u64(arg)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		self.client.get_response(call_id)
+		
+	#Untested, I don't want to ruin my scores
 	def delete_all_scores(self, arg):
 		logger.info("Deleting all scores [%016X]", arg)
 		#--- request ---

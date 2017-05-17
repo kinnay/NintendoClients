@@ -4,7 +4,7 @@ import requests
 
 
 class PrepareGetParam(Encoder):	
-	def __init__(self, object_id=None, unk2=None, owner_id=None, persistence_id=None, unk5=None):
+	def __init__(self, object_id, unk2, owner_id, persistence_id, unk5):
 		self.object_id = object_id
 		self.unk2 = unk2
 		self.owner_id = owner_id
