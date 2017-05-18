@@ -1,5 +1,6 @@
 
 from proto.nintendo.prudp import PRUDP
+from proto.nintendo.errors import errors
 from proto.common.stream import StreamOut, StreamIn, Encoder
 from proto.common.crypto import RC4
 
@@ -36,7 +37,7 @@ class ServiceClient(PRUDP):
 			
 		error, stream = self.responses.pop(call_id)
 		if error:
-			raise ConnectionError(error, "RMC failed with error code %08X" %error)
+			raise ConnectionError(error, "RMC failed (%s)" %errors.get(error, "unknown error"))
 		return stream
 		
 	def on_data(self, data):
