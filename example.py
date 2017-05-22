@@ -1,7 +1,7 @@
 
-from proto.nintendo.service import BackEndClient
-from proto.nintendo.ranking import RankingClient, RankingOrderParam
-from proto.nintendo.datastore import DataStore, PrepareGetParam
+from proto.nintendo.nex.backend import BackEndClient
+from proto.nintendo.nex.ranking import RankingClient, RankingOrderParam
+from proto.nintendo.nex.datastore import DataStore, DataStoreGetParam, PersistenceTarget
 from proto.nintendo.act import AccountAPI
 from proto.nintendo.games import DKCTF
 from proto.common.scheduler import Scheduler
@@ -18,6 +18,7 @@ USERNAME = "..." #Nintendo network id
 PASSWORD = "..." #Nintendo network password
 
 
+#This thing handles the PRUDP connection in the background
 scheduler = Scheduler()
 scheduler.start()
 
@@ -28,7 +29,7 @@ api.login(USERNAME, PASSWORD)
 
 #Each game server has its own game server id and access token
 nex_token = api.get_nex_token(DKCTF.GAME_SERVER_ID)
-backend = BackEndClient(DKCTF.ACCESS_TOKEN)
+backend = BackEndClient(DKCTF.ACCESS_TOKEN, DKCTF.NEX_VERSION)
 backend.connect(nex_token.host, nex_token.port)
 backend.login(nex_token.username, nex_token.password, nex_token.token)
 
@@ -61,7 +62,7 @@ if world_record.file_id: #If world record has a replay file
 	datastore = DataStore(backend)
 	replay_data = datastore.get_object(
 		#I don't know what most of these values mean, this is what Donkey Kong does
-		PrepareGetParam(world_record.file_id, 0, 0, 0xFFFF, 0)
+		DataStoreGetParam(world_record.file_id, 0, PersistenceTarget(0, 0xFFFF), 0)
 	)
 	
 	with open("replay.bin", "wb") as f:

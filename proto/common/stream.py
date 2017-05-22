@@ -5,37 +5,40 @@ import struct
 class StreamOut:
 	def __init__(self):
 		self.buffer = b""
+		self.pos = 0
 		
-	def u8(self, value): self.buffer += struct.pack("B", value)
-	def u16(self, value): self.buffer += struct.pack("H", value)
-	def u32(self, value): self.buffer += struct.pack("I", value)
-	def u64(self, value): self.buffer += struct.pack("Q", value)
+	def seek(self, pos): self.pos = pos
+	def tell(self): return self.pos
+		
+	def write(self, data):
+		self.buffer = self.buffer[:self.pos] + data + self.buffer[self.pos + len(data):]
+		self.pos += len(data)
+		
+	def u8(self, value): self.write(struct.pack("B", value))
+	def u16(self, value): self.write(struct.pack("H", value))
+	def u32(self, value): self.write(struct.pack("I", value))
+	def u64(self, value): self.write(struct.pack("Q", value))
 	
-	def double(self, value): self.buffer += struct.pack("d", value)
+	def float(self, value): self.write(struct.pack("f", value))
+	def double(self, value): self.write(struct.pack("d", value))
 	
 	def bool(self, value): self.u8(1 if value else 0)
 	
-	def list(self, list, func, length_func):
-		if length_func:
-			length_func(len(list))
+	def list(self, list, func):
 		for i in list:
 			func(i)
 	
-	def string(self, string, length_func, null_terminate=True):
-		if null_terminate:
-			string += "\x00"
-		self.data(string.encode("ascii"), length_func)
-		
-	def data(self, data, length_func):
-		if length_func:
-			length_func(len(data))
-		self.buffer += data
+	def ascii(self, data):
+		self.write(data.encode("ascii"))
 
 
 class StreamIn:
 	def __init__(self, data):
 		self.buffer = data
 		self.pos = 0
+		
+	def seek(self, pos): self.pos = pos
+	def tell(self): return self.pos
 		
 	def read(self, num):
 		data = self.buffer[self.pos : self.pos + num]
@@ -47,33 +50,24 @@ class StreamIn:
 	def u32(self): return struct.unpack("I", self.read(4))[0]
 	def u64(self): return struct.unpack("Q", self.read(8))[0]
 	
+	def float(self): return struct.unpack("f", self.read(4))[0]
 	def double(self): return struct.unpack("d", self.read(8))[0]
 	
 	def bool(self): return bool(self.u8())
 	
-	def list(self, func, length_func):
-		return [func() for i in range(length_func())]
+	def list(self, func, count):
+		return [func() for i in range(count)]
 	
-	def string(self, length_func, null_terminated=True):
-		data = self.read(length_func())
-		if null_terminated:
-			data = data[:-1]
-		return data.decode("ascii")
-	
-	def substream(self):
-		return StreamIn(self.read(self.u32()))
+	def ascii(self, num):
+		return self.read(num).decode("ascii")
 		
 		
 class Encoder:
 	@classmethod
-	def from_stream(cls, stream):
+	def from_stream(cls, stream, *args):
 		instance = cls()
-		instance.decode(stream)
+		instance.decode(stream, *args)
 		return instance
-
-	@classmethod
-	def from_data(cls, data):
-		return cls.from_stream(StreamIn(data))
 		
-	def encode(self, stream): raise NotImplementedError
-	def decode(self, stream): raise NotImplementedError
+	def encode(self, stream, *args): raise NotImplementedError
+	def decode(self, stream, *args): raise NotImplementedError

@@ -1,35 +1,57 @@
 
-from proto.common.stream import StreamOut, Encoder
+from proto.nintendo.nex.common import NexEncoder
 import requests
 
+import logging
+logger = logging.getLogger(__name__)
 
-class PrepareGetParam(Encoder):	
-	def __init__(self, object_id, unk2, owner_id, persistence_id, unk5):
-		self.object_id = object_id
-		self.unk2 = unk2
+
+class PersistenceTarget(NexEncoder):
+	version_map = {
+		30400: -1
+	}
+	
+	def __init__(self, owner_id, persistence_id):
 		self.owner_id = owner_id
 		self.persistence_id = persistence_id
-		self.unk5 = unk5
 	
-	def encode(self, stream):
-		stream.u64(self.object_id)
-		stream.u32(self.unk2)
+	def encode_old(self, stream):
 		stream.u32(self.owner_id)
 		stream.u16(self.persistence_id)
-		stream.u64(self.unk5)
-		
-		
-class RequestGetInfo(Encoder):
-	def decode(self, stream):
-		self.url = stream.string(stream.u16)
-		self.params = dict(stream.list(lambda: (stream.string(stream.u16), stream.string(stream.u16)), stream.u32))
-		self.file_size = stream.u32()
-		self.unk = stream.list(stream.u8, stream.u32)
 
+
+class DataStoreGetParam(NexEncoder):
+	version_map = {
+		30400: -1
+	}
+	
+	def __init__(self, object_id, unk, persistence_target, unk2):
+		self.object_id = object_id
+		self.unk = unk
+		self.persistence_target = persistence_target
+		self.unk2 = unk2
+	
+	def encode_old(self, stream):
+		stream.u64(self.object_id)
+		stream.u32(self.unk)
+		self.persistence_target.encode(stream)
+		stream.u64(self.unk2)
+
+	
+class DataStoreGetInfo(NexEncoder):
+	version_map = {
+		30400: -1
+	}
+	
+	def decode_old(self, stream):
+		self.url = stream.string()
+		self.params = dict(stream.list(lambda: (stream.string(), stream.string())))
+		self.file_size = stream.u32()
+		self.unk = stream.list(stream.u8)
+	
 
 class DataStoreClient:
-	
-	#This protocol got lots of methods
+
 	METHOD_PREPARE_GET_OBJECT_V1 = 1
 	METHOD_PREPARE_POST_OBJECT_V1 = 2
 	METHOD_COMPLETE_POST_OBJECT_V1 = 3
@@ -76,17 +98,19 @@ class DataStoreClient:
 		self.client = back_end.secure_client
 		
 	def prepare_get_object(self, param):
+		logger.info("DataStore.prepare_get_object(%08X)", param.object_id)
 		#--- request ---
-		stream = StreamOut()
-		call_id = self.client.init_message(stream, self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT)
+		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT)
 		param.encode(stream)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		return RequestGetInfo.from_stream(stream)
-
-		
+		info = DataStoreGetInfo.from_stream(stream)
+		logger.info("DataStore.prepare_get_object -> %s", info.url)
+		return info
+	
+	
 class DataStore:
 	def __init__(self, back_end):
 		self.client = DataStoreClient(back_end)

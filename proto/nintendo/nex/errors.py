@@ -1,0 +1,30 @@
+
+errors = {
+	0x80010001: "Core::Unknown",
+	0x80010002: "Core::NotImplemented",
+	0x80010003: "Core::InvalidPointer",
+	0x80010004: "Core::OperationAborted",
+	0x80010005: "Core::Exception",
+	0x80010006: "Core::AccessDenied",
+	0x80010007: "Core::InvalidHandle",
+	0x80010008: "Core::InvalidIndex",
+	0x80010009: "Core::OutOfMemory",
+	0x8001000A: "Core::InvalidArgument",
+	0x8001000B: "Core::Timeout",
+	0x8001000C: "Core::InitializationFailure",
+	0x8001000D: "Core::CallInitiationFailure",
+	0x8001000E: "Core::RegistrationError",
+	0x8001000F: "Core::BufferOverflow",
+	0x80010010: "Core::InvalidLockState",
+	0x80010011: "Core::InvalidSequence",
+	
+	0x80670001: "Ranking::NotInitialized",
+	0x80670002: "Ranking::InvalidArgument",
+	0x60780003: "Ranking::RegistrationError",
+	0x80670005: "Ranking::NotFound",
+	0x80670006: "Ranking::InvalidScore",
+	0x80670007: "Ranking::InvalidDataSize",
+	0x80670009: "Ranking::PermissionDenied",
+	0x8067000A: "Ranking::Unknown",
+	0x8067000B: "Ranking::NotImplemented"
+}

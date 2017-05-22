@@ -1,4 +1,5 @@
 
+
 from proto.common.transport import Socket
 from proto.common.scheduler import Scheduler
 from proto.common.crypto import RC4
@@ -13,7 +14,9 @@ import time
 import logging
 logger = logging.getLogger(__name__)
 
-
+#These values are actually a bit more complicated,
+#but since 0xA1 and 0xAF always work, there's no
+#point in doing it differently.
 PORT_SERVER = 0xA1
 PORT_CLIENT = 0xAF
 
@@ -31,6 +34,12 @@ FLAG_ACK2 = 0x2000
 
 #Supported functions, unknown purpose
 SUPPORT_2 = 2
+SUPPORT_4 = 4
+SUPPORT_100 = 0x100
+
+#I ran into issues when I was missing a support
+#flag, so I'm just setting all bits to 1 here
+SUPPORT_ALL = 0xFFFFFFFF
 
 
 class PRUDPPacket:
@@ -61,7 +70,7 @@ class PRUDPPacket:
 	def encode_option(self):
 		if self.type in [PACKET_SYN, PACKET_CONNECT]:
 			data = b"\x00\x04"
-			data += struct.pack("I", SUPPORT_2)
+			data += struct.pack("I", SUPPORT_ALL)
 			data += b"\x01\x10"
 			if self.type == PACKET_CONNECT:
 				data += self.client.server_signature
@@ -80,7 +89,7 @@ class PRUDPPacket:
 			self.client.connection_signature = data[8 : 24]
 			
 	def encode_header(self, option_len):
-		data = b"\x01"
+		data = b"\x01" #PRUDP version
 		data += struct.pack("B", option_len)
 		data += struct.pack("H", len(self.data))
 		data += struct.pack("BB", PORT_CLIENT, PORT_SERVER)
@@ -347,3 +356,4 @@ class PRUDP:
 	def on_connect(self, data): pass
 	def on_data(self, data): pass
 	def on_disconnect(self): pass
+
