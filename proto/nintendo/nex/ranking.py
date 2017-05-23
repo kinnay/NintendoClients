@@ -7,7 +7,8 @@ logger = logging.getLogger(__name__)
 
 class RankingOrderParam(NexEncoder):
 	version_map = {
-		30400: -1
+		30400: -1,
+		30504: 0
 	}
 
 	STANDARD = 0 #1224 ranking
@@ -28,11 +29,14 @@ class RankingOrderParam(NexEncoder):
 		stream.u8(self.time_scope)
 		stream.u32(self.base_rank)
 		stream.u8(self.count)
+		
+	encode_v0 = encode_old
 
 
 class RankingRankData(NexEncoder):
 	version_map = {
-		30400: -1
+		30400: -1,
+		30504: 0
 	}
 	
 	def decode_old(self, stream):
@@ -41,20 +45,25 @@ class RankingRankData(NexEncoder):
 		self.rank = stream.u32()
 		self.category = stream.u32()
 		self.score = stream.u32()
-		self.data = stream.read(stream.u32())
+		self.data1 = stream.read(stream.u32())
 		self.file_id = stream.u64()
-		self.name = stream.ascii(stream.u32())[:-1]
+		self.data2 = stream.read(stream.u32())
+		
+	decode_v0 = decode_old
 
 
 class RankingResult(NexEncoder):
 	version_map = {
-		30400: -1
+		30400: -1,
+		30504: 0
 	}
 	
 	def decode_old(self, stream):	
 		self.datas = stream.list(lambda: RankingRankData.from_stream(stream))
 		self.total = stream.u32()
 		self.datetime = DateTime(stream.u64())
+		
+	decode_v0 = decode_old
 
 
 class RankingClient:

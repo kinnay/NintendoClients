@@ -1,5 +1,5 @@
 
-from proto.nintendo.nex.common import NexEncoder
+from proto.nintendo.nex.common import NexEncoder, DateTime
 import requests
 
 import logging
@@ -8,7 +8,9 @@ logger = logging.getLogger(__name__)
 
 class PersistenceTarget(NexEncoder):
 	version_map = {
-		30400: -1
+		30400: -1,
+		30504: 0,
+		30810: 0
 	}
 	
 	def __init__(self, owner_id, persistence_id):
@@ -18,11 +20,109 @@ class PersistenceTarget(NexEncoder):
 	def encode_old(self, stream):
 		stream.u32(self.owner_id)
 		stream.u16(self.persistence_id)
+		
+	encode_v0 = encode_old
+	
+	
+class DataStorePermission(NexEncoder):
+	version_map = {
+		30400: -1,
+		30810: 0
+	}
+	
+	def decode_old(self, stream):
+		self.permission = stream.u8()
+		self.unk = stream.list(stream.u32)
+		
+	decode_v0 = decode_old
+		
+	
+class DataStoreRatingInfo(NexEncoder):
+	version_map = {
+		30400: -1,
+		30810: 0
+	}
+	
+	def decode_old(self, stream):
+		self.unk1 = stream.s64()
+		self.unk2 = stream.u32()
+		self.unk3 = stream.s64()
+		
+	decode_v0 = decode_old
+	
+
+class DataStoreRatingInfoWithSlot(NexEncoder):
+	version_map = {
+		30400: -1,
+		30810: 0
+	}
+	
+	def decode_old(self, stream):
+		self.slot = stream.u8()
+		self.rating_info = DataStoreRatingInfo.from_stream(stream)
+		
+	decode_v0 = decode_old
+	
+	
+class DataStoreGetMetaParam(NexEncoder):
+	version_map = {
+		30400: -1,
+		30810: 0
+	}
+	
+	def __init__(self, unk1, persistence_target, unk2, unk3):
+		self.unk1 = unk1
+		self.persistence_target = persistence_target
+		self.unk2 = unk2
+		self.unk3 = unk3
+		
+	def encode_old(self, stream):
+		stream.u64(self.unk1)
+		self.persistence_target.encode(stream)
+		stream.u8(self.unk2)
+		stream.u64(self.unk3)
+		
+	encode_v0 = encode_old
+		
+		
+class DataStoreMetaInfo(NexEncoder):
+	version_map = {
+		30400: -1,
+		30810: 0
+	}
+	
+	def decode_old(self, stream):
+		self.unk1 = stream.u64()
+		self.unk2 = stream.u32()
+		self.unk3 = stream.u32()
+		self.owner_name = stream.string()
+		self.unk4 = stream.u16()
+		self.data = stream.read(stream.u16())
+		self.perm1 = DataStorePermission.from_stream(stream)
+		self.perm2 = DataStorePermission.from_stream(stream)
+		self.date1 = DateTime(stream.u64())
+		self.date2 = DateTime(stream.u64())
+		self.unk5 = stream.u16()
+		self.unk6 = stream.u8()
+		self.unk7 = stream.u32()
+		self.unk8 = stream.u32()
+		self.unk9 = stream.u32()
+		self.date3 = DateTime(stream.u64())
+		self.date4 = DateTime(stream.u64())
+		self.strings = stream.list(stream.string)
+		self.rating_infos = stream.list(lambda: DataStoreRatingInfoWithSlot.from_stream(stream))
+		
+		import pprint
+		pprint.pprint(self.__dict__)
+		
+	decode_v0 = decode_old
 
 
 class DataStoreGetParam(NexEncoder):
 	version_map = {
-		30400: -1
+		30400: -1,
+		30504: 0,
+		30810: 0
 	}
 	
 	def __init__(self, object_id, unk, persistence_target, unk2):
@@ -37,10 +137,14 @@ class DataStoreGetParam(NexEncoder):
 		self.persistence_target.encode(stream)
 		stream.u64(self.unk2)
 
+	encode_v0 = encode_old
+
 	
 class DataStoreGetInfo(NexEncoder):
 	version_map = {
-		30400: -1
+		30400: -1,
+		30504: 0,
+		30810: 0
 	}
 	
 	def decode_old(self, stream):
@@ -48,6 +152,10 @@ class DataStoreGetInfo(NexEncoder):
 		self.params = dict(stream.list(lambda: (stream.string(), stream.string())))
 		self.file_size = stream.u32()
 		self.unk = stream.list(stream.u8)
+		
+	def decode_v0(self, stream):
+		self.decode_old(stream)
+		self.unk2 = stream.u64()
 	
 
 class DataStoreClient:
@@ -91,11 +199,31 @@ class DataStoreClient:
 	METHOD_COMPLETE_POST_OBJECTS = 37
 	METHOD_CHANGE_META = 38
 	METHOD_CHANGE_METAS = 39
+	METHOD_RATE_OBJECTS = 40
+	METHOD_POST_META_BINARY_WITH_DATA_ID = 41
+	METHOD_POST_META_BINARIES_WITH_DATA_ID = 42
+	METHOD_RATE_OBJECT_WITH_POSTING = 43
+	METHOD_RATE_OBJECTS_WITH_POSTING = 44
+	METHOD_GET_OBJECT_INFOS = 45
+	METHOD_SEARCH_OBJECT_LIGHT = 46
 	
 	PROTOCOL_ID = 0x73
 	
 	def __init__(self, back_end):
 		self.client = back_end.secure_client
+		
+	def get_meta(self, param):
+		logger.info("DataStore.get_meta(...)")
+		#--- request ---
+		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_GET_META)
+		param.encode(stream)
+		self.client.send_message(stream)
+
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		info = DataStoreMetaInfo.from_stream(stream)
+		logger.info("DataStore.get_meta -> Done")
+		return info
 		
 	def prepare_get_object(self, param):
 		logger.info("DataStore.prepare_get_object(%08X)", param.object_id)

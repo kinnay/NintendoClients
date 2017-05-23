@@ -14,10 +14,15 @@ class StreamOut:
 		self.buffer = self.buffer[:self.pos] + data + self.buffer[self.pos + len(data):]
 		self.pos += len(data)
 		
-	def u8(self, value): self.write(struct.pack("B", value))
+	def u8(self, value): self.write(bytes([value]))
 	def u16(self, value): self.write(struct.pack("H", value))
 	def u32(self, value): self.write(struct.pack("I", value))
 	def u64(self, value): self.write(struct.pack("Q", value))
+	
+	def s8(self, value): self.write(struct.pack("b", value))
+	def s16(self, value): self.write(struct.pack("h", value))
+	def s32(self, value): self.write(struct.pack("i", value))
+	def s64(self, value): self.write(struct.pack("q", value))
 	
 	def float(self, value): self.write(struct.pack("f", value))
 	def double(self, value): self.write(struct.pack("d", value))
@@ -49,6 +54,11 @@ class StreamIn:
 	def u16(self): return struct.unpack("H", self.read(2))[0]
 	def u32(self): return struct.unpack("I", self.read(4))[0]
 	def u64(self): return struct.unpack("Q", self.read(8))[0]
+	
+	def s8(self): return struct.unpack("b", self.read(1))[0]
+	def s16(self): return struct.unpack("h", self.read(2))[0]
+	def s32(self): return struct.unpack("i", self.read(4))[0]
+	def s64(self): return struct.unpack("q", self.read(8))[0]
 	
 	def float(self): return struct.unpack("f", self.read(4))[0]
 	def double(self): return struct.unpack("d", self.read(8))[0]

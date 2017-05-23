@@ -26,5 +26,18 @@ errors = {
 	0x80670007: "Ranking::InvalidDataSize",
 	0x80670009: "Ranking::PermissionDenied",
 	0x8067000A: "Ranking::Unknown",
-	0x8067000B: "Ranking::NotImplemented"
+	0x8067000B: "Ranking::NotImplemented",
+	
+	0x80690001: "DataStore::Unknown",
+	0x80690002: "DataStore::InvalidArgument",
+	0x80690003: "DataStore::PermissionDenied",
+	0x80690004: "DataStore::NotFound",
+	0x80690005: "DataStore::AlreadyLocked",
+	0x80690006: "DataStore::UnderReviewing",
+	0x80690007: "DataStore::Expired",
+	0x80690008: "DataStore::InvalidCheckToken",
+	0x80690009: "DataStore::SystemFileError",
+	0x8069000A: "DataStore::OverCapacity",
+	0x8069000B: "DataStore::OperationNotAllowed",
+	0x8069000C: "DataStore::InvalidPassword"
 }
