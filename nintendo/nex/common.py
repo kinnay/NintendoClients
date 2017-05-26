@@ -83,7 +83,7 @@ class StationUrl:
 		params = ["%s=%s" %(key, item) for key, item in kwargs.items()]
 		return cls("prudp:/" + ";".join(params))
 		
-	def __str__(self): return self.string
+	def __repr__(self): return self.string
 		
 	def __getitem__(self, field):
 		if field + "=" not in self.string:
@@ -104,5 +104,5 @@ class DateTime:
 	def month(self): return (self.value >> 22) & 15
 	def year(self): return self.value >> 26
 	
-	def __str__(self):
+	def __repr__(self):
 		return "%i-%i-%i %i:%02i:%02i" %(self.day(), self.month(), self.year(), self.hour(), self.minute(), self.second())

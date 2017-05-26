@@ -147,6 +147,21 @@ class MatchmakeExtensionClient:
 	def __init__(self, back_end):
 		self.client = back_end.secure_client
 		
+	def auto_matchmake(self, gathering, description):
+		logger.info("MatchmakeExtension.auto_matchmake(...)")
+		#--- request ---
+		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_AUTO_MATCHMAKE)
+		DataHolder(gathering).encode(stream)
+		stream.string(description)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		object = DataHolder.from_stream(stream).data
+		logger.info("MatchmakeExtension.auto_matchmake -> %s", object.get_name())
+		return object
+		
+	#This seems to be the method that's used by most games
 	def auto_matchmake_with_search_criteria(self, search_criteria, gathering, description):
 		logger.info("MatchmakeExtension.auto_matchmake_with_search_criteria(...)")
 		#--- request ---
@@ -159,5 +174,5 @@ class MatchmakeExtensionClient:
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		object = DataHolder.from_stream(stream).data
-		logger.info("MatchmakeExtension.auto_matchmake_with_search_criteria -> %s", object)
+		logger.info("MatchmakeExtension.auto_matchmake_with_search_criteria -> %s", object.get_name())
 		return object

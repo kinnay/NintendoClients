@@ -7,8 +7,8 @@ class Gathering(NexEncoder):
 		30504: 0
 	}
 	
-	def init(self, unk1, unk2, unk3, player_min, player_max, participation_policy, policy_argument, flags, unk4, description):
-		self.unk1 = unk1
+	def init(self, id, unk2, unk3, player_min, player_max, participation_policy, policy_argument, flags, unk4, description):
+		self.id = id
 		self.unk2 = unk2
 		self.unk3 = unk3
 		self.player_min = player_min
@@ -23,7 +23,7 @@ class Gathering(NexEncoder):
 		return "Gathering"
 	
 	def encode_old(self, stream):
-		stream.u32(self.unk1)
+		stream.u32(self.id)
 		stream.u32(self.unk2)
 		stream.u32(self.unk3)
 		stream.u16(self.player_min)
@@ -35,7 +35,7 @@ class Gathering(NexEncoder):
 		stream.string(self.description)
 		
 	def decode_old(self, stream):
-		self.unk1 = stream.u32()
+		self.id = stream.u32()
 		self.unk2 = stream.u32()
 		self.unk3 = stream.u32()
 		self.player_min = stream.u16()
