@@ -1,9 +1,9 @@
 
-from proto.nintendo.nex.backend import BackEndClient
-from proto.nintendo.nex.ranking import RankingClient, RankingOrderParam
-from proto.nintendo.act import AccountAPI
-from proto.nintendo.games import MK8
-from proto.common.scheduler import Scheduler
+from nintendo.nex.backend import BackEndClient
+from nintendo.nex.ranking import RankingClient, RankingOrderParam
+from nintendo.common.scheduler import Scheduler
+from nintendo.act import AccountAPI
+from nintendo.games import MK8
 
 #Device id can be retrieved with a call to MCP_GetDeviceId on the Wii U
 #Serial number can be found on the back of the Wii U

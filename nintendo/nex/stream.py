@@ -1,5 +1,5 @@
 
-from proto.common.stream import StreamOut, StreamIn
+from nintendo.common.stream import StreamOut, StreamIn
 
 class NexStreamOut(StreamOut):
 	def __init__(self, version):

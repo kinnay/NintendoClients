@@ -74,10 +74,15 @@ class StreamIn:
 		
 class Encoder:
 	@classmethod
-	def from_stream(cls, stream, *args):
+	def from_stream(cls, stream):
 		instance = cls()
-		instance.decode(stream, *args)
+		instance.decode(stream)
 		return instance
 		
-	def encode(self, stream, *args): raise NotImplementedError
-	def decode(self, stream, *args): raise NotImplementedError
+	def __init__(self, *args):
+		if args:
+			self.init(*args)
+	
+	def init(self, *args): raise NotImplementedError
+	def encode(self, stream): raise NotImplementedError
+	def decode(self, stream): raise NotImplementedError

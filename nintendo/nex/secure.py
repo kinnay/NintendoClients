@@ -1,8 +1,8 @@
 
-from proto.nintendo.nex.service import ServiceClient
-from proto.nintendo.nex.kerberos import KerberosEncryption
-from proto.nintendo.nex.stream import NexStreamOut
-from proto.nintendo.nex.common import NexEncoder, StationUrl
+from nintendo.nex.service import ServiceClient
+from nintendo.nex.kerberos import KerberosEncryption
+from nintendo.nex.stream import NexStreamOut
+from nintendo.nex.common import NexEncoder, StationUrl
 import random
 
 import logging
@@ -30,6 +30,9 @@ class SecureClient(ServiceClient):
 	METHOD_REQUEST_URLS = 3
 	METHOD_REGISTER_EX = 4
 	METHOD_TEST_CONNECTIVITY = 5
+	METHOD_UPDATE_URLS = 6
+	METHOD_REPLACE_URL = 7
+	METHOD_SEND_REPORT = 8
 	
 	PROTOCOL_ID = 0xB
 	
@@ -101,8 +104,6 @@ class SecureClient(ServiceClient):
 		urls = stream.list(lambda: StationUrl(stream.string()))
 		logger.info("Secure.request_urls -> (%i, %s)", bool, urls)
 		return bool, urls
-		
-	#-- register_ex
 	
 	def test_connectivity(self):
 		logger.info("Secure.test_connectivity()")

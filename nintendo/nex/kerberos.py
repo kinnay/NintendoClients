@@ -1,5 +1,5 @@
 
-from proto.common.crypto import RC4
+from nintendo.common.crypto import RC4
 import hmac
 
 
@@ -23,4 +23,3 @@ class Ticket:
 	def __init__(self, key, data):
 		self.key = key
 		self.data = data
-		

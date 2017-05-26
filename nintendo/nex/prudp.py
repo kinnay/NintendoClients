@@ -1,9 +1,8 @@
 
-
-from proto.common.transport import Socket
-from proto.common.scheduler import Scheduler
-from proto.common.crypto import RC4
-from proto.common import util
+from nintendo.common.transport import Socket
+from nintendo.common.scheduler import Scheduler
+from nintendo.common.crypto import RC4
+from nintendo.common import util
 
 import hashlib
 import hmac

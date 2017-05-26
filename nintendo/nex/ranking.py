@@ -1,5 +1,5 @@
 
-from proto.nintendo.nex.common import NexEncoder, DateTime
+from nintendo.nex.common import NexEncoder, DateTime
 
 import logging
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ class RankingOrderParam(NexEncoder):
 	STANDARD = 0 #1224 ranking
 	ORDINAL = 1  #1234 ranking
 
-	def __init__(self, order_calc, filter_idx, filter_num, time_scope, base_rank, count):
+	def init(self, order_calc, filter_idx, filter_num, time_scope, base_rank, count):
 		self.order_calc = order_calc
 		self.filter_idx = filter_idx
 		self.filter_num = filter_num
@@ -93,9 +93,6 @@ class RankingClient:
 	def __init__(self, back_end):
 		self.client = back_end.secure_client
 		
-	#-- upload_score
-	#-- delete_score
-		
 	#Untested, I don't want to ruin my scores
 	def delete_all_scores(self, arg):
 		logger.info("Ranking.delete_all_scores(%016X)", arg)
@@ -107,9 +104,6 @@ class RankingClient:
 		#--- response ---
 		self.client.get_response(call_id)
 		logger.info("Ranking.delete_all_scores -> Done")
-		
-	#-- upload_common_data
-	#-- delete_common_data
 		
 	def get_common_data(self, id=0):
 		logger.info("Ranking.get_common_data(%i)", id)
@@ -123,9 +117,6 @@ class RankingClient:
 		data = stream.read(stream.u32())
 		logger.info("Ranking.get_common_data -> %s", data)
 		return data
-		
-	#-- change_attributes
-	#-- change_all_attributes
 		
 	def get_ranking(self, mode, category, order, arg1=0, arg2=0):
 		logger.info("Ranking.get_ranking(%i, %08X, %i - %i, %016X, %08X)", mode, category, order.base_rank + 1, order.base_rank + order.count, arg1, arg2)
@@ -144,8 +135,6 @@ class RankingClient:
 		logger.info("Ranking.get_ranking -> %i results (out of %i total)", len(result.datas), result.total)
 		return result
 		
-	#-- get_approx_order
-		
 	def get_stats(self, arg1, order, arg3):
 		logger.info("Ranking.get_stats(%08X, %i - %i, %08X)", arg1, order.base_rank + 1, order.base_rank + order.count, arg3)
 		#--- request ---
@@ -160,8 +149,3 @@ class RankingClient:
 		result = stream.list(stream.double)
 		logger.info("Ranking.get_stats -> %s", result)
 		return result
-		
-	#-- get_ranking_by_pid_list
-	#-- get_ranking_by_unique_id_list
-	#-- get_cached_top_ranking
-	#-- get_cached_top_rankings

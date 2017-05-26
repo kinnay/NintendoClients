@@ -1,5 +1,5 @@
 
-from proto.nintendo.nex.common import NexEncoder, DateTime
+from nintendo.nex.common import NexEncoder, DateTime
 import requests
 
 import logging
@@ -13,7 +13,7 @@ class PersistenceTarget(NexEncoder):
 		30810: 0
 	}
 	
-	def __init__(self, owner_id, persistence_id):
+	def init(self, owner_id, persistence_id):
 		self.owner_id = owner_id
 		self.persistence_id = persistence_id
 	
@@ -70,7 +70,7 @@ class DataStoreGetMetaParam(NexEncoder):
 		30810: 0
 	}
 	
-	def __init__(self, unk1, persistence_target, unk2, unk3):
+	def init(self, unk1, persistence_target, unk2, unk3):
 		self.unk1 = unk1
 		self.persistence_target = persistence_target
 		self.unk2 = unk2
@@ -112,9 +112,6 @@ class DataStoreMetaInfo(NexEncoder):
 		self.strings = stream.list(stream.string)
 		self.rating_infos = stream.list(lambda: DataStoreRatingInfoWithSlot.from_stream(stream))
 		
-		import pprint
-		pprint.pprint(self.__dict__)
-		
 	decode_v0 = decode_old
 
 
@@ -125,7 +122,7 @@ class DataStoreGetParam(NexEncoder):
 		30810: 0
 	}
 	
-	def __init__(self, object_id, unk, persistence_target, unk2):
+	def init(self, object_id, unk, persistence_target, unk2):
 		self.object_id = object_id
 		self.unk = unk
 		self.persistence_target = persistence_target

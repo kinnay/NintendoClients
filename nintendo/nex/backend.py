@@ -1,6 +1,6 @@
 
-from proto.nintendo.nex.authentication import AuthenticationClient
-from proto.nintendo.nex.secure import SecureClient
+from nintendo.nex.authentication import AuthenticationClient
+from nintendo.nex.secure import SecureClient
 
 
 class BackEndClient:

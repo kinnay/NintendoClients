@@ -8,8 +8,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-CERT = os.path.join(os.path.dirname(__file__), "../files/wiiu_common_cert.pem")
-KEY = os.path.join(os.path.dirname(__file__), "../files/wiiu_common_key.pem")
+CERT = os.path.join(os.path.dirname(__file__), "files/wiiu_common_cert.pem")
+KEY = os.path.join(os.path.dirname(__file__), "files/wiiu_common_key.pem")
 
 class Request:
 	def __init__(self, api):

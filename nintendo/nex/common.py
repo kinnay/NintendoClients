@@ -1,6 +1,6 @@
 
-from proto.nintendo.nex.stream import NexStreamOut
-from proto.common.stream import Encoder
+from nintendo.nex.stream import NexStreamOut
+from nintendo.common.stream import Encoder
 
 
 class NexEncoder(Encoder):
@@ -48,7 +48,10 @@ class NexData(NexEncoder):
 
 
 class DataHolder(Encoder):
-	def __init__(self, data):
+
+	object_map = {}
+
+	def init(self, data):
 		self.data = data
 		
 	def encode(self, stream):	
@@ -59,6 +62,16 @@ class DataHolder(Encoder):
 		
 		stream.u32(len(substream.buffer) + 4)
 		stream.data(substream.buffer)
+		
+	def decode(self, stream):
+		name = stream.string()
+		substream = stream.substream().substream()
+		self.data = self.object_map[name].from_stream(substream)
+		
+	@classmethod
+	def register(cls, object, name):
+		cls.object_map[name] = object
+		
 		
 		
 class StationUrl:

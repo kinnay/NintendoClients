@@ -1,8 +1,8 @@
 
-from proto.nintendo.nex.service import ServiceClient
-from proto.nintendo.nex.stream import NexStreamOut
-from proto.nintendo.nex.common import NexEncoder, NexData, DataHolder, StationUrl, DateTime
-from proto.nintendo.nex.kerberos import KerberosEncryption, Ticket
+from nintendo.nex.service import ServiceClient
+from nintendo.nex.stream import NexStreamOut
+from nintendo.nex.common import NexEncoder, NexData, DataHolder, StationUrl, DateTime
+from nintendo.nex.kerberos import KerberosEncryption, Ticket
 import hashlib
 import struct
 
@@ -24,7 +24,7 @@ class AuthenticationInfo(NexEncoder):
 		30810: 3017
 	}
 	
-	def __init__(self, token):
+	def init(self, token):
 		self.token = token
 		
 	def get_name(self):
@@ -41,6 +41,7 @@ class AuthenticationInfo(NexEncoder):
 		stream.u32(self.nex_versions[stream.version])
 		
 	encode_v0 = encode_old
+DataHolder.register(AuthenticationInfo, "AuthenticationInfo")
 	
 	
 class ConnectionData(NexEncoder):
@@ -153,5 +154,3 @@ class AuthenticationClient(ServiceClient):
 		name = stream.string()
 		logger.info("Authentication.get_name -> %s", name)
 		return name
-		
-	#-- login_with_context

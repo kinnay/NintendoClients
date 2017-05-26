@@ -1,7 +1,7 @@
 
-from proto.nintendo.nex.prudp import PRUDP
-from proto.nintendo.nex.errors import errors
-from proto.nintendo.nex.stream import NexStreamOut, NexStreamIn
+from nintendo.nex.prudp import PRUDP
+from nintendo.nex.errors import errors
+from nintendo.nex.stream import NexStreamOut, NexStreamIn
 import struct
 import time
 
