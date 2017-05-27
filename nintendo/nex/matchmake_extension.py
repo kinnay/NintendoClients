@@ -106,6 +106,16 @@ class MatchmakeSession(NexEncoder):
 DataHolder.register(MatchmakeSession, "MatchmakeSession")
 
 
+class SimplePlayingSession(NexEncoder):
+	def decode_old(self, stream):
+		self.unk1 = stream.u32()
+		self.unk2 = stream.u32()
+		self.unk3 = stream.u32()
+		self.unk4 = stream.u32()
+		
+	decode_v0 = decode_old
+
+
 class MatchmakeExtensionClient:
 	
 	METHOD_CLOSE_PARTICIPATION = 1
@@ -141,6 +151,20 @@ class MatchmakeExtensionClient:
 	METHOD_GET_SIMPLE_PLAYING_SESSION = 31
 	METHOD_GET_SIMPLE_COMMUNITY = 32
 	METHOD_AUTO_MATCHMAKE_WITH_GATHERING_ID = 33
+	METHOD_UPDATE_PROGRESS_SCORE = 34
+	METHOD_DEBUG_NOTIFY_EVENT = 35
+	METHOD_GENERATE_MATCHMAKE_SESSION_SYSTEM_PASSWORD = 36
+	METHOD_CLEAR_MATCHMAKE_SESSION_SYSTEM_PASSWORD = 37
+	METHOD_CREATE_MATCHMAKE_SESSION_WITH_PARAM = 38
+	METHOD_JOIN_MATCHMAKE_SESSION_WITH_PARAM = 39
+	METHOD_AUTO_MATCHMAKE_WITH_PARAM = 40
+	METHOD_FIND_MATCHMAKE_SESSION_BY_GATHERING_ID_DETAIL = 41
+	METHOD_BROWSER_MATCHMAKE_SESSION_NO_HOLDER = 42
+	METHOD_BROWSE_MATCHMAKE_SESSION_WITH_HOST_URLS_NO_HOLDER = 43
+	METHOD_UPDATE_MATCHMAKE_SESSION_PART = 44
+	METHOD_REQUEST_MATCHMAKING = 45
+	METHOD_WITHDRAW_MATCHMAKING = 46
+	METHOD_WITHDRAW_MATCHMAKING_ALL = 47
 	
 	PROTOCOL_ID = 0x6D
 	
@@ -176,3 +200,33 @@ class MatchmakeExtensionClient:
 		object = DataHolder.from_stream(stream).data
 		logger.info("MatchmakeExtension.auto_matchmake_with_search_criteria -> %s", object.get_name())
 		return object
+
+	#The following methods seem to be different from those found in MK8
+	#Apparently, MK8 got its own set of methods whose ids overlap with other games
+
+	def get_simple_playing_session(self, list, bool):
+		logger.info("MatchmakeExtension.get_simple_playing_session(%s, %s)", list, bool)
+		#--- request ---
+		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_GET_SIMPLE_PLAYING_SESSION)
+		stream.list(list, stream.u32)
+		stream.bool(bool)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		sessions = stream.list(lambda: SimplePlayingSession.from_stream(stream))
+		logger.info("MatchmakeExtension.get_simple_playing_session -> done")
+		return sessions
+		
+	def find_matchmake_session_by_gathering_id_detail(self, gathering_id):
+		logger.info("MatchmakeExtension.find_matchmake_session_by_gathering_id_detail(%08X)", gathering_id)
+		#--- request ---
+		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_FIND_MATCHMAKE_SESSION_BY_GATHERING_ID_DETAIL)
+		stream.u32(gathering_id)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		session = MatchmakeSession.from_stream(stream)
+		logger.info("MatchmakeExtension.find_matchmake_session_by_gathering_id_detail -> done")
+		return session

@@ -18,6 +18,17 @@ errors = {
 	0x80010010: "Core::InvalidLockState",
 	0x80010011: "Core::InvalidSequence",
 	
+	0x80040001: "PythonCore::Exception",
+	0x80040002: "PythonCore::TypeError",
+	0x80040003: "PythonCore::IndexError",
+	0x80040004: "PythonCore::InvalidReference",
+	0x80040005: "PythonCore::CallFailure",
+	0x80040006: "PythonCore::MemoryError",
+	0x80040007: "PythonCore::KeyError",
+	0x80040008: "PythonCore::OperationError",
+	0x80040009: "PythonCore::ConversionError",
+	0x8004000A: "PythonCore::ValidationError",
+	
 	0x80670001: "Ranking::NotInitialized",
 	0x80670002: "Ranking::InvalidArgument",
 	0x60780003: "Ranking::RegistrationError",
