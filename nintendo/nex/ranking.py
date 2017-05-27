@@ -92,8 +92,7 @@ class RankingClient:
 
 	def __init__(self, back_end):
 		self.client = back_end.secure_client
-		
-	#Untested, I don't want to ruin my scores
+
 	def delete_all_scores(self, arg):
 		logger.info("Ranking.delete_all_scores(%016X)", arg)
 		#--- request ---

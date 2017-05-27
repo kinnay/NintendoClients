@@ -219,7 +219,7 @@ class DataStoreClient:
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		info = DataStoreMetaInfo.from_stream(stream)
-		logger.info("DataStore.get_meta -> Done")
+		logger.info("DataStore.get_meta -> done")
 		return info
 		
 	def prepare_get_object(self, param):

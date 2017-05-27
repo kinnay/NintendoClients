@@ -113,4 +113,16 @@ class SecureClient(ServiceClient):
 		
 		#--- response ---
 		self.get_response(call_id)
-		logger.info("Secure.test_connectivity -> Done")
+		logger.info("Secure.test_connectivity -> done")
+		
+	def replace_url(self, url, new):
+		logger.info("Secure.replace_url(%s, %s)", url, new)
+		#--- request ---
+		stream, call_id = self.init_message(self.PROTOCOL_ID, self.METHOD_REPLACE_URL)
+		stream.string(url)
+		stream.string(new)
+		self.send_message(stream)
+		
+		#--- response ---
+		self.get_response(call_id)
+		logger.info("Secure.replace_url -> done")
