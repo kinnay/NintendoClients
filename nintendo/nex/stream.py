@@ -13,7 +13,7 @@ class NexStreamOut(StreamOut):
 	def string(self, string):
 		string += "\x00"
 		self.u16(len(string))
-		self.ascii(string)
+		self.chars(string)
 		
 	def data(self, data):
 		self.u32(len(data))
@@ -29,7 +29,7 @@ class NexStreamIn(StreamIn):
 		return super().list(func, self.u32())
 		
 	def string(self):
-		return self.ascii(self.u16())[:-1] #Remove null-terminator
+		return self.chars(self.u16())[:-1] #Remove null-terminator
 		
 	def substream(self):
 		return NexStreamIn(self.read(self.u32()), self.version)

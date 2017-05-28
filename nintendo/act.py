@@ -1,4 +1,6 @@
 
+from nintendo.miis import MiiData
+
 from bs4 import BeautifulSoup
 import collections
 import requests
@@ -43,7 +45,7 @@ class Mii(collections.namedtuple("Mii", "data id images name pid primary nnid"))
 	@classmethod
 	def parse(cls, obj):
 		return cls(
-			base64.decodestring(obj.data.text.encode("ascii")),
+			MiiData(base64.decodestring(obj.data.text.encode("ascii"))),
 			int(obj.id.text),
 			{image.type.text: image.url.text for image in obj.images},
 			obj.find("name").text,
@@ -57,7 +59,7 @@ class ProfileMii(collections.namedtuple("Mii", "data id hash images name primary
 	@classmethod
 	def parse(cls, obj):
 		return cls(
-			base64.decodestring(obj.data.text.encode("ascii")),
+			MiiData(base64.decodestring(obj.data.text.encode("ascii"))),
 			int(obj.id.text),
 			obj.mii_hash.text,
 			{image.type.text: image.url.text for image in obj.mii_images},

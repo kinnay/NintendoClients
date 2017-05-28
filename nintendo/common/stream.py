@@ -3,7 +3,8 @@ import struct
 
 
 class StreamOut:
-	def __init__(self):
+	def __init__(self, endian="<"):
+		self.endian = endian
 		self.buffer = b""
 		self.pos = 0
 		
@@ -15,17 +16,17 @@ class StreamOut:
 		self.pos += len(data)
 		
 	def u8(self, value): self.write(bytes([value]))
-	def u16(self, value): self.write(struct.pack("H", value))
-	def u32(self, value): self.write(struct.pack("I", value))
-	def u64(self, value): self.write(struct.pack("Q", value))
+	def u16(self, value): self.write(struct.pack(self.endian + "H", value))
+	def u32(self, value): self.write(struct.pack(self.endian + "I", value))
+	def u64(self, value): self.write(struct.pack(self.endian + "Q", value))
 	
 	def s8(self, value): self.write(struct.pack("b", value))
-	def s16(self, value): self.write(struct.pack("h", value))
-	def s32(self, value): self.write(struct.pack("i", value))
-	def s64(self, value): self.write(struct.pack("q", value))
+	def s16(self, value): self.write(struct.pack(self.endian + "h", value))
+	def s32(self, value): self.write(struct.pack(self.endian + "i", value))
+	def s64(self, value): self.write(struct.pack(self.endian + "q", value))
 	
-	def float(self, value): self.write(struct.pack("f", value))
-	def double(self, value): self.write(struct.pack("d", value))
+	def float(self, value): self.write(struct.pack(self.endian + "f", value))
+	def double(self, value): self.write(struct.pack(self.endian + "d", value))
 	
 	def bool(self, value): self.u8(1 if value else 0)
 	
@@ -33,12 +34,16 @@ class StreamOut:
 		for i in list:
 			func(i)
 	
-	def ascii(self, data):
+	def chars(self, data):
 		self.write(data.encode("ascii"))
+		
+	def wchars(self, data):
+		self.list([ord(char) for char in data], self.u16)
 
 
 class StreamIn:
-	def __init__(self, data):
+	def __init__(self, data, endian="<"):
+		self.endian = endian
 		self.buffer = data
 		self.pos = 0
 		
@@ -51,25 +56,63 @@ class StreamIn:
 		return data
 		
 	def u8(self): return self.read(1)[0]
-	def u16(self): return struct.unpack("H", self.read(2))[0]
-	def u32(self): return struct.unpack("I", self.read(4))[0]
-	def u64(self): return struct.unpack("Q", self.read(8))[0]
+	def u16(self): return struct.unpack(self.endian + "H", self.read(2))[0]
+	def u32(self): return struct.unpack(self.endian + "I", self.read(4))[0]
+	def u64(self): return struct.unpack(self.endian + "Q", self.read(8))[0]
 	
 	def s8(self): return struct.unpack("b", self.read(1))[0]
-	def s16(self): return struct.unpack("h", self.read(2))[0]
-	def s32(self): return struct.unpack("i", self.read(4))[0]
-	def s64(self): return struct.unpack("q", self.read(8))[0]
+	def s16(self): return struct.unpack(self.endian + "h", self.read(2))[0]
+	def s32(self): return struct.unpack(self.endian + "i", self.read(4))[0]
+	def s64(self): return struct.unpack(self.endian + "q", self.read(8))[0]
 	
-	def float(self): return struct.unpack("f", self.read(4))[0]
-	def double(self): return struct.unpack("d", self.read(8))[0]
+	def float(self): return struct.unpack(self.endian + "f", self.read(4))[0]
+	def double(self): return struct.unpack(self.endian + "d", self.read(8))[0]
 	
 	def bool(self): return bool(self.u8())
 	
 	def list(self, func, count):
 		return [func() for i in range(count)]
 	
-	def ascii(self, num):
+	def chars(self, num):
 		return self.read(num).decode("ascii")
+		
+	def wchars(self, num):	
+		return "".join([chr(x) for x in self.list(self.u16, num)])
+		
+		
+class BitStreamIn(StreamIn):
+	def __init__(self, data, endian="<"):
+		super().__init__(data, endian)
+		self.bitpos = 0
+		
+	def align(self):
+		if self.bitpos:
+			self.bitpos = 0
+			self.pos += 1
+
+	def seek(self, pos):
+		self.align()
+		super().seek(pos)
+			
+	def read(self, num):
+		self.align()
+		return super().read(num)
+		
+	def bit(self):
+		byte = self.buffer[self.pos]
+		value = (byte >> (7 - self.bitpos)) & 1
+		self.bitpos += 1
+		if self.bitpos == 8:
+			self.bitpos = 0
+			self.pos += 1
+		return value
+		
+	def bits(self, num):
+		value = 0
+		for i in range(num):
+			value <<= 1
+			value |= self.bit()
+		return value
 		
 		
 class Encoder:
