@@ -11,7 +11,7 @@ Requirements:
 * BeautifulSoup4
 * Nintendo SSL certificate (see below)
 
-Before you can access the account server, you have to place Nintendo's SSL client certificate in PEM format into the "files" folder named "wiiu_common_cert.pem" and "wiiu_commmon_key.pem". These can be downloaded from Nintendo's update server (title id 0005001B-10054000). Most functions of the account server are only available after authentication. Authentication requires your Nintendo Network ID and password and serial number, device id, system version, region and country of your Wii U. To access specific game servers, you also need the game server id and sandbox access key of the server.
+Before you can access the account server, you have to place Nintendo's SSL client certificate in PEM format into the "files" folder named "wiiu_common_cert.pem" and "wiiu_commmon_key.pem". These can be downloaded from Nintendo's update server (title id 0005001B-10054000). Some functions of the account server are only available after authentication. Authentication requires your Nintendo Network ID and password and serial number, device id, system version, region and country of your Wii U. To access specific game servers, you also need the game server id and sandbox access key of the server.
 
 Unfortunately, there are many different versions of the NEX library, and some games even got their own patches. To make sure I don't have to spend hours figuring out why I'm getting weird responses from the server, I'm raising an error if the nex version isn't explicitly added to a protocol's version map. If you want to try this library with unsupported games, add the nex version number to the version_map variable of the class that throws the error.
 

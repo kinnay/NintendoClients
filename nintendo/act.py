@@ -1,6 +1,8 @@
 
 from bs4 import BeautifulSoup
+import collections
 import requests
+import base64
 import time
 import os
 
@@ -10,6 +12,112 @@ logger = logging.getLogger(__name__)
 
 CERT = os.path.join(os.path.dirname(__file__), "files/wiiu_common_cert.pem")
 KEY = os.path.join(os.path.dirname(__file__), "files/wiiu_common_key.pem")
+
+
+class NexToken(collections.namedtuple("NexToken", "host port username password token")):
+	@classmethod
+	def parse(cls, obj):
+		return cls(
+			obj.host.text,
+			int(obj.port.text),
+			obj.pid.text,
+			obj.nex_password.text,
+			obj.token.text
+		)
+		
+class Email(collections.namedtuple("Email", "address id parent primary reachable type validated validation_date")):
+	@classmethod
+	def parse(cls, obj):
+		return cls(
+			obj.address.text,
+			int(obj.id.text),
+			obj.parent.text == "Y",
+			obj.primary.text == "Y",
+			obj.reachable.text == "Y",
+			obj.type.text,
+			obj.validated.text == "Y",
+			obj.validated_date.text
+		)
+
+class Mii(collections.namedtuple("Mii", "data id images name pid primary nnid")):
+	@classmethod
+	def parse(cls, obj):
+		return cls(
+			base64.decodestring(obj.data.text.encode("ascii")),
+			int(obj.id.text),
+			{image.type.text: image.url.text for image in obj.images},
+			obj.find("name").text,
+			int(obj.pid.text),
+			obj.primary.text == "Y",
+			obj.user_id.text
+		)
+		
+		
+class ProfileMii(collections.namedtuple("Mii", "data id hash images name primary")):
+	@classmethod
+	def parse(cls, obj):
+		return cls(
+			base64.decodestring(obj.data.text.encode("ascii")),
+			int(obj.id.text),
+			obj.mii_hash.text,
+			{image.type.text: image.url.text for image in obj.mii_images},
+			obj.find("name").text,
+			obj.primary.text == "Y"
+		)
+		
+		
+class Account(collections.namedtuple("Account", "attributes domain type username")):
+	@classmethod
+	def parse(cls, obj):
+		return cls(
+			obj.attributes.text,
+			obj.domain.text,
+			obj.type.text,
+			obj.username.text
+		)
+		
+class Profile(collections.namedtuple(
+		"Profile",
+		"accounts active birthday country creation_date device_attributes gender language "
+		"updated marketing off_device pid email mii region timezone nnid utc_offset"
+	)):
+	@classmethod
+	def parse(cls, obj):
+		return cls(
+			[Account.parse(account) for account in obj.accounts],
+			obj.active_flag.text == "Y",
+			obj.birth_date.text,
+			obj.country.text,
+			obj.create_date.text,
+			{attrib.find("name").text: attrib.value.text for attrib in obj.device_attributes},
+			obj.gender.text,
+			obj.language.text,
+			obj.updated.text,
+			obj.marketing_flag.text == "Y",
+			obj.off_device_flag.text == "Y",
+			int(obj.pid.text),
+			Email.parse(obj.email),
+			Mii.parse(obj.mii),
+			int(obj.region.text),
+			obj.tz_name.text,
+			obj.user_id.text,
+			int(obj.utc_offset.text)
+		)
+		
+class TimeZone(collections.namedtuple("TimeZone", "area language name utc_offset order")):
+	@classmethod
+	def parse(cls, obj):	
+		return cls(
+			str(obj.contents[1]),
+			obj.language.text,
+			obj.find("name").text,
+			int(obj.utc_offset.text),
+			int(obj.order.text)
+		)
+		
+
+class AccountRequestError(Exception): pass
+
 
 class Request:
 	def __init__(self, api):
@@ -28,23 +136,20 @@ class Request:
 		req = requests.Request("GET", self.format(url), self.headers, data=data, params=params)
 		return self.request(req)
 		
+	def post(self, url, data=None):
+		req = requests.Request("POST", self.format(url), self.headers, data=data)
+		return self.request(req)
+		
 	def request(self, req):
 		prepped = req.prepare()
 		response = self.api.session.send(prepped, verify=False, cert=(CERT, KEY))
+		content = BeautifulSoup(response.text, "lxml")
 		
 		if response.status_code != 200:
 			logger.error("HTTP request returned status code %i\n%s", response.status_code, response.text)
+			raise AccountRequestError("Account request failed: %s" %content.error.message.text)
 		
-		return BeautifulSoup(response.text, "lxml")
-
-
-class NexToken:
-	def __init__(self, host, port, username, password, token):
-		self.host = host
-		self.port = port
-		self.username = username
-		self.password = password
-		self.token = token
+		return content
 		
 		
 class AccountAPI:
@@ -109,6 +214,24 @@ class AccountAPI:
 		self.refresh_token = response.oauth20.access_token.refresh_token.text
 		self.refresh_time = time.time() + int(response.oauth20.access_token.expires_in.text)
 		
+	def get_emails(self):
+		request = Request(self)
+		request.auth(self.get_access_token())
+		response = request.get(
+			"people/@me/emails"
+		)
+		
+		return [Email.parse(email) for email in response.emails]
+		
+	def get_profile(self):
+		request = Request(self)
+		request.auth(self.get_access_token())
+		response = request.get(
+			"people/@me/profile"
+		)
+		
+		return Profile.parse(response.person)
+		
 	def get_nex_token(self, game_server_id):
 		request = Request(self)
 		request.auth(self.get_access_token())
@@ -119,10 +242,61 @@ class AccountAPI:
 			}
 		)
 		
-		return NexToken(
-			response.nex_token.host.text,
-			int(response.nex_token.port.text),
-			response.nex_token.pid.text,
-			response.nex_token.nex_password.text,
-			response.nex_token.token.text
+		return NexToken.parse(response.nex_token)
+		
+	#The following functions can be used without logging in first
+	
+	def validate_email(self, email):
+		request = Request(self)
+		request.post(
+			"support/validate/email",
+			{"email": email}
 		)
+		#An error is thrown if validation fails
+		
+	def get_miis(self, pids):
+		request = Request(self)
+		response = request.get(
+			"miis",
+			params = {
+				"pids": ",".join([str(pid) for pid in pids])
+			}
+		)
+		return [Mii.parse(mii) for mii in response.miis]
+		
+	def get_mii(self, pid):
+		return self.get_miis([pid])[0]
+		
+	def get_pids(self, nnids):
+		request = Request(self)
+		response = request.get(
+			"admin/mapped_ids",
+			params = {
+				"input_type": "user_id",
+				"output_type": "pid",
+				"input": ",".join(nnids)
+			}
+		)
+		return {id.in_id.text: id.out_id.text for id in response.mapped_ids}
+		
+	def get_nnids(self, pids):
+		request = Request(self)
+		response = request.get(
+			"admin/mapped_ids",
+			params = {
+				"input_type": "pid",
+				"output_type": "user_id",
+				"input": ",".join(pids)
+			}
+		)
+		return {id.in_id.text: id.out_id.text for id in response.mapped_ids}
+		
+	def get_pid(self, nnid): return self.get_pids([nnid])[nnid]
+	def get_nnid(self, pid): return self.get_nnids([pid])[pid]
+		
+	def get_time_zones(self, country, language):
+		request = Request(self)
+		response = request.get(
+			"content/time_zones/%s/%s" %(country, language)
+		)
+		return [TimeZone.parse(tz) for tz in response.timezones]
