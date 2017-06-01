@@ -2,7 +2,7 @@
 from nintendo.nex.service import ServiceClient
 from nintendo.nex.kerberos import KerberosEncryption
 from nintendo.nex.stream import NexStreamOut
-from nintendo.nex.common import NexEncoder, StationUrl
+from nintendo.nex.common import NexEncoder, DataHolder, StationUrl
 import random
 
 import logging
@@ -73,6 +73,7 @@ class SecureClient(ServiceClient):
 		connection_id = stream.u32()
 		client_station = stream.string()
 		logger.info("Secure.register -> (%i, %s)", connection_id, client_station)
+		return client_station
 		
 	def request_connection_data(self, cid, pid):
 		logger.info("Secure.request_connection_data(%i, %i)", cid, pid)
@@ -103,6 +104,23 @@ class SecureClient(ServiceClient):
 		urls = stream.list(lambda: StationUrl(stream.string()))
 		logger.info("Secure.request_urls -> (%i, %s)", bool, urls)
 		return bool, urls
+		
+	def register_ex(self, login_data):
+		logger.info("Secure.register_ex(...)")
+		#--- request ---
+		stream, call_id = self.init_message(self.PROTOCOL_ID, self.METHOD_REGISTER_EX)
+		client_url = str(StationUrl.make(address=self.s.get_address(), port=self.s.get_port(), sid=15, natm=0, natf=0, upnp=0, pmp=0))
+		stream.list([client_url], lambda x: stream.string(x))
+		DataHolder(login_data).encode(stream)
+		self.send_message(stream)
+		
+		#--- response ---
+		stream = self.get_response(call_id)
+		result = stream.u32()
+		connection_id = stream.u32()
+		client_station = stream.string()
+		logger.info("Secure.register_ex -> (%i, %s)", connection_id, client_station)
+		return client_station
 	
 	def test_connectivity(self):
 		logger.info("Secure.test_connectivity()")

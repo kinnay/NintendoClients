@@ -21,14 +21,20 @@ class BackEndClient:
 			self.secure_client.close()
 		
 	def login(self, username, password, token=None):
-		if token:
-			self.auth_client.login_ex(username, password, token)
-		else:
-			self.auth_client.login(username, password)
+		self.authenticate(username, password, token)
 		ticket = self.auth_client.request_ticket()
 		host = self.auth_client.secure_station["address"]
 		port = int(self.auth_client.secure_station["port"])
 		
 		self.secure_client = SecureClient(self, self.access_key, ticket, self.auth_client)
 		self.secure_client.connect(host, port)
+		self.register_urls(token)
+		
+	def authenticate(self, username, password, token):
+		if token:
+			self.auth_client.login_ex(username, password, token)
+		else:
+			self.auth_client.login(username, password)
+		
+	def register_urls(self, token):
 		self.secure_client.register()
