@@ -41,7 +41,10 @@ SUPPORT_100 = 0x100
 SUPPORT_ALL = 0xFFFFFFFF
 
 
-class PRUDPPacket:
+class PRUDPError(ConnectionError): pass
+
+
+class PRUDPPacketV1:
 	def __init__(self, client, type=None, flags=None, packet_id=None, data=b""):
 		self.client = client
 		self.type = type
@@ -58,10 +61,14 @@ class PRUDPPacket:
 		
 	def decode(self, data):
 		if len(data) >= 2 + 12 + 16: #Magic, header, checksum
-			option_len, data_len = self.decode_header(data[2 : 14])
+			if data[:2] != b"\xEA\xD0": logger.error("Received packet (V1) with invalid magic number")
+
+			header = data[2 : 14]
+			option_len, data_len = self.decode_header(header)
 			total_size = 2 + 12 + option_len + 16 + data_len
 			if len(data) >= total_size:
-				self.decode_option(data[30 : 30 + option_len])
+				option = data[30 : 30 + option_len]
+				self.decode_option(option)
 				self.data = data[30 + option_len : 30 + option_len + data_len]
 				return total_size
 		return 0
@@ -99,8 +106,14 @@ class PRUDPPacket:
 		return data
 		
 	def decode_header(self, data):
+		if data[0] != 1: #PRUDP Version
+			logger.error("Received packet (V1) with invalid version number")
+
 		option_len = data[1]
 		data_len = struct.unpack_from("H", data, 2)[0]
+		
+		if data[4] != PORT_SERVER: logger.error("Received packet (V1) with invalid source port")
+		if data[5] != PORT_CLIENT: logger.error("Received packet (V1) with invalid dest port")
 		
 		type_flags = struct.unpack_from("H", data, 6)[0]
 		self.type = type_flags & 0xF
@@ -185,6 +198,8 @@ class PRUDP:
 		if blocking:
 			while self.state == self.CONNECTING:
 				time.sleep(0.05)
+			if self.state != self.CONNECTED:
+				raise PRUDPError("PRUDP couldn't connect to %s:%i" %(host, port))
 		
 	def send(self, data):
 		self.send_data(data)
@@ -199,7 +214,7 @@ class PRUDP:
 		
 	def send_syn(self):
 		logger.debug("Sending SYN [%i:%i]", self.session_id, self.packet_id)
-		packet = PRUDPPacket(
+		packet = PRUDPPacketV1(
 			self,
 			PACKET_SYN,
 			FLAG_NEED_ACK,
@@ -213,7 +228,7 @@ class PRUDP:
 		PRUDP.connection_id = (PRUDP.connection_id + 1) % 256
 
 		logger.debug("Sending CONNECT [%i:%i]", self.session_id, self.packet_id)
-		packet = PRUDPPacket(
+		packet = PRUDPPacketV1(
 			self,
 			PACKET_CONNECT,
 			FLAG_RELIABLE | FLAG_NEED_ACK,
@@ -225,7 +240,7 @@ class PRUDP:
 		
 	def send_data(self, data):
 		logger.debug("Sending data packet with %i bytes of data [%i:%i]", len(data), self.session_id, self.packet_id)
-		packet = PRUDPPacket(
+		packet = PRUDPPacketV1(
 			self,
 			PACKET_DATA,
 			FLAG_RELIABLE | FLAG_NEED_ACK,
@@ -237,7 +252,7 @@ class PRUDP:
 		
 	def send_disconnect(self):
 		logger.debug("Sending DISCONNECT [%i:%i]", self.session_id, self.packet_id)
-		packet = PRUDPPacket(
+		packet = PRUDPPacketV1(
 			self,
 			PACKET_DISCONNECT,
 			FLAG_RELIABLE | FLAG_NEED_ACK,
@@ -247,7 +262,7 @@ class PRUDP:
 		
 	def send_ping(self):
 		logger.debug("Sending PING [%i:%i]", self.session_id, self.packet_id)
-		packet = PRUDPPacket(
+		packet = PRUDPPacketV1(
 			self,
 			PACKET_PING,
 			FLAG_RELIABLE | FLAG_NEED_ACK,
@@ -258,7 +273,7 @@ class PRUDP:
 		
 	def send_ack(self, packet):
 		logger.debug("Sending ACK")
-		packet = PRUDPPacket(
+		packet = PRUDPPacketV1(
 			self,
 			packet.type,
 			FLAG_ACK,
@@ -269,7 +284,7 @@ class PRUDP:
 		
 	def send_ack2(self, packet):
 		logger.debug("Sending data ACK")
-		packet = PRUDPPacket(
+		packet = PRUDPPacketV1(
 			self,
 			PACKET_DATA,
 			FLAG_ACK2,
@@ -342,7 +357,7 @@ class PRUDP:
 			self.buffer += data
 		
 		while self.buffer:
-			packet = PRUDPPacket(self)
+			packet = PRUDPPacketV1(self)
 			size = packet.decode(self.buffer)
 			if size:
 				self.buffer = self.buffer[size:]

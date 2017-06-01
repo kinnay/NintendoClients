@@ -9,7 +9,15 @@ class KerberosEncryption:
 		self.rc4 = RC4(key)
 		
 	def decrypt(self, buffer):
-		data = buffer[:-0x10] #Remove checksum
+		data = buffer[:-0x10]
+		
+		#Verify checksum
+		checksum = buffer[-0x10:]
+		mac = hmac.HMAC(self.key)
+		mac.update(data)
+		if checksum != mac.digest():
+			raise ValueError("Invalid Kerberos checksum")
+		
 		return self.rc4.crypt(data)
 		
 	def encrypt(self, buffer):

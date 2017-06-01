@@ -7,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 class RankingOrderParam(NexEncoder):
 	version_map = {
-		30400: -1,
 		30504: 0
 	}
 
@@ -35,7 +34,6 @@ class RankingOrderParam(NexEncoder):
 
 class RankingRankData(NexEncoder):
 	version_map = {
-		30400: -1,
 		30504: 0
 	}
 	
@@ -54,7 +52,6 @@ class RankingRankData(NexEncoder):
 
 class RankingResult(NexEncoder):
 	version_map = {
-		30400: -1,
 		30504: 0
 	}
 	

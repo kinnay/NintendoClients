@@ -8,9 +8,7 @@ logger = logging.getLogger(__name__)
 
 class PersistenceTarget(NexEncoder):
 	version_map = {
-		30400: -1,
-		30504: 0,
-		30810: 0
+		30504: 0
 	}
 	
 	def init(self, owner_id, persistence_id):
@@ -26,7 +24,6 @@ class PersistenceTarget(NexEncoder):
 	
 class DataStorePermission(NexEncoder):
 	version_map = {
-		30400: -1,
 		30810: 0
 	}
 	
@@ -39,7 +36,6 @@ class DataStorePermission(NexEncoder):
 	
 class DataStoreRatingInfo(NexEncoder):
 	version_map = {
-		30400: -1,
 		30810: 0
 	}
 	
@@ -53,7 +49,6 @@ class DataStoreRatingInfo(NexEncoder):
 
 class DataStoreRatingInfoWithSlot(NexEncoder):
 	version_map = {
-		30400: -1,
 		30810: 0
 	}
 	
@@ -66,7 +61,6 @@ class DataStoreRatingInfoWithSlot(NexEncoder):
 	
 class DataStoreGetMetaParam(NexEncoder):
 	version_map = {
-		30400: -1,
 		30810: 0
 	}
 	
@@ -87,7 +81,6 @@ class DataStoreGetMetaParam(NexEncoder):
 		
 class DataStoreMetaInfo(NexEncoder):
 	version_map = {
-		30400: -1,
 		30810: 0
 	}
 	
@@ -117,7 +110,6 @@ class DataStoreMetaInfo(NexEncoder):
 
 class DataStoreGetParam(NexEncoder):
 	version_map = {
-		30400: -1,
 		30504: 0,
 		30810: 0
 	}
@@ -139,7 +131,6 @@ class DataStoreGetParam(NexEncoder):
 	
 class DataStoreGetInfo(NexEncoder):
 	version_map = {
-		30400: -1,
 		30504: 0,
 		30810: 0
 	}

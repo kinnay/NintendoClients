@@ -7,10 +7,10 @@ class NexEncoder(Encoder):
 	version_map = {}
 
 	def init_version(self, nex_version):
-		if nex_version not in self.version_map:
-			raise ValueError("%s does not support nex version %i" %(self.__class__.__name__, nex_version))
-			
-		self.version = self.version_map[nex_version]
+		if nex_version < 30500:
+			self.version = -1
+		else:
+			self.version = self.version_map[nex_version]
 
 	def encode(self, stream):
 		self.init_version(stream.version)
@@ -38,7 +38,6 @@ class NexEncoder(Encoder):
 	
 class NexData(NexEncoder):
 	version_map = {
-		30400: -1,
 		30504: 0,
 		30810: 0
 	}

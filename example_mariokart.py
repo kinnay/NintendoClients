@@ -27,7 +27,7 @@ api.set_title(MK8.TITLE_ID_EUR, MK8.LATEST_VERSION)
 api.login(USERNAME, PASSWORD)
 
 nex_token = api.get_nex_token(MK8.GAME_SERVER_ID)
-backend = BackEndClient(MK8.ACCESS_TOKEN, MK8.NEX_VERSION)
+backend = BackEndClient(MK8.ACCESS_KEY, MK8.NEX_VERSION)
 backend.connect(nex_token.host, nex_token.port)
 backend.login(nex_token.username, nex_token.password, nex_token.token)
 
@@ -43,6 +43,7 @@ rankings = ranking_client.get_ranking(
 	0, 0 #Unknown
 )
 
+names = api.get_nnids([data.user_id for data in rankings.datas])
 print("Total:", rankings.total)
 print("Rankings:")
 for rankdata in rankings.datas:
@@ -50,9 +51,7 @@ for rankdata in rankings.datas:
 	seconds = rankdata.score // 1000 % 60
 	minutes = rankdata.score // 1000 // 60
 	time = "%i:%02i.%03i" %(minutes, seconds, millisec)
-	#I haven't figured out how MK8 retrieves the nnid,
-	#so I'm just printing the user id here
-	print("\t%5i   %08X   %s" %(rankdata.rank, rankdata.user_id, time))
+	print("\t%5i   %20s   %s" %(rankdata.rank, names[rankdata.user_id], time))
 	
 
 #Close connection and stop thread

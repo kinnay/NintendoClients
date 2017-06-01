@@ -279,7 +279,7 @@ class AccountAPI:
 				"input": ",".join(nnids)
 			}
 		)
-		return {id.in_id.text: id.out_id.text for id in response.mapped_ids}
+		return {id.in_id.text: int(id.out_id.text) for id in response.mapped_ids}
 		
 	def get_nnids(self, pids):
 		request = Request(self)
@@ -288,10 +288,10 @@ class AccountAPI:
 			params = {
 				"input_type": "pid",
 				"output_type": "user_id",
-				"input": ",".join(pids)
+				"input": ",".join([str(pid) for pid in pids])
 			}
 		)
-		return {id.in_id.text: id.out_id.text for id in response.mapped_ids}
+		return {int(id.in_id.text): id.out_id.text for id in response.mapped_ids}
 		
 	def get_pid(self, nnid): return self.get_pids([nnid])[nnid]
 	def get_nnid(self, pid): return self.get_nnids([pid])[pid]

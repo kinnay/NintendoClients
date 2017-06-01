@@ -3,6 +3,7 @@ from nintendo.nex.service import ServiceClient
 from nintendo.nex.stream import NexStreamOut
 from nintendo.nex.common import NexEncoder, NexData, DataHolder, StationUrl, DateTime
 from nintendo.nex.kerberos import KerberosEncryption, Ticket
+from nintendo.common.stream import StreamIn
 import hashlib
 import struct
 
@@ -12,9 +13,7 @@ logger = logging.getLogger(__name__)
 
 class AuthenticationInfo(NexEncoder):
 	version_map = {
-		30400: -1,
-		30504: 0,
-		30810: 0
+		30504: 0
 	}
 	
 	#As nex versions increase, these values increase as well
@@ -46,9 +45,7 @@ DataHolder.register(AuthenticationInfo, "AuthenticationInfo")
 	
 class ConnectionData(NexEncoder):
 	version_map = {
-		30400: -1,
-		30504: 1,
-		30810: 1
+		30504: 1
 	}
 	
 	def decode_old(self, stream):
@@ -97,7 +94,7 @@ class AuthenticationClient(ServiceClient):
 		stream = self.get_response(call_id)
 		result = stream.u32()
 		self.user_id = stream.u32()
-		kerberos_data = stream.read(stream.u32()) #Used to validate kerberos key
+		kerberos_data = stream.read(stream.u32())
 		self.secure_station = ConnectionData.from_stream(stream).main_station
 		server_name = stream.string()
 		
@@ -105,6 +102,7 @@ class AuthenticationClient(ServiceClient):
 		for i in range(65000 + self.user_id % 1024):
 			kerberos_key = hashlib.md5(kerberos_key).digest()
 		self.kerberos_encryption = KerberosEncryption(kerberos_key)
+		self.kerberos_encryption.decrypt(kerberos_data) #Validate kerberos key 
 		
 		logger.info("Authentication.login(_ex) -> (%08X, %s, %s)", self.user_id, self.secure_station, server_name)
 		
@@ -115,16 +113,20 @@ class AuthenticationClient(ServiceClient):
 		stream.u32(self.user_id)
 		stream.u32(int(self.secure_station["PID"]))
 		self.send_message(stream)
-		
+
 		#--- response ---
 		stream = self.get_response(call_id)
 		result = stream.u32()
 		
+		key_length = 32
+		if self.back_end.version == 0: #FPD (IOSU)
+			key_length = 16
+		
 		encrypted_ticket = stream.read(stream.u32())
-		ticket_data = self.kerberos_encryption.decrypt(encrypted_ticket)
-		ticket_key = ticket_data[:0x20]
-		length = struct.unpack_from("I", ticket_data, 0x24)[0]
-		ticket_buffer = ticket_data[0x28 : 0x28 + length]
+		ticket_data = StreamIn(self.kerberos_encryption.decrypt(encrypted_ticket))
+		ticket_key = ticket_data.read(key_length)
+		ticket_data.u32() #Unknown
+		ticket_buffer = ticket_data.read(ticket_data.u32())
 
 		logger.info("Authentication.request_ticket -> %s", ticket_key.hex())
 		return Ticket(ticket_key, ticket_buffer)

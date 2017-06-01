@@ -10,6 +10,7 @@ class StreamOut:
 		
 	def seek(self, pos): self.pos = pos
 	def tell(self): return self.pos
+	def size(self): return len(self.buffer)
 		
 	def write(self, data):
 		self.buffer = self.buffer[:self.pos] + data + self.buffer[self.pos + len(data):]
@@ -49,6 +50,7 @@ class StreamIn:
 		
 	def seek(self, pos): self.pos = pos
 	def tell(self): return self.pos
+	def size(self): return len(self.buffer)
 		
 	def read(self, num):
 		data = self.buffer[self.pos : self.pos + num]
