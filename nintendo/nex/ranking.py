@@ -145,3 +145,20 @@ class RankingClient:
 		result = stream.list(stream.double)
 		logger.info("Ranking.get_stats -> %s", result)
 		return result
+		
+	def get_ranking_by_pid_list(self, pids, mode, category, order, arg=0):
+		logger.info("Ranking.get_ranking_by_pid_list(%s, %i, %08X, <order param>, %016X)", pids, mode, category, arg)
+		#--- request ---
+		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_GET_RANKING_BY_PID_LIST)
+		stream.list(pids, stream.u32)
+		stream.u8(mode)
+		stream.u32(category)
+		order.encode(stream)
+		stream.u64(arg)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		result = RankingResult.from_stream(stream)
+		logger.info("Ranking.get_ranking_by_pid_list -> %i results (out of %i total)", len(result.datas), result.total)
+		return result
