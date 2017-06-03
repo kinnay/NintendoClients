@@ -82,6 +82,36 @@ class StreamIn:
 		return "".join([chr(x) for x in self.list(self.u16, num)])
 		
 		
+class BitStreamOut(StreamOut):
+	def __init__(self, endian="<"):
+		super().__init__(endian)
+		self.bitpos = 0
+		
+	def align(self):
+		if self.bitpos:
+			self.bitpos = 0
+			self.pos += 1
+
+	def seek(self, pos):
+		self.align()
+		super().seek(pos)
+		
+	def write(self, data):
+		self.align()
+		super().write(data)
+	
+	def bit(self, value):
+		self.buffer[self.pos] |= value << (7 - self.bitpos)
+		self.bitpos += 1
+		if self.bitpos == 8:
+			self.bitpos = 0
+			self.pos += 1
+			
+	def bits(self, value, num):
+		for i in range(num):
+			self.bit((value >> (num - i - 1)) & 1)
+		
+		
 class BitStreamIn(StreamIn):
 	def __init__(self, data, endian="<"):
 		super().__init__(data, endian)

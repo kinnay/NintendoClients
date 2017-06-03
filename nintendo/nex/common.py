@@ -44,6 +44,18 @@ class NexData(NexEncoder):
 	
 	def encode_old(self, stream): pass
 	def encode_v0(self, stream): pass
+	def decode_old(self, stream): pass
+	def decode_v0(self, stream): pass
+	
+	
+class NexDataEncoder(NexEncoder):
+	def encode(self, stream):
+		NexData().encode(stream)
+		super().encode(stream)
+		
+	def decode(self, stream):
+		NexData.from_stream(stream)
+		super().decode(stream)
 
 
 class DataHolder(Encoder):
@@ -105,3 +117,7 @@ class DateTime:
 	
 	def __repr__(self):
 		return "%i-%i-%i %i:%02i:%02i" %(self.day(), self.month(), self.year(), self.hour(), self.minute(), self.second())
+		
+	@classmethod
+	def make(cls, day, month, year, hour, minute, second):
+		return cls(second | (minute << 6) | (hour << 12) | (day << 17) | (month << 22) | (year << 26))

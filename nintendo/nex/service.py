@@ -33,7 +33,7 @@ class ServiceClient(PRUDP):
 			time.sleep(0.05)
 			
 		error, stream = self.responses.pop(call_id)
-		if error:
+		if error != -1:
 			raise ConnectionError(error, "RMC failed (%s)" %errors.get(error, "unknown error"))
 		return stream
 		
@@ -55,4 +55,4 @@ class ServiceClient(PRUDP):
 			method_id = stream.u32()
 			logger.debug("Received RMC response: protocol=%i, call=%i, method=%i", protocol_id, call_id, method_id)
 
-			self.responses[call_id] = (0, stream)
+			self.responses[call_id] = (-1, stream)

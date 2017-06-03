@@ -1,7 +1,7 @@
 
 from nintendo.nex.service import ServiceClient
 from nintendo.nex.stream import NexStreamOut
-from nintendo.nex.common import NexEncoder, NexData, DataHolder, StationUrl, DateTime
+from nintendo.nex.common import NexEncoder, NexDataEncoder, DataHolder, StationUrl, DateTime
 from nintendo.nex.kerberos import KerberosEncryption, Ticket
 from nintendo.common.stream import StreamIn
 import hashlib
@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class AuthenticationInfo(NexEncoder):
+class AuthenticationInfo(NexDataEncoder):
 	version_map = {
 		30504: 0
 	}
@@ -28,10 +28,6 @@ class AuthenticationInfo(NexEncoder):
 		
 	def get_name(self):
 		return "AuthenticationInfo"
-		
-	def encode(self, stream):
-		NexData().encode(stream)
-		super().encode(stream)
 		
 	def encode_old(self, stream):
 		stream.string(self.token)
@@ -94,7 +90,7 @@ class AuthenticationClient(ServiceClient):
 		stream = self.get_response(call_id)
 		result = stream.u32()
 		self.user_id = stream.u32()
-		kerberos_data = stream.read(stream.u32())
+		kerberos_data = stream.data()
 		self.secure_station = ConnectionData.from_stream(stream).main_station
 		server_name = stream.string()
 		
@@ -122,7 +118,7 @@ class AuthenticationClient(ServiceClient):
 		if self.back_end.version == 0: #FPD (IOSU)
 			key_length = 16
 		
-		encrypted_ticket = stream.read(stream.u32())
+		encrypted_ticket = stream.data()
 		ticket_data = StreamIn(self.kerberos_encryption.decrypt(encrypted_ticket))
 		ticket_key = ticket_data.read(key_length)
 		ticket_data.u32() #Unknown

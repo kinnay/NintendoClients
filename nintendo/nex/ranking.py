@@ -43,9 +43,9 @@ class RankingRankData(NexEncoder):
 		self.rank = stream.u32()
 		self.category = stream.u32()
 		self.score = stream.u32()
-		self.data1 = stream.read(stream.u32())
+		self.data1 = stream.data()
 		self.file_id = stream.u64()
-		self.data2 = stream.read(stream.u32())
+		self.data2 = stream.data()
 		
 	decode_v0 = decode_old
 
@@ -110,7 +110,7 @@ class RankingClient:
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		data = stream.read(stream.u32())
+		data = stream.data()
 		logger.info("Ranking.get_common_data -> %s", data)
 		return data
 		

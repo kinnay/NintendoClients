@@ -91,17 +91,17 @@ class MatchmakeSession(NexEncoder):
 		self.attribs = stream.list(stream.u32)
 		self.open_participation = stream.bool()
 		self.matchmake_system = stream.u32()
-		self.application_data = stream.read(stream.u32())
+		self.application_data = stream.data()
 		self.unk = stream.u32()
 		
 	def decode_old(self, stream):
 		self.decode_common(stream)
-		self.unkdata = stream.read(stream.u32())
+		self.unkdata = stream.data()
 		
 	def decode_v0(self, stream):	
 		self.decode_common(stream)
 		self.unk2 = stream.u8()
-		self.unkdata = stream.read(stream.u32())
+		self.unkdata = stream.data()
 		self.unk3 = stream.u32()
 DataHolder.register(MatchmakeSession, "MatchmakeSession")
 

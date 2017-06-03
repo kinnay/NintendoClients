@@ -49,6 +49,7 @@ class PRUDPPacketV1:
 		self.client = client
 		self.type = type
 		self.flags = flags
+		self.frag_id = 0
 		self.packet_id = packet_id
 		self.data = data
 
@@ -87,12 +88,14 @@ class PRUDPPacketV1:
 			data += b"\x04\x01\x00"
 			return data
 		elif self.type == PACKET_DATA:
-			return bytes([self.type, 1, 0])
+			return bytes([self.type, 1, self.frag_id])
 		return b""
 			
 	def decode_option(self, data):
 		if self.type == PACKET_SYN:
 			self.client.connection_signature = data[8 : 24]
+		elif self.type == PACKET_DATA:
+			self.frag_id = data[2]
 			
 	def encode_header(self, option_len):
 		data = b"\x01" #PRUDP version
@@ -101,7 +104,7 @@ class PRUDPPacketV1:
 		data += struct.pack("BB", PORT_CLIENT, PORT_SERVER)
 		data += struct.pack("H", self.type | self.flags)
 		data += struct.pack("B", self.client.session_id)
-		data += struct.pack("B", 0) #Chunk id
+		data += struct.pack("B", 0)
 		data += struct.pack("H", self.packet_id)
 		return data
 		
@@ -332,7 +335,7 @@ class PRUDP:
 		elif packet.type == PACKET_DATA:
 			logger.debug("Received DATA packet with %i bytes", len(packet.data))
 			self.fragment_buffer += self.decrypt.crypt(packet.data)
-			if len(packet.data) != 1300:
+			if packet.frag_id == 0:
 				self.on_data(self.fragment_buffer)
 				self.fragment_buffer = b""
 		

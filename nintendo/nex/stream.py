@@ -11,9 +11,12 @@ class NexStreamOut(StreamOut):
 		super().list(list, func)
 		
 	def string(self, string):
-		string += "\x00"
-		self.u16(len(string))
-		self.chars(string)
+		if string is None:
+			self.u16(0)
+		else:
+			data = (string + "\x00").encode("utf8")
+			self.u16(len(data))
+			self.write(data)
 		
 	def data(self, data):
 		self.u32(len(data))
@@ -29,7 +32,12 @@ class NexStreamIn(StreamIn):
 		return super().list(func, self.u32())
 		
 	def string(self):
-		return self.chars(self.u16())[:-1] #Remove null-terminator
+		length = self.u16()
+		if length:
+			return self.read(length).decode("utf8")[:-1] #Remove null-terminator
+		
+	def data(self):
+		return self.read(self.u32())
 		
 	def substream(self):
-		return NexStreamIn(self.read(self.u32()), self.version)
+		return NexStreamIn(self.data(), self.version)
