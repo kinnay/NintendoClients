@@ -10,3 +10,7 @@ print("PID:", pid) #Same as mii.pid
 print("Images:")
 for url in mii.images.values():
 	print("\t%s" %url)
+
+info = mii.data
+print("Birthday: %i-%i" %(info.birth_day, info.birth_month))
+print("Creator name:", info.creator_name)

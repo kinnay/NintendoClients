@@ -101,7 +101,19 @@ class BitStreamOut(StreamOut):
 		super().write(data)
 	
 	def bit(self, value):
-		self.buffer[self.pos] |= value << (7 - self.bitpos)
+		if self.pos < len(self.buffer):
+			byte = self.buffer[self.pos]
+		else:
+			byte = 0
+
+		mask = 1 << (7 - self.bitpos)
+		if value:
+			byte |= mask
+		else:
+			byte &= ~mask
+		
+		self.buffer = self.buffer[:self.pos] + bytes([byte]) + self.buffer[self.pos + 1:]
+
 		self.bitpos += 1
 		if self.bitpos == 8:
 			self.bitpos = 0

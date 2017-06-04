@@ -41,7 +41,7 @@ principal_preference, comment, friends, requests_sent, requests_received, blackl
 	NNAInfo(
 		PrincipalBasicInfo(
 			pid, USERNAME, #Pid and nnid
-			#If you change the mii name here it will also be changed on Nintendo's servers
+			#If you change mii name or data here it will also be changed on Nintendo's servers
 			MiiV2(mii.name, 0, 0, mii.data, DateTime(0)),
 			2
 		),

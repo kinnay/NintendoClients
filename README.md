@@ -24,7 +24,7 @@ Useful information:
 * https://github.com/Kinnay/NintendoClients/wiki/Mario-Kart-8-Track-IDs
 * https://github.com/Kinnay/NintendoClients/wiki/Network-Library-Versions
 
-As with any software, this code probably contains some bugs.
+The PRUDP connection is not really reliable, as it's still missing some reliability features.
 
 ---
 
