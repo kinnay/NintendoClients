@@ -36,7 +36,7 @@ class MiiData:
 		stream.write(self.chunk4)
 
 		stream.endian = ">"
-		stream.u16(util.crc16(stream.buffer))
+		stream.u16(util.crc16(stream.buffer + b"\x00\x00"))
 		
 	def build(self):
 		stream = BitStreamOut()

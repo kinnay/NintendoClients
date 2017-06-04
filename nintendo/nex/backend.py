@@ -30,6 +30,9 @@ class BackEndClient:
 		self.secure_client.connect(host, port)
 		self.register_urls(token)
 		
+	def login_guest(self):
+		self.login("guest", "MMQea3n!fsik")
+		
 	def authenticate(self, username, password, token):
 		if token:
 			self.auth_client.login_ex(username, password, token)

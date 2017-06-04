@@ -31,7 +31,7 @@ errors = {
 	
 	0x80670001: "Ranking::NotInitialized",
 	0x80670002: "Ranking::InvalidArgument",
-	0x60780003: "Ranking::RegistrationError",
+	0x80670003: "Ranking::RegistrationError",
 	0x80670005: "Ranking::NotFound",
 	0x80670006: "Ranking::InvalidScore",
 	0x80670007: "Ranking::InvalidDataSize",
