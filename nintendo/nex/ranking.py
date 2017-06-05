@@ -101,6 +101,18 @@ class RankingClient:
 		self.client.get_response(call_id)
 		logger.info("Ranking.delete_all_scores -> Done")
 		
+	def upload_common_data(self, data, id=0):
+		logger.info("Ranking.upload_common_data(...)")
+		#--- request ---
+		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_UPLOAD_COMMON_DATA)
+		stream.data(data)
+		stream.u64(id)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		self.client.get_response(call_id)
+		logger.info("Ranking.upload_common_data -> done")
+		
 	def get_common_data(self, id=0):
 		logger.info("Ranking.get_common_data(%i)", id)
 		#--- request ---
