@@ -66,7 +66,7 @@ class MiiData:
 		self.fatness = stream.u8() #0 - 0x80
 
 		self.blush_type = stream.bits(4) #0 - 11
-		self.cheek_type = stream.bits(4) #0 - 11
+		self.face_style = stream.bits(4) #0 - 11
 		self.face_color = stream.bits(3) #0 - 5
 		self.face_type = stream.bits(4) #0 - 11
 		self.local_only = bool(stream.bit())
