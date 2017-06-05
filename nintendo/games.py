@@ -18,7 +18,7 @@ class MK8:
 	
 	GAME_SERVER_ID = 0x1010EB00
 	ACCESS_KEY = "25dbf96a"
-	NEX_VERSION = 30504 #3.5.4
+	NEX_VERSION = 30504 #3.5.4 (AMK patch)
 
 	
 class SMM:
@@ -29,7 +29,7 @@ class SMM:
 	
 	GAME_SERVER_ID = 0x1018DB00
 	ACCESS_KEY = "9f2b4678"
-	NEX_VERSION = 30810 #3.8.10
+	NEX_VERSION = 30810 #3.8.10 (AMA patch)
 
 	
 class AxiomVerge:

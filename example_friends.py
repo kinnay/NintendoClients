@@ -1,5 +1,6 @@
 
-from nintendo.nex.friends import FriendsBackEnd, FriendsTitle, FriendsClient, NNAInfo, NintendoPresenceV2, PrincipalBasicInfo, MiiV2, GameKey
+from nintendo.nex.friends import FriendsTitle, FriendsClient, NNAInfo, NintendoPresenceV2, PrincipalBasicInfo, MiiV2, GameKey
+from nintendo.nex.backend import BackEndClient
 from nintendo.nex.common import DateTime
 from nintendo.common.scheduler import Scheduler
 from nintendo.act import AccountAPI
@@ -28,9 +29,8 @@ mii = api.get_mii(pid)
 scheduler = Scheduler()
 scheduler.start()
 
-#The friends server got a NEX server similar to game servers
 nex_token = api.get_nex_token(FriendsTitle.GAME_SERVER_ID)
-backend = FriendsBackEnd(FriendsTitle.ACCESS_KEY, FriendsTitle.NEX_VERSION)
+backend = BackEndClient(FriendsTitle.ACCESS_KEY, FriendsTitle.NEX_VERSION)
 backend.connect(nex_token.host, nex_token.port)
 backend.login(nex_token.username, nex_token.password, nex_token.token)
 

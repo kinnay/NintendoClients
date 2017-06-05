@@ -4,7 +4,6 @@
 #since it's only used by IOSU for friend services on Wii U
 
 from nintendo.nex.common import NexEncoder, NexDataEncoder, DateTime
-from nintendo.nex.backend import BackEndClient
 from nintendo.nex.service import ServiceClient
 from nintendo.miis import MiiData
 
@@ -254,22 +253,3 @@ class FriendsClient:
 		unk2 = stream.u8()
 		logger.info("Friends.get_all_information -> ...")
 		return principal_preference, comment, friends, sent_requests, received_requests, blacklist, unk1, notifications, unk2
-	
-
-class NintendoLoginData(NexEncoder):
-	def init(self, token):
-		self.token = token
-		
-	def get_name(self):
-		return "NintendoLoginData"
-		
-	def encode_old(self, stream):
-		stream.string(self.token)
-
-		
-class FriendsBackEnd(BackEndClient):
-	def authenticate(self, username, password, token):
-		self.auth_client.login(username, password)
-
-	def register_urls(self, token):
-		self.secure_client.register_ex(NintendoLoginData(token))

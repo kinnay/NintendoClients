@@ -3,6 +3,7 @@ from nintendo.nex.service import ServiceClient
 from nintendo.nex.stream import NexStreamOut
 from nintendo.nex.common import NexEncoder, NexDataEncoder, DataHolder, StationUrl, DateTime
 from nintendo.nex.kerberos import KerberosEncryption, Ticket
+from nintendo.nex.friends import FriendsTitle
 from nintendo.common.stream import StreamIn
 import hashlib
 import struct
@@ -115,7 +116,7 @@ class AuthenticationClient(ServiceClient):
 		result = stream.u32()
 		
 		key_length = 32
-		if self.back_end.version == 0: #FPD (IOSU)
+		if self.back_end.version == FriendsTitle.NEX_VERSION:
 			key_length = 16
 		
 		encrypted_ticket = stream.data()

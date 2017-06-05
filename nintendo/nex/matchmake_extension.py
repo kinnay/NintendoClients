@@ -108,8 +108,8 @@ DataHolder.register(MatchmakeSession, "MatchmakeSession")
 
 class SimplePlayingSession(NexEncoder):
 	def decode_old(self, stream):
-		self.unk1 = stream.u32()
-		self.unk2 = stream.u32()
+		self.pid = stream.u32()
+		self.gathering_id = stream.u32()
 		self.unk3 = stream.u32()
 		self.unk4 = stream.u32()
 		
@@ -169,6 +169,7 @@ class MatchmakeExtensionClient:
 	PROTOCOL_ID = 0x6D
 	
 	def __init__(self, back_end):
+		self.back_end = back_end
 		self.client = back_end.secure_client
 		
 	def auto_matchmake(self, gathering, description):
@@ -204,12 +205,14 @@ class MatchmakeExtensionClient:
 	#The following methods seem to be different from those found in MK8
 	#Apparently, MK8 got its own set of methods whose ids overlap with other games
 
-	def get_simple_playing_session(self, list, bool):
+	def get_simple_playing_session(self, pids, bool, bool_mk8=False): #MK8 uses an additional bool here
 		logger.info("MatchmakeExtension.get_simple_playing_session(%s, %s)", list, bool)
 		#--- request ---
 		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_GET_SIMPLE_PLAYING_SESSION)
-		stream.list(list, stream.u32)
+		stream.list(pids, stream.u32)
 		stream.bool(bool)
+		if self.back_end.version == MK8.NEX_VERSION:
+			stream.bool(bool_mk8)
 		self.client.send_message(stream)
 		
 		#--- response ---
@@ -217,7 +220,8 @@ class MatchmakeExtensionClient:
 		sessions = stream.list(lambda: SimplePlayingSession.from_stream(stream))
 		logger.info("MatchmakeExtension.get_simple_playing_session -> done")
 		return sessions
-		
+
+	#This seems to be an entirely different method in MK8
 	def find_matchmake_session_by_gathering_id_detail(self, gathering_id):
 		logger.info("MatchmakeExtension.find_matchmake_session_by_gathering_id_detail(%08X)", gathering_id)
 		#--- request ---
