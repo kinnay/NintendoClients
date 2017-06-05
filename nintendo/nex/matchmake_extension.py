@@ -1,6 +1,7 @@
 
 from nintendo.nex.matchmake_common import Gathering
 from nintendo.nex.common import DataHolder, NexEncoder
+from nintendo.games import MK8
 
 import logging
 logger = logging.getLogger(__name__)
@@ -186,6 +187,22 @@ class MatchmakeExtensionClient:
 		logger.info("MatchmakeExtension.auto_matchmake -> %s", object.get_name())
 		return object
 		
+	def create_matchmake_session(self, gathering, description, unk):
+		logger.info("MatchmakeExtension.create_matchmake_session(...)")
+		#--- request ---
+		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_CREATE_MATCHMAKE_SESSION)
+		DataHolder(gathering).encode(stream)
+		stream.string(description)
+		stream.u16(unk)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		session_id = stream.u32()
+		data = stream.data()
+		logger.info("MatchmakeExtension.create_matchmake_session -> (%08X, %s)", session_id, data.hex())
+		return session_id, data
+		
 	#This seems to be the method that's used by most games
 	def auto_matchmake_with_search_criteria(self, search_criteria, gathering, description):
 		logger.info("MatchmakeExtension.auto_matchmake_with_search_criteria(...)")
@@ -206,7 +223,7 @@ class MatchmakeExtensionClient:
 	#Apparently, MK8 got its own set of methods whose ids overlap with other games
 
 	def get_simple_playing_session(self, pids, bool, bool_mk8=False): #MK8 uses an additional bool here
-		logger.info("MatchmakeExtension.get_simple_playing_session(%s, %s)", list, bool)
+		logger.info("MatchmakeExtension.get_simple_playing_session(...)")
 		#--- request ---
 		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_GET_SIMPLE_PLAYING_SESSION)
 		stream.list(pids, stream.u32)
