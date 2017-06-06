@@ -107,18 +107,18 @@ class GameKey(NexDataEncoder):
 		
 		
 class NintendoPresenceV2(NexDataEncoder):
-	def init(self, unk1, is_online, game_key, unk3, string, unk4, unk5, game_server_id, unk7, unk8, unk9, data, unk10, unk11, unk12):
+	def init(self, unk1, is_online, game_key, unk3, description, unk4, unk5, game_server_id, unk7, pid, gathering_id, data, unk10, unk11, unk12):
 		self.unk1 = unk1
 		self.is_online = is_online
 		self.game_key = game_key
 		self.unk3 = unk3
-		self.string = string
+		self.description = description
 		self.unk4 = unk4
 		self.unk5 = unk5
 		self.game_server_id = game_server_id
 		self.unk7 = unk7
-		self.unk8 = unk8
-		self.unk9 = unk9
+		self.pid = pid
+		self.gathering_id = gathering_id
 		self.data = data
 		self.unk10 = unk10
 		self.unk11 = unk11
@@ -129,13 +129,13 @@ class NintendoPresenceV2(NexDataEncoder):
 		stream.u8(self.is_online)
 		self.game_key.encode(stream)
 		stream.u8(self.unk3)
-		stream.string(self.string)
+		stream.string(self.description)
 		stream.u32(self.unk4)
 		stream.u8(self.unk5)
 		stream.u32(self.game_server_id)
 		stream.u32(self.unk7)
-		stream.u32(self.unk8)
-		stream.u32(self.unk9)
+		stream.u32(self.pid)
+		stream.u32(self.gathering_id)
 		stream.data(self.data)
 		stream.u8(self.unk10)
 		stream.u8(self.unk11)
@@ -146,13 +146,13 @@ class NintendoPresenceV2(NexDataEncoder):
 		self.is_online = stream.u8()
 		self.game_key = GameKey.from_stream(stream)
 		self.unk3 = stream.u8()
-		self.string = stream.string()
+		self.description = stream.string()
 		self.unk4 = stream.u32()
 		self.unk5 = stream.u8()
 		self.game_server_id = stream.u32()
 		self.unk7 = stream.u32()
-		self.unk8 = stream.u32()
-		self.unk9 = stream.u32()
+		self.pid = stream.u32()
+		self.gathering_id = stream.u32()
 		self.data = stream.data()
 		self.unk10 = stream.u8()
 		self.unk11 = stream.u8()
@@ -224,7 +224,8 @@ class FriendsClient:
 	#I couldn't find any apps/games with debug symbols for
 	#this protocol, the method names are merely guesses
 	METHOD_GET_ALL_INFORMATION = 1
-	#The friends client got at least 13 methods
+	METHOD_UPDATE_PRESENCE = 13
+	#The friends client has 18 different methods
 	
 	PROTOCOL_ID = 0x66
 	
@@ -253,3 +254,14 @@ class FriendsClient:
 		unk2 = stream.u8()
 		logger.info("Friends.get_all_information -> ...")
 		return principal_preference, comment, friends, sent_requests, received_requests, blacklist, unk1, notifications, unk2
+		
+	def update_presence(self, presence):
+		logger.info("Friends.update_presence(...)")
+		#--- request ---
+		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_UPDATE_PRESENCE)
+		presence.encode(stream)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		self.client.get_response(call_id)
+		logger.info("Friends.update_presence -> done")

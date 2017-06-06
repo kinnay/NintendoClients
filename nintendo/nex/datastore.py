@@ -114,19 +114,22 @@ class DataStoreGetParam(NexEncoder):
 		30810: 0
 	}
 	
-	def init(self, object_id, unk, persistence_target, unk2):
+	def init(self, object_id, unk, persistence_target, unk2, strings=None):
 		self.object_id = object_id
 		self.unk = unk
 		self.persistence_target = persistence_target
 		self.unk2 = unk2
+		self.strings = strings
 	
 	def encode_old(self, stream):
 		stream.u64(self.object_id)
 		stream.u32(self.unk)
 		self.persistence_target.encode(stream)
 		stream.u64(self.unk2)
-
-	encode_v0 = encode_old
+		
+	def encode_v0(self, stream):
+		self.encode_old(stream)
+		stream.list(self.strings, stream.string)
 
 	
 class DataStoreGetInfo(NexEncoder):
@@ -139,7 +142,7 @@ class DataStoreGetInfo(NexEncoder):
 		self.url = stream.string()
 		self.params = dict(stream.list(lambda: (stream.string(), stream.string())))
 		self.file_size = stream.u32()
-		self.unk = stream.list(stream.u8)
+		self.data = stream.data()
 		
 	def decode_v0(self, stream):
 		self.decode_old(stream)

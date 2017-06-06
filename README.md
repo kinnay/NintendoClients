@@ -23,8 +23,9 @@ Useful information:
 * https://github.com/Kinnay/NintendoClients/wiki/DKC:TF-Level-IDs
 * https://github.com/Kinnay/NintendoClients/wiki/Mario-Kart-8-Track-IDs
 * https://github.com/Kinnay/NintendoClients/wiki/Network-Library-Versions
+* https://github.com/Kinnay/NintendoClients/wiki/NEX-Protocols
 
-The PRUDP connection is not really reliable, as it's still missing some reliability features.
+Sometimes, the PRUDP connection is not really reliable, as it's still missing some reliability features.
 
 ---
 
