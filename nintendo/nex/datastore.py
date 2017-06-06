@@ -1,5 +1,5 @@
 
-from nintendo.nex.common import NexEncoder, DateTime
+from nintendo.nex.common import NexEncoder, KeyValue, DateTime
 import requests
 
 import logging
@@ -140,7 +140,7 @@ class DataStoreGetInfo(NexEncoder):
 	
 	def decode_old(self, stream):
 		self.url = stream.string()
-		self.params = dict(stream.list(lambda: (stream.string(), stream.string())))
+		self.params = {item.key: item.value for item in stream.list(lambda: KeyValue.from_stream(stream))}
 		self.file_size = stream.u32()
 		self.data = stream.data()
 		
@@ -228,6 +228,19 @@ class DataStoreClient:
 		info = DataStoreGetInfo.from_stream(stream)
 		logger.info("DataStore.prepare_get_object -> %s", info.url)
 		return info
+		
+	def get_metas_multiple_param(self, param_list):
+		logger.info("DataStore.get_metas_multiple_param(...)")
+		#--- request ---
+		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_GET_METAS_MULTIPLE_PARAM)
+		stream.list(param_list, lambda x: x.encode(stream))
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		infos = stream.list(lambda: DataStoreMetaInfo.from_stream(stream))
+		results = stream.list(stream.u32) #Error codes
+		return infos
 	
 	
 class DataStore:

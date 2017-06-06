@@ -1,6 +1,7 @@
 
 from nintendo.nex.backend import BackEndClient
 from nintendo.nex.ranking import RankingClient, RankingOrderParam
+from nintendo.nex.datastore import DataStore, DataStoreGetParam, PersistenceTarget
 from nintendo.common.scheduler import Scheduler
 from nintendo.act import AccountAPI
 from nintendo.games import MK8
@@ -10,8 +11,10 @@ from nintendo.games import MK8
 DEVICE_ID = 12345678
 SERIAL_NUMBER = "..."
 SYSTEM_VERSION = 0x220
-REGION = 4 #EUR
-COUNTRY = "NL"
+REGION_ID = 4
+COUNTRY_ID = 94
+REGION_NAME = "EUR"
+COUNTRY_NAME = "NL"
 
 USERNAME = "..." #Nintendo network id
 PASSWORD = "..." #Nintendo network password
@@ -22,7 +25,7 @@ scheduler = Scheduler()
 scheduler.start()
 
 api = AccountAPI()
-api.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY)
+api.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION_ID, COUNTRY_NAME)
 api.set_title(MK8.TITLE_ID_EUR, MK8.LATEST_VERSION)
 api.login(USERNAME, PASSWORD)
 
@@ -53,6 +56,19 @@ for rankdata in rankings.datas:
 	time = "%i:%02i.%03i" %(minutes, seconds, millisec)
 	print("\t%5i   %20s   %s" %(rankdata.rank, names[rankdata.user_id], time))
 	
+#Let's download the replay file of whoever is in 500th place
+datastore = DataStore(backend)
+rankdata = rankings.datas[0]
+filedata = datastore.get_object(
+	DataStoreGetParam(
+		0, 0, PersistenceTarget(rankdata.user_id, TRACK_ID - 16), 0,
+		["WUP", str(REGION_ID), REGION_NAME, str(COUNTRY_ID), COUNTRY_NAME, ""]
+	)
+)
+
+with open("mk8_replay.bin", "wb") as f:
+	f.write(filedata)
+
 
 #Close connection and stop thread
 backend.close()

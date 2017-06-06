@@ -66,7 +66,7 @@ if world_record.file_id: #If world record has a replay file
 		DataStoreGetParam(world_record.file_id, 0, PersistenceTarget(0, 0xFFFF), 0)
 	)
 	
-	with open("replay.bin", "wb") as f:
+	with open("dkc_replay.bin", "wb") as f:
 		f.write(replay_data)
 
 #Close connection and stop thread

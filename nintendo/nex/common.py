@@ -84,6 +84,17 @@ class DataHolder(Encoder):
 		cls.object_map[name] = object
 		
 		
+class KeyValue(NexEncoder):
+	version_map = {
+		30504: 0
+	}
+	
+	def decode_old(self, stream):
+		self.key = stream.string()
+		self.value = stream.string()
+		
+	decode_v0 = decode_old
+		
 		
 class StationUrl:
 	def __init__(self, string):
