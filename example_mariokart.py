@@ -19,6 +19,8 @@ COUNTRY_NAME = "NL"
 USERNAME = "..." #Nintendo network id
 PASSWORD = "..." #Nintendo network password
 
+TRACK_ID = 0x1B #Mario Kart Stadium
+
 
 #See the donkey kong example for more comments on this code
 scheduler = Scheduler()
@@ -37,7 +39,7 @@ backend.login(nex_token.username, nex_token.password, nex_token.token)
 ranking_client = RankingClient(backend)
 rankings = ranking_client.get_ranking(
 	RankingClient.MODE_GLOBAL,
-	0x1B, #Mario Kart Stadium
+	TRACK_ID,
 	RankingOrderParam(
 		RankingOrderParam.ORDINAL, #"1234" ranking
 		0xFF, 0, 2, #Unknown
