@@ -86,6 +86,12 @@ class RankingClient:
 	MODE_GLOBAL = 0
 	MODE_GLOBAL_ME = 1 #Global rankings around me
 	MODE_ME = 4 #Me ranking only
+	
+	STAT_RANKING_COUNT = 1
+	STAT_TOTAL_SCORE = 2
+	STAT_LOWEST_SCORE = 4
+	STAT_HIGHEST_SCORE = 8
+	STAT_AVERAGE_SCORE = 0x10
 
 	def __init__(self, back_end):
 		self.client = back_end.secure_client
@@ -143,20 +149,25 @@ class RankingClient:
 		logger.info("Ranking.get_ranking -> %i results (out of %i total)", len(result.datas), result.total)
 		return result
 		
-	def get_stats(self, arg1, order, arg3):
-		logger.info("Ranking.get_stats(%08X, %i - %i, %08X)", arg1, order.base_rank + 1, order.base_rank + order.count, arg3)
+	def get_stats(self, category, order, flags=0x1F):
+		logger.info("Ranking.get_stats(%08X, %i - %i, %02X)", category, order.base_rank + 1, order.base_rank + order.count, flags)
 		#--- request ---
 		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_GET_STATS)
-		stream.u32(arg1)
+		stream.u32(category)
 		order.encode(stream)
-		stream.u32(arg3)
+		stream.u32(flags)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		result = stream.list(stream.double)
 		logger.info("Ranking.get_stats -> %s", result)
-		return result
+		
+		stats = {}
+		for i in range(5):
+			if flags & (1 << i):
+				stats[1 << i] = result[i]
+		return stats
 		
 	def get_ranking_by_pid_list(self, pids, mode, category, order, arg=0):
 		logger.info("Ranking.get_ranking_by_pid_list(%s, %i, %08X, <order param>, %016X)", pids, mode, category, arg)
