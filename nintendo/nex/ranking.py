@@ -61,6 +61,17 @@ class RankingResult(NexEncoder):
 		self.datetime = DateTime(stream.u64())
 		
 	decode_v0 = decode_old
+	
+	
+class RankingStats(NexEncoder):
+	version_map = {
+		30504: 0
+	}
+	
+	def decode_old(self, stream):
+		self.stats = stream.list(stream.double)
+	
+	decode_v0 = decode_old
 
 
 class RankingClient:
@@ -160,13 +171,13 @@ class RankingClient:
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		result = stream.list(stream.double)
-		logger.info("Ranking.get_stats -> %s", result)
+		result = RankingStats.from_stream(stream)
+		logger.info("Ranking.get_stats -> %s", result.stats)
 		
 		stats = {}
 		for i in range(5):
 			if flags & (1 << i):
-				stats[1 << i] = result[i]
+				stats[1 << i] = result.stats[i]
 		return stats
 		
 	def get_ranking_by_pid_list(self, pids, mode, category, order, arg=0):

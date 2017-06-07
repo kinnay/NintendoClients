@@ -1,8 +1,6 @@
 # NintendoClients
 Python package to communicate with Nintendo servers
 
-The initial goal of this project was a client that downloads rankings from DKC:TF, but I have been experimenting with other games.
-
 To import this into your Python code, simply place the "nintendo" folder somewhere Python can find it.
 
 Requirements:

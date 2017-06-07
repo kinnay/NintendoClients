@@ -19,7 +19,7 @@ COUNTRY_NAME = "NL"
 USERNAME = "..." #Nintendo network id
 PASSWORD = "..." #Nintendo network password
 
-TRACK_ID = 0x1B #Mario Kart Stadium
+TRACK_ID = 27 #Mario Kart Stadium
 
 
 #See the donkey kong example for more comments on this code
@@ -47,9 +47,29 @@ rankings = ranking_client.get_ranking(
 	),
 	0, 0 #Unknown
 )
+stats = ranking_client.get_stats(
+	TRACK_ID,
+	RankingOrderParam(
+		#Not sure why this function needs RankingOrderParam
+		RankingOrderParam.ORDINAL, 0xFF, 0, 2, 0, 0
+	)
+)
 
+def format_time(score):
+	millisec = score % 1000
+	seconds = score // 1000 % 60
+	minutes = score // 1000 // 60
+	return "%i:%02i.%03i" %(minutes, seconds, millisec)
+	
 names = api.get_nnids([data.user_id for data in rankings.datas])
-print("Total:", rankings.total)
+	
+#Print some interesting stats
+print("Total:", int(stats[RankingClient.STAT_RANKING_COUNT]))
+print("Total time:", format_time(stats[RankingClient.STAT_TOTAL_SCORE]))
+print("Average time:", format_time(stats[RankingClient.STAT_AVERAGE_SCORE]))
+print("Lowest time:", format_time(stats[RankingClient.STAT_LOWEST_SCORE]))
+print("Highest time:", format_time(stats[RankingClient.STAT_HIGHEST_SCORE]))
+
 print("Rankings:")
 for rankdata in rankings.datas:
 	millisec = rankdata.score % 1000
