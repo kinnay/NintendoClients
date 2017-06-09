@@ -143,3 +143,16 @@ class SecureClient(ServiceClient):
 		#--- response ---
 		self.get_response(call_id)
 		logger.info("Secure.replace_url -> done")
+		
+	def send_report(self, unk, data):
+		logger.info("Secure.send_report(%08X, ...)")
+		#--- request ---
+		stream, call_id = self.init_message(self.PROTOCOL_ID, self.METHOD_SEND_REPORT)
+		stream.u32(unk)
+		stream.u16(len(data))
+		stream.write(data)
+		self.send_message(stream)
+		
+		#--- response ---
+		self.get_response(call_id)
+		logger.info("Secure.send_report -> done")
