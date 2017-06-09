@@ -238,7 +238,7 @@ class MatchmakeExtensionClient:
 		logger.info("MatchmakeExtension.get_simple_playing_session -> done")
 		return sessions
 
-	#This seems to be an entirely different method in MK8
+	#This method doesn't seem to exist at all in MK8
 	def find_matchmake_session_by_gathering_id_detail(self, gathering_id):
 		logger.info("MatchmakeExtension.find_matchmake_session_by_gathering_id_detail(%08X)", gathering_id)
 		#--- request ---

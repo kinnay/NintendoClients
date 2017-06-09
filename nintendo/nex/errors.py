@@ -1,5 +1,5 @@
 
-errors = {
+error_names = {
 	0x80010001: "Core::Unknown",
 	0x80010002: "Core::NotImplemented",
 	0x80010003: "Core::InvalidPointer",
@@ -52,3 +52,5 @@ errors = {
 	0x8069000B: "DataStore::OperationNotAllowed",
 	0x8069000C: "DataStore::InvalidPassword"
 }
+
+error_codes = {name: code for code, name in error_names.items()}
