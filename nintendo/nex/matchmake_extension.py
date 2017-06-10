@@ -2,9 +2,15 @@
 from nintendo.nex.matchmake_common import Gathering
 from nintendo.nex.common import DataHolder, NexEncoder
 from nintendo.games import MK8
+import enum
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+class MatchmakeSystem(enum.IntEnum):
+	GLOBAL = 1
+	FRIENDS = 2
 
 
 class SearchCriteria(NexEncoder):

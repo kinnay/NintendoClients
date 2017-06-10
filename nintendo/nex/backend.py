@@ -1,5 +1,6 @@
 
 from nintendo.nex.notification import NotificationServer
+from nintendo.nex.nintendo_notification import NintendoNotificationServer
 from nintendo.nex.authentication import AuthenticationClient
 from nintendo.nex.secure import SecureClient
 from nintendo.nex.friends import FriendsTitle
@@ -26,7 +27,8 @@ class BackEndClient:
 		self.secure_client = None
 		
 		self.protocol_map = {
-			NotificationServer.PROTOCOL_ID: NotificationServer()
+			NotificationServer.PROTOCOL_ID: NotificationServer(),
+			NintendoNotificationServer.PROTOCOL_ID: NintendoNotificationServer()
 		}
 		
 	def connect(self, host, port):
