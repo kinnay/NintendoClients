@@ -49,7 +49,7 @@ principal_preference, comment, friends, requests_sent, requests_received, blackl
 	),
 	#NintendoPresenceV2 tells the server about your online status, which
 	#game you're currently playing, etc. This will be shown to your friends
-	#in their friend list (unless you disabled this feature).
+	#in their friend list, and may be used by games.
 	NintendoPresenceV2(
 		0, 0, GameKey(0, 0), 0, None, 0, 0, 0, 0, 0, 0, b"", 3, 3, 3
 	),

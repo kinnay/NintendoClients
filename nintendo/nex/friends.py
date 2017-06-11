@@ -3,7 +3,7 @@
 #I'm sure about that I'm calling it the "friends" protocol,
 #since it's only used by IOSU for friend services on Wii U
 
-from nintendo.nex.common import NexEncoder, NexDataEncoder, DateTime
+from nintendo.nex.common import NexEncoder, NexDataEncoder, DataHolder, DateTime
 from nintendo.nex.service import ServiceClient
 from nintendo.miis import MiiData
 
@@ -46,7 +46,7 @@ class MiiV2(NexDataEncoder):
 		self.unk2 = stream.u8()
 		self.data = MiiData.parse(stream.data())
 		self.datetime = DateTime(stream.u64())
-		
+DataHolder.register(MiiV2, "MiiV2")
 
 	
 class PrincipalBasicInfo(NexDataEncoder):
@@ -70,6 +70,7 @@ class PrincipalBasicInfo(NexDataEncoder):
 		self.nnid = stream.string()
 		self.mii = MiiV2.from_stream(stream)
 		self.unk = stream.u8()
+DataHolder.register(PrincipalBasicInfo, "PrincipalBasicInfo")
 	
 	
 class NNAInfo(NexDataEncoder):
@@ -90,12 +91,16 @@ class NNAInfo(NexDataEncoder):
 		self.principal_info = PrincipalBasicInfo.from_stream(stream)
 		self.unk1 = stream.u8()
 		self.unk2 = stream.u8()
-		
+DataHolder.register(NNAInfo, "NNAInfo")
+
 		
 class GameKey(NexDataEncoder):
 	def init(self, title_id, title_version):
 		self.title_id = title_id
 		self.title_version = title_version
+		
+	def get_name(self):
+		return "GameKey"
 		
 	def encode_old(self, stream):
 		stream.u64(self.title_id)
@@ -104,7 +109,8 @@ class GameKey(NexDataEncoder):
 	def decode_old(self, stream):
 		self.title_id = stream.u64()
 		self.title_version = stream.u16()
-		
+DataHolder.register(GameKey, "GameKey")
+
 		
 class NintendoPresenceV2(NexDataEncoder):
 	def init(self, unk1, is_online, game_key, unk3, description, unk4, unk5, game_server_id, unk7, pid, gathering_id, data, unk10, unk11, unk12):
@@ -123,6 +129,9 @@ class NintendoPresenceV2(NexDataEncoder):
 		self.unk10 = unk10
 		self.unk11 = unk11
 		self.unk12 = unk12
+		
+	def get_name(self):
+		return "NintendoPresenceV2"
 		
 	def encode_old(self, stream):
 		stream.u32(self.unk1)
@@ -157,24 +166,36 @@ class NintendoPresenceV2(NexDataEncoder):
 		self.unk10 = stream.u8()
 		self.unk11 = stream.u8()
 		self.unk12 = stream.u8()
+DataHolder.register(NintendoPresenceV2, "NintendoPresenceV2")
 		
 		
 class PrincipalPreference(NexDataEncoder):
+	def get_name(self):
+		return "PrincipalPreference"
+
 	def decode_old(self, stream):
 		self.unk1 = stream.bool()
 		self.unk2 = stream.bool()
 		self.unk3 = stream.bool()
+DataHolder.register(PrincipalPreference, "PrincipalPreference")
 		
 		
 class Comment(NexDataEncoder):
 	"""This is the status message shown in the friend list"""
+	def get_name(self):
+		return "Comment"
+	
 	def decode_old(self, stream):
 		self.unk = stream.u8()
 		self.text = stream.string()
 		self.changed = DateTime(stream.u64())
+DataHolder.register(Comment, "Comment")
 		
 		
 class FriendInfo(NexDataEncoder):
+	def get_name(self):
+		return "FriendInfo"
+
 	def decode_old(self, stream):
 		self.nna_info = NNAInfo.from_stream(stream)
 		self.presence = NintendoPresenceV2.from_stream(stream)
@@ -182,9 +203,13 @@ class FriendInfo(NexDataEncoder):
 		self.befriended = DateTime(stream.u64())
 		self.last_online = DateTime(stream.u64())
 		self.unk = stream.u64()
+DataHolder.register(FriendInfo, "FriendInfo")
 		
 		
 class FriendRequestMessage(NexDataEncoder):
+	def get_name(self):
+		return "FriendRequestMessage"
+
 	def decode_old(self, stream):
 		self.unk1 = stream.u64()
 		self.unk2 = stream.u8()
@@ -195,29 +220,42 @@ class FriendRequestMessage(NexDataEncoder):
 		self.game_key = GameKey.from_stream(stream)
 		self.datetime = DateTime(stream.u64())
 		self.expires = DateTime(stream.u64())
+DataHolder.register(FriendRequestMessage, "FriendRequestMessage")
 		
 		
 class FriendRequest(NexDataEncoder):
+	def get_name(self):
+		return "FriendRequest"
+
 	def decode_old(self, stream):
 		self.principal_info = PrincipalBasicInfo.from_stream(stream)
 		self.message = FriendRequestMessage.from_stream(stream)
 		self.sent = DateTime(stream.u64())
+DataHolder.register(FriendRequest, "FriendRequest")
 
 		
 class BlacklistedPrincipal(NexDataEncoder):
+	def get_name(self):
+		return "BlacklistedPrincipal"
+
 	def decode_old(self, stream):
 		self.principal_info = PrincipalBasicInfo.from_stream(stream)
 		self.game_key = GameKey.from_stream(stream)
 		self.datetime = DateTime(stream.u64())
+DataHolder.register(BlacklistedPrincipal, "BlacklistedPrincipal")
 		
 		
 class PersistentNotification(NexDataEncoder):
+	def get_name(self):
+		return "PersistentNotification"
+
 	def decode_old(self, stream):
 		self.unk1 = stream.u64()
 		self.unk2 = stream.u32()
 		self.unk3 = stream.u32()
 		self.unk4 = stream.u32()
 		self.string = stream.string()
+DataHolder.register(PersistentNotification, "PersistentNotification")
 		
 	
 class FriendsClient:

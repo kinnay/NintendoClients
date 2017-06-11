@@ -1,8 +1,15 @@
 
-from nintendo.nex.common import NexEncoder, DataHolder
+from nintendo.nex.common import NexEncoder, NexDataEncoder, DataHolder
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+class NotificationType:
+	LOGOUT = 10
+	PRESENCE_CHANGE = 24
+	UNFRIENDED = 26
+	STATUS_CHANGE = 33
 
 
 class NintendoNotificationEventGeneral(NexDataEncoder):
@@ -16,7 +23,7 @@ class NintendoNotificationEventGeneral(NexDataEncoder):
 	def decode_old(self, stream):
 		self.unk1 = stream.u32()
 		self.unk2 = stream.u64()
-		self.unk3 = stream.u64()
+		self.notification_id = stream.u64()
 		self.string = stream.string()
 		
 	decode_v0 = decode_old
@@ -28,9 +35,9 @@ class NintendoNotificationEvent(NexEncoder):
 		30504: 0
 	}
 	def decode_old(self, stream):
-		self.unk1 = stream.u32()
-		self.unk2 = stream.u32()
-		self.object = DataHolder.from_stream(stream)
+		self.type = stream.u32()
+		self.pid = stream.u32()
+		self.object = DataHolder.from_stream(stream).data
 		
 	decode_v0 = decode_old
 
@@ -38,12 +45,14 @@ class NintendoNotificationEvent(NexEncoder):
 class NintendoNotificationServer:
 
 	METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT = 1
+	METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT2 = 2 #Only used by friends (iosu)
 
 	PROTOCOL_ID = 0x64
 	
 	def __init__(self):
 		self.methods = {
-			self.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT: self.process_nintendo_notification_event
+			self.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT: self.process_nintendo_notification_event,
+			self.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT2: self.process_nintendo_notification_event
 		}
 		
 	def handle_request(self, client, call_id, method_id, stream):
@@ -55,8 +64,8 @@ class NintendoNotificationServer:
 		#--- request ---
 		notification = NintendoNotificationEvent.from_stream(stream)
 		logger.info(
-			"NintendoNotification.process_nintendo_notification_event: (%08X, %08X, %s)",
-			notification.unk1, notification.unk2, notification.object.get_name()
+			"NintendoNotification.process_nintendo_notification_event: (%i, %08X, %s)",
+			notification.type, notification.pid, notification.object.get_name()
 		)
 		
 		#--- response ---

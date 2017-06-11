@@ -11,15 +11,15 @@ class NotificationEvent(NexEncoder):
 	}
 	
 	def decode_old(self, stream):
-		self.unk1 = stream.u32()
-		self.unk2 = stream.u32()
-		self.unk3 = stream.u32()
-		self.unk4 = stream.u32()
+		self.pid = stream.u32()
+		self.type = stream.u32()
+		self.param1 = stream.u32()
+		self.param2 = stream.u32()
 		self.string = stream.string()
 		
 	def decode_v0(self, stream):
 		self.decode_old(stream)
-		self.unk5 = stream.u32()
+		self.unk = stream.u32()
 
 
 class NotificationServer:
@@ -43,7 +43,7 @@ class NotificationServer:
 		notification = NotificationEvent.from_stream(stream)
 		logger.info(
 			"Notification.process_notification_event: (%08X, %08X, %08X, %08X, %s)",
-			notification.unk1, notification.unk2, notification.unk3, notification.unk4, notification.string
+			notification.pid, notification.type, notification.param1, notification.param2, notification.string
 		)
 		
 		#--- response ---
