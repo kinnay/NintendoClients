@@ -24,7 +24,7 @@ Useful information:
 * https://github.com/Kinnay/NintendoClients/wiki/Network-Library-Versions
 * https://github.com/Kinnay/NintendoClients/wiki/NEX-Protocols
 
-The PRUDP connection is hopefully a bit more reliable now.
+The PRUDP connection is hopefully more reliable now.
 
 ---
 

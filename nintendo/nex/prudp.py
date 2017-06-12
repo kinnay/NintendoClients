@@ -237,6 +237,7 @@ class PRUDP:
 		self.send_packet(packet)
 		
 	def close(self, blocking=True):
+		logger.debug("(%i) Closing PRUDP connection", self.session_id)
 		self.set_state(self.DISCONNECTING)
 		self.send_disconnect()
 		
@@ -245,14 +246,14 @@ class PRUDP:
 				time.sleep(0.05)
 				
 	def send_disconnect(self):
-		logger.debug("Sending DISCONNECT packet")
+		logger.debug("(%i) Sending DISCONNECT packet", self.session_id)
 		packet = PacketOut(
 			PACKET_DISCONNECT, FLAG_RELIABLE | FLAG_NEED_ACK, self.packet_id_out
 		)
 		self.send_packet(packet)
 		
 	def send_ping(self):
-		logger.debug("Sending PING packet")
+		logger.debug("(%i) Sending PING packet", self.session_id)
 		packet = PacketOut(
 			PACKET_PING, FLAG_RELIABLE | FLAG_NEED_ACK, self.packet_id_out
 		)
@@ -260,14 +261,14 @@ class PRUDP:
 		self.send_packet(packet)
 		
 	def send_ack(self, packet):
-		logger.debug("Sending ACK packet")
+		logger.debug("(%i) Sending ACK packet", self.session_id)
 		packet = PacketOut(
 			packet.type, FLAG_ACK, packet.packet_id, packet.data
 		)
 		self.send_packet(packet)
 		
 	def send_packet(self, packet):
-		logger.debug("Sending packet: %s", packet)
+		logger.debug("(%i) Sending packet: %s", self.session_id, packet)
 		self.s.send(
 			packet.encode(
 				self.session_id, self.server_signature, self.connection_signature,
@@ -279,7 +280,7 @@ class PRUDP:
 			self.ack_timers[packet.packet_id] = [packet, 0]
 			
 	def handle_packet(self, packet):
-		logger.debug("Processing packet: %s", packet)
+		logger.debug("(%i) Processing packet: %s", self.session_id, packet)
 		if packet.flags & FLAG_NEED_ACK:
 			self.send_ack(packet)
 	
@@ -290,6 +291,7 @@ class PRUDP:
 				self.fragment_buffer = b""
 				
 	def handle_ack(self, packet_id, packet):
+		logger.debug("(%i) ACK received for packet %i", self.session_id, packet_id)
 		if packet_id in self.ack_timers:
 			self.ack_timers.pop(packet_id)
 			
@@ -310,7 +312,7 @@ class PRUDP:
 		for timer in self.ack_timers.values():
 			timer[1] += tick
 			if timer[1] >= self.resend_timeout:
-				logger.info("Packet timed out, resending")
+				logger.info("(%i) Packet %i timed out, resending", self.session_id, timer[0].packet_id)
 				self.send_packet(timer[0])
 				
 		self.ping_timer += tick
@@ -329,15 +331,17 @@ class PRUDP:
 		if data:
 			packet = PacketIn()
 			packet.decode(data) #Maybe check checksum here?
-			logger.debug("Packet received: %s", packet)
+			logger.debug("(%i) Packet received: %s", self.session_id, packet)
 				
 			if packet.flags & FLAG_ACK:
 				self.handle_ack(packet.packet_id, packet)
 				
 			elif packet.flags & FLAG_ACK2:
 				#This is weird
-				packet_id = struct.unpack_from("<H", packet.data, 2 + packet.data[1] * 2)[0]
-				self.handle_ack(packet_id, packet)
+				ack_id = struct.unpack_from("<H", packet.data, 2 + packet.data[1] * 2)[0]
+				for packet_id in list(self.ack_timers.keys()):
+					if packet_id <= ack_id:
+						self.ack_timers.pop(packet_id)
 				
 			else:
 				self.packet_queue[packet.packet_id] = packet
