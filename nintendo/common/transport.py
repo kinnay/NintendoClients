@@ -17,9 +17,9 @@ class Socket:
 	def connect(self, host, port): self.s.connect((host, port))
 	def close(self): self.s.close()
 	def send(self, data): self.s.sendall(data)
-	def recv(self, num=2048):
+	def recv(self, num):
 		try:
-			return self.s.recv(2048)
+			return self.s.recv(num)
 		except BlockingIOError:
 			pass
 			

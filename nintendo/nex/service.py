@@ -44,6 +44,8 @@ class ServiceClient(PRUDP):
 	def get_response(self, call_id):
 		while call_id not in self.responses:
 			time.sleep(0.05)
+			if self.state != self.CONNECTED:
+				raise ConnectionError("RMC failed because the PRUDP connection was closed")
 			
 		error, stream = self.responses.pop(call_id)
 		if error != -1:
