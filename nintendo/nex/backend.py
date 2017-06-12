@@ -26,9 +26,12 @@ class BackEndClient:
 		self.auth_client = None
 		self.secure_client = None
 		
+		self.notification_server = NotificationServer()
+		self.nintendo_notification_server = NintendoNotificationServer()
+
 		self.protocol_map = {
-			NotificationServer.PROTOCOL_ID: NotificationServer(),
-			NintendoNotificationServer.PROTOCOL_ID: NintendoNotificationServer()
+			NotificationServer.PROTOCOL_ID: self.notification_server,
+			NintendoNotificationServer.PROTOCOL_ID: self.nintendo_notification_server
 		}
 		
 	def connect(self, host, port):
