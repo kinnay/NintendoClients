@@ -1,4 +1,5 @@
 
+from nintendo.nex.nat import NATTraversalServer
 from nintendo.nex.notification import NotificationServer
 from nintendo.nex.nintendo_notification import NintendoNotificationServer
 from nintendo.nex.authentication import AuthenticationClient
@@ -26,10 +27,12 @@ class BackEndClient:
 		self.auth_client = None
 		self.secure_client = None
 		
+		self.nat_traversal_server = NATTraversalServer()
 		self.notification_server = NotificationServer()
 		self.nintendo_notification_server = NintendoNotificationServer()
 
 		self.protocol_map = {
+			NATTraversalServer.PROTOCOL_ID: self.nat_traversal_server,
 			NotificationServer.PROTOCOL_ID: self.notification_server,
 			NintendoNotificationServer.PROTOCOL_ID: self.nintendo_notification_server
 		}

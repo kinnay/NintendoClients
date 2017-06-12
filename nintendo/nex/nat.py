@@ -1,10 +1,11 @@
 
+from nintendo.nex.common import StationUrl
+
 import logging
 logger = logging.getLogger(__name__)
 
 
-class NATTraversalClient:
-
+class NATTraversalProtocol:
 	METHOD_REQUEST_PROBE_INITIATION = 1
 	METHOD_INITIATE_PROBE = 2
 	METHOD_REQUEST_PROBE_INITIATION_EXT = 3
@@ -15,6 +16,8 @@ class NATTraversalClient:
 
 	PROTOCOL_ID = 3
 
+
+class NATTraversalClient(NATTraversalProtocol):
 	def __init__(self, back_end):
 		self.client = back_end.secure_client
 	
@@ -30,3 +33,23 @@ class NATTraversalClient:
 		#--- response ---
 		self.client.get_response(call_id)
 		logger.info("NATTraversal.report_nat_properties -> done")
+
+		
+class NATTraversalServer(NATTraversalProtocol):
+	def __init__(self):
+		self.methods = {
+			self.METHOD_INITIATE_PROBE: self.initiate_probe
+		}
+
+	def handle_request(self, client, call_id, method_id, stream):
+		if method_id in self.methods:
+			return self.methods[method_id](client, call_id, method_id, stream)
+		logger.warning("NATTraversalServer received request with unsupported method id: %i", method_id)
+		
+	def initiate_probe(self, client, call_id, method_id, stream):
+		#--- request ---
+		url = StationUrl(stream.string())
+		logger.info("NATTraversal.initiate_probe: %s", url)
+		
+		#--- response ---
+		return client.init_response(self.PROTOCOL_ID, call_id, method_id)
