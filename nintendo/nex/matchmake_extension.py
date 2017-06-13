@@ -114,6 +114,10 @@ DataHolder.register(MatchmakeSession, "MatchmakeSession")
 
 
 class SimplePlayingSession(NexEncoder):
+	version_map = {
+		30504: 0
+	}
+
 	def decode_old(self, stream):
 		self.pid = stream.u32()
 		self.gathering_id = stream.u32()
@@ -257,3 +261,27 @@ class MatchmakeExtensionClient:
 		session = MatchmakeSession.from_stream(stream)
 		logger.info("MatchmakeExtension.find_matchmake_session_by_gathering_id_detail -> done")
 		return session
+		
+		
+	#These methods only exist in MK8
+
+	METHOD_MK8_JOIN_FRIEND_ROOM = 40
+
+	#This might be a generic join method. I'm calling it join_friend_room
+	#because that's what I'm using it for at the moment
+	def join_friend_room(self, gathering_id, unk1, unk2, unk3, unk4):
+		logger.info("MatchmakeExtension.join_friend_room(%08X, %s, %i, %04X, %08X)", gathering_id, unk1, unk2, unk3, unk4)
+		#--- request ---
+		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_MK8_JOIN_FRIEND_ROOM)
+		stream.u32(gathering_id)
+		stream.string(unk1)
+		stream.bool(unk2)
+		stream.u16(unk3)
+		stream.u32(unk4)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		data = stream.data()
+		logger.info("MatchmakeExtension.join_friend_room -> %s", data.hex())
+		return data
