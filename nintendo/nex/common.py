@@ -97,23 +97,26 @@ class KeyValue(NexEncoder):
 		
 		
 class StationUrl:
-	def __init__(self, string):
-		self.string = string
-		
-	@classmethod
-	def make(cls, **kwargs):
-		params = ["%s=%s" %(key, item) for key, item in kwargs.items()]
-		return cls("prudp:/" + ";".join(params))
-		
-	def __repr__(self): return self.string
+	def __init__(self, url_type="prudp", **kwargs):
+		self.url_type = url_type
+		self.params = kwargs
+
+	def __str__(self):
+		params = ["%s=%s" %(key, value) for key, value in self.params.items()]
+		return "prudp:/" + ";".join(params)
 		
 	def __getitem__(self, field):
-		if field + "=" not in self.string:
-			raise KeyError
-			
-		substr = self.string.split(field + "=")[1]
-		return substr[:substr.find(";")] if ";" in substr else substr
+		return self.params[field]
 		
+	@classmethod
+	def parse(cls, string):
+		if string:
+			url_type, fields = string.split(":/")
+			params = dict(field.split("=") for field in fields.split(";"))
+			return cls(url_type, **params)
+		else:
+			return cls()
+
 		
 class DateTime:
 	def __init__(self, value):

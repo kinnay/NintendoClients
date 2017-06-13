@@ -78,6 +78,6 @@ class MatchMakingClient:
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		urls = stream.list(lambda: StationUrl(stream.string()))
+		urls = stream.list(lambda: StationUrl.parse(stream.string()))
 		logger.info("MatchMaking.get_session_urls -> %s", urls)
 		return urls

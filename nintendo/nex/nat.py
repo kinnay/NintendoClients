@@ -60,7 +60,7 @@ class NATTraversalServer(NATTraversalProtocol):
 		
 	def initiate_probe(self, client, call_id, method_id, stream):
 		#--- request ---
-		url = StationUrl(stream.string())
+		url = StationUrl.parse(stream.string())
 		logger.info("NATTraversal.initiate_probe: %s", url)
 		
 		#--- response ---

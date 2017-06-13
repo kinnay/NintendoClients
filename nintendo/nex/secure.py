@@ -16,7 +16,7 @@ class ConnectionData(NexEncoder):
 	}
 	
 	def decode_old(self, stream):
-		self.station = StationUrl(stream.string())
+		self.station = StationUrl.parse(stream.string())
 		self.connection_id = stream.u32()
 		
 	decode_v0 = decode_old
@@ -63,8 +63,8 @@ class SecureClient(ServiceClient):
 		logger.info("Secure.register()")
 		#--- request ---
 		stream, call_id = self.init_message(self.PROTOCOL_ID, self.METHOD_REGISTER)
-		client_url = str(StationUrl.make(address=self.s.get_address(), port=self.s.get_port(), sid=15, natm=0, natf=0, upnp=0, pmp=0))
-		stream.list([client_url], lambda x: stream.string(x))
+		client_url = str(StationUrl(address=self.s.get_address(), port=self.s.get_port(), sid=15, natm=0, natf=0, upnp=0, pmp=0))
+		stream.list([client_url], stream.string)
 		self.send_message(stream)
 		
 		#--- response ---
@@ -101,7 +101,7 @@ class SecureClient(ServiceClient):
 		#--- response ---
 		stream = self.get_response(call_id)
 		bool = stream.bool()
-		urls = stream.list(lambda: StationUrl(stream.string()))
+		urls = stream.list(lambda: StationUrl.parse(stream.string()))
 		logger.info("Secure.request_urls -> (%i, %s)", bool, urls)
 		return bool, urls
 		
@@ -109,8 +109,8 @@ class SecureClient(ServiceClient):
 		logger.info("Secure.register_ex(...)")
 		#--- request ---
 		stream, call_id = self.init_message(self.PROTOCOL_ID, self.METHOD_REGISTER_EX)
-		client_url = str(StationUrl.make(address=self.s.get_address(), port=self.s.get_port(), sid=15, natm=0, natf=0, upnp=0, pmp=0))
-		stream.list([client_url], lambda x: stream.string(x))
+		client_url = str(StationUrl(address=self.s.get_address(), port=self.s.get_port(), sid=15, natm=0, natf=0, upnp=0, pmp=0))
+		stream.list([client_url], stream.string)
 		DataHolder(login_data).encode(stream)
 		self.send_message(stream)
 		

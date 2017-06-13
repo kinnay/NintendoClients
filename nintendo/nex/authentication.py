@@ -46,9 +46,9 @@ class ConnectionData(NexEncoder):
 	}
 	
 	def decode_old(self, stream):
-		self.main_station = StationUrl(stream.string())
+		self.main_station = StationUrl.parse(stream.string())
 		self.unk_list = stream.list(stream.u8)
-		self.unk_station = StationUrl(stream.string())
+		self.unk_station = StationUrl.parse(stream.string())
 		
 	def decode_v1(self, stream):
 		self.decode_old(stream)
