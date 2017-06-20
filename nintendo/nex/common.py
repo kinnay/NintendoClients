@@ -101,7 +101,7 @@ class StationUrl:
 		self.url_type = url_type
 		self.params = kwargs
 
-	def __str__(self):
+	def __repr__(self):
 		params = ["%s=%s" %(key, value) for key, value in self.params.items()]
 		return "prudp:/" + ";".join(params)
 		
