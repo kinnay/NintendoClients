@@ -10,7 +10,7 @@ Requirements:
 * Nintendo SSL certificate (see below)
 
 This code lacks documentation, but it does have a few example scripts:
-* example_donkeykong.py downloads and prints DKC Tropical Freeze rankings, and download the replay file of the world record
+* example_donkeykong.py downloads and prints DKC Tropical Freeze rankings, and downloads the replay file of the world record
 * example_mariokart.py downloads and prints Mario Kart 8 rankings
 * example_miis.py requests and prints all kinds of information about the primary mii associated with a NNID
 * example_friend_list.py requests and prints your friend list, incoming and outgoing friend requests, and blacklist
