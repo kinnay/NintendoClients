@@ -108,6 +108,12 @@ class StationUrl:
 	def __getitem__(self, field):
 		return self.params[field]
 		
+	def __setitem__(self, field, value):
+		self.params[field] = value
+		
+	def copy(self):
+		return StationUrl(self.url_type, **self.params)
+		
 	@classmethod
 	def parse(cls, string):
 		if string:
