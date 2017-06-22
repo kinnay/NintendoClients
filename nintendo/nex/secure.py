@@ -71,7 +71,7 @@ class SecureClient(ServiceClient):
 		stream = self.get_response(call_id)
 		result = stream.u32()
 		connection_id = stream.u32()
-		client_station = stream.string()
+		client_station = StationUrl.parse(stream.string())
 		logger.info("Secure.register -> (%i, %s)", connection_id, client_station)
 		return client_station
 		
@@ -118,7 +118,7 @@ class SecureClient(ServiceClient):
 		stream = self.get_response(call_id)
 		result = stream.u32()
 		connection_id = stream.u32()
-		client_station = stream.string()
+		client_station = StationUrl.parse(stream.string())
 		logger.info("Secure.register_ex -> (%i, %s)", connection_id, client_station)
 		return client_station
 	
