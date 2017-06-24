@@ -4,7 +4,9 @@ from nintendo.miis import MiiData
 from bs4 import BeautifulSoup
 import collections
 import requests
+import hashlib
 import base64
+import struct
 import time
 import os
 
@@ -14,6 +16,11 @@ logger = logging.getLogger(__name__)
 
 CERT = os.path.join(os.path.dirname(__file__), "files/wiiu_common_cert.pem")
 KEY = os.path.join(os.path.dirname(__file__), "files/wiiu_common_key.pem")
+
+
+def calc_password_hash(pid, password):
+	data = struct.pack("<I", pid) + b"\x02\x65\x43\x46" + password.encode("ascii")
+	return hashlib.sha256(data).hexdigest()
 
 
 class NexToken(collections.namedtuple("NexToken", "host port username password token")):
@@ -186,16 +193,20 @@ class AccountAPI:
 		if time.time() >= self.refresh_time:
 			self.refresh_login()
 		return self.access_token
-		
-	def login(self, username, password):
+
+	def login(self, username, password, hash=False):
+		data = {
+			"grant_type": "password",
+			"user_id": username,
+			"password": password
+		}
+		if hash:
+			data["password_type"] = "hash"
+
 		request = Request(self)
 		response = request.get(
 			"oauth20/access_token/generate",
-			data = {
-				"grant_type": "password",
-				"user_id": username,
-				"password": password
-			}
+			data = data
 		)
 		
 		self.access_token = response.oauth20.access_token.token.text
