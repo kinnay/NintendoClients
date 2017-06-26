@@ -72,7 +72,8 @@ class SecureClient(ServiceClient):
 		result = stream.u32()
 		connection_id = stream.u32()
 		client_station = StationUrl.parse(stream.string())
-		logger.info("Secure.register -> (%i, %s)", connection_id, client_station)
+		client_station["RVCID"] = connection_id
+		logger.info("Secure.register -> %s", client_station)
 		return client_station
 		
 	def request_connection_data(self, cid, pid):
@@ -119,7 +120,8 @@ class SecureClient(ServiceClient):
 		result = stream.u32()
 		connection_id = stream.u32()
 		client_station = StationUrl.parse(stream.string())
-		logger.info("Secure.register_ex -> (%i, %s)", connection_id, client_station)
+		client_station["RVCID"] = connection_id
+		logger.info("Secure.register_ex -> %s", client_station)
 		return client_station
 	
 	def test_connectivity(self):
