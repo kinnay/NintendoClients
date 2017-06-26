@@ -33,13 +33,13 @@ class NATTraversalClient(NATTraversalProtocol):
 		self.client.get_response(call_id)
 		logger.info("NATTraversal.request_probe_initiation_ext -> done")
 	
-	def report_nat_properties(self, arg1, arg2, arg3):
-		logger.info("NATTraversal.report_nat_properties(%08X, %08X, %08X)", arg1, arg2, arg3)
+	def report_nat_properties(self, nat_mapping, nat_filtering, lag):
+		logger.info("NATTraversal.report_nat_properties(%08X, %08X, %08X)", nat_mapping, nat_filtering, lag)
 		#--- request ---
 		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_REPORT_NAT_PROPERTIES)
-		stream.u32(arg1)
-		stream.u32(arg2)
-		stream.u32(arg3)
+		stream.u32(nat_mapping)
+		stream.u32(nat_filtering)
+		stream.u32(lag)
 		self.client.send_message(stream)
 		
 		#--- response ---
