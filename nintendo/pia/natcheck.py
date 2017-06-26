@@ -18,7 +18,7 @@ class NATProperties:
 		self.lag = lag
 
 
-class NatDetecter:
+class NATDetecter:
 	def __init__(self):
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 		self.s.settimeout(1)
