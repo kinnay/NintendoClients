@@ -14,7 +14,7 @@ class NATProperties:
 	def __init__(self, public_address, nat_filtering, nat_mapping, lag):
 		self.public_address = public_address
 		self.nat_filtering = nat_filtering
-		self.nat_mapping = nat_mapping
+		self.nat_mapping = nat_mapping #1=EIM, 2=EDM
 		self.lag = lag
 
 

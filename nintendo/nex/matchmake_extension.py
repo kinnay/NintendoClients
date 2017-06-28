@@ -52,7 +52,8 @@ class MatchmakeSession(NexEncoder):
 		30504: 0
 	}
 	
-	def init(self, gathering, game_mode, attribs, open_participation, matchmake_system, application_data, unk, unkdata, unk2=None, unk3=None):
+	def init(self, gathering, game_mode, attribs, open_participation, matchmake_system,
+			 application_data, unk, signature_key, unk2=None, unk3=None):
 		self.gathering = gathering
 		self.game_mode = game_mode
 		self.attribs = attribs
@@ -60,7 +61,7 @@ class MatchmakeSession(NexEncoder):
 		self.matchmake_system = matchmake_system
 		self.application_data = application_data
 		self.unk = unk
-		self.unkdata = unkdata
+		self.signature_key = signature_key
 		self.unk2 = unk2
 		self.unk3 = unk3
 
@@ -85,12 +86,12 @@ class MatchmakeSession(NexEncoder):
 		
 	def encode_old(self, stream):
 		self.encode_common(stream)
-		stream.data(self.unkdata)
+		stream.data(self.signature_key)
 		
 	def encode_v0(self, stream):
 		self.encode_common(stream)
 		stream.u8(self.unk2)
-		stream.data(self.unkdata)
+		stream.data(self.signature_key)
 		stream.u32(self.unk3)
 		
 	def decode_common(self, stream):
@@ -103,12 +104,12 @@ class MatchmakeSession(NexEncoder):
 		
 	def decode_old(self, stream):
 		self.decode_common(stream)
-		self.unkdata = stream.data()
+		self.signature_key = stream.data()
 		
 	def decode_v0(self, stream):	
 		self.decode_common(stream)
 		self.unk2 = stream.u8()
-		self.unkdata = stream.data()
+		self.signature_key = stream.data()
 		self.unk3 = stream.u32()
 DataHolder.register(MatchmakeSession, "MatchmakeSession")
 

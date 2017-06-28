@@ -138,8 +138,8 @@ class SecureClient(ServiceClient):
 		logger.info("Secure.replace_url(%s, %s)", url, new)
 		#--- request ---
 		stream, call_id = self.init_message(self.PROTOCOL_ID, self.METHOD_REPLACE_URL)
-		stream.string(url)
-		stream.string(new)
+		stream.string(str(url))
+		stream.string(str(new))
 		self.send_message(stream)
 		
 		#--- response ---
