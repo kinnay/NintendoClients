@@ -1,9 +1,9 @@
 
 from nintendo.common.transport import Socket
-from nintendo.common.scheduler import Scheduler
 from nintendo.common.crypto import RC4
 from nintendo.common import util
 
+import threading
 import hashlib
 import hmac
 import struct
@@ -155,14 +155,30 @@ class PRUDP:
 		logger.debug("New client - access key=%s", key)
 		self.encrypt = RC4(self.DEFAULT_KEY, False)
 		self.decrypt = RC4(self.DEFAULT_KEY, False)
-		
+		self.secure_key = b""
+
 		self.signature_key = hashlib.md5(key).digest()
 		self.signature_sum = struct.pack("<I", sum(key))
 
+		self.s = Socket(Socket.UDP)
+		self.state = self.DISCONNECTED
+		
 		self.frag_size = 1300
 		self.resend_timeout = 2
 		self.ping_timeout = 5
 		self.silence_timeout = 8
+		self.thread_tick = 0.02
+		
+		self.packet_id_out = 2
+		self.packet_id_in = 1
+		self.session_id = 0
+		self.fragment_buffer = b""
+		self.packet_queue = {}
+		self.connection_signature = b"\x00" * 0x10
+		
+		self.ack_timers = {}
+		self.ping_timer = 0
+		self.silence_timer = 0
 		
 		self.syn_packet = PacketOut(
 			PACKET_SYN, FLAG_NEED_ACK, 0
@@ -172,31 +188,12 @@ class PRUDP:
 			PACKET_CONNECT, FLAG_RELIABLE | FLAG_NEED_ACK, 1
 		)
 		
-		self.state = self.DISCONNECTED
-		self.reset_connection()
-		
+		self.thread = threading.Thread(target=self.thread_loop, daemon=True)
+
 	def set_secure_key(self, key):
 		self.encrypt.set_key(key)
 		self.decrypt.set_key(key)
 		self.secure_key = key
-		
-	def reset_connection(self):
-		self.s = Socket(Socket.UDP)
-		self.set_state(self.DISCONNECTED)
-		self.packet_id_out = 2
-		self.packet_id_in = 1
-		self.session_id = 0
-		self.fragment_buffer = b""
-		self.packet_queue = {}
-		self.connection_signature = b"\x00" * 0x10
-
-		self.ack_timers = {}
-		self.ping_timer = 0
-		self.silence_timer = 0
-		
-		self.secure_key = b""
-		self.encrypt.set_key(self.DEFAULT_KEY)
-		self.decrypt.set_key(self.DEFAULT_KEY)
 		
 	def set_state(self, state):
 		if self.state != state:
@@ -209,7 +206,7 @@ class PRUDP:
 		self.connect_packet.data = data
 		self.set_state(self.CONNECTING)
 		
-		Scheduler.instance.add(self.update)
+		self.thread.start()
 		
 		logger.debug("Connecting to %s:%i", host, port)
 		
@@ -305,53 +302,54 @@ class PRUDP:
 		elif packet.type == PACKET_CONNECT:
 			self.set_state(self.CONNECTED)
 		elif packet.type == PACKET_DISCONNECT:
-			Scheduler.instance.remove(self.update)
-			self.reset_connection()
+			self.set_state(self.DISCONNECTED)
 		
-	def update(self, tick):
-		for timer in self.ack_timers.values():
-			timer[1] += tick
-			if timer[1] >= self.resend_timeout:
-				logger.info("(%i) Packet %i timed out, resending", self.session_id, timer[0].packet_id)
-				self.send_packet(timer[0])
+	def thread_loop(self):
+		while self.state != self.DISCONNECTED:
+			for timer in self.ack_timers.values():
+				timer[1] += self.thread_tick
+				if timer[1] >= self.resend_timeout:
+					logger.info("(%i) Packet %i timed out, resending", self.session_id, timer[0].packet_id)
+					self.send_packet(timer[0])
+					
+			self.ping_timer += self.thread_tick
+			if self.ping_timer >= self.ping_timeout:
+				self.send_ping()
+				self.ping_timer = 0
 				
-		self.ping_timer += tick
-		if self.ping_timer >= self.ping_timeout:
-			self.send_ping()
-			self.ping_timer = 0
-			
-		self.silence_timer += tick
-		if self.silence_timer >= self.silence_timeout:
-			Scheduler.instance.remove(self.update)
-			self.reset_connection()
-			return
-			
-		#The real MTU is probably 1364, but to be safe, pass 1400
-		data = self.s.recv(1400)
-		if data:
-			packet = PacketIn()
-			packet.decode(data) #Maybe check checksum here?
-			logger.debug("(%i) Packet received: %s", self.session_id, packet)
+			self.silence_timer += self.thread_tick
+			if self.silence_timer >= self.silence_timeout:
+				self.set_state(self.DISCONNECTED)
+				return
 				
-			if packet.flags & FLAG_ACK:
-				self.handle_ack(packet.packet_id, packet)
+			#The real MTU is probably 1364, but to be safe, pass 1400
+			data = self.s.recv(1400)
+			if data:
+				packet = PacketIn()
+				packet.decode(data) #Maybe check checksum here?
+				logger.debug("(%i) Packet received: %s", self.session_id, packet)
+					
+				if packet.flags & FLAG_ACK:
+					self.handle_ack(packet.packet_id, packet)
+					
+				elif packet.flags & FLAG_ACK2:
+					#This is weird
+					ack_id = struct.unpack_from("<H", packet.data, 2 + packet.data[1] * 2)[0]
+					for packet_id in list(self.ack_timers.keys()):
+						if packet_id <= ack_id:
+							self.ack_timers.pop(packet_id)
+					
+				else:
+					self.packet_queue[packet.packet_id] = packet
+					while self.packet_id_in in self.packet_queue:
+						packet = self.packet_queue.pop(self.packet_id_in)
+						self.handle_packet(packet)
+						self.packet_id_in += 1
+					
+				self.ping_timer = 0
+				self.silence_timer = 0
 				
-			elif packet.flags & FLAG_ACK2:
-				#This is weird
-				ack_id = struct.unpack_from("<H", packet.data, 2 + packet.data[1] * 2)[0]
-				for packet_id in list(self.ack_timers.keys()):
-					if packet_id <= ack_id:
-						self.ack_timers.pop(packet_id)
-				
-			else:
-				self.packet_queue[packet.packet_id] = packet
-				while self.packet_id_in in self.packet_queue:
-					packet = self.packet_queue.pop(self.packet_id_in)
-					self.handle_packet(packet)
-					self.packet_id_in += 1
-				
-			self.ping_timer = 0
-			self.silence_timer = 0
+			time.sleep(self.thread_tick)
 			
 	def on_state_change(self, state): pass
 	def on_data(self, data): pass

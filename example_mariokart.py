@@ -2,7 +2,6 @@
 from nintendo.nex.backend import BackEndClient
 from nintendo.nex.ranking import RankingClient, RankingOrderParam
 from nintendo.nex.datastore import DataStore, DataStoreGetParam, PersistenceTarget
-from nintendo.common.scheduler import Scheduler
 from nintendo.act import AccountAPI
 from nintendo.games import MK8
 
@@ -21,10 +20,6 @@ PASSWORD = "..." #Nintendo network password
 
 TRACK_ID = 27 #Mario Kart Stadium
 
-
-#See the donkey kong example for more comments on this code
-scheduler = Scheduler()
-scheduler.start()
 
 api = AccountAPI()
 api.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION_ID, COUNTRY_NAME)
@@ -91,7 +86,5 @@ filedata = datastore.get_object(
 with open("mk8_replay.bin", "wb") as f:
 	f.write(filedata)
 
-
-#Close connection and stop thread
+#Close connection
 backend.close()
-scheduler.stop()

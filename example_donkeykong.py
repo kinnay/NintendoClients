@@ -2,7 +2,6 @@
 from nintendo.nex.backend import BackEndClient
 from nintendo.nex.ranking import RankingClient, RankingOrderParam
 from nintendo.nex.datastore import DataStore, DataStoreGetParam, PersistenceTarget
-from nintendo.common.scheduler import Scheduler
 from nintendo.act import AccountAPI
 from nintendo.games import DKCTF
 
@@ -17,10 +16,6 @@ COUNTRY = "NL"
 USERNAME = "..." #Nintendo network id
 PASSWORD = "..." #Nintendo network password
 
-
-#This thing handles the PRUDP connection in the background
-scheduler = Scheduler()
-scheduler.start()
 
 api = AccountAPI()
 api.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY) #Can't login without this
@@ -71,4 +66,3 @@ if world_record.file_id: #If world record has a replay file
 
 #Close connection and stop thread
 backend.close()
-scheduler.stop()

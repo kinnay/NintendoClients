@@ -2,7 +2,6 @@
 from nintendo.nex.nintendo_notification import NotificationType
 from nintendo.nex.friends import FriendsTitle
 from nintendo.nex.backend import BackEndClient
-from nintendo.common.scheduler import Scheduler
 from nintendo.act import AccountAPI
 
 
@@ -49,9 +48,6 @@ api.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY)
 api.set_title(FriendsTitle.TITLE_ID_EUR, FriendsTitle.LATEST_VERSION)
 api.login(USERNAME, PASSWORD)
 
-scheduler = Scheduler()
-scheduler.start()
-
 nex_token = api.get_nex_token(FriendsTitle.GAME_SERVER_ID)
 backend = BackEndClient(FriendsTitle.ACCESS_KEY, FriendsTitle.NEX_VERSION)
 backend.connect(nex_token.host, nex_token.port)
@@ -62,7 +58,3 @@ backend.nintendo_notification_server.set_callback(notification_callback)
 input("Press enter to disconnect and exit script\n")
 
 backend.close()
-scheduler.stop()
-
-
-

@@ -2,7 +2,6 @@
 from nintendo.nex.friends import FriendsTitle, FriendsClient, NNAInfo, NintendoPresenceV2, PrincipalBasicInfo, MiiV2, GameKey
 from nintendo.nex.backend import BackEndClient
 from nintendo.nex.common import DateTime
-from nintendo.common.scheduler import Scheduler
 from nintendo.act import AccountAPI
 
 
@@ -24,10 +23,6 @@ api.login(USERNAME, PASSWORD)
 
 pid = api.get_pid(USERNAME)
 mii = api.get_mii(pid)
-
-#This thing handles the PRUDP connection in the background
-scheduler = Scheduler()
-scheduler.start()
 
 nex_token = api.get_nex_token(FriendsTitle.GAME_SERVER_ID)
 backend = BackEndClient(FriendsTitle.ACCESS_KEY, FriendsTitle.NEX_VERSION)
@@ -126,7 +121,4 @@ else:
 	print("You haven't blacklisted any users")
 	
 
-
 backend.close()
-scheduler.stop()
-
