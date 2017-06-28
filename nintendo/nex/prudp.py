@@ -3,6 +3,7 @@ from nintendo.common.transport import Socket
 from nintendo.common.crypto import RC4
 from nintendo.common import util
 
+import itertools
 import threading
 import hashlib
 import hmac
@@ -169,7 +170,7 @@ class PRUDP:
 		self.silence_timeout = 8
 		self.thread_tick = 0.02
 		
-		self.packet_id_out = 2
+		self.packet_id_out = itertools.count(2)
 		self.packet_id_in = 1
 		self.session_id = 0
 		self.fragment_buffer = b""
@@ -228,9 +229,8 @@ class PRUDP:
 	def send_fragment(self, data, frag_id):
 		encrypted = self.encrypt.crypt(data)
 		packet = PacketOut(
-			PACKET_DATA, FLAG_RELIABLE | FLAG_NEED_ACK, self.packet_id_out, encrypted, frag_id
+			PACKET_DATA, FLAG_RELIABLE | FLAG_NEED_ACK, next(self.packet_id_out), encrypted, frag_id
 		)
-		self.packet_id_out += 1
 		self.send_packet(packet)
 		
 	def close(self, blocking=True):
@@ -245,16 +245,15 @@ class PRUDP:
 	def send_disconnect(self):
 		logger.debug("(%i) Sending DISCONNECT packet", self.session_id)
 		packet = PacketOut(
-			PACKET_DISCONNECT, FLAG_RELIABLE | FLAG_NEED_ACK, self.packet_id_out
+			PACKET_DISCONNECT, FLAG_RELIABLE | FLAG_NEED_ACK, next(self.packet_id_out)
 		)
 		self.send_packet(packet)
 		
 	def send_ping(self):
 		logger.debug("(%i) Sending PING packet", self.session_id)
 		packet = PacketOut(
-			PACKET_PING, FLAG_RELIABLE | FLAG_NEED_ACK, self.packet_id_out
+			PACKET_PING, FLAG_RELIABLE | FLAG_NEED_ACK, next(self.packet_id_out)
 		)
-		self.packet_id_out += 1
 		self.send_packet(packet)
 		
 	def send_ack(self, packet):
