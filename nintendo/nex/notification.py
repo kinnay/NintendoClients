@@ -1,5 +1,6 @@
 
 from nintendo.nex.common import NexEncoder
+from nintendo.nex.server import ProtocolServer
 
 import logging
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ class NotificationEvent(NexEncoder):
 		self.unk = stream.u32()
 
 
-class NotificationServer:
+class NotificationServer(ProtocolServer):
 
 	METHOD_PROCESS_NOTIFICATION_EVENT = 1
 
@@ -32,16 +33,12 @@ class NotificationServer:
 		self.methods = {
 			self.METHOD_PROCESS_NOTIFICATION_EVENT: self.process_notification_event
 		}
-
-		self.callback = None
+		self.init_callbacks(*self.methods)
 	
 	def handle_request(self, client, call_id, method_id, stream):
 		if method_id in self.methods:
 			return self.methods[method_id](client, call_id, method_id, stream)
 		logger.warning("NotificationServer received request with unsupported method id: %i", method_id)
-		
-	def set_callback(self, cb):
-		self.callback = cb
 
 	def process_notification_event(self, client, call_id, method_id, stream):
 		#--- request ---
@@ -51,8 +48,7 @@ class NotificationServer:
 			notification.pid, notification.type, notification.param1, notification.param2, notification.string
 		)
 		
-		if self.callback:
-			self.callback(notification)
+		self.callback(method_id, notification)
 		
 		#--- response ---
 		return client.init_response(self.PROTOCOL_ID, call_id, method_id)

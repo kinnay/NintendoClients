@@ -64,5 +64,5 @@ if world_record.file_id: #If world record has a replay file
 	with open("dkc_replay.bin", "wb") as f:
 		f.write(replay_data)
 
-#Close connection and stop thread
+#Close connection
 backend.close()

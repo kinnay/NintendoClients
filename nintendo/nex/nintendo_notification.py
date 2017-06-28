@@ -1,5 +1,6 @@
 
 from nintendo.nex.common import NexEncoder, NexDataEncoder, DataHolder
+from nintendo.nex.server import ProtocolServer
 
 import logging
 logger = logging.getLogger(__name__)
@@ -42,30 +43,26 @@ class NintendoNotificationEvent(NexEncoder):
 	decode_v0 = decode_old
 
 
-class NintendoNotificationServer:
+class NintendoNotificationServer(ProtocolServer):
 
 	METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT = 1
-	METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT2 = 2 #Only used by friends (iosu)
+	METHOD_PROCESS_PRESENCE_CHANGE_EVENT = 2 #Only used by iosu
 
 	PROTOCOL_ID = 0x64
 	
 	def __init__(self):
 		self.methods = {
-			self.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT: self.process_nintendo_notification_event,
-			self.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT2: self.process_nintendo_notification_event
+			self.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT: self.process_notification_event,
+			self.METHOD_PROCESS_PRESENCE_CHANGE_EVENT: self.process_notification_event
 		}
-		
-		self.callback = None
+		self.init_callbacks(*self.methods)
 		
 	def handle_request(self, client, call_id, method_id, stream):
 		if method_id in self.methods:
 			return self.methods[method_id](client, call_id, method_id, stream)
 		logger.warning("NintendoNotificationServer received request with unsupported method id: %i", method_id)
-		
-	def set_callback(self, cb):
-		self.callback = cb
 
-	def process_nintendo_notification_event(self, client, call_id, method_id, stream):
+	def process_notification_event(self, client, call_id, method_id, stream):
 		#--- request ---
 		notification = NintendoNotificationEvent.from_stream(stream)
 		logger.info(
@@ -73,8 +70,7 @@ class NintendoNotificationServer:
 			notification.type, notification.pid, notification.object.get_name()
 		)
 		
-		if self.callback:
-			self.callback(notification)
+		self.callback(method_id, notification)
 		
 		#--- response ---
 		return client.init_response(self.PROTOCOL_ID, call_id, method_id)

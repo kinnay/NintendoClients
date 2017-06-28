@@ -1,5 +1,6 @@
 
 from nintendo.nex.common import StationUrl
+from nintendo.nex.server import ProtocolServer
 
 import logging
 logger = logging.getLogger(__name__)
@@ -47,11 +48,12 @@ class NATTraversalClient(NATTraversalProtocol):
 		logger.info("NATTraversal.report_nat_properties -> done")
 
 		
-class NATTraversalServer(NATTraversalProtocol):
+class NATTraversalServer(NATTraversalProtocol, ProtocolServer):
 	def __init__(self):
 		self.methods = {
 			self.METHOD_INITIATE_PROBE: self.initiate_probe
 		}
+		self.init_callbacks(*self.methods)
 
 	def handle_request(self, client, call_id, method_id, stream):
 		if method_id in self.methods:
@@ -62,6 +64,8 @@ class NATTraversalServer(NATTraversalProtocol):
 		#--- request ---
 		url = StationUrl.parse(stream.string())
 		logger.info("NATTraversal.initiate_probe: %s", url)
+		
+		self.callback(method_id, url)
 		
 		#--- response ---
 		return client.init_response(self.PROTOCOL_ID, call_id, method_id)

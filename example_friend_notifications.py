@@ -53,7 +53,15 @@ backend = BackEndClient(FriendsTitle.ACCESS_KEY, FriendsTitle.NEX_VERSION)
 backend.connect(nex_token.host, nex_token.port)
 backend.login(nex_token.username, nex_token.password, nex_token.token)
 
-backend.nintendo_notification_server.set_callback(notification_callback)
+backend.nintendo_notification_server.add_callback(
+	backend.nintendo_notification_server.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT,
+	notification_callback
+)
+
+backend.nintendo_notification_server.add_callback(
+	backend.nintendo_notification_server.METHOD_PROCESS_PRESENCE_CHANGE_EVENT,
+	notification_callback
+)
 
 input("Press enter to disconnect and exit script\n")
 
