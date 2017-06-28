@@ -23,5 +23,13 @@ class Socket:
 		except BlockingIOError:
 			pass
 			
+	def bind(self, addr=("", 0)): self.s.bind(addr)
+	def sendto(self, data, addr): self.s.sendto(data, addr)
+	def recvfrom(self, num):
+		try:
+			return self.s.recvfrom(num)
+		except BlockingIOError:
+			return None, None
+			
 	def get_address(self): return self.s.getsockname()[0]
 	def get_port(self): return self.s.getsockname()[1]
