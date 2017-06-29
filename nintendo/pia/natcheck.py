@@ -11,7 +11,8 @@ secondary_port = 10125
 
 
 class NATProperties:
-	def __init__(self, public_address, nat_filtering, nat_mapping, lag):
+	def __init__(self, local_address, public_address, nat_filtering, nat_mapping, lag):
+		self.local_address = local_address
 		self.public_address = public_address
 		self.nat_filtering = nat_filtering
 		self.nat_mapping = nat_mapping #1=EIM, 2=EDM
@@ -19,7 +20,7 @@ class NATProperties:
 
 
 class NATDetecter:
-	def __init__(self):
+	def init_socket(self):
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 		self.s.settimeout(1)
 		
@@ -38,8 +39,8 @@ class NATDetecter:
 		#I've only tested this at home. If you have a different
 		#NAT setup this function might fail or return incorrect
 		#values. Any help/testing would be appreciated.
-		
-		import time
+		self.init_socket()
+
 		start_time = time.time()
 
 		self.send_message((primary_url, primary_port), 101, 0, 0, 0)
@@ -65,7 +66,11 @@ class NATDetecter:
 		if not 101 in messages or not 103 in messages:
 			raise TimeoutError
 
+		local_address = self.s.getsockname()
 		public_address = messages[103]
 		nat_filtering = 1 if 102 in messages else 2
 		nat_mapping = 1 if messages[101][1] == messages[103][1] else 2
-		return NATProperties(public_address, nat_filtering, nat_mapping, lag)
+		
+		self.s.close()
+		
+		return NATProperties(local_address, public_address, nat_filtering, nat_mapping, lag)
