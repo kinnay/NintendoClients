@@ -4,12 +4,16 @@ from nintendo.nex.stream import NexStreamOut
 from nintendo.nex.common import NexEncoder, NexDataEncoder, DataHolder, StationUrl, DateTime
 from nintendo.nex.kerberos import KerberosEncryption, Ticket
 from nintendo.nex.friends import FriendsTitle
+from nintendo.nex.errors import error_names
 from nintendo.common.stream import StreamIn
 import hashlib
 import struct
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+class AuthenticationError(Exception): pass
 
 
 class AuthenticationInfo(NexDataEncoder):
@@ -90,6 +94,9 @@ class AuthenticationClient(ServiceClient):
 	def handle_login_result(self, call_id, password):
 		stream = self.get_response(call_id)
 		result = stream.u32()
+		if result & 0x80000000:
+			raise AuthenticationError("NEX authentication failed (%s)" %error_names.get(result, "unknown error"))
+			
 		self.user_id = stream.u32()
 		kerberos_data = stream.data()
 		self.secure_station = ConnectionData.from_stream(stream).main_station
