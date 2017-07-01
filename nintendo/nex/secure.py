@@ -58,23 +58,47 @@ class SecureClient(ServiceClient):
 		super().connect(host, port, stream.buffer)
 		
 		self.set_secure_key(self.ticket.key)
+
+	def register_urls(self, login_data=None):
+		local_station = StationUrl(address=self.s.get_address(), port=self.s.get_port(), sid=15, natm=0, natf=0, upnp=0, pmp=0)
 		
-	def register(self):
-		logger.info("Secure.register()")
+		if login_data:
+			connection_id, public_station = self.register_ex([local_station], login_data)
+		else:
+			connection_id, public_station = self.register([local_station])
+			
+		local_station["RVCID"] = connection_id
+		public_station["RVCID"] = connection_id
+		return local_station, public_station
+		
+	def register(self, urls):
+		logger.info("Secure.register(%s)", urls)
 		#--- request ---
 		stream, call_id = self.init_message(self.PROTOCOL_ID, self.METHOD_REGISTER)
-		client_url = str(StationUrl(address=self.s.get_address(), port=self.s.get_port(), sid=15, natm=0, natf=0, upnp=0, pmp=0))
-		stream.list([client_url], stream.string)
+		stream.list(urls, lambda url: stream.string(str(url)))
 		self.send_message(stream)
 		
 		#--- response ---
+		return self.handle_register_result(call_id)
+	
+	def register_ex(self, urls, login_data):
+		logger.info("Secure.register_ex(...)")
+		#--- request ---
+		stream, call_id = self.init_message(self.PROTOCOL_ID, self.METHOD_REGISTER_EX)
+		stream.list(urls, lambda url: stream.string(str(url)))
+		DataHolder(login_data).encode(stream)
+		self.send_message(stream)
+		
+		#--- response ---
+		return self.handle_register_result(call_id)
+		
+	def handle_register_result(self, call_id):
 		stream = self.get_response(call_id)
 		result = stream.u32()
 		connection_id = stream.u32()
-		client_station = StationUrl.parse(stream.string())
-		client_station["RVCID"] = connection_id
-		logger.info("Secure.register -> %s", client_station)
-		return client_station
+		public_station = StationUrl.parse(stream.string())
+		logger.info("Secure.register(_ex) -> (%08X, %s)", connection_id, public_station)
+		return connection_id, public_station
 		
 	def request_connection_data(self, cid, pid):
 		logger.info("Secure.request_connection_data(%i, %i)", cid, pid)
@@ -105,24 +129,6 @@ class SecureClient(ServiceClient):
 		urls = stream.list(lambda: StationUrl.parse(stream.string()))
 		logger.info("Secure.request_urls -> (%i, %s)", bool, urls)
 		return bool, urls
-		
-	def register_ex(self, login_data):
-		logger.info("Secure.register_ex(...)")
-		#--- request ---
-		stream, call_id = self.init_message(self.PROTOCOL_ID, self.METHOD_REGISTER_EX)
-		client_url = str(StationUrl(address=self.s.get_address(), port=self.s.get_port(), sid=15, natm=0, natf=0, upnp=0, pmp=0))
-		stream.list([client_url], stream.string)
-		DataHolder(login_data).encode(stream)
-		self.send_message(stream)
-		
-		#--- response ---
-		stream = self.get_response(call_id)
-		result = stream.u32()
-		connection_id = stream.u32()
-		client_station = StationUrl.parse(stream.string())
-		client_station["RVCID"] = connection_id
-		logger.info("Secure.register_ex -> %s", client_station)
-		return client_station
 	
 	def test_connectivity(self):
 		logger.info("Secure.test_connectivity()")

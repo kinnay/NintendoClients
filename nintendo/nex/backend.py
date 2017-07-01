@@ -59,9 +59,10 @@ class BackEndClient:
 		self.secure_client = SecureClient(self, self.access_key, ticket, self.auth_client)
 		self.secure_client.connect(host, port)
 		if self.version == FriendsTitle.NEX_VERSION:
-			self.client_station = self.secure_client.register_ex(NintendoLoginData(token))
+			urls = self.secure_client.register_urls(NintendoLoginData(token))
 		else:
-			self.client_station = self.secure_client.register()
+			urls = self.secure_client.register_urls()
+		self.local_station, self.public_station = urls
 		
 	def login_guest(self):
 		self.login("guest", "MMQea3n!fsik")
