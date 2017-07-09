@@ -97,19 +97,37 @@ class KeyValue(NexEncoder):
 		
 		
 class StationUrl:
+
+	str_params = ["address"]
+	int_params = ["port", "stream", "sid", "PID", "CID", "type", "RVCID",
+				  "natm", "natf", "upnp", "pmp", "probeinit", "PRID"]
+				  
+	url_types = {
+		"prudp": 1,
+		"prudps": 2,
+		"udp": 3
+	}
+
 	def __init__(self, url_type="prudp", **kwargs):
 		self.url_type = url_type
 		self.params = kwargs
 
 	def __repr__(self):
 		params = ["%s=%s" %(key, value) for key, value in self.params.items()]
-		return "prudp:/" + ";".join(params)
+		return self.url_type + ":/" + ";".join(params)
 		
 	def __getitem__(self, field):
-		return self.params[field]
+		if field in self.str_params:
+			return str(self.params.get(field, ""))
+		if field in self.int_params:
+			return int(self.params.get(field, 0))
+		raise KeyError(field)
 		
 	def __setitem__(self, field, value):
 		self.params[field] = value
+		
+	def get_type_id(self):
+		return self.url_types[self.url_type]
 		
 	def copy(self):
 		return StationUrl(self.url_type, **self.params)

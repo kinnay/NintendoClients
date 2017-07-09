@@ -165,9 +165,9 @@ class PRUDP:
 		self.state = self.DISCONNECTED
 		
 		self.frag_size = 1300
-		self.resend_timeout = 2
-		self.ping_timeout = 5
-		self.silence_timeout = 8
+		self.resend_timeout = 1.5
+		self.ping_timeout = 4
+		self.silence_timeout = 7.5
 		self.thread_tick = 0.02
 		
 		self.packet_id_out = itertools.count(2)
@@ -234,13 +234,14 @@ class PRUDP:
 		self.send_packet(packet)
 		
 	def close(self, blocking=True):
-		logger.debug("(%i) Closing PRUDP connection", self.session_id)
-		self.set_state(self.DISCONNECTING)
-		self.send_disconnect()
-		
-		if blocking:
-			while self.state == self.DISCONNECTING:
-				time.sleep(0.05)
+		if self.state != self.DISCONNECTED:
+			logger.debug("(%i) Closing PRUDP connection", self.session_id)
+			self.set_state(self.DISCONNECTING)
+			self.send_disconnect()
+			
+			if blocking:
+				while self.state == self.DISCONNECTING:
+					time.sleep(0.05)
 				
 	def send_disconnect(self):
 		logger.debug("(%i) Sending DISCONNECT packet", self.session_id)
@@ -305,7 +306,7 @@ class PRUDP:
 		
 	def thread_loop(self):
 		while self.state != self.DISCONNECTED:
-			for timer in self.ack_timers.values():
+			for timer in list(self.ack_timers.values()):
 				timer[1] += self.thread_tick
 				if timer[1] >= self.resend_timeout:
 					logger.info("(%i) Packet %i timed out, resending", self.session_id, timer[0].packet_id)
@@ -318,6 +319,7 @@ class PRUDP:
 				
 			self.silence_timer += self.thread_tick
 			if self.silence_timer >= self.silence_timeout:
+				logger.error("(%i) PRUDP connection died" %self.session_id)
 				self.set_state(self.DISCONNECTED)
 				return
 				
@@ -327,7 +329,7 @@ class PRUDP:
 				packet = PacketIn()
 				packet.decode(data) #Maybe check checksum here?
 				logger.debug("(%i) Packet received: %s", self.session_id, packet)
-					
+
 				if packet.flags & FLAG_ACK:
 					self.handle_ack(packet.packet_id, packet)
 					

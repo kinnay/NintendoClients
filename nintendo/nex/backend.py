@@ -54,7 +54,7 @@ class BackEndClient:
 
 		ticket = self.auth_client.request_ticket()
 		host = self.auth_client.secure_station["address"]
-		port = int(self.auth_client.secure_station["port"])
+		port = self.auth_client.secure_station["port"]
 		
 		self.secure_client = SecureClient(self, self.access_key, ticket, self.auth_client)
 		self.secure_client.connect(host, port)

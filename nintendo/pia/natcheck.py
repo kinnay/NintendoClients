@@ -41,7 +41,7 @@ class NATDetecter:
 		#values. Any help/testing would be appreciated.
 		self.init_socket()
 
-		start_time = time.time()
+		start_time = time.monotonic()
 
 		self.send_message((primary_url, primary_port), 101, 0, 0, 0)
 		self.send_message((primary_url, primary_port), 102, 0, 0, 0)
@@ -58,7 +58,7 @@ class NATDetecter:
 				messages[request] = host, port
 				
 				if not lag:
-					lag = int((time.time() - start_time) * 1000)
+					lag = int((time.monotonic() - start_time) * 1000)
 			except socket.timeout:
 				break
 		

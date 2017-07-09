@@ -42,8 +42,8 @@ class SecureClient(ServiceClient):
 		self.kerberos_encryption = KerberosEncryption(self.ticket.key)
 		
 		station_url = self.auth_client.secure_station
-		self.connection_id = int(station_url["CID"])
-		self.principal_id = int(station_url["PID"])
+		self.connection_id = station_url["CID"]
+		self.principal_id = station_url["PID"]
 		
 	def connect(self, host, port):
 		stream = NexStreamOut(self.back_end.version)

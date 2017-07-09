@@ -14,6 +14,9 @@ class Socket:
 			self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 		self.s.setblocking(False)
 		
+	def setsockopt(self, level, name, value):
+		self.s.setsockopt(level, name, value)
+		
 	def connect(self, host, port): self.s.connect((host, port))
 	def close(self): self.s.close()
 	def send(self, data): self.s.sendall(data)

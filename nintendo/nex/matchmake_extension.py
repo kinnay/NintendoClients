@@ -210,9 +210,9 @@ class MatchmakeExtensionClient:
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		session_id = stream.u32()
-		data = stream.data()
-		logger.info("MatchmakeExtension.create_matchmake_session -> (%08X, %s)", session_id, data.hex())
-		return session_id, data
+		session_key = stream.data()
+		logger.info("MatchmakeExtension.create_matchmake_session -> (%08X, %s)", session_id, session_key.hex())
+		return session_id, session_key
 		
 	#This seems to be the method that's used by most games
 	def auto_matchmake_with_search_criteria(self, search_criteria, gathering, description):

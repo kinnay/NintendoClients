@@ -14,7 +14,7 @@ class NexStreamOut(StreamOut):
 		if string is None:
 			self.u16(0)
 		else:
-			data = (string + "\x00").encode("utf8")
+			data = (string + "\0").encode("utf8")
 			self.u16(len(data))
 			self.write(data)
 		

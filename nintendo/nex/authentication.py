@@ -115,7 +115,7 @@ class AuthenticationClient(ServiceClient):
 		#--- request ---
 		stream, call_id = self.init_message(self.PROTOCOL_ID, self.METHOD_REQUEST_TICKET)
 		stream.u32(self.user_id)
-		stream.u32(int(self.secure_station["PID"]))
+		stream.u32(self.secure_station["PID"])
 		self.send_message(stream)
 
 		#--- response ---

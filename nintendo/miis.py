@@ -61,7 +61,7 @@ class MiiData:
 		self.birth_month = stream.bits(4) #1 - 12
 		self.gender = stream.bit() #0=male, 1=female
 		
-		self.mii_name = stream.wchars(10).split("\x00")[0]
+		self.mii_name = stream.wchars(10).split("\0")[0]
 		self.size = stream.u8() #0 - 0x80
 		self.fatness = stream.u8() #0 - 0x80
 
@@ -117,7 +117,7 @@ class MiiData:
 		self.mole_enabled = stream.bit() #0 - 1
 		
 		#FFLiMiiDataOfficial
-		self.creator_name = stream.wchars(10).split("\x00")[0]
+		self.creator_name = stream.wchars(10).split("\0")[0]
 		
 		#FFLStoreData
 		self.unk48 = stream.read(2)
@@ -152,7 +152,7 @@ class MiiData:
 		stream.bits(self.birth_month, 4)
 		stream.bit(self.gender)
 		
-		stream.wchars(self.mii_name + "\x00" * (10 - len(self.mii_name)))
+		stream.wchars(self.mii_name + "\0" * (10 - len(self.mii_name)))
 		stream.u8(self.size)
 		stream.u8(self.fatness)
 		
@@ -208,14 +208,14 @@ class MiiData:
 		stream.bit(self.mole_enabled)
 		
 		#FFLiMiiDataOfficial
-		stream.wchars(self.creator_name + "\x00" * (10 - len(self.creator_name)))
+		stream.wchars(self.creator_name + "\0" * (10 - len(self.creator_name)))
 		
 		#FFLStoreData
 		stream.write(self.unk48)
 
 		data = self.swap_endian(stream.buffer)
 		outstream.write(data)
-		outstream.u16(util.crc16(data + b"\x00\x00"))
+		outstream.u16(util.crc16(data + b"\0\0"))
 		
 	def swap_endian(self, data):
 		array = bytearray(data)
