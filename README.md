@@ -22,7 +22,3 @@ Useful information:
 * https://github.com/Kinnay/NintendoClients/wiki
 
 The PRUDP connection is more reliable now.
-
----
-
-If you think this software infringes your copyright and would like me to delete it, please contact me here: ymarchand@me.com
