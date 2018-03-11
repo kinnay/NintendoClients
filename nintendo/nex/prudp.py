@@ -95,6 +95,7 @@ class PRUDPPacket:
 		self.packet_id = None
 		self.fragment_id = None
 		self.signature = None
+		self.multi_ack_version = 0
 		self.payload = b""
 		
 	def __repr__(self):
@@ -104,6 +105,10 @@ class PRUDPPacket:
 class PRUDPMessageV0:
 	def __init__(self, client):
 		self.client = client
+		self.reset()
+		
+	def reset(self):
+		self.buffer = b""
 		
 	def encode(self, packet):
 		raise NotImplementedError
@@ -144,7 +149,7 @@ class PRUDPMessageV1:
 			packet.source_port | (packet.source_type << 4),
 			packet.dest_port | (packet.dest_type << 4),
 			packet.type | (packet.flags << 4),
-			self.client.session_id, 0, packet.packet_id
+			self.client.session_id, packet.multi_ack_version, packet.packet_id
 		)
 		
 	def encode_options(self, packet):
@@ -175,11 +180,15 @@ class PRUDPMessageV1:
 			header = self.buffer[2 : 14]
 			checksum = self.buffer[14 : 30]
 			
-			version, option_size, payload_size, source, dest, type_flags, \
-				session_id, pad, packet_id = struct.unpack("<BBHBBHBBH", header)
+			version, option_size, payload_size, source, dest, type_flags, session_id, \
+				packet.multi_ack_version, packet_id = struct.unpack("<BBHBBHBBH", header)
 
 			if version != 1:
 				logger.error("(V1) Version check failed")
+				self.reset()
+				return packets
+			if packet.multi_ack_version > 1:
+				logger.error("(V1) Unrecognized aggregate ack version: %i" %packet.multi_ack_version)
 				self.reset()
 				return packets
 			if len(self.buffer) < 30 + option_size + payload_size:
@@ -396,7 +405,10 @@ class PRUDPClient:
 					scheduler.remove(self.ack_events.pop(packet.packet_id))
 
 			elif packet.flags & FLAG_MULTI_ACK:
-				ack_id = struct.unpack_from("<H", packet.payload, 2 + packet.payload[1] * 2)[0]
+				if packet.multi_ack_version == 0:
+					ack_id = struct.unpack("<H", packet.payload)[0]
+				else:
+					ack_id = struct.unpack_from("<H", packet.payload, 2)[0]
 				for packet_id in list(self.ack_events.keys()):
 					if packet_id <= ack_id:
 						scheduler.remove(self.ack_events.pop(packet_id))
