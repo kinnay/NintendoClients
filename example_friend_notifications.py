@@ -1,9 +1,6 @@
 
-from nintendo.nex.nintendo_notification import NotificationType
-from nintendo.nex.friends import FriendsTitle
-from nintendo.nex.backend import BackEndClient
-from nintendo.act import AccountAPI
-
+from nintendo.nex import backend, authentication, friends, nintendo_notification
+from nintendo import account
 
 #Device id can be retrieved with a call to MCP_GetDeviceId on the Wii U
 #Serial number can be found on the back of the Wii U
@@ -17,52 +14,49 @@ USERNAME = "..." #Nintendo network id
 PASSWORD = "..." #Nintendo network password
 
 
-name_cache = {}
-def notification_callback(notification):
-	pid = notification.pid
-	if pid not in name_cache:
-		name_cache[pid] = api.get_nnid(pid)
-	name = name_cache[pid]
-	
-	if notification.type == NotificationType.LOGOUT:
-		print("%s is now offline" %name)
+class NotificationHandler(nintendo_notification.NintendoNotificationHandler):
+	def __init__(self):
+		self.name_cache = {}
 
-	elif notification.type == NotificationType.UNFRIENDED:
-		print("%s removed you from his friend list" %name)
-
-	elif notification.type == NotificationType.STATUS_CHANGE:
-		print("%s changed his status message to: %s" %(name, notification.object.text))
+	def process_notification_event(self, event):
+		pid = event.pid
+		if pid not in self.name_cache:
+			self.name_cache[pid] = api.get_nnid(pid)
+		name = self.name_cache[pid]
 		
-	elif notification.type == NotificationType.PRESENCE_CHANGE:
-		presence = notification.object
-		game = "[%016X v%i]" %(presence.game_key.title_id, presence.game_key.title_version)
-		description = presence.description
-		if description:
-			print("%s is playing %s (description: %s)" %(name, game, description))
-		else:
-			print("%s is playing %s" %(name, game))
+		if event.type == nintendo_notification.NotificationType.LOGOUT:
+			print("%s is now offline" %name)
 
+		elif event.type == nintendo_notification.NotificationType.UNFRIENDED:
+			print("%s removed you from his friend list" %name)
 
-api = AccountAPI()
+		elif event.type == nintendo_notification.NotificationType.STATUS_CHANGE:
+			print("%s changed his status message to: %s" %(name, event.data.text))
+			
+		elif event.type == nintendo_notification.NotificationType.PRESENCE_CHANGE:
+			presence = event.data
+			game = "[%016X v%i]" %(presence.game_key.title_id, presence.game_key.title_version)
+			description = presence.description
+			if description:
+				print("%s is playing %s (description: %s)" %(name, game, description))
+			else:
+				print("%s is playing %s" %(name, game))
+
+api = account.AccountAPI()
 api.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY)
-api.set_title(FriendsTitle.TITLE_ID_EUR, FriendsTitle.LATEST_VERSION)
+api.set_title(friends.FriendsTitle.TITLE_ID_EUR, friends.FriendsTitle.LATEST_VERSION)
 api.login(USERNAME, PASSWORD)
 
-nex_token = api.get_nex_token(FriendsTitle.GAME_SERVER_ID)
-backend = BackEndClient(FriendsTitle.ACCESS_KEY, FriendsTitle.NEX_VERSION)
+nex_token = api.get_nex_token(friends.FriendsTitle.GAME_SERVER_ID)
+backend = backend.BackEndClient(
+	friends.FriendsTitle.GAME_SERVER_ID, friends.FriendsTitle.ACCESS_KEY, friends.FriendsTitle.NEX_VERSION
+)
 backend.connect(nex_token.host, nex_token.port)
-backend.login(nex_token.username, nex_token.password, nex_token.token)
-
-backend.nintendo_notification_server.add_callback(
-	backend.nintendo_notification_server.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT,
-	notification_callback
+backend.login(
+	nex_token.username, nex_token.password,
+	authentication.NintendoLoginData(nex_token.token)
 )
+backend.nintendo_notification_server.handler = NotificationHandler()
 
-backend.nintendo_notification_server.add_callback(
-	backend.nintendo_notification_server.METHOD_PROCESS_PRESENCE_CHANGE_EVENT,
-	notification_callback
-)
-
-input("Press enter to disconnect and exit script\n")
-
+input("Press enter to disconnect and exit\n")
 backend.close()

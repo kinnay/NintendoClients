@@ -1,7 +1,5 @@
 
-from nintendo.nex.matchmake_common import Gathering
-from nintendo.nex.common import DataHolder, NexEncoder
-from nintendo.games import MK8
+from nintendo.nex import matchmake_common, common
 import enum
 
 import logging
@@ -13,25 +11,21 @@ class MatchmakeSystem(enum.IntEnum):
 	FRIENDS = 2
 
 
-class SearchCriteria(NexEncoder):
-	version_map = {
-		30504: 0
-	}
-
-	def init(self, attribs, game_mode, min_participants, max_participants, matchmake_system,
-		     vacant_only, exclude_locked, exclude_non_host_pid, selection_method, unk=None):
+class MatchmakeSessionSearchCriteria(common.Structure):
+	def __init__(self, attribs, game_mode, min_players, max_players, matchmake_system, vacant_only,
+				 exclude_locked, exclude_non_host_pid, selection_method, vacant_participants=None):
 		self.attribs = attribs
 		self.game_mode = game_mode
-		self.min_participants = min_participants
-		self.max_participants = max_participants
+		self.min_players = min_players
+		self.max_players = max_players
 		self.matchmake_system = matchmake_system
 		self.vacant_only = vacant_only
 		self.exclude_locked = exclude_locked
 		self.exclude_non_host_pid = exclude_non_host_pid
 		self.selection_method = selection_method
-		self.unk = unk
+		self.vacant_participants = vacant_participants
 	
-	def encode_old(self, stream):
+	def streamin(self, stream):
 		stream.list(self.attribs, stream.string)
 		stream.string(self.game_mode)
 		stream.string(self.min_participants)
@@ -41,98 +35,77 @@ class SearchCriteria(NexEncoder):
 		stream.bool(self.exclude_locked)
 		stream.bool(self.exclude_non_host_pid)
 		stream.u32(self.selection_method)
-	
-	def encode_v0(self, stream):
-		self.encode_old(stream)
-		stream.u16(self.unk)
+		
+		if self.version >= 0:
+			stream.u16(self.vacant_participants)
 		
 		
-class MatchmakeSession(NexEncoder):
-	version_map = {
-		30504: 0
-	}
-	
-	def init(self, gathering, game_mode, attribs, open_participation, matchmake_system,
-			 application_data, unk, signature_key, unk2=None, unk3=None):
+class MatchmakeSession(common.Structure):
+	def __init__(self, gathering, game_mode, attribs, open_participation, matchmake_system,
+			 application_data, player_count, session_key, progress_score=None, option=None):
 		self.gathering = gathering
 		self.game_mode = game_mode
 		self.attribs = attribs
 		self.open_participation = open_participation
 		self.matchmake_system = matchmake_system
 		self.application_data = application_data
-		self.unk = unk
-		self.signature_key = signature_key
-		self.unk2 = unk2
-		self.unk3 = unk3
+		self.player_count = player_count
+		self.session_key = session_key
+		self.progress_score = progress_score
+		self.option = option
 
 	def get_name(self):
 		return "MatchmakeSession"
 	
 	def encode(self, stream):
-		self.gathering.encode(stream)
+		stream.add(self.gathering)
 		super().encode(stream)
 		
 	def decode(self, stream):
-		self.gathering = Gathering.from_stream(stream)
+		self.gathering = stream.extract(matchmake_common.Gathering)
 		super().decode(stream)
 
-	def encode_common(self, stream):
+	def streamin(self, stream):
 		stream.u32(self.game_mode)
 		stream.list(self.attribs, stream.u32)
 		stream.bool(self.open_participation)
 		stream.u32(self.matchmake_system)
-		stream.data(self.application_data)
-		stream.u32(self.unk)
+		stream.buffer(self.application_data)
+		stream.u32(self.player_count)
+		if self.version >= 0:
+			stream.u8(self.progress_score)
+		stream.buffer(self.session_key)
+		if self.version >= 0:
+			stream.u32(self.option)
 		
-	def encode_old(self, stream):
-		self.encode_common(stream)
-		stream.data(self.signature_key)
-		
-	def encode_v0(self, stream):
-		self.encode_common(stream)
-		stream.u8(self.unk2)
-		stream.data(self.signature_key)
-		stream.u32(self.unk3)
-		
-	def decode_common(self, stream):
+	def streamout(self, stream):
 		self.game_mode = stream.u32()
 		self.attribs = stream.list(stream.u32)
 		self.open_participation = stream.bool()
 		self.matchmake_system = stream.u32()
-		self.application_data = stream.data()
-		self.unk = stream.u32()
-		
-	def decode_old(self, stream):
-		self.decode_common(stream)
-		self.signature_key = stream.data()
-		
-	def decode_v0(self, stream):	
-		self.decode_common(stream)
-		self.unk2 = stream.u8()
-		self.signature_key = stream.data()
-		self.unk3 = stream.u32()
-DataHolder.register(MatchmakeSession, "MatchmakeSession")
+		self.application_data = stream.buffer()
+		self.player_count = stream.u32()
+		if self.version >= 0:
+			self.progress_score = stream.u8()
+		self.session_key = stream.buffer()
+		if self.version >= 0:
+			self.option = stream.u32()
+common.DataHolder.register(MatchmakeSession, "MatchmakeSession")
 
 
-class SimplePlayingSession(NexEncoder):
-	version_map = {
-		30504: 0
-	}
-
-	def decode_old(self, stream):
+class SimplePlayingSession(common.Structure):
+	def streamout(self, stream):
 		self.pid = stream.u32()
-		self.gathering_id = stream.u32()
-		self.unk3 = stream.u32()
-		self.unk4 = stream.u32()
-		
-	decode_v0 = decode_old
+		self.gid = stream.u32()
+		self.game_mode = stream.u32()
+		self.attribute = stream.u32()
 
 
 class MatchmakeExtensionClient:
 	
 	METHOD_CLOSE_PARTICIPATION = 1
 	METHOD_OPEN_PARTICIPATION = 2
-	METHOD_AUTO_MATCHMAKE = 3
+	METHOD_AUTO_MATCHMAKE_POSTPONE = 3
 	METHOD_BROWSE_MATCHMAKE_SESSION = 4
 	METHOD_BROWSE_MATCHMAKE_SESSION_WITH_HOST_URLS = 5
 	METHOD_CREATE_MATCHMAKE_SESSION = 6
@@ -144,7 +117,7 @@ class MatchmakeExtensionClient:
 	METHOD_UPDATE_MATCHMAKE_SESSION_ATTRIBUTE = 12
 	METHOD_GETLST_FRIEND_NOTIFICATION_DATA = 13
 	METHOD_UPDATE_MATCHMAKE_SESSION = 14
-	METHOD_AUTO_MATCHMAKE_WITH_SEARCH_CRITERIA = 15
+	METHOD_AUTO_MATCHMAKE_WITH_SEARCH_CRITERIA_POSTPONE = 15
 	METHOD_GET_PLAYING_SESSION = 16
 	METHOD_CREATE_COMMUNITY = 17
 	METHOD_UDPATE_COMMUNITY = 18
@@ -162,14 +135,14 @@ class MatchmakeExtensionClient:
 	METHOD_JOIN_MATCHMAKE_SESSION_EX = 30
 	METHOD_GET_SIMPLE_PLAYING_SESSION = 31
 	METHOD_GET_SIMPLE_COMMUNITY = 32
-	METHOD_AUTO_MATCHMAKE_WITH_GATHERING_ID = 33
+	METHOD_AUTO_MATCHMAKE_WITH_GATHERING_ID_POSTPONE = 33
 	METHOD_UPDATE_PROGRESS_SCORE = 34
 	METHOD_DEBUG_NOTIFY_EVENT = 35
 	METHOD_GENERATE_MATCHMAKE_SESSION_SYSTEM_PASSWORD = 36
 	METHOD_CLEAR_MATCHMAKE_SESSION_SYSTEM_PASSWORD = 37
 	METHOD_CREATE_MATCHMAKE_SESSION_WITH_PARAM = 38
 	METHOD_JOIN_MATCHMAKE_SESSION_WITH_PARAM = 39
-	METHOD_AUTO_MATCHMAKE_WITH_PARAM = 40
+	METHOD_AUTO_MATCHMAKE_WITH_PARAM_POSTPONE = 40
 	METHOD_FIND_MATCHMAKE_SESSION_BY_GATHERING_ID_DETAIL = 41
 	METHOD_BROWSER_MATCHMAKE_SESSION_NO_HOLDER = 42
 	METHOD_BROWSE_MATCHMAKE_SESSION_WITH_HOST_URLS_NO_HOLDER = 43
@@ -184,97 +157,89 @@ class MatchmakeExtensionClient:
 		self.back_end = back_end
 		self.client = back_end.secure_client
 		
-	def auto_matchmake(self, gathering, description):
+	def auto_matchmake(self, gathering, message):
 		logger.info("MatchmakeExtension.auto_matchmake(...)")
 		#--- request ---
-		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_AUTO_MATCHMAKE)
-		DataHolder(gathering).encode(stream)
-		stream.string(description)
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_AUTO_MATCHMAKE_POSTPONE)
+		stream.add(common.DataHolder(gathering))
+		stream.string(message)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		object = DataHolder.from_stream(stream).data
+		object = stream.extract(common.DataHolder).data
 		logger.info("MatchmakeExtension.auto_matchmake -> %s", object.get_name())
 		return object
 		
-	def create_matchmake_session(self, gathering, description, unk):
+	def create_matchmake_session(self, gathering, description, player_count):
 		logger.info("MatchmakeExtension.create_matchmake_session(...)")
 		#--- request ---
-		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_CREATE_MATCHMAKE_SESSION)
-		DataHolder(gathering).encode(stream)
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_CREATE_MATCHMAKE_SESSION)
+		stream.add(common.DataHolder(gathering))
 		stream.string(description)
-		stream.u16(unk)
+		stream.u16(player_count)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		session_id = stream.u32()
-		session_key = stream.data()
-		logger.info("MatchmakeExtension.create_matchmake_session -> (%08X, %s)", session_id, session_key.hex())
-		return session_id, session_key
+		gid = stream.u32()
+		session_key = stream.buffer()
+		logger.info("MatchmakeExtension.create_matchmake_session -> (%08X, %s)", gid, session_key.hex())
+		return gid, session_key
 		
 	#This seems to be the method that's used by most games
-	def auto_matchmake_with_search_criteria(self, search_criteria, gathering, description):
+	def auto_matchmake_with_search_criteria(self, search_criteria, gathering, message):
 		logger.info("MatchmakeExtension.auto_matchmake_with_search_criteria(...)")
 		#--- request ---
-		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_AUTO_MATCHMAKE_WITH_SEARCH_CRITERIA)
-		stream.list(search_criteria, lambda x: x.encode(stream))
-		DataHolder(gathering).encode(stream)
-		stream.string(description)
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_AUTO_MATCHMAKE_WITH_SEARCH_CRITERIA_POSTPONE)
+		stream.list(search_criteria, stream.add)
+		stream.add(common.DataHolder(gathering))
+		stream.string(message)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		object = DataHolder.from_stream(stream).data
+		object = stream.extract(common.DataHolder).data
 		logger.info("MatchmakeExtension.auto_matchmake_with_search_criteria -> %s", object.get_name())
 		return object
 
-	#The following methods seem to be different from those found in MK8
-	#Apparently, MK8 got its own set of methods whose ids overlap with other games
-
-	def get_simple_playing_session(self, pids, bool, bool_mk8=False): #MK8 uses an additional bool here
+	def get_simple_playing_session(self, pids, include_login_user):
 		logger.info("MatchmakeExtension.get_simple_playing_session(...)")
 		#--- request ---
-		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_GET_SIMPLE_PLAYING_SESSION)
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_SIMPLE_PLAYING_SESSION)
 		stream.list(pids, stream.u32)
-		stream.bool(bool)
-		if self.back_end.version == MK8.NEX_VERSION:
-			stream.bool(bool_mk8)
+		stream.bool(include_login_user)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		sessions = stream.list(lambda: SimplePlayingSession.from_stream(stream))
+		sessions = stream.list(lambda: stream.extract(SimplePlayingSession))
 		logger.info("MatchmakeExtension.get_simple_playing_session -> done")
 		return sessions
 
-	#This method doesn't seem to exist at all in MK8
-	def find_matchmake_session_by_gathering_id_detail(self, gathering_id):
-		logger.info("MatchmakeExtension.find_matchmake_session_by_gathering_id_detail(%08X)", gathering_id)
+	def find_matchmake_session_by_gid_detail(self, gid):
+		logger.info("MatchmakeExtension.find_matchmake_session_by_gid_detail(%08X)", gid)
 		#--- request ---
-		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_FIND_MATCHMAKE_SESSION_BY_GATHERING_ID_DETAIL)
-		stream.u32(gathering_id)
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_FIND_MATCHMAKE_SESSION_BY_gid_DETAIL)
+		stream.u32(gid)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		session = MatchmakeSession.from_stream(stream)
-		logger.info("MatchmakeExtension.find_matchmake_session_by_gathering_id_detail -> done")
+		session = stream.extract(MatchmakeSession)
+		logger.info("MatchmakeExtension.find_matchmake_session_by_gid_detail -> done")
 		return session
 		
-		
-	#These methods only exist in MK8
 
 	METHOD_MK8_JOIN_FRIEND_ROOM = 40
 
 	#This might be a generic join method. I'm calling it join_friend_room
 	#because that's what I'm using it for at the moment
-	def join_friend_room(self, gathering_id, unk1, unk2, unk3, unk4):
-		logger.info("MatchmakeExtension.join_friend_room(%08X, %s, %i, %04X, %08X)", gathering_id, unk1, unk2, unk3, unk4)
+	def join_friend_room(self, gid, unk1, unk2, unk3, unk4):
+		logger.info("MatchmakeExtension.join_friend_room(%08X, %s, %i, %04X, %08X)", gid, unk1, unk2, unk3, unk4)
 		#--- request ---
-		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_MK8_JOIN_FRIEND_ROOM)
-		stream.u32(gathering_id)
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_MK8_JOIN_FRIEND_ROOM)
+		stream.u32(gid)
 		stream.string(unk1)
 		stream.bool(unk2)
 		stream.u16(unk3)
@@ -283,6 +248,6 @@ class MatchmakeExtensionClient:
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		data = stream.data()
+		data = stream.buffer()
 		logger.info("MatchmakeExtension.join_friend_room -> %s", data.hex())
 		return data

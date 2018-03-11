@@ -14,8 +14,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-CERT = os.path.join(os.path.dirname(__file__), "files/wiiu_common_cert.pem")
-KEY = os.path.join(os.path.dirname(__file__), "files/wiiu_common_key.pem")
+CERT = os.path.join(os.path.dirname(__file__), "files/wiiu_cert.pem")
+KEY = os.path.join(os.path.dirname(__file__), "files/wiiu_key.pem")
 
 
 def calc_password_hash(pid, password):

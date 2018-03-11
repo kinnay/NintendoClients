@@ -5,15 +5,15 @@ import struct
 class StreamOut:
 	def __init__(self, endian="<"):
 		self.endian = endian
-		self.buffer = b""
+		self.data = b""
 		self.pos = 0
 		
 	def seek(self, pos): self.pos = pos
 	def tell(self): return self.pos
-	def size(self): return len(self.buffer)
+	def size(self): return len(self.data)
 		
 	def write(self, data):
-		self.buffer = self.buffer[:self.pos] + data + self.buffer[self.pos + len(data):]
+		self.data = self.data[:self.pos] + data + self.data[self.pos + len(data):]
 		self.pos += len(data)
 		
 	def u8(self, value): self.write(bytes([value]))
@@ -45,15 +45,15 @@ class StreamOut:
 class StreamIn:
 	def __init__(self, data, endian="<"):
 		self.endian = endian
-		self.buffer = data
+		self.data = data
 		self.pos = 0
 		
 	def seek(self, pos): self.pos = pos
 	def tell(self): return self.pos
-	def size(self): return len(self.buffer)
+	def size(self): return len(self.data)
 		
 	def read(self, num):
-		data = self.buffer[self.pos : self.pos + num]
+		data = self.data[self.pos : self.pos + num]
 		self.pos += num
 		return data
 		
@@ -101,8 +101,8 @@ class BitStreamOut(StreamOut):
 		super().write(data)
 	
 	def bit(self, value):
-		if self.pos < len(self.buffer):
-			byte = self.buffer[self.pos]
+		if self.pos < len(self.data):
+			byte = self.data[self.pos]
 		else:
 			byte = 0
 
@@ -112,7 +112,7 @@ class BitStreamOut(StreamOut):
 		else:
 			byte &= ~mask
 		
-		self.buffer = self.buffer[:self.pos] + bytes([byte]) + self.buffer[self.pos + 1:]
+		self.data = self.data[:self.pos] + bytes([byte]) + self.data[self.pos + 1:]
 
 		self.bitpos += 1
 		if self.bitpos == 8:
@@ -143,7 +143,7 @@ class BitStreamIn(StreamIn):
 		return super().read(num)
 		
 	def bit(self):
-		byte = self.buffer[self.pos]
+		byte = self.data[self.pos]
 		value = (byte >> (7 - self.bitpos)) & 1
 		self.bitpos += 1
 		if self.bitpos == 8:
@@ -157,19 +157,3 @@ class BitStreamIn(StreamIn):
 			value <<= 1
 			value |= self.bit()
 		return value
-		
-		
-class Encoder:
-	@classmethod
-	def from_stream(cls, stream):
-		instance = cls()
-		instance.decode(stream)
-		return instance
-		
-	def __init__(self, *args):
-		if args:
-			self.init(*args)
-	
-	def init(self, *args): raise NotImplementedError
-	def encode(self, stream): raise NotImplementedError
-	def decode(self, stream): raise NotImplementedError

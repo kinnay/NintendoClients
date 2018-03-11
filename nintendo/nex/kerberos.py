@@ -1,12 +1,12 @@
 
-from nintendo.common.crypto import RC4
+from nintendo.common import crypto
 import hmac
 
 
 class KerberosEncryption:
 	def __init__(self, key):
 		self.key = key
-		self.rc4 = RC4(key)
+		self.rc4 = crypto.RC4(key, True)
 		
 	def decrypt(self, buffer):
 		data = buffer[:-0x10]

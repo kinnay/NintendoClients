@@ -1,99 +1,87 @@
 
-from nintendo.nex.stream import NexStreamOut
-from nintendo.common.stream import Encoder
+from nintendo.nex import streams
+
+import logging
+logger = logging.getLogger(__name__)
 
 
-class NexEncoder(Encoder):
-	version_map = {}
-
+class Structure:
 	def init_version(self, nex_version):
+		self.nex_version = nex_version
 		if nex_version < 30500:
 			self.version = -1
 		else:
-			self.version = self.version_map[nex_version]
+			self.version = self.get_version(nex_version)
+			
+	def get_version(self, nex_version):
+		return 0
 
 	def encode(self, stream):
 		self.init_version(stream.version)
 		if self.version == -1:
-			self.encode_old(stream)
-			
+			self.streamin(stream)
 		else:
-			substream = NexStreamOut(stream.version)
-			getattr(self, "encode_v%i" %self.version)(substream)
-
-			stream.u8(self.version)
-			stream.data(substream.buffer)
+			substream = streams.StreamOut(stream.version)
+			self.streamin(substream)
 			
+			stream.u8(self.version)
+			stream.buffer(substream.data)
+
 	def decode(self, stream):
 		self.init_version(stream.version)
 		if self.version == -1:
-			self.decode_old(stream)
+			self.streamout(stream)
 			
 		else:
 			version = stream.u8()
 			if version != self.version:
-				raise ValueError("Wrong version number in %s" %(self.__class__.__name__))
-			getattr(self, "decode_v%i" %self.version)(stream.substream())
+				logger.info("Structure version (%i) doesn't match expected version (%i)" %(version, self.version))
+				self.version = version
+			self.streamout(stream.substream())
+			
+	def streamin(self, stream): raise NotImplementedError("Structure.streamin")
+	def streamout(self, stream): raise NotImplementedError("Structure.streamout")
 	
 	
-class NexData(NexEncoder):
-	version_map = {
-		30504: 0,
-		30810: 0
-	}
-	
-	def encode_old(self, stream): pass
-	def encode_v0(self, stream): pass
-	def decode_old(self, stream): pass
-	def decode_v0(self, stream): pass
+class DataObj(Structure):
+	def streamin(self, stream): pass
+	def streamout(self, stream): pass
 	
 	
-class NexDataEncoder(NexEncoder):
+class Data(Structure):
 	def encode(self, stream):
-		NexData().encode(stream)
+		stream.add(DataObj())
 		super().encode(stream)
 		
 	def decode(self, stream):
-		NexData.from_stream(stream)
+		stream.extract(DataObj)
 		super().decode(stream)
 
 
-class DataHolder(Encoder):
+class DataHolder:
 
 	object_map = {}
 
-	def init(self, data):
+	def __init__(self, data):
 		self.data = data
 		
 	def encode(self, stream):	
 		stream.string(self.data.get_name())
 		
-		substream = NexStreamOut(stream.version)
-		self.data.encode(substream)
+		substream = streams.StreamOut(stream.version)
+		substream.add(self.data)
 		
-		stream.u32(len(substream.buffer) + 4)
-		stream.data(substream.buffer)
+		stream.u32(len(substream.data) + 4)
+		stream.buffer(substream.data)
 		
 	def decode(self, stream):
 		name = stream.string()
 		substream = stream.substream().substream()
-		self.data = self.object_map[name].from_stream(substream)
+		self.data = substream.extract(self.object_map[name])
 		
 	@classmethod
 	def register(cls, object, name):
 		cls.object_map[name] = object
-		
-		
-class KeyValue(NexEncoder):
-	version_map = {
-		30504: 0
-	}
-	
-	def decode_old(self, stream):
-		self.key = stream.string()
-		self.value = stream.string()
-		
-	decode_v0 = decode_old
 		
 		
 class StationUrl:
@@ -136,7 +124,9 @@ class StationUrl:
 	def parse(cls, string):
 		if string:
 			url_type, fields = string.split(":/")
-			params = dict(field.split("=") for field in fields.split(";"))
+			params = {}
+			if fields:
+				params = dict(field.split("=") for field in fields.split(";"))
 			return cls(url_type, **params)
 		else:
 			return cls()

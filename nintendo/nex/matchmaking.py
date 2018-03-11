@@ -1,6 +1,4 @@
 
-from nintendo.nex.common import StationUrl
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -55,29 +53,29 @@ class MatchMakingClient:
 	def __init__(self, back_end):
 		self.client = back_end.secure_client
 		
-	def get_session_url(self, session_id):
-		logger.info("MatchMaking.get_session_url(%08X)", session_id)
+	def get_session_url(self, gid):
+		logger.info("MatchMaking.get_session_url(%08X)", gid)
 		#--- request ---
-		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_GET_SESSION_URL)
-		stream.u32(session_id)
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_SESSION_URL)
+		stream.u32(gid)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		bool = stream.bool()
-		string = stream.string()
-		logger.info("MatchMaking.get_session_url -> (%i, %s)", bool, string)
-		return bool, string
+		result = stream.bool()
+		url = stream.string()
+		logger.info("MatchMaking.get_session_url -> (%i, %s)", result, url)
+		return result, url
 		
-	def get_session_urls(self, session_id):
-		logger.info("MatchMaking.get_session_urls(%08X)", session_id)
+	def get_session_urls(self, gid):
+		logger.info("MatchMaking.get_session_urls(%08X)", gid)
 		#--- request ---
-		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_GET_SESSION_URLS)
-		stream.u32(session_id)
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_SESSION_URLS)
+		stream.u32(gid)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		urls = stream.list(lambda: StationUrl.parse(stream.string()))
+		urls = stream.list(stream.stationurl)
 		logger.info("MatchMaking.get_session_urls -> %s", urls)
 		return urls

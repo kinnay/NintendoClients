@@ -1,7 +1,4 @@
 
-from nintendo.nex.common import StationUrl
-from nintendo.nex.server import ProtocolServer
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -22,25 +19,25 @@ class NATTraversalClient(NATTraversalProtocol):
 	def __init__(self, back_end):
 		self.client = back_end.secure_client
 		
-	def request_probe_initiation_ext(self, urllist, url):
-		logger.info("NATTraversal.request_probe_initiation_ext(%s, %s)", urllist, url)
+	def request_probe_initiation_ext(self, target_urls, station_to_probe):
+		logger.info("NATTraversal.request_probe_initiation_ext(%s, %s)", target_urls, station_to_probe)
 		#--- request ---
-		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_REQUEST_PROBE_INITIATION_EXT)
-		stream.list(urllist, lambda x: stream.string(str(x)))
-		stream.string(str(url))
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_REQUEST_PROBE_INITIATION_EXT)
+		stream.list(target_urls, stream.stationurl)
+		stream.stationurl(station_to_probe)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		self.client.get_response(call_id)
 		logger.info("NATTraversal.request_probe_initiation_ext -> done")
 	
-	def report_nat_properties(self, nat_mapping, nat_filtering, lag):
-		logger.info("NATTraversal.report_nat_properties(%08X, %08X, %08X)", nat_mapping, nat_filtering, lag)
+	def report_nat_properties(self, nat_mapping, nat_filtering, rtt):
+		logger.info("NATTraversal.report_nat_properties(%08X, %08X, %08X)", nat_mapping, nat_filtering, rtt)
 		#--- request ---
-		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_REPORT_NAT_PROPERTIES)
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_REPORT_NAT_PROPERTIES)
 		stream.u32(nat_mapping)
 		stream.u32(nat_filtering)
-		stream.u32(lag)
+		stream.u32(rtt)
 		self.client.send_message(stream)
 		
 		#--- response ---
@@ -48,12 +45,16 @@ class NATTraversalClient(NATTraversalProtocol):
 		logger.info("NATTraversal.report_nat_properties -> done")
 
 		
-class NATTraversalServer(NATTraversalProtocol, ProtocolServer):
+class NATTraversalHandler:
+	def initiate_probe(self, station_to_probe): logger.warning("NATTraversal: unhandled request (InitiateProbe)")
+		
+		
+class NATTraversalServer(NATTraversalProtocol):
 	def __init__(self):
 		self.methods = {
 			self.METHOD_INITIATE_PROBE: self.initiate_probe
 		}
-		self.init_callbacks(*self.methods)
+		self.handler = NATTraversalHandler()
 
 	def handle_request(self, client, call_id, method_id, stream):
 		if method_id in self.methods:
@@ -62,10 +63,7 @@ class NATTraversalServer(NATTraversalProtocol, ProtocolServer):
 		
 	def initiate_probe(self, client, call_id, method_id, stream):
 		#--- request ---
-		url = StationUrl.parse(stream.string())
-		logger.info("NATTraversal.initiate_probe: %s", url)
-		
-		self.callback(method_id, url)
+		self.handler.initiate_probe(stream.stationurl())
 		
 		#--- response ---
 		return client.init_response(self.PROTOCOL_ID, call_id, method_id)

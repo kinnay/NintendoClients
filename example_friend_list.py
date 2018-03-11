@@ -1,9 +1,6 @@
 
-from nintendo.nex.friends import FriendsTitle, FriendsClient, NNAInfo, NintendoPresenceV2, PrincipalBasicInfo, MiiV2, GameKey
-from nintendo.nex.backend import BackEndClient
-from nintendo.nex.common import DateTime
-from nintendo.act import AccountAPI
-
+from nintendo.nex import backend, authentication, friends, common
+from nintendo import account
 
 #Device id can be retrieved with a call to MCP_GetDeviceId on the Wii U
 #Serial number can be found on the back of the Wii U
@@ -16,40 +13,49 @@ COUNTRY = "NL"
 USERNAME = "..." #Nintendo network id
 PASSWORD = "..." #Nintendo network password
 
-api = AccountAPI()
+
+api = account.AccountAPI()
 api.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY)
-api.set_title(FriendsTitle.TITLE_ID_EUR, FriendsTitle.LATEST_VERSION)
+api.set_title(friends.FriendsTitle.TITLE_ID_EUR, friends.FriendsTitle.LATEST_VERSION)
 api.login(USERNAME, PASSWORD)
 
 pid = api.get_pid(USERNAME)
 mii = api.get_mii(pid)
 
-nex_token = api.get_nex_token(FriendsTitle.GAME_SERVER_ID)
-backend = BackEndClient(FriendsTitle.ACCESS_KEY, FriendsTitle.NEX_VERSION)
+nex_token = api.get_nex_token(friends.FriendsTitle.GAME_SERVER_ID)
+backend = backend.BackEndClient(
+	friends.FriendsTitle.GAME_SERVER_ID,
+	friends.FriendsTitle.ACCESS_KEY,
+	friends.FriendsTitle.NEX_VERSION
+)
 backend.connect(nex_token.host, nex_token.port)
-backend.login(nex_token.username, nex_token.password, nex_token.token)
+backend.login(
+	nex_token.username, nex_token.password,
+	authentication.NintendoLoginData(nex_token.token)
+)
 
 #Even though you're sending your username and pid to the server, you can't
 #requests friend information of other people. You'll always get your own data
-friends = FriendsClient(backend)
-principal_preference, comment, friends, requests_sent, requests_received, blacklist, unk1, notifications, unk2 = friends.get_all_information(
-	NNAInfo(
-		PrincipalBasicInfo(
+client = friends.FriendsClient(backend)
+principal_preference, comment, friends, requests_sent, requests_received, \
+  blacklist, unk1, notifications, unk2 = client.get_all_information(
+	friends.NNAInfo(
+		friends.PrincipalBasicInfo(
 			pid, USERNAME, #Pid and nnid
 			#If you change mii name or data here it will also be changed on Nintendo's servers
-			MiiV2(mii.name, 0, 0, mii.data, DateTime(0)),
+			friends.MiiV2(mii.name, 0, 0, mii.data, common.DateTime(0)),
 			2
 		),
 		0x5E, 0x0B
 	),
 	#NintendoPresenceV2 tells the server about your online status, which
 	#game you're currently playing, etc. This will be shown to your friends
-	#in their friend list, and may be used by games.
-	NintendoPresenceV2(
-		0, 0, GameKey(0, 0), 0, None, 0, 0, 0, 0, 0, 0, b"", 3, 3, 3
+	#in their friend list (unless you disabled this feature).
+	friends.NintendoPresenceV2(
+		0, 0, friends.GameKey(0, 0), 0, None, 0, 0, 0, 0, 0, 0, b"", 3, 3, 3
 	),
 	#Enter your birthday here
-	DateTime.make(31, 12, 2000, 0, 0, 0)
+	common.DateTime.make(31, 12, 2000, 0, 0, 0)
 )
 
 
@@ -115,10 +121,10 @@ if blacklist:
 		print("\tWho: %s (%s)" %(principal_info.nnid, principal_info.mii.name))
 		if item.game_key.title_id:
 			print("\tGame: %016X (%i)" %(item.game_key.title_id, item.game_key.title_version))
-		print("\tSince:", item.datetime)
+		print("\tSince:", item.since)
 		print("\t" + "-" * 40)
 else:
 	print("You haven't blacklisted any users")
-	
+
 
 backend.close()

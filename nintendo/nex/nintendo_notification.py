@@ -1,6 +1,5 @@
 
-from nintendo.nex.common import NexEncoder, NexDataEncoder, DataHolder
-from nintendo.nex.server import ProtocolServer
+from nintendo.nex import common
 
 import logging
 logger = logging.getLogger(__name__)
@@ -13,37 +12,31 @@ class NotificationType:
 	STATUS_CHANGE = 33
 
 
-class NintendoNotificationEventGeneral(NexDataEncoder):
-	version_map = {
-		30504: 0
-	}
-
+class NintendoNotificationEventGeneral(common.Data):
 	def get_name(self):
 		return "NintendoNotificationEventGeneral"
 
-	def decode_old(self, stream):
-		self.unk1 = stream.u32()
-		self.unk2 = stream.u64()
-		self.notification_id = stream.u64()
+	def streamout(self, stream):
+		self.param1 = stream.u32()
+		self.param2 = stream.u64()
+		self.param3 = stream.u64()
 		self.text = stream.string()
-		
-	decode_v0 = decode_old
-DataHolder.register(NintendoNotificationEventGeneral, "NintendoNotificationEventGeneral")
+common.DataHolder.register(NintendoNotificationEventGeneral, "NintendoNotificationEventGeneral")
 
 
-class NintendoNotificationEvent(NexEncoder):
-	version_map = {
-		30504: 0
-	}
-	def decode_old(self, stream):
+class NintendoNotificationEvent(common.Structure):
+	def streamout(self, stream):
 		self.type = stream.u32()
 		self.pid = stream.u32()
-		self.object = DataHolder.from_stream(stream).data
+		self.data = stream.extract(common.DataHolder).data
+
+
+class NintendoNotificationHandler:
+	def process_notification_event(self, event):
+		logger.warning("NintendoNotification: unhandled request (ProcessNotificationEvent)")
+
 		
-	decode_v0 = decode_old
-
-
-class NintendoNotificationServer(ProtocolServer):
+class NintendoNotificationServer:
 
 	METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT = 1
 	METHOD_PROCESS_PRESENCE_CHANGE_EVENT = 2 #Only used by iosu
@@ -55,7 +48,7 @@ class NintendoNotificationServer(ProtocolServer):
 			self.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT: self.process_notification_event,
 			self.METHOD_PROCESS_PRESENCE_CHANGE_EVENT: self.process_notification_event
 		}
-		self.init_callbacks(*self.methods)
+		self.handler = NintendoNotificationHandler()
 		
 	def handle_request(self, client, call_id, method_id, stream):
 		if method_id in self.methods:
@@ -64,13 +57,8 @@ class NintendoNotificationServer(ProtocolServer):
 
 	def process_notification_event(self, client, call_id, method_id, stream):
 		#--- request ---
-		notification = NintendoNotificationEvent.from_stream(stream)
-		logger.info(
-			"NintendoNotification.process_nintendo_notification_event: (%i, %08X, %s)",
-			notification.type, notification.pid, notification.object.get_name()
-		)
-		
-		self.callback(method_id, notification)
+		event = stream.extract(NintendoNotificationEvent)
+		self.handler.process_notification_event(event)
 		
 		#--- response ---
 		return client.init_response(self.PROTOCOL_ID, call_id, method_id)

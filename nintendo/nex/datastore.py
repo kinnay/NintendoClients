@@ -1,152 +1,110 @@
 
-from nintendo.nex.common import NexEncoder, KeyValue, DateTime
+from nintendo.nex import common
 import requests
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class PersistenceTarget(NexEncoder):
-	version_map = {
-		30504: 0
-	}
-	
-	def init(self, owner_id, persistence_id):
+class PersistenceTarget(common.Structure):
+	def __init__(self, owner_id, persistence_id):
 		self.owner_id = owner_id
 		self.persistence_id = persistence_id
 	
-	def encode_old(self, stream):
+	def streamin(self, stream):
 		stream.u32(self.owner_id)
 		stream.u16(self.persistence_id)
-		
-	encode_v0 = encode_old
 	
 	
-class DataStorePermission(NexEncoder):
-	version_map = {
-		30810: 0
-	}
-	
-	def decode_old(self, stream):
+class DataStorePermission(common.Structure):
+	def streamout(self, stream):
 		self.permission = stream.u8()
-		self.unk = stream.list(stream.u32)
-		
-	decode_v0 = decode_old
+		self.recipients = stream.list(stream.u32)
 		
 	
-class DataStoreRatingInfo(NexEncoder):
-	version_map = {
-		30810: 0
-	}
-	
-	def decode_old(self, stream):
-		self.unk1 = stream.s64()
-		self.unk2 = stream.u32()
-		self.unk3 = stream.s64()
-		
-	decode_v0 = decode_old
+class DataStoreRatingInfo(common.Structure):
+	def streamout(self, stream):
+		self.total_value = stream.s64()
+		self.count = stream.u32()
+		self.initial_value = stream.s64()
 	
 
-class DataStoreRatingInfoWithSlot(NexEncoder):
-	version_map = {
-		30810: 0
-	}
-	
-	def decode_old(self, stream):
+class DataStoreRatingInfoWithSlot(common.Structure):
+	def streamout(self, stream):
 		self.slot = stream.u8()
-		self.rating_info = DataStoreRatingInfo.from_stream(stream)
-		
-	decode_v0 = decode_old
+		self.rating_info = stream.extract(DataStoreRatingInfo)
 	
 	
-class DataStoreGetMetaParam(NexEncoder):
-	version_map = {
-		30810: 0
-	}
-	
-	def init(self, unk1, persistence_target, unk2, unk3):
-		self.unk1 = unk1
+class DataStoreGetMetaParam(common.Structure):
+	def __init__(self, data_id, persistence_target, result_option, access_password):
+		self.data_id = data_id
 		self.persistence_target = persistence_target
-		self.unk2 = unk2
-		self.unk3 = unk3
+		self.result_option = result_option
+		self.access_password = access_password
 		
-	def encode_old(self, stream):
-		stream.u64(self.unk1)
-		self.persistence_target.encode(stream)
-		stream.u8(self.unk2)
-		stream.u64(self.unk3)
-		
-	encode_v0 = encode_old
+	def streamin(self, stream):
+		stream.u64(self.data_id)
+		stream.add(self.persistence_target)
+		stream.u8(self.result_option)
+		stream.u64(self.access_password)
 		
 		
-class DataStoreMetaInfo(NexEncoder):
-	version_map = {
-		30810: 0
-	}
-	
-	def decode_old(self, stream):
-		self.unk1 = stream.u64()
-		self.unk2 = stream.u32()
-		self.unk3 = stream.u32()
-		self.owner_name = stream.string()
-		self.unk4 = stream.u16()
-		self.data = stream.read(stream.u16())
-		self.perm1 = DataStorePermission.from_stream(stream)
-		self.perm2 = DataStorePermission.from_stream(stream)
-		self.date1 = DateTime(stream.u64())
-		self.date2 = DateTime(stream.u64())
-		self.unk5 = stream.u16()
-		self.unk6 = stream.u8()
-		self.unk7 = stream.u32()
-		self.unk8 = stream.u32()
-		self.unk9 = stream.u32()
-		self.date3 = DateTime(stream.u64())
-		self.date4 = DateTime(stream.u64())
-		self.strings = stream.list(stream.string)
-		self.rating_infos = stream.list(lambda: DataStoreRatingInfoWithSlot.from_stream(stream))
-		
-	decode_v0 = decode_old
+class DataStoreMetaInfo(common.Structure):
+	def streamout(self, stream):
+		self.data_id = stream.u64()
+		self.owner_id = stream.u32()
+		self.size = stream.u32()
+		self.name = stream.string()
+		self.data_type = stream.u16()
+		self.meta_binary = stream.qbuffer()
+		self.permission = stream.extract(DataStorePermission)
+		self.delete_permission = stream.extract(DataStorePermission)
+		self.create_time = stream.datetime()
+		self.update_time = stream.datetime()
+		self.period = stream.u16()
+		self.status = stream.u8()
+		self.referred_count = stream.u32()
+		self.refer_data_id = stream.u32()
+		self.flag = stream.u32()
+		self.referred_time = stream.datetime()
+		self.expire_time = stream.datetime()
+		self.tags = stream.list(stream.string)
+		self.ratings = stream.list(lambda: stream.extract(DataStoreRatingInfoWithSlot))
 
 
-class DataStoreGetParam(NexEncoder):
-	version_map = {
-		30504: 0,
-		30810: 0
-	}
-	
-	def init(self, object_id, unk, persistence_target, unk2, strings=None):
-		self.object_id = object_id
-		self.unk = unk
+class DataStorePrepareGetParam(common.Structure):
+	def __init__(self, data_id, lock_id, persistence_target, access_password, extra_data=None):
+		self.data_id = data_id
+		self.lock_id = lock_id
 		self.persistence_target = persistence_target
-		self.unk2 = unk2
-		self.strings = strings
+		self.access_password = access_password
+		self.extra_data = extra_data
 	
-	def encode_old(self, stream):
-		stream.u64(self.object_id)
-		stream.u32(self.unk)
-		self.persistence_target.encode(stream)
-		stream.u64(self.unk2)
+	def streamin(self, stream):
+		stream.u64(self.data_id)
+		stream.u32(self.lock_id)
+		stream.add(self.persistence_target)
+		stream.u64(self.access_password)
 		
-	def encode_v0(self, stream):
-		self.encode_old(stream)
-		stream.list(self.strings, stream.string)
+		if self.version >= 0:
+			stream.list(self.extra_data, stream.string)
 
+			
+class DataStoreKeyValue(common.Structure):
+	def streamout(self, stream):
+		self.key = stream.string()
+		self.value = stream.string()
+			
 	
-class DataStoreGetInfo(NexEncoder):
-	version_map = {
-		30504: 0,
-		30810: 0
-	}
-	
-	def decode_old(self, stream):
+class DataStoreReqGetInfo(common.Structure):
+	def streamout(self, stream):
 		self.url = stream.string()
-		self.params = {item.key: item.value for item in stream.list(lambda: KeyValue.from_stream(stream))}
-		self.file_size = stream.u32()
-		self.data = stream.data()
+		self.headers = {item.key: item.value for item in stream.list(lambda: stream.extract(DataStoreKeyValue))}
+		self.size = stream.u32()
+		self.root_ca_cert = stream.buffer()
 		
-	def decode_v0(self, stream):
-		self.decode_old(stream)
-		self.unk2 = stream.u64()
+		if self.version >= 0:
+			self.data_id = stream.u64()
 	
 
 class DataStoreClient:
@@ -206,39 +164,39 @@ class DataStoreClient:
 	def get_meta(self, param):
 		logger.info("DataStore.get_meta(...)")
 		#--- request ---
-		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_GET_META)
-		param.encode(stream)
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_META)
+		stream.add(param)
 		self.client.send_message(stream)
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		info = DataStoreMetaInfo.from_stream(stream)
+		info = stream.extract(DataStoreMetaInfo)
 		logger.info("DataStore.get_meta -> done")
 		return info
 		
 	def prepare_get_object(self, param):
-		logger.info("DataStore.prepare_get_object(%08X)", param.object_id)
+		logger.info("DataStore.prepare_get_object(%08X)", param.data_id)
 		#--- request ---
-		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT)
-		param.encode(stream)
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT)
+		stream.add(param)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		info = DataStoreGetInfo.from_stream(stream)
+		info = stream.extract(DataStoreReqGetInfo)
 		logger.info("DataStore.prepare_get_object -> %s", info.url)
 		return info
 		
 	def get_metas_multiple_param(self, param_list):
 		logger.info("DataStore.get_metas_multiple_param(...)")
 		#--- request ---
-		stream, call_id = self.client.init_message(self.PROTOCOL_ID, self.METHOD_GET_METAS_MULTIPLE_PARAM)
-		stream.list(param_list, lambda x: x.encode(stream))
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_METAS_MULTIPLE_PARAM)
+		stream.list(param_list, stream.add)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		infos = stream.list(lambda: DataStoreMetaInfo.from_stream(stream))
+		infos = stream.list(lambda: stream.extract(DataStoreMetaInfo))
 		results = stream.list(stream.u32) #Error codes
 		return infos
 	
@@ -249,4 +207,4 @@ class DataStore:
 		
 	def get_object(self, param):
 		get_info = self.client.prepare_get_object(param)
-		return requests.get("http://" + get_info.url, headers=get_info.params).content
+		return requests.get("http://" + get_info.url, headers=get_info.headers).content

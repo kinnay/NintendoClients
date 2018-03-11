@@ -1,10 +1,7 @@
 
-from nintendo.common.transport import Socket
-from nintendo.common.crypto import RC4
-from nintendo.common import util
+from nintendo.common import crypto, util, socket, websocket, scheduler
 
 import itertools
-import threading
 import hashlib
 import hmac
 import struct
@@ -14,134 +11,231 @@ import time
 import logging
 logger = logging.getLogger(__name__)
 
-#These values are actually a bit more complicated,
-#but since 0xA1 and 0xAF always work, there's no
-#point in doing it differently.
-PORT_SERVER = 0xA1
-PORT_CLIENT = 0xAF
+TYPE_SYN = 0
+TYPE_CONNECT = 1
+TYPE_DATA = 2
+TYPE_DISCONNECT = 3
+TYPE_PING = 4
 
-PACKET_SYN = 0
-PACKET_CONNECT = 1
-PACKET_DATA = 2
-PACKET_DISCONNECT = 3
-PACKET_PING = 4
-
-FLAG_ACK = 0x10
-FLAG_RELIABLE = 0x20
-FLAG_NEED_ACK = 0x40
-FLAG_80 = 0x80
-FLAG_ACK2 = 0x2000
-
-#Supported functions, unknown purpose
-SUPPORT_2 = 2
-SUPPORT_4 = 4
-SUPPORT_100 = 0x100
+FLAG_ACK = 1
+FLAG_RELIABLE = 2
+FLAG_NEED_ACK = 4
+FLAG_HAS_SIZE = 8
+FLAG_MULTI_ACK = 0x200
 
 #I ran into issues when I was missing a support
 #flag, so I'm just setting all bits to 1 here
 SUPPORT_ALL = 0xFFFFFFFF
 
-
-class PRUDPError(ConnectionError): pass
-
-def calc_server_signature(host, port, key):
-	data = struct.pack("<IH", util.ip_to_hex(host), port)
-	return hmac.HMAC(key, data).digest()
-	
-def calc_packet_signature(header, option, data, sig_sum, conn_sig, secure_key, sig_key):
-	mac = hmac.HMAC(sig_key)
-	mac.update(header[4:])
-	mac.update(secure_key)
-	mac.update(sig_sum)
-	mac.update(conn_sig)
-	mac.update(option)
-	mac.update(data)
-	return mac.digest()
+OPTION_SUPPORT = 0
+OPTION_CONNECTION_SIG = 1
+OPTION_FRAGMENT = 2
+OPTION_3 = 3
+OPTION_4 = 4
 
 
-class PacketOut:
-	def __init__(self, type, flags, packet_id, data=b"", frag_id=0):
+def decode_options(data):
+	pos = 0
+	options = {}
+	while pos < len(data):
+		if len(data) - pos < 2:
+			logger.error("(Opt) Only one byte left in option data")
+			return
+
+		type = data[pos]
+		length = data[pos + 1]
+		pos += 2
+
+		if len(data) - pos < length:
+			logger.error("(Opt) Option length is greater than data size")
+			return
+
+		if type == OPTION_SUPPORT:
+			if length != 4:
+				logger.error("(Opt) Invalid option length in OPTION_SUPPORT")
+				return
+			options[type] = struct.unpack_from("<I", data, pos)[0]
+
+		elif type == OPTION_CONNECTION_SIG:
+			if length != 16:
+				logger.error("(Opt) Invalid option length in OPTION_CONNECTION_SIG")
+				return
+			options[type] = data[pos : pos + length]
+
+		elif type in [OPTION_FRAGMENT, OPTION_4]:
+			if length != 1:
+				logger.error("(Opt) Invalid option length in %s",
+							   "OPTION_FRAGMENT" if type == OPTION_FRAGMENT else OPTION_4)
+				return
+			options[type] = data[pos]
+
+		elif type == OPTION_3:
+			if length != 2:
+				logger.error("(Opt) Invalid option length in OPTION_3")
+				return
+			options[type] = struct.unpack_from("<H", data, pos)[0]
+
+		else:
+			logger.error("(Opt) Unrecognized option type %i", type)
+			return
+		
+		pos += length
+	return options
+
+
+class PRUDPPacket:
+	def __init__(self, type=None, flags=None):
 		self.type = type
 		self.flags = flags
-		self.packet_id = packet_id
-		self.data = data
-		self.frag_id = frag_id
+		
+		self.source_port = None
+		self.source_type = None
+		self.dest_port = None
+		self.dest_type = None
+		self.packet_id = None
+		self.fragment_id = None
+		self.signature = None
+		self.payload = b""
+		
+	def __repr__(self):
+		return "<PRUDPPacket type=%i flags=%03X seq=%s frag=%s>" %(self.type, self.flags, self.packet_id, self.fragment_id)
+	
+	
+class PRUDPMessageV0:
+	def __init__(self, client):
+		self.client = client
+		
+	def encode(self, packet):
+		raise NotImplementedError
+		
+	def decode(self, data):
+		raise NotImplementedError
 
-	def encode(self, conn_id, server_sig, conn_sig, sig_sum, secure_key, sig_key):
-		self.flags |= FLAG_80
-		option = self.encode_option(server_sig)
-		header = self.encode_header(len(option), conn_id)
-		checksum = calc_packet_signature(header, option, self.data, sig_sum, conn_sig, secure_key, sig_key)
-		return b"\xEA\xD0" + header + checksum + option + self.data
+	
+class PRUDPMessageV1:
+	def __init__(self, client):
+		self.client = client
+		self.reset()
 		
-	def encode_option(self, server_sig):
-		if self.type in [PACKET_SYN, PACKET_CONNECT]:
-			data = b"\x00\x04"
-			data += struct.pack("<I", SUPPORT_ALL)
-			data += b"\x01\x10"
-			if self.type == PACKET_SYN:
-				data += b"\x00" * 0x10
-			else: #PACKET_CONNECT
-				data += server_sig
-				data += b"\x03\x02"
-				data += struct.pack("H", random.randint(0, 0xFFFF))
-			data += b"\x04\x01\x00"
-			return data
-		elif self.type == PACKET_DATA:
-			return bytes([self.type, 1, self.frag_id])
-		return b""
+	def reset(self):
+		self.buffer = b""
+
+	def calc_packet_signature(self, header, options, signature, payload):
+		mac = hmac.HMAC(self.client.signature_key)
+		mac.update(header[4:])
+		mac.update(self.client.secure_key)
+		mac.update(struct.pack("<I", self.client.signature_base))
+		mac.update(signature)
+		mac.update(options)
+		mac.update(payload)
+		return mac.digest()
+
+	def encode(self, packet):
+		options = self.encode_options(packet)
+		header = self.encode_header(packet, len(options))
+		checksum = self.calc_packet_signature(header, options, self.client.server_signature, packet.payload)
+		return b"\xEA\xD0" + header + checksum + options + packet.payload
 		
-	def encode_header(self, option_len, conn_id):
-		data = b"\x01" #PRUDP Version
-		data += struct.pack("B", option_len)
-		data += struct.pack("<H", len(self.data))
-		data += struct.pack("BB", PORT_CLIENT, PORT_SERVER)
-		data += struct.pack("<H", self.type | self.flags)
-		data += struct.pack("B", conn_id)
-		data += struct.pack("B", 0)
-		data += struct.pack("<H", self.packet_id)
-		return data
+	def encode_header(self, packet, option_size):
+		return struct.pack("<BBHBBHBBH",
+			1, #PRUDP version
+			option_size,
+			len(packet.payload),
+			packet.source_port | (packet.source_type << 4),
+			packet.dest_port | (packet.dest_type << 4),
+			packet.type | (packet.flags << 4),
+			self.client.session_id, 0, packet.packet_id
+		)
 		
-	def __repr__(self):
-		return "<PacketOut type=%i flags=%04X, id=%i>" %(self.type, self.flags, self.packet_id)
+	def encode_options(self, packet):
+		options = b""
+		if packet.type in [TYPE_SYN, TYPE_CONNECT]:
+			options += struct.pack("<BBI", OPTION_SUPPORT, 4, SUPPORT_ALL)
+			options += struct.pack("<BB16s", OPTION_CONNECTION_SIG, 16, packet.signature)
+			if packet.type == TYPE_CONNECT:
+				options += struct.pack("<BBH", OPTION_3, 2, random.randint(0, 0xFFFF))
+			options += struct.pack("<BBB", OPTION_4, 1, 0)
+		elif packet.type == TYPE_DATA:
+			options += struct.pack("<BBB", OPTION_FRAGMENT, 1, packet.fragment_id)
+		return options
 		
+	def decode(self, data):
+		self.buffer += data
+
+		packets = []
+		while self.buffer:
+			if len(self.buffer) < 30: return packets
+			if self.buffer[:2] != b"\xEA\xD0":
+				logger.error("(V1) Invalid magic number")
+				self.reset()
+				return packets
 		
-class PacketIn:
-	def decode(self, data):	
-		magic = data[:2]
-		header = data[2 : 14]
-		checksum = data[14 : 30]
-		
-		option_len, data_len = self.decode_header(header)
-		option = data[30 : 30 + option_len]
-		self.decode_option(option)
-		
-		self.data = data[30 + option_len : 30 + option_len + data_len]
-		
-	def decode_header(self, header):
-		option_len = header[1]
-		data_len = struct.unpack_from("<H", header, 2)[0]
-		
-		type_flags = struct.unpack_from("<H", header, 6)[0]
-		self.type = type_flags & 0xF
-		self.flags = type_flags & 0xFFF0
-		
-		self.chunk_id = header[9]
-		self.packet_id = struct.unpack_from("<H", header, 10)[0]
-		return option_len, data_len
-		
-	def decode_option(self, option):
-		self.frag_id = 0
-		if self.type == PACKET_SYN:
-			self.conn_signature = option[8 : 24]
-		elif self.type == PACKET_DATA:
-			self.frag_id = option[2]
+			packet = PRUDPPacket()
+
+			header = self.buffer[2 : 14]
+			checksum = self.buffer[14 : 30]
 			
-	def __repr__(self):
-		return "<PacketIn type=%i flags=%04X, id=%i chunk=%i frag=%i>" %(self.type, self.flags, self.packet_id, self.chunk_id, self.frag_id)
+			version, option_size, payload_size, source, dest, type_flags, \
+				session_id, pad, packet_id = struct.unpack("<BBHBBHBBH", header)
+
+			if version != 1:
+				logger.error("(V1) Version check failed")
+				self.reset()
+				return packets
+			if len(self.buffer) < 30 + option_size + payload_size:
+				return packets
+				
+			packet.source_type = source >> 4
+			packet.source_port = source & 0xF
+			packet.dest_type = dest >> 4
+			packet.dest_port = dest & 0xF
+			packet.flags = type_flags >> 4
+			packet.type = type_flags & 0xF
+			packet.packet_id = packet_id
+			
+			option_data = self.buffer[30 : 30 + option_size:]
+			options = decode_options(option_data)
+			if options is None:
+				self.reset()
+				return packets
+			
+			if packet.type in [TYPE_SYN, TYPE_CONNECT]:
+				if OPTION_CONNECTION_SIG not in options:
+					logger.error("(V1) Expected connection signature in SYN/CONNECT packet")
+					self.reset()
+					return packets
+				packet.signature = options[OPTION_CONNECTION_SIG]
+			elif packet.type == TYPE_DATA:
+				if OPTION_FRAGMENT not in options:
+					logger.error("(V1) Expected fragment id in DATA packet")
+					self.reset()
+					return packets
+				packet.fragment_id = options[OPTION_FRAGMENT]
+			
+			packet.payload = self.buffer[30 + option_size : 30 + option_size + payload_size]
+
+			if self.calc_packet_signature(header, option_data, self.client.client_signature, packet.payload) != checksum:
+				logger.error("(V1) Invalid packet signature")
+				self.reset()
+				return packets
+			
+			self.buffer = self.buffer[30 + option_size + payload_size:]
+			packets.append(packet)
+		return packets
+
 		
+class PRUDPLiteMessage:
+	def __init__(self, client):
+		self.client = client
 		
-class PRUDP:
+	def encode(self, packet):
+		raise NotImplementedError
+		
+	def decode(self, data):
+		raise NotImplementedError
+
+
+class PRUDPClient:
 
 	DISCONNECTED = 0
 	CONNECTING = 1
@@ -149,208 +243,241 @@ class PRUDP:
 	DISCONNECTING = 3
 
 	DEFAULT_KEY = b"CD&ML"
-	
-	connection_id = random.randint(0, 0xFF)
 
-	def __init__(self, key):
-		logger.debug("New client - access key=%s", key)
-		self.encrypt = RC4(self.DEFAULT_KEY, False)
-		self.decrypt = RC4(self.DEFAULT_KEY, False)
-		self.secure_key = b""
-
-		self.signature_key = hashlib.md5(key).digest()
-		self.signature_sum = struct.pack("<I", sum(key))
-
-		self.s = Socket(Socket.UDP)
+	def __init__(self, settings, access_key):
+		logger.info("New client - access key=%s", access_key)
+		self.settings = settings
+		
+		self.signature_key = hashlib.md5(access_key).digest()
+		self.signature_base = sum(access_key)
+		
+		self.server_port = 1
+		if settings.transport_type == self.settings.TRANSPORT_UDP:
+			if settings.prudp_version == 0:
+				self.packet_encoder = PRUDPMessageV0(self)
+			else:
+				self.packet_encoder = PRUDPMessageV1(self)
+			self.client_port = 0xF
+		else:
+			self.packet_encoder = PRUDPLiteMessage(self)
+			self.client_port = 0x1F
+			
+		self.syn_packet = PRUDPPacket(TYPE_SYN, FLAG_NEED_ACK)
+		self.syn_packet.signature = bytes(16)
+		self.connect_packet = PRUDPPacket(TYPE_CONNECT, FLAG_RELIABLE | FLAG_NEED_ACK | FLAG_HAS_SIZE)
 		self.state = self.DISCONNECTED
 		
-		self.frag_size = 1300
-		self.resend_timeout = 1.5
-		self.ping_timeout = 4
-		self.silence_timeout = 7.5
-		self.thread_tick = 0.02
-		
-		self.packet_id_out = itertools.count(2)
-		self.packet_id_in = 1
-		self.session_id = 0
-		self.fragment_buffer = b""
-		self.packet_queue = {}
-		self.connection_signature = b"\x00" * 0x10
-		
-		self.ack_timers = {}
-		self.ping_timer = 0
-		self.silence_timer = 0
-		
-		self.syn_packet = PacketOut(
-			PACKET_SYN, FLAG_NEED_ACK, 0
-		)
-		
-		self.connect_packet = PacketOut(
-			PACKET_CONNECT, FLAG_RELIABLE | FLAG_NEED_ACK, 1
-		)
-		
-		self.thread = threading.Thread(target=self.thread_loop, daemon=True)
-
 	def set_secure_key(self, key):
 		self.encrypt.set_key(key)
 		self.decrypt.set_key(key)
 		self.secure_key = key
 		
-	def set_state(self, state):
-		if self.state != state:
-			self.state = state
-			self.on_state_change(state)
+	def is_connected(self): return self.state == self.CONNECTED
+	def get_address(self): return self.s.get_address()
+	def get_port(self): return self.s.get_port()
 		
-	def connect(self, host, port, data=b"", blocking=True):
-		self.s.connect(host, port)
-		self.server_signature = calc_server_signature(host, port, self.signature_key)
-		self.connect_packet.data = data
-		self.set_state(self.CONNECTING)
-		
-		self.thread.start()
-		
-		logger.debug("Connecting to %s:%i", host, port)
-		
-		self.send_packet(self.syn_packet)
-		
-		if blocking:
-			while self.state == self.CONNECTING:
-				time.sleep(0.05)
-			if self.state != self.CONNECTED:
-				raise PRUDPError("Failed to establish PRUDP connection to %s:%i" %(host, port))
-
-	def send(self, data):
-		frag_id = len(data) // self.frag_size
-		while data:
-			self.send_fragment(data[:self.frag_size], frag_id)
-			data = data[self.frag_size:]
-			frag_id -= 1
-
-	def send_fragment(self, data, frag_id):
-		encrypted = self.encrypt.crypt(data)
-		packet = PacketOut(
-			PACKET_DATA, FLAG_RELIABLE | FLAG_NEED_ACK, next(self.packet_id_out), encrypted, frag_id
-		)
-		self.send_packet(packet)
-		
-	def close(self, blocking=True):
+	def connect(self, host, port, payload=b""):
 		if self.state != self.DISCONNECTED:
-			logger.debug("(%i) Closing PRUDP connection", self.session_id)
-			self.set_state(self.DISCONNECTING)
-			self.send_disconnect()
-			
-			if blocking:
-				while self.state == self.DISCONNECTING:
-					time.sleep(0.05)
-				
-	def send_disconnect(self):
-		logger.debug("(%i) Sending DISCONNECT packet", self.session_id)
-		packet = PacketOut(
-			PACKET_DISCONNECT, FLAG_RELIABLE | FLAG_NEED_ACK, next(self.packet_id_out)
-		)
-		self.send_packet(packet)
-		
-	def send_ping(self):
-		logger.debug("(%i) Sending PING packet", self.session_id)
-		packet = PacketOut(
-			PACKET_PING, FLAG_RELIABLE | FLAG_NEED_ACK, next(self.packet_id_out)
-		)
-		self.send_packet(packet)
-		
-	def send_ack(self, packet):
-		logger.debug("(%i) Sending ACK packet", self.session_id)
-		packet = PacketOut(
-			packet.type, FLAG_ACK, packet.packet_id, packet.data
-		)
-		self.send_packet(packet)
-		
-	def send_packet(self, packet):
-		logger.debug("(%i) Sending packet: %s", self.session_id, packet)
-		self.s.send(
-			packet.encode(
-				self.session_id, self.server_signature, self.connection_signature,
-				self.signature_sum, self.secure_key, self.signature_key
-			)
-		)
+			raise RuntimeError("Socket was not disconnected")
+	
+		logger.info("Connecting to %s:%i", host, port)
+		self.state = self.CONNECTING
 
-		if packet.flags & FLAG_NEED_ACK:
-			self.ack_timers[packet.packet_id] = [packet, 0]
+		self.encrypt = crypto.RC4(self.DEFAULT_KEY, False)
+		self.decrypt = crypto.RC4(self.DEFAULT_KEY, False)
+		self.secure_key = b""
+		
+		self.server_signature = b""
+		self.client_signature = b""
+
+		self.packets = []
+		self.packet_queue = {}
+		self.fragment_buffer = b""
+		self.packet_id_out = itertools.count()
+		self.packet_id_in = 1
+		self.session_id = 0
+		
+		self.packet_encoder.reset()
+		if self.settings.transport_type == self.settings.TRANSPORT_UDP:
+			self.s = socket.Socket(socket.TYPE_UDP)
+		elif self.settings.transport_type == self.settings.TRANSPORT_TCP:
+			self.s = socket.Socket(socket.TYPE_TCP)
+		else:
+			self.s = websocket.WebSocket()
+
+		if not self.s.connect(host, port):
+			logger.warning("Socket connection failed")
+			self.state = self.DISCONNECTED
+			return False
+			
+		self.ack_events = {}
+		self.ping_event = None
+		self.timeout_event = scheduler.add_timeout(self.handle_silence_timeout, self.settings.silence_timeout)
+		self.socket_event = scheduler.add_socket(self.handle_recv, self.s)
+
+		self.send_packet(self.syn_packet)
+		if not self.wait_ack(self.syn_packet):
+			logger.warning("PRUDP connection failed")
+			return False
+			
+		self.session_id = random.randint(0, 0xFF)
+		self.client_signature = bytes([random.randint(0, 0xFF) for i in range(16)])
+		self.connect_packet.signature = self.client_signature
+		self.connect_packet.payload = payload
+
+		self.send_packet(self.connect_packet)
+		if not self.wait_ack(self.connect_packet):
+			logger.warning("PRUDP connection failed")
+			return False
+			
+		self.ping_event = scheduler.add_timeout(self.handle_ping, self.settings.ping_timeout, True)
+			
+		logger.info("PRUDP connection OK")
+		self.state = self.CONNECTED
+		return True
+		
+	def close(self):
+		if self.state != self.DISCONNECTED:
+			self.state = self.DISCONNECTING
+			packet = PRUDPPacket(TYPE_DISCONNECT, FLAG_RELIABLE | FLAG_NEED_ACK)
+			self.send_packet(packet)
+			self.wait_ack(packet)
+			self.s.close()
+			
+			self.state = self.DISCONNECTED
+			self.remove_events()
+			logger.debug("(%i) PRUDP connection closed", self.session_id)
+			
+	def recv(self):
+		if self.state != self.CONNECTED: return b""
+		if self.packets:
+			return self.packets.pop(0)
+			
+	def send(self, data):
+		if self.state != self.CONNECTED:
+			raise RuntimeError("Can't send data on a disconnected PRUDP socket")
+
+		fragment_id = 1
+		while data:
+			if len(data) <= self.settings.fragment_size:
+				fragment_id = 0
+			self.send_fragment(data[:self.settings.fragment_size], fragment_id)
+			data = data[self.settings.fragment_size:]
+			fragment_id += 1
+
+	def send_fragment(self, data, fragment_id):
+		packet = PRUDPPacket(TYPE_DATA, FLAG_RELIABLE | FLAG_NEED_ACK | FLAG_HAS_SIZE)
+		packet.fragment_id = fragment_id
+		packet.payload = self.encrypt.crypt(data)
+		self.send_packet(packet)
+		
+	def remove_events(self):
+		scheduler.remove(self.socket_event)
+		scheduler.remove(self.timeout_event)
+		if self.ping_event:
+			scheduler.remove(self.ping_event)
+		for event in self.ack_events.values():
+			scheduler.remove(event)
+		
+	def handle_recv(self, data):
+		if not data:
+			logger.debug("Connection was closed")
+			self.state = self.DISCONNECTED
+			self.remove_events()
+			return
+
+		packets = self.packet_encoder.decode(data)
+		for packet in packets:
+			logger.debug("(%i) Packet received: %s" %(self.session_id, packet))
+			if packet.flags & FLAG_ACK:
+				if packet.packet_id in self.ack_events:
+					if packet.type == TYPE_SYN:
+						self.server_signature = packet.signature
+					scheduler.remove(self.ack_events.pop(packet.packet_id))
+
+			elif packet.flags & FLAG_MULTI_ACK:
+				ack_id = struct.unpack_from("<H", packet.payload, 2 + packet.payload[1] * 2)[0]
+				for packet_id in list(self.ack_events.keys()):
+					if packet_id <= ack_id:
+						scheduler.remove(self.ack_events.pop(packet_id))
+						
+			else:
+				self.packet_queue[packet.packet_id] = packet
+				while self.packet_id_in in self.packet_queue:
+					packet = self.packet_queue.pop(self.packet_id_in)
+					self.handle_packet(packet)
+					self.packet_id_in += 1
+				
+			if self.ping_event:
+				self.ping_event.reset()
+			self.timeout_event.reset()
 			
 	def handle_packet(self, packet):
-		logger.debug("(%i) Processing packet: %s", self.session_id, packet)
 		if packet.flags & FLAG_NEED_ACK:
 			self.send_ack(packet)
+			if packet.type == TYPE_DISCONNECT:
+				self.send_ack(packet)
+				self.send_ack(packet)
 	
-		if packet.type == PACKET_DATA:
-			self.fragment_buffer += self.decrypt.crypt(packet.data)
-			if packet.frag_id == 0:
-				self.on_data(self.fragment_buffer)
+		if packet.type == TYPE_DATA:
+			self.fragment_buffer += self.decrypt.crypt(packet.payload)
+			if packet.fragment_id == 0:
+				self.packets.append(self.fragment_buffer)
 				self.fragment_buffer = b""
 				
-	def handle_ack(self, packet_id, packet):
-		logger.debug("(%i) ACK received for packet %i", self.session_id, packet_id)
-		if packet_id in self.ack_timers:
-			self.ack_timers.pop(packet_id)
+		elif packet.type == TYPE_DISCONNECT:
+			logger.info("(%i) Server closed connection")
+			self.state = self.DISCONNECTED
+			self.remove_events()
 			
-		if packet.type == PACKET_SYN:
-			self.connection_signature = packet.conn_signature
-			
-			self.session_id = PRUDP.connection_id
-			PRUDP.connection_id = (PRUDP.connection_id + 1) & 0xFF
-			
-			self.send_packet(self.connect_packet)
-		elif packet.type == PACKET_CONNECT:
-			self.set_state(self.CONNECTED)
-		elif packet.type == PACKET_DISCONNECT:
-			self.set_state(self.DISCONNECTED)
-		
-	def thread_loop(self):
-		while self.state != self.DISCONNECTED:
-			for timer in list(self.ack_timers.values()):
-				timer[1] += self.thread_tick
-				if timer[1] >= self.resend_timeout:
-					logger.info("(%i) Packet %i timed out, resending", self.session_id, timer[0].packet_id)
-					self.send_packet(timer[0])
-					
-			self.ping_timer += self.thread_tick
-			if self.ping_timer >= self.ping_timeout:
-				self.send_ping()
-				self.ping_timer = 0
-				
-			self.silence_timer += self.thread_tick
-			if self.silence_timer >= self.silence_timeout:
-				logger.error("(%i) PRUDP connection died" %self.session_id)
-				self.set_state(self.DISCONNECTED)
-				return
-				
-			#The real MTU is probably 1364, but to be safe, pass 1400
-			data = self.s.recv(1400)
-			if data:
-				packet = PacketIn()
-				packet.decode(data) #Maybe check checksum here?
-				logger.debug("(%i) Packet received: %s", self.session_id, packet)
+	def handle_ping(self):
+		packet = PRUDPPacket(TYPE_PING, FLAG_RELIABLE | FLAG_NEED_ACK)
+		self.send_packet(packet)
 
-				if packet.flags & FLAG_ACK:
-					self.handle_ack(packet.packet_id, packet)
-					
-				elif packet.flags & FLAG_ACK2:
-					#This is weird
-					ack_id = struct.unpack_from("<H", packet.data, 2 + packet.data[1] * 2)[0]
-					for packet_id in list(self.ack_timers.keys()):
-						if packet_id <= ack_id:
-							self.ack_timers.pop(packet_id)
-					
-				else:
-					self.packet_queue[packet.packet_id] = packet
-					while self.packet_id_in in self.packet_queue:
-						packet = self.packet_queue.pop(self.packet_id_in)
-						self.handle_packet(packet)
-						self.packet_id_in += 1
-					
-				self.ping_timer = 0
-				self.silence_timer = 0
-				
-			time.sleep(self.thread_tick)
+	def handle_silence_timeout(self):
+		logger.error("Connection died")
+		self.state = self.DISCONNECTED
+		self.remove_events()
+		
+	def handle_ack_timeout(self, param):
+		packet, counter = param
+		if counter < 3:
+			logger.debug("(%i) Resending packet: %s", self.session_id, packet)
+			self.send_packet_raw(packet)
 			
-	def on_state_change(self, state): pass
-	def on_data(self, data): pass
+			event = scheduler.add_timeout(self.handle_ack_timeout, self.settings.resend_timeout, param=(packet, counter+1))
+			self.ack_events[packet.packet_id] = event
+		else:
+			logger.error("Packet timed out")
+			self.state = self.DISCONNECTED
+			del self.ack_events[packet.packet_id]
+			self.remove_events()
+			
+	def send_ack(self, packet):
+		ack = PRUDPPacket(packet.type, FLAG_ACK)
+		ack.packet_id = packet.packet_id
+		ack.fragment_id = packet.fragment_id
+		self.send_packet_raw(ack)
+		
+	def wait_ack(self, packet):
+		while self.state != self.DISCONNECTED and packet.packet_id in self.ack_events:
+			time.sleep(0.05)
+		return self.state != self.DISCONNECTED
+		
+	def send_packet(self, packet):
+		packet.packet_id = next(self.packet_id_out)
+
+		logger.debug("(%i) Sending packet: %s", self.session_id, packet)
+		
+		if packet.flags & FLAG_NEED_ACK:
+			event = scheduler.add_timeout(self.handle_ack_timeout, self.settings.resend_timeout, param=(packet, 0))
+			self.ack_events[packet.packet_id] = event
+		
+		self.send_packet_raw(packet)
+		
+	def send_packet_raw(self, packet):
+		packet.source_port = self.client_port
+		packet.source_type = self.settings.stream_type
+		packet.dest_port = self.server_port
+		packet.dest_type = self.settings.stream_type
+		self.s.send(self.packet_encoder.encode(packet))

@@ -1,29 +1,27 @@
 
-from nintendo.nex.common import NexEncoder
-from nintendo.nex.server import ProtocolServer
+from nintendo.nex import common
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class NotificationEvent(NexEncoder):
-	version_map = {
-		30504: 0
-	}
-	
-	def decode_old(self, stream):
+class NotificationEvent(common.Structure):
+	def streamout(self, stream):
 		self.pid = stream.u32()
 		self.type = stream.u32()
 		self.param1 = stream.u32()
 		self.param2 = stream.u32()
-		self.string = stream.string()
+		self.text = stream.string()
 		
-	def decode_v0(self, stream):
-		self.decode_old(stream)
-		self.unk = stream.u32()
+		if self.version >= 0:
+			self.param3 = stream.u32()
+
+			
+class NotificationHandler:
+	def process_notification_event(self, event): logger.warning("Notification: unhandled request (ProcessNotificationEvent)")
 
 
-class NotificationServer(ProtocolServer):
+class NotificationServer:
 
 	METHOD_PROCESS_NOTIFICATION_EVENT = 1
 
@@ -33,7 +31,7 @@ class NotificationServer(ProtocolServer):
 		self.methods = {
 			self.METHOD_PROCESS_NOTIFICATION_EVENT: self.process_notification_event
 		}
-		self.init_callbacks(*self.methods)
+		self.handler = NotificationHandler()
 	
 	def handle_request(self, client, call_id, method_id, stream):
 		if method_id in self.methods:
@@ -42,13 +40,8 @@ class NotificationServer(ProtocolServer):
 
 	def process_notification_event(self, client, call_id, method_id, stream):
 		#--- request ---
-		notification = NotificationEvent.from_stream(stream)
-		logger.info(
-			"Notification.process_notification_event: (%08X, %08X, %08X, %08X, %s)",
-			notification.pid, notification.type, notification.param1, notification.param2, notification.string
-		)
-		
-		self.callback(method_id, notification)
+		event = stream.extract(NotificationEvent)
+		self.handler.process_notification_event(event)
 		
 		#--- response ---
 		return client.init_response(self.PROTOCOL_ID, call_id, method_id)

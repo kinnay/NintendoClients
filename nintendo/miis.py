@@ -1,8 +1,6 @@
 
-from nintendo.common.stream import StreamIn, StreamOut, BitStreamIn, BitStreamOut
-from nintendo.common import util
+from nintendo.common import streams, util
 import struct
-import enum
 
 def swap32(data, offs):
 	struct.pack_into("<I", data, offs, struct.unpack_from(">I", data, offs)[0])
@@ -36,7 +34,7 @@ class MiiData:
 	
 	def decode(self, stream):
 		data = stream.read(0x60)
-		stream = BitStreamIn(self.swap_endian(data), ">")
+		stream = streams.BitStreamIn(self.swap_endian(data), ">")
 
 		#FFLiMiiDataCore
 		self.birth_platform = stream.bits(4) #1 - 7
@@ -127,7 +125,7 @@ class MiiData:
 			raise ValueError("Mii data checksum not valid")
 		
 	def encode(self, outstream):
-		stream = BitStreamOut(">")
+		stream = streams.BitStreamOut(">")
 
 		#FFLiMiiDataCore
 		stream.bits(self.birth_platform, 4)
@@ -213,7 +211,7 @@ class MiiData:
 		#FFLStoreData
 		stream.write(self.unk48)
 
-		data = self.swap_endian(stream.buffer)
+		data = self.swap_endian(stream.data)
 		outstream.write(data)
 		outstream.u16(util.crc16(data + b"\0\0"))
 		
@@ -237,12 +235,12 @@ class MiiData:
 		return bytes(array)
 		
 	def build(self):
-		stream = StreamOut(">")
+		stream = streams.StreamOut(">")
 		self.encode(stream)
-		return stream.buffer
+		return stream.data
 	
 	@classmethod
 	def parse(cls, data):
 		instance = cls()
-		instance.decode(StreamIn(data, ">"))
+		instance.decode(streams.StreamIn(data, ">"))
 		return instance

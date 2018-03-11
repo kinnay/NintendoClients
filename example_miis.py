@@ -1,8 +1,8 @@
 
-from nintendo.act import AccountAPI
+from nintendo import account
 
-api = AccountAPI()
-pid = api.get_pid("Kinnay-WiiU") #That's me
+api = account.AccountAPI()
+pid = api.get_pid("Kinnay-WiiU")
 mii = api.get_mii(pid)
 print("NNID:", mii.nnid)
 print("PID:", pid) #Same as mii.pid

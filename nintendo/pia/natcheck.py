@@ -11,12 +11,12 @@ secondary_port = 10125
 
 
 class NATProperties:
-	def __init__(self, local_address, public_address, nat_filtering, nat_mapping, lag):
+	def __init__(self, local_address, public_address, nat_filtering, nat_mapping, rtt):
 		self.local_address = local_address
 		self.public_address = public_address
 		self.nat_filtering = nat_filtering
 		self.nat_mapping = nat_mapping #1=EIM, 2=EDM
-		self.lag = lag
+		self.rtt = rtt
 
 
 class NATDetecter:
@@ -51,14 +51,14 @@ class NATDetecter:
 		#the response to request 102 may be filtered out by the nat
 		#device.
 		messages = {}
-		lag = None
+		rtt = None
 		for i in range(15):
 			try:
 				request, host, port = self.recv_message()
 				messages[request] = host, port
 				
-				if not lag:
-					lag = int((time.monotonic() - start_time) * 1000)
+				if not rtt:
+					rtt = int((time.monotonic() - start_time) * 1000)
 			except socket.timeout:
 				break
 		

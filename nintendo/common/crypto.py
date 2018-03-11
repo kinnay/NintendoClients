@@ -1,6 +1,6 @@
 
 class RC4:
-	def __init__(self, key, reset=True):
+	def __init__(self, key, reset=False):
 		self.reinit = reset
 		self.set_key(key)
 		
