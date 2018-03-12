@@ -30,7 +30,7 @@ class Socket:
 	def recv(self, num=4096):
 		try:
 			return self.s.recv(num)
-		except BlockingIOError:
+		except (BlockingIOError, ssl.SSLWantReadError):
 			pass
 		except OSError:
 			return b""

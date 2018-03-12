@@ -33,36 +33,46 @@ class WebSocket:
 	def __init__(self):
 		self.state = STATE_DISCONNECTED
 
-	def connect(self, addr, port=None, timeout=None):
+	def connect(self, host, port=None, timeout=None):
 		if self.state != STATE_DISCONNECTED:
 			raise RuntimeError("Socket was not disconnected")
-	
-		if not addr.startswith("ws://") and not addr.startswith("wss://"):
-			raise ValueError("Address must start with ws:// or wss://")
+		
+		scheme = None
+		if "://" in host:
+			scheme, host = host.split("://", 1)
 			
 		self.state = STATE_CONNECTING
-			
-		scheme, url = addr.split("://", 1)
 		
-		split = url.split("/", 1)
-		host = split[0]
-		path = "/" + split[1] if len(split) > 1 else "/"
-	
+		path = "/"
+		if "/" in host:
+			path = host[host.index("/"):]
+			host = host[:host.index("/")]
+			
+		if scheme is None:
+			if port is None:
+				raise ValueError("Neither scheme nor port specified")
+			if port not in [80, 443]:
+				raise ValueError("Couldn't derive scheme from port")
+			scheme = "wss" if port == 443 else "ws"
+			
+		if scheme not in ["wss", "ws"]:
+			raise ValueError("Invalid scheme")
+			
+		if port is None:
+			port = 443 if scheme == "wss" else 80
+
 		if scheme == "wss":
 			self.s = socket.Socket(socket.TYPE_SSL)
 		else:
 			self.s = socket.Socket(socket.TYPE_TCP)
-		
-		if port is None:
-			port = 443 if scheme == "wss" else 80
 			
-		logger.debug("Connecting websocket: (%s, %i)", addr, port)
+		logger.debug("Connecting websocket: (%s, %i)", host, port)
 		
 		self.buffer = b""
 		self.fragments = b""
 		self.packets = []
 		if not self.s.connect(host, port):
-			logger.warning("Socket connection failed")
+			logger.error("Socket connection failed")
 			self.state = STATE_DISCONNECTED
 
 		self.socket_event = scheduler.add_socket(self.handle_recv, self.s)
@@ -70,12 +80,12 @@ class WebSocket:
 		self.ping_timeout = None
 		
 		handshake = self.handshake_template %(path, host)
-		self.s.send(handshake)
+		self.s.send(handshake.encode("ascii"))
 		
 		while self.state == STATE_CONNECTING:
 			time.sleep(0.05)
 		if self.state != STATE_CONNECTED:
-			logger.warning("Websocket connection failed")
+			logger.error("Websocket connection failed")
 			return False
 			
 		logger.debug("Websocket connection OK")
@@ -97,13 +107,13 @@ class WebSocket:
 		if self.state == STATE_CONNECTING:
 			if b"\r\n\r\n" in self.buffer:
 				if not self.buffer.startswith(b"HTTP/1.1"):
-					logger.warning("Invalid handshake response")
+					logger.error("Invalid handshake response")
 					self.state = STATE_DISCONNECTED
 					self.remove_events()
 				
 				code = int(data[9:12])
 				if code != 101:
-					logger.warning("Server replied with status code %i" %code)
+					logger.error("Server replied with status code %i" %code)
 					self.state = STATE_DISCONNECTED
 					self.remove_events()
 					
@@ -149,7 +159,7 @@ class WebSocket:
 		self.ping_timeout = scheduler.add_timeout(self.handle_ping_timeout, 3)
 		
 	def handle_ping_timeout(self):
-		logger.warning("Connection died: no pong received")
+		logger.error("Connection died: no pong received")
 		self.state = STATE_DISCONNECTED
 		self.remove_events()
 		
@@ -180,6 +190,7 @@ class WebSocket:
 			self.remove_events()
 
 	def send(self, data):
+		print(data.hex())
 		if self.state != STATE_CONNECTED:
 			raise RuntimeError("Can't send data on a disconnected websocket")
 		self.send_packet(OPCODE_BINARY, data)
@@ -187,6 +198,7 @@ class WebSocket:
 	def recv(self):
 		if self.state != STATE_CONNECTED: return b""
 		if self.packets:
+			print(self.packets[0].hex())
 			return self.packets.pop(0)
 			
 	def get_address(self): return self.s.get_address()
