@@ -190,7 +190,6 @@ class WebSocket:
 			self.remove_events()
 
 	def send(self, data):
-		print(data.hex())
 		if self.state != STATE_CONNECTED:
 			raise RuntimeError("Can't send data on a disconnected websocket")
 		self.send_packet(OPCODE_BINARY, data)
@@ -198,7 +197,6 @@ class WebSocket:
 	def recv(self):
 		if self.state != STATE_CONNECTED: return b""
 		if self.packets:
-			print(self.packets[0].hex())
 			return self.packets.pop(0)
 			
 	def get_address(self): return self.s.get_address()
