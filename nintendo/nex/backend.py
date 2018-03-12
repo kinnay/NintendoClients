@@ -1,16 +1,33 @@
 
-from nintendo.nex import nat, notification, nintendo_notification, authentication, secure, friends, common, settings
+from nintendo.nex import nat, notification, nintendo_notification, authentication, secure, friends, common
+
+
+class Settings:
+
+	TRANSPORT_UDP = 0
+	TRANSPORT_TCP = 1
+	TRANSPORT_WEBSOCKET = 2
+
+	def __init__(self):
+		self.transport_type = self.TRANSPORT_UDP
+		self.prudp_version = 1
+		self.stream_type = 10
+		
+		self.fragment_size = 1300
+		self.resend_timeout = 1.5
+		self.ping_timeout = 4
+		self.silence_timeout = 7.5
 
 
 class BackEndClient:
-	def __init__(self, game_server_id, access_key, version, config=None):
+	def __init__(self, game_server_id, access_key, version, settings=None):
 		self.game_server_id = game_server_id
 		self.access_key = access_key.encode("ascii")
 		self.version = version
 
-		self.settings = config
-		if not config:
-			self.settings = settings.Settings()
+		self.settings = settings
+		if not settings:
+			self.settings = Settings()
 		
 		self.auth_client = None
 		self.secure_client = None
