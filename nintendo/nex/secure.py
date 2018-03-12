@@ -39,14 +39,19 @@ class SecureClient(service.ServiceClient):
 		stream = streams.StreamOut(self.back_end.version)
 		stream.buffer(self.ticket.data)
 		
+		check_value = random.randint(0, 0xFFFFFFFF)
 		substream = streams.StreamOut(self.back_end.version)
 		substream.u32(self.auth_client.pid)
 		substream.u32(self.connection_id)
-		substream.u32(random.randint(0, 0xFFFFFFFF)) #Used to check connection response
+		substream.u32(check_value) #Used to check connection response
 		
 		stream.buffer(self.kerberos_encryption.encrypt(substream.data))
 		super().connect(host, port, stream.data)
 		
+		stream = streams.StreamIn(self.client.connect_response, self.back_end.version)
+		if stream.u32() != 4: raise ConnectionError("Invalid connection response size")
+		if stream.u32() != (check_value + 1) & 0xFFFFFFFF:
+			raise ConnectionError("Connection response check failed")
 		self.client.set_secure_key(self.ticket.key)
 
 	def register_urls(self, login_data=None):

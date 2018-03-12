@@ -388,6 +388,7 @@ class PRUDPClient:
 		
 		self.server_signature = b""
 		self.client_signature = b""
+		self.connect_response = b""
 
 		self.packets = []
 		self.packet_queue = {}
@@ -405,7 +406,7 @@ class PRUDPClient:
 			self.s = websocket.WebSocket()
 
 		if not self.s.connect(host, port):
-			logger.warning("Socket connection failed")
+			logger.error("Socket connection failed")
 			self.state = self.DISCONNECTED
 			return False
 			
@@ -416,7 +417,7 @@ class PRUDPClient:
 
 		self.send_packet(self.syn_packet)
 		if not self.wait_ack(self.syn_packet):
-			logger.warning("PRUDP connection failed")
+			logger.error("PRUDP connection failed")
 			return False
 			
 		self.session_id = random.randint(0, 0xFF)
@@ -426,7 +427,7 @@ class PRUDPClient:
 
 		self.send_packet(self.connect_packet)
 		if not self.wait_ack(self.connect_packet):
-			logger.warning("PRUDP connection failed")
+			logger.error("PRUDP connection failed")
 			return False
 			
 		self.ping_event = scheduler.add_timeout(self.handle_ping, self.settings.ping_timeout, True)
@@ -492,6 +493,8 @@ class PRUDPClient:
 				if packet.packet_id in self.ack_events:
 					if packet.type == TYPE_SYN:
 						self.server_signature = packet.signature
+					elif packet.type == TYPE_CONNECT:
+						self.connect_response = packet.payload
 					scheduler.remove(self.ack_events.pop(packet.packet_id))
 
 			elif packet.flags & FLAG_MULTI_ACK:
