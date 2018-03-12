@@ -105,16 +105,99 @@ class PRUDPPacket:
 class PRUDPMessageV0:
 	def __init__(self, client):
 		self.client = client
-		self.reset()
 		
-	def reset(self):
-		self.buffer = b""
+	def reset(self): pass
+	def signature_size(self): return 4
+		
+	def calc_checksum(self, data):
+		words = struct.unpack_from("<%iI" %(len(data) // 4), data)
+		temp = sum(words) & 0xFFFFFFFF
+		
+		checksum = self.client.signature_base
+		checksum += sum(data[len(data) - (len(data) & 3):])
+		checksum += sum(struct.pack("<I", temp))
+		return checksum & 0xFF
+		
+	def calc_packet_signature(self, packet, signature):
+		if packet.type == TYPE_DATA:
+			if packet.payload:
+				return hmac.HMAC(self.client.signature_key, packet.payload).digest()[:4]
+			return struct.pack("<I", 0x12345678)
+		return signature if signature else bytes(4)
 		
 	def encode(self, packet):
-		raise NotImplementedError
+		packet.flags &= ~FLAG_HAS_SIZE
+		header = struct.pack("<BBHB4sH",
+			packet.source_port | (packet.source_type << 4),
+			packet.dest_port | (packet.dest_type << 4),
+			packet.type | (packet.flags << 4),
+			self.client.session_id,
+			self.calc_packet_signature(packet, self.client.server_signature),
+			packet.packet_id
+		)
+		
+		options = self.encode_options(packet)
+		data = header + options + packet.payload
+		checksum = self.calc_checksum(data)
+		return data + struct.pack("<B", checksum)
+		
+	def encode_options(self, packet):
+		options = b""
+		if packet.type in [TYPE_SYN, TYPE_CONNECT]:
+			options += packet.signature
+		if packet.type == TYPE_DATA:
+			options += struct.pack("<B", packet.fragment_id)
+		if packet.flags & FLAG_HAS_SIZE:
+			options += struct.pack("<H", len(packet.payload))
+		return options
 		
 	def decode(self, data):
-		raise NotImplementedError
+		if len(data) < 12:
+			logger.error("(V0) Packet is too small")
+			return []
+		if self.calc_checksum(data[:-1]) != data[-1]:
+			logger.error("(V0) Invalid checksum")
+			return []
+		data = data[:-1]
+			
+		source, dest, type_flags, session_id, signature, packet_id = \
+			struct.unpack_from("<BBHB4sH", data)
+			
+		packet = PRUDPPacket()
+		packet.source_type = source >> 4
+		packet.source_port = source & 0xF
+		packet.dest_type = dest >> 4
+		packet.dest_port = dest & 0xF
+		packet.flags = type_flags >> 4
+		packet.type = type_flags & 0xF
+		packet.packet_id = packet_id
+		
+		offset = 11
+		if packet.type in [TYPE_SYN, TYPE_CONNECT]:
+			if len(data) < offset + 4:
+				logger.error("(V0) Packet is too small")
+				return []
+			packet.signature = data[offset : offset + 4]
+			offset += 4
+		if packet.type == TYPE_DATA:
+			if len(data) < offset + 1:
+				logger.error("(V0) Packet is too small")
+				return []
+			packet.fragment_id = data[offset]
+			offset += 1
+		if packet.flags & FLAG_HAS_SIZE:
+			payload_size = struct.unpack_from("<H", data, offset)[0]
+			offset += 2
+			if len(data) != offset + payload_size:
+				logger.error("(V0) Payload size / packet size mismatch")
+				return []
+		packet.payload = data[offset:]
+		
+		if signature != self.calc_packet_signature(packet, self.client.client_signature):
+			logger.error("(V0) Invalid packet signature")
+			return []
+		
+		return [packet]
 
 	
 class PRUDPMessageV1:
@@ -124,6 +207,7 @@ class PRUDPMessageV1:
 		
 	def reset(self):
 		self.buffer = b""
+	def signature_size(self): return 16
 
 	def calc_packet_signature(self, header, options, signature, payload):
 		mac = hmac.HMAC(self.client.signature_key)
@@ -136,6 +220,7 @@ class PRUDPMessageV1:
 		return mac.digest()
 
 	def encode(self, packet):
+		packet.flags |= FLAG_HAS_SIZE
 		options = self.encode_options(packet)
 		header = self.encode_header(packet, len(options))
 		checksum = self.calc_packet_signature(header, options, self.client.server_signature, packet.payload)
@@ -236,6 +321,11 @@ class PRUDPMessageV1:
 class PRUDPLiteMessage:
 	def __init__(self, client):
 		self.client = client
+		self.reset()
+		
+	def reset(self):
+		self.buffer = b""
+	def signature_size(self): return 16
 		
 	def encode(self, packet):
 		raise NotImplementedError
@@ -273,7 +363,7 @@ class PRUDPClient:
 			
 		self.syn_packet = PRUDPPacket(TYPE_SYN, FLAG_NEED_ACK)
 		self.syn_packet.signature = bytes(16)
-		self.connect_packet = PRUDPPacket(TYPE_CONNECT, FLAG_RELIABLE | FLAG_NEED_ACK | FLAG_HAS_SIZE)
+		self.connect_packet = PRUDPPacket(TYPE_CONNECT, FLAG_RELIABLE | FLAG_NEED_ACK)
 		self.state = self.DISCONNECTED
 		
 	def set_secure_key(self, key):
@@ -330,7 +420,7 @@ class PRUDPClient:
 			return False
 			
 		self.session_id = random.randint(0, 0xFF)
-		self.client_signature = bytes([random.randint(0, 0xFF) for i in range(16)])
+		self.client_signature = bytes([random.randint(0, 0xFF) for i in range(self.packet_encoder.signature_size())])
 		self.connect_packet.signature = self.client_signature
 		self.connect_packet.payload = payload
 
@@ -375,7 +465,7 @@ class PRUDPClient:
 			fragment_id += 1
 
 	def send_fragment(self, data, fragment_id):
-		packet = PRUDPPacket(TYPE_DATA, FLAG_RELIABLE | FLAG_NEED_ACK | FLAG_HAS_SIZE)
+		packet = PRUDPPacket(TYPE_DATA, FLAG_RELIABLE | FLAG_NEED_ACK)
 		packet.fragment_id = fragment_id
 		packet.payload = self.encrypt.crypt(data)
 		self.send_packet(packet)
