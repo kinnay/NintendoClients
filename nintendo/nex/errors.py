@@ -17,9 +17,14 @@ error_names = {
 	0x8001000F: "Core::BufferOverflow",
 	0x80010010: "Core::InvalidLockState",
 	0x80010011: "Core::InvalidSequence",
+	0x80010012: "Core::SystemError",
+	
+	0x80020001: "DDL::InvalidSignature",
+	0x80020002: "DDL::IncorrectVersion",
 	
 	0x80030001: "RendezVous::ConnectionFailure",
 	0x80030002: "RendezVous::NotAuthenticated",
+
 	0x80030064: "RendezVous::InvalidUsername",
 	0x80030065: "RendezVous::InvalidPassword",
 	0x80030066: "RendezVous::UsernameAlreadyExists",
@@ -38,6 +43,7 @@ error_names = {
 	0x80030073: "RendezVous::SessionVoid",
 	0x80030075: "RendezVous::DDLMismatch",
 	0x80030076: "RendezVous::InvalidConfiguration",
+	
 	0x800300C8: "RendezVous::SessionFull",
 	0x800300C9: "RendezVous::InvalidGatheringPassword",
 	0x800300CA: "RendezVous::WithoutParticipationPeriod",
@@ -62,6 +68,7 @@ error_names = {
 	0x800300DD: "RendezVous::InvalidUniqueId",
 	0x800300DE: "RendezVous::MatchmakingWithdrawn",
 	0x800300DF: "RendezVous::LimitExceeded",
+	0x800300E0: "RendezVous::AccountTemporarilyDisabled",
 	
 	0x80040001: "PythonCore::Exception",
 	0x80040002: "PythonCore::TypeError",
@@ -177,6 +184,10 @@ error_names = {
 	0x8068000D: "Authentication::ServerVersionIsOld",
 	0x8068000E: "Authentication::Unknown",
 	0x8068000F: "Authentication::ClientVersionIsOld",
+	0x80680010: "Authentication::AccountLibraryError",
+	0x80680011: "Authentication::ServiceNoLongerAvailable",
+	0x80680012: "Authentication::UnknownApplication",
+	0x80680013: "Authentication::ApplicationVersionIsOld",
 	
 	0x80690001: "DataStore::Unknown",
 	0x80690002: "DataStore::InvalidArgument",
