@@ -106,8 +106,10 @@ class PRUDPPacket:
 class PRUDPMessageV0:
 	def __init__(self, client):
 		self.client = client
+		self.reset()
 		
-	def reset(self): pass
+	def reset(self):
+		self.buffer = b""
 	def signature_size(self): return 4
 		
 	def calc_checksum(self, data):
@@ -115,7 +117,7 @@ class PRUDPMessageV0:
 		temp = sum(words) & 0xFFFFFFFF
 		
 		checksum = self.client.signature_base
-		checksum += sum(data[len(data) - (len(data) & 3):])
+		checksum += sum(data[len(data) & ~3:])
 		checksum += sum(struct.pack("<I", temp))
 		return checksum & 0xFF
 		
@@ -153,52 +155,65 @@ class PRUDPMessageV0:
 		return options
 		
 	def decode(self, data):
-		if len(data) < 12:
-			logger.error("(V0) Packet is too small")
-			return []
-		if self.calc_checksum(data[:-1]) != data[-1]:
-			logger.error("(V0) Invalid checksum")
-			return []
-		data = data[:-1]
+		self.buffer += data
+	
+		packets = []
+		while self.buffer:
+			if len(self.buffer) < 12: return packets
+				
+			source, dest, type_flags, session_id, signature, packet_id = \
+				struct.unpack_from("<BBHB4sH", self.buffer)
+				
+			packet = PRUDPPacket()
+			packet.source_type = source >> 4
+			packet.source_port = source & 0xF
+			packet.dest_type = dest >> 4
+			packet.dest_port = dest & 0xF
+			packet.flags = type_flags >> 4
+			packet.type = type_flags & 0xF
+			packet.packet_id = packet_id
 			
-		source, dest, type_flags, session_id, signature, packet_id = \
-			struct.unpack_from("<BBHB4sH", data)
+			payload_size = 0
+			if not packet.flags & FLAG_HAS_SIZE:
+				if packet.type != TYPE_DISCONNECT:
+					logger.error("(V0) FLAG_HAS_SIZE is required by client")
+					self.reset()
+					return packets
 			
-		packet = PRUDPPacket()
-		packet.source_type = source >> 4
-		packet.source_port = source & 0xF
-		packet.dest_type = dest >> 4
-		packet.dest_port = dest & 0xF
-		packet.flags = type_flags >> 4
-		packet.type = type_flags & 0xF
-		packet.packet_id = packet_id
-		
-		offset = 11
-		if packet.type in [TYPE_SYN, TYPE_CONNECT]:
-			if len(data) < offset + 4:
-				logger.error("(V0) Packet is too small")
-				return []
-			packet.signature = data[offset : offset + 4]
-			offset += 4
-		if packet.type == TYPE_DATA:
-			if len(data) < offset + 1:
-				logger.error("(V0) Packet is too small")
-				return []
-			packet.fragment_id = data[offset]
-			offset += 1
-		if packet.flags & FLAG_HAS_SIZE:
-			payload_size = struct.unpack_from("<H", data, offset)[0]
-			offset += 2
-			if len(data) != offset + payload_size:
-				logger.error("(V0) Payload size / packet size mismatch")
-				return []
-		packet.payload = data[offset:]
-		
-		if signature != self.calc_packet_signature(packet, self.client.client_signature):
-			logger.error("(V0) Invalid packet signature")
-			return []
-		
-		return [packet]
+			offset = 11
+			if packet.type in [TYPE_SYN, TYPE_CONNECT]:
+				if len(self.buffer) < offset + 4: return packets
+				packet.signature = self.buffer[offset : offset + 4]
+				offset += 4
+
+			if packet.type == TYPE_DATA:
+				if len(self.buffer) < offset + 1: return packets
+				packet.fragment_id = self.buffer[offset]
+				offset += 1
+
+			if packet.flags & FLAG_HAS_SIZE:
+				if len(self.buffer) < offset + 2: return packets
+				payload_size = struct.unpack_from("<H", self.buffer, offset)[0]
+				offset += 2
+				
+			if len(self.buffer) < offset + payload_size:
+				return packets
+				
+			checksum = self.buffer[offset + payload_size]
+			if self.calc_checksum(self.buffer[:offset + payload_size]) != checksum:
+				logger.error("(V0) Invalid checksum")
+				self.reset()
+				return packets
+			packet.payload = self.buffer[offset : offset + payload_size]
+			
+			if signature != self.calc_packet_signature(packet, self.client.client_signature):
+				logger.error("(V0) Invalid packet signature")
+				self.reset()
+				return packets
+			
+			self.buffer = self.buffer[offset + payload_size + 1:]
+			packets.append(packet)
+		return packets
 
 	
 class PRUDPMessageV1:
@@ -487,7 +502,10 @@ class PRUDPClient:
 			return False
 			
 		self.session_id = random.randint(0, 0xFF)
-		self.client_signature = hmac.HMAC(self.signature_key, self.signature_key + self.server_signature).digest()
+		if self.settings.transport_type == self.settings.TRANSPORT_UDP:
+			self.client_signature = bytes([random.randint(0, 0xFF) for i in range(self.packet_encoder.signature_size())])
+		else:
+			self.client_signature = hmac.HMAC(self.signature_key, self.signature_key + self.server_signature).digest()
 		self.connect_packet.signature = self.client_signature
 		self.connect_packet.payload = payload
 
