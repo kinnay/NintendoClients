@@ -108,13 +108,13 @@ common.DataHolder.register(GameKey, "GameKey")
 
 		
 class NintendoPresenceV2(common.Data):
-	def __init__(self, unk1, is_online, game_key, unk3, description, unk4, unk5,
+	def __init__(self, unk1, is_online, game_key, unk3, message, unk4, unk5,
 				 game_server_id, unk7, pid, gathering_id, data, unk10, unk11, unk12):
 		self.unk1 = unk1
 		self.is_online = is_online
 		self.game_key = game_key
 		self.unk3 = unk3
-		self.description = description
+		self.message = message
 		self.unk4 = unk4
 		self.unk5 = unk5
 		self.game_server_id = game_server_id
@@ -134,7 +134,7 @@ class NintendoPresenceV2(common.Data):
 		stream.u8(self.is_online)
 		stream.add(self.game_key)
 		stream.u8(self.unk3)
-		stream.string(self.description)
+		stream.string(self.message)
 		stream.u32(self.unk4)
 		stream.u8(self.unk5)
 		stream.u32(self.game_server_id)
@@ -151,7 +151,7 @@ class NintendoPresenceV2(common.Data):
 		self.is_online = stream.u8()
 		self.game_key = stream.extract(GameKey)
 		self.unk3 = stream.u8()
-		self.description = stream.string()
+		self.message = stream.string()
 		self.unk4 = stream.u32()
 		self.unk5 = stream.u8()
 		self.game_server_id = stream.u32()
