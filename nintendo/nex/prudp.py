@@ -32,6 +32,7 @@ OPTION_CONNECTION_SIG = 1
 OPTION_FRAGMENT = 2
 OPTION_3 = 3
 OPTION_4 = 4
+OPTION_CONNECTION_SIG_LITE = 0x80
 
 
 def decode_options(data):
@@ -56,7 +57,7 @@ def decode_options(data):
 				return
 			options[type] = struct.unpack_from("<I", data, pos)[0]
 
-		elif type == OPTION_CONNECTION_SIG:
+		elif type in [OPTION_CONNECTION_SIG, OPTION_CONNECTION_SIG_LITE]:
 			if length != 16:
 				logger.error("(Opt) Invalid option length in OPTION_CONNECTION_SIG")
 				return
@@ -93,8 +94,8 @@ class PRUDPPacket:
 		self.dest_port = None
 		self.dest_type = None
 		self.packet_id = None
-		self.fragment_id = None
 		self.signature = None
+		self.fragment_id = 0
 		self.multi_ack_version = 0
 		self.payload = b""
 		
@@ -328,10 +329,75 @@ class PRUDPLiteMessage:
 	def signature_size(self): return 16
 		
 	def encode(self, packet):
-		raise NotImplementedError
+		options = self.encode_options(packet)
+		header = self.encode_header(packet, len(options))
+		return header + options + packet.payload
+		
+	def encode_header(self, packet, option_size):
+		return struct.pack("<BBHBBBBHH",
+			0x80, option_size,
+			len(packet.payload),
+			(packet.source_type << 4) | packet.dest_type,
+			packet.source_port,
+			packet.dest_port,
+			packet.fragment_id,
+			packet.type | (packet.flags << 4),
+			packet.packet_id
+		)
+		
+	def encode_options(self, packet):
+		options = b""
+		if packet.type in [TYPE_SYN, TYPE_CONNECT]:
+			options += struct.pack("<BBI", OPTION_SUPPORT, 4, SUPPORT_ALL)
+		if packet.type == TYPE_CONNECT:
+			options += struct.pack("<BB16s", OPTION_CONNECTION_SIG_LITE, 16, packet.signature)
+		return options
 		
 	def decode(self, data):
-		raise NotImplementedError
+		self.buffer += data
+
+		packets = []
+		while self.buffer:
+			if len(self.buffer) < 12: return packets
+		
+			packet = PRUDPPacket()
+			
+			magic, option_size, payload_size, stream_types, source_port, dest_port, \
+				fragment_id, type_flags, packet_id = struct.unpack_from("<BBHBBBBHH", self.buffer)
+			
+			if magic != 0x80:
+				logger.error("(Lite) Invalid magic number")
+				self.reset()
+				return packets
+			if len(self.buffer) < 12 + option_size + payload_size:
+				return packets
+				
+			packet.source_type = stream_types >> 4
+			packet.dest_type = stream_types & 0xF
+			packet.source_port = source_port
+			packet.dest_port = dest_port
+			packet.fragment_id = fragment_id
+			packet.flags = type_flags >> 4
+			packet.type = type_flags & 0xF
+			packet.packet_id = packet_id
+			
+			option_data = self.buffer[12 : 12 + option_size:]
+			options = decode_options(option_data)
+			if options is None:
+				self.reset()
+				return packets
+			
+			if packet.type == TYPE_SYN:
+				if OPTION_CONNECTION_SIG not in options:
+					logger.error("(Lite) Expected connection signature in SYN packet")
+					self.reset()
+					return packets
+				packet.signature = options[OPTION_CONNECTION_SIG]
+			
+			packet.payload = self.buffer[12 + option_size : 12 + option_size + payload_size]
+			self.buffer = self.buffer[12 + option_size + payload_size:]
+			packets.append(packet)
+		return packets
 
 
 class PRUDPClient:
@@ -346,7 +412,7 @@ class PRUDPClient:
 	def __init__(self, settings, access_key):
 		logger.info("New client - access key=%s", access_key)
 		self.settings = settings
-		
+
 		self.signature_key = hashlib.md5(access_key).digest()
 		self.signature_base = sum(access_key)
 		
@@ -421,7 +487,7 @@ class PRUDPClient:
 			return False
 			
 		self.session_id = random.randint(0, 0xFF)
-		self.client_signature = bytes([random.randint(0, 0xFF) for i in range(self.packet_encoder.signature_size())])
+		self.client_signature = hmac.HMAC(self.signature_key, self.signature_key + self.server_signature).digest()
 		self.connect_packet.signature = self.client_signature
 		self.connect_packet.payload = payload
 
@@ -498,10 +564,10 @@ class PRUDPClient:
 					scheduler.remove(self.ack_events.pop(packet.packet_id))
 
 			elif packet.flags & FLAG_MULTI_ACK:
-				if packet.multi_ack_version == 0:
-					ack_id = struct.unpack("<H", packet.payload)[0]
-				else:
+				if self.settings.transport_type != self.settings.TRANSPORT_UDP or packet.multi_ack_version == 1:
 					ack_id = struct.unpack_from("<H", packet.payload, 2)[0]
+				else:
+					ack_id = struct.unpack("<H", packet.payload)[0]
 				for packet_id in list(self.ack_events.keys()):
 					if packet_id <= ack_id:
 						scheduler.remove(self.ack_events.pop(packet_id))
