@@ -414,6 +414,25 @@ class PRUDPLiteMessage:
 			packets.append(packet)
 		return packets
 
+		
+class RC4Encryption:
+	def __init__(self, key):
+		self.encrypt = crypto.RC4(key)
+		self.decrypt = crypto.RC4(key)
+		
+	def set_key(self, key):
+		self.encrypt.set_key(key)
+		self.decrypt.set_key(key)
+		
+	def decrypt(self, data): return self.decrypt.crypt(data)
+	def encrypt(self, data): return self.encrypt.crypt(data)
+	
+
+class DummyEncryption:
+	def set_key(self, key): pass
+	def decrypt(self, data): return data
+	def encrypt(self, data): return data
+		
 
 class PRUDPClient:
 
@@ -437,9 +456,11 @@ class PRUDPClient:
 				self.packet_encoder = PRUDPMessageV0(self)
 			else:
 				self.packet_encoder = PRUDPMessageV1(self)
+			self.encryption = RC4Encryption(self.DEFAULT_KEY)
 			self.client_port = 0xF
 		else:
 			self.packet_encoder = PRUDPLiteMessage(self)
+			self.encryption = DummyEncryption()
 			self.client_port = 0x1F
 			
 		self.syn_packet = PRUDPPacket(TYPE_SYN, FLAG_NEED_ACK)
@@ -448,8 +469,7 @@ class PRUDPClient:
 		self.state = self.DISCONNECTED
 		
 	def set_secure_key(self, key):
-		self.encrypt.set_key(key)
-		self.decrypt.set_key(key)
+		self.encryption.set_key(key)
 		self.secure_key = key
 		
 	def is_connected(self): return self.state == self.CONNECTED
@@ -463,8 +483,7 @@ class PRUDPClient:
 		logger.info("Connecting to %s:%i", host, port)
 		self.state = self.CONNECTING
 
-		self.encrypt = crypto.RC4(self.DEFAULT_KEY, False)
-		self.decrypt = crypto.RC4(self.DEFAULT_KEY, False)
+		self.encryption.set_key(self.DEFAULT_KEY)
 		self.secure_key = b""
 		
 		self.server_signature = b""
@@ -552,7 +571,7 @@ class PRUDPClient:
 	def send_fragment(self, data, fragment_id):
 		packet = PRUDPPacket(TYPE_DATA, FLAG_RELIABLE | FLAG_NEED_ACK)
 		packet.fragment_id = fragment_id
-		packet.payload = self.encrypt.crypt(data)
+		packet.payload = self.encryption.encrypt(data)
 		self.send_packet(packet)
 		
 	def remove_events(self):
@@ -609,7 +628,7 @@ class PRUDPClient:
 				self.send_ack(packet)
 	
 		if packet.type == TYPE_DATA:
-			self.fragment_buffer += self.decrypt.crypt(packet.payload)
+			self.fragment_buffer += self.encryption.decrypt(packet.payload)
 			if packet.fragment_id == 0:
 				self.packets.append(self.fragment_buffer)
 				self.fragment_buffer = b""
