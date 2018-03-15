@@ -417,21 +417,21 @@ class PRUDPLiteMessage:
 		
 class RC4Encryption:
 	def __init__(self, key):
-		self.encrypt = crypto.RC4(key)
-		self.decrypt = crypto.RC4(key)
+		self.rc4enc = crypto.RC4(key)
+		self.rc4dec = crypto.RC4(key)
 		
 	def set_key(self, key):
-		self.encrypt.set_key(key)
-		self.decrypt.set_key(key)
+		self.rc4enc.set_key(key)
+		self.rc4dec.set_key(key)
 		
-	def decrypt(self, data): return self.decrypt.crypt(data)
-	def encrypt(self, data): return self.encrypt.crypt(data)
+	def encrypt(self, data): return self.rc4enc.crypt(data)
+	def decrypt(self, data): return self.rc4dec.crypt(data)
 	
 
 class DummyEncryption:
 	def set_key(self, key): pass
-	def decrypt(self, data): return data
 	def encrypt(self, data): return data
+	def decrypt(self, data): return data
 		
 
 class PRUDPClient:
