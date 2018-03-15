@@ -51,6 +51,35 @@ class RVConnectionData(common.Structure):
 		if self.version >= 1:
 			self.server_time = stream.datetime()
 
+			
+class KeyDerivationOld:
+	def __init__(self, base_count, pid_count):
+		self.base_count = base_count
+		self.pid_count = pid_count
+		
+	def derive_key(self, password, pid):
+		key = password
+		for i in range(self.base_count + pid % self.pid_count):
+			key = hashlib.md5(key).digest()
+		return key
+		
+		
+class KeyDerivationNew:
+	def __init__(self, base_count, pid_count):
+		self.base_count = base_count
+		self.pid_count = pid_count
+		
+	def derive_key(self, password, pid):
+		key = password
+		for i in range(self.base_count):
+			key = hashlib.md5(key).digest()
+			
+		key += struct.pack("<Q", pid)
+		for i in range(self.pid_count):
+			key = hashlib.md5(key).digest()
+			
+		return key
+			
 
 class AuthenticationClient(service.ServiceClient):
 	
@@ -62,6 +91,13 @@ class AuthenticationClient(service.ServiceClient):
 	METHOD_LOGIN_WITH_CONTEXT = 6
 	
 	PROTOCOL_ID = 0xA
+	
+	def __init__(self, back_end, access_key):
+		super().__init__(back_end, access_key)
+		if back_end.version >= 40000:
+			self.key_derivation = KeyDerivationNew(1, 1)
+		else:
+			self.key_derivation = KeyDerivationOld(65000, 1024)
 		
 	def login(self, username, password):
 		logger.info("Authentication.login(%s, %s)", username, password)
@@ -90,16 +126,14 @@ class AuthenticationClient(service.ServiceClient):
 		if result & 0x80000000:
 			raise AuthenticationError("NEX authentication failed (%s)" %errors.error_names.get(result, "unknown error"))
 			
-		self.pid = stream.u32()
+		self.pid = stream.uint()
 		kerberos_data = stream.buffer()
 		self.secure_station = stream.extract(RVConnectionData).main_station
 		server_name = stream.string()
 		
-		kerberos_key = password.encode("ascii")
-		for i in range(65000 + self.pid % 1024):
-			kerberos_key = hashlib.md5(kerberos_key).digest()
+		kerberos_key = self.key_derivation.derive_key(password.encode("ascii"), self.pid)
 		self.kerberos_encryption = kerberos.KerberosEncryption(kerberos_key)
-		self.kerberos_encryption.decrypt(kerberos_data) #Validate kerberos key 
+		self.kerberos_encryption.decrypt(kerberos_data) #Validate kerberos key
 
 		logger.info("Authentication.login(_ex) -> (%08X, %s, %s)", self.pid, self.secure_station, server_name)
 		
@@ -107,8 +141,8 @@ class AuthenticationClient(service.ServiceClient):
 		logger.info("Authentication.request_ticket()")
 		#--- request ---
 		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_REQUEST_TICKET)
-		stream.u32(self.pid)
-		stream.u32(self.secure_station["PID"])
+		stream.uint(self.pid)
+		stream.uint(self.secure_station["PID"])
 		self.send_message(stream)
 
 		#--- response ---
@@ -123,7 +157,7 @@ class AuthenticationClient(service.ServiceClient):
 		ticket_data = streams.StreamIn(self.kerberos_encryption.decrypt(encrypted_ticket), stream.version)
 		ticket_key = ticket_data.read(key_length)
 		ticket_data.u32() #Unknown
-		ticket_buffer = ticket_data.read(ticket_data.u32())
+		ticket_buffer = ticket_data.buffer()
 
 		logger.info("Authentication.request_ticket -> %s", ticket_key.hex())
 		return kerberos.Ticket(ticket_key, ticket_buffer)
@@ -137,7 +171,7 @@ class AuthenticationClient(service.ServiceClient):
 		
 		#--- response ---
 		stream = self.get_response(call_id)
-		pid = stream.u32()
+		pid = stream.uint()
 		logger.info("Authentication.get_pid -> %i", pid)
 		return pid
 		
@@ -145,7 +179,7 @@ class AuthenticationClient(service.ServiceClient):
 		logger.info("Authentication.get_name(%i)", id)
 		#--- request ---
 		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_GET_NAME)
-		stream.u32(id)
+		stream.uint(id)
 		self.send_message(stream)
 		
 		#--- response ---

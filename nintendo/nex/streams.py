@@ -6,6 +6,12 @@ class StreamOut(streams.StreamOut):
 	def __init__(self, version):
 		super().__init__()
 		self.version = version
+		
+	def uint(self, value):
+		if self.version >= 40000:
+			self.u64(value)
+		else:
+			self.u32(value)
 
 	def list(self, list, func):
 		self.u32(len(list))
@@ -41,6 +47,11 @@ class StreamIn(streams.StreamIn):
 	def __init__(self, data, version):
 		super().__init__(data)
 		self.version = version
+		
+	def uint(self):
+		if self.version >= 40000:
+			return self.u64()
+		return self.u32()
 
 	def list(self, func):
 		return super().list(func, self.u32())
