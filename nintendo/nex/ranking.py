@@ -80,8 +80,8 @@ class RankingClient:
 	STAT_HIGHEST_SCORE = 8
 	STAT_AVERAGE_SCORE = 0x10
 
-	def __init__(self, back_end):
-		self.client = back_end.secure_client
+	def __init__(self, backend):
+		self.client = backend.secure_client
 
 	def delete_all_scores(self, unique_id):
 		logger.info("Ranking.delete_all_scores(%016X)", unique_id)

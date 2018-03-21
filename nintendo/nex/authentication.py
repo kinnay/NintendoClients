@@ -79,7 +79,7 @@ class KeyDerivationNew:
 			key = hashlib.md5(key).digest()
 			
 		return key
-			
+
 
 class AuthenticationClient(service.ServiceClient):
 	
@@ -92,12 +92,13 @@ class AuthenticationClient(service.ServiceClient):
 	
 	PROTOCOL_ID = 0xA
 	
-	def __init__(self, back_end, access_key):
-		super().__init__(back_end, access_key)
-		if back_end.version >= 40000:
-			self.key_derivation = KeyDerivationNew(1, 1)
-		else:
+	def __init__(self, backend):
+		super().__init__(backend)
+		self.settings = backend.settings
+		if self.settings.get("kerberos.key_derivation") == 0:
 			self.key_derivation = KeyDerivationOld(65000, 1024)
+		else:
+			self.key_derivation = KeyDerivationNew(1, 1)
 		
 	def login(self, username, password):
 		logger.info("Authentication.login(%s, %s)", username, password)
@@ -148,14 +149,10 @@ class AuthenticationClient(service.ServiceClient):
 		#--- response ---
 		stream = self.get_response(call_id)
 		result = stream.u32()
-		
-		key_length = 32
-		if self.back_end.game_server_id == friends.FriendsTitle.GAME_SERVER_ID:
-			key_length = 16
-		
+
 		encrypted_ticket = stream.buffer()
-		ticket_data = streams.StreamIn(self.kerberos_encryption.decrypt(encrypted_ticket), stream.version)
-		ticket_key = ticket_data.read(key_length)
+		ticket_data = streams.StreamIn(self.kerberos_encryption.decrypt(encrypted_ticket), stream.settings)
+		ticket_key = ticket_data.read(self.settings.get("kerberos.key_size"))
 		ticket_data.uint() #Unknown
 		ticket_buffer = ticket_data.buffer()
 

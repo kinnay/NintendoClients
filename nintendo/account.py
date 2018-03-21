@@ -2,20 +2,20 @@
 from nintendo.miis import MiiData
 
 from bs4 import BeautifulSoup
+import pkg_resources
 import collections
 import requests
 import hashlib
 import base64
 import struct
 import time
-import os
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-CERT = os.path.join(os.path.dirname(__file__), "files/wiiu_cert.pem")
-KEY = os.path.join(os.path.dirname(__file__), "files/wiiu_key.pem")
+CERT = pkg_resources.resource_filename("nintendo", "files/wiiu_cert.pem")
+KEY = pkg_resources.resource_filename("nintendo", "files/wiiu_key.pem")
 
 
 def calc_password_hash(pid, password):

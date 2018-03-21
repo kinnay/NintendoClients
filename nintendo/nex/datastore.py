@@ -14,7 +14,7 @@ class PersistenceTarget(common.Structure):
 	def streamin(self, stream):
 		stream.u32(self.owner_id)
 		stream.u16(self.persistence_id)
-	
+
 	
 class DataStorePermission(common.Structure):
 	def streamout(self, stream):
@@ -158,8 +158,8 @@ class DataStoreClient:
 	
 	PROTOCOL_ID = 0x73
 	
-	def __init__(self, back_end):
-		self.client = back_end.secure_client
+	def __init__(self, backend):
+		self.client = backend.secure_client
 		
 	def get_meta(self, param):
 		logger.info("DataStore.get_meta(...)")
@@ -202,8 +202,8 @@ class DataStoreClient:
 	
 	
 class DataStore:
-	def __init__(self, back_end):
-		self.client = DataStoreClient(back_end)
+	def __init__(self, backend):
+		self.client = DataStoreClient(backend)
 		
 	def get_object(self, param):
 		get_info = self.client.prepare_get_object(param)

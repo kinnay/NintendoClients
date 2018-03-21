@@ -3,12 +3,12 @@ from nintendo.nex import common
 from nintendo.common import streams
 
 class StreamOut(streams.StreamOut):
-	def __init__(self, version):
+	def __init__(self, settings):
 		super().__init__()
-		self.version = version
+		self.settings = settings
 		
 	def uint(self, value):
-		if self.version >= 40000:
+		if self.settings.get("common.int_size") == 8:
 			self.u64(value)
 		else:
 			self.u32(value)
@@ -44,12 +44,12 @@ class StreamOut(streams.StreamOut):
 		
 		
 class StreamIn(streams.StreamIn):
-	def __init__(self, data, version):
+	def __init__(self, data, settings):
 		super().__init__(data)
-		self.version = version
+		self.settings = settings
 		
 	def uint(self):
-		if self.version >= 40000:
+		if self.settings.get("common.int_size") == 8:
 			return self.u64()
 		return self.u32()
 
@@ -76,4 +76,4 @@ class StreamIn(streams.StreamIn):
 		return inst
 		
 	def substream(self):
-		return StreamIn(self.buffer(), self.version)
+		return StreamIn(self.buffer(), self.settings)

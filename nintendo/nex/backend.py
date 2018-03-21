@@ -1,5 +1,10 @@
 
-from nintendo.nex import nat, notification, nintendo_notification, authentication, secure, friends, common
+from nintendo.nex import nat, notification, nintendo_notification, \
+	authentication, secure, friends, common
+import pkg_resources
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class Settings:
@@ -7,27 +12,71 @@ class Settings:
 	TRANSPORT_UDP = 0
 	TRANSPORT_TCP = 1
 	TRANSPORT_WEBSOCKET = 2
+	
+	field_types = {
+		"prudp.transport": int,
+		"prudp.version": int,
+		"prudp.stream_type": int,
+		"prudp.fragment_size": int,
+		"prudp.resend_timeout": float,
+		"prudp.ping_timeout": float,
+		"prudp.silence_timeout": float,
 
-	def __init__(self):
-		self.transport_type = self.TRANSPORT_UDP
-		self.prudp_version = 1
-		self.stream_type = 10
+		"kerberos.key_size": int,
+		"kerberos.key_derivation": int,
 		
-		self.fragment_size = 1300
-		self.resend_timeout = 1.5
-		self.ping_timeout = 4
-		self.silence_timeout = 7.5
+		"common.int_size": int,
+		
+		"server.version": int,
+		"server.access_key": str.encode
+	}
+
+	def __init__(self, filename=None):
+		self.settings = {}
+		self.reset()
+		if filename:
+			self.load(filename)
+		
+	def reset(self): self.load("default.cfg")
+	def copy(self):
+		copy = Settings()
+		copy.settings = self.settings.copy()
+		return copy
+	
+	def get(self, field): return self.settings[field]
+	def set(self, field, value):
+		if field in self.field_types:
+			self.settings[field] = self.field_types[field](value)
+		else:
+			logger.warning("Unknown setting '%s'" %field)
+
+	def load(self, filename):
+		filename = pkg_resources.resource_filename("nintendo", "files/%s" %filename)
+		with open(filename) as f:
+			linenum = 1
+			for line in f:
+				line = line.strip()
+				if line:
+					if "=" in line:
+						field, value = line.split("=", 1)
+						self.set(field.strip(), value.strip())
+					else:
+						logger.warning("Ignoring line %i in config file" %linenum)
+				linenum += 1
 
 
 class BackEndClient:
-	def __init__(self, game_server_id, access_key, version, settings=None):
-		self.game_server_id = game_server_id
-		self.access_key = access_key.encode("ascii")
-		self.version = version
 
-		self.settings = settings
-		if not settings:
+	AUTH_TOKEN = 1
+	SECURE_TOKEN = 2
+
+	def __init__(self, access_key, version, settings=None):
+		if settings:
+			self.settings = settings.copy()
+		else:
 			self.settings = Settings()
+		self.settings.set("server.access_key", access_key)
+		self.settings.set("server.version", version)
 		
 		self.auth_client = None
 		self.secure_client = None
@@ -43,7 +92,7 @@ class BackEndClient:
 		}
 		
 	def connect(self, host, port):
-		self.auth_client = authentication.AuthenticationClient(self, self.access_key)
+		self.auth_client = authentication.AuthenticationClient(self)
 		self.auth_client.connect(host, port)
 		
 	def close(self):
@@ -51,9 +100,9 @@ class BackEndClient:
 		if self.secure_client:
 			self.secure_client.close()
 		
-	def login(self, username, password, auth_info=None):
-		if auth_info and self.version != friends.FriendsTitle.NEX_VERSION:
-			self.auth_client.login_ex(username, password, auth_info)
+	def login(self, username, password, data=None, flags=AUTH_TOKEN):
+		if data and flags & self.AUTH_TOKEN:
+			self.auth_client.login_ex(username, password, data)
 		else:
 			self.auth_client.login(username, password)
 
@@ -61,10 +110,10 @@ class BackEndClient:
 		host = self.auth_client.secure_station["address"]
 		port = self.auth_client.secure_station["port"]
 		
-		self.secure_client = secure.SecureClient(self, self.access_key, ticket, self.auth_client)
+		self.secure_client = secure.SecureClient(self, ticket, self.auth_client)
 		self.secure_client.connect(host, port)
-		if self.version == friends.FriendsTitle.NEX_VERSION:
-			urls = self.secure_client.register_urls(auth_info)
+		if data and flags & self.SECURE_TOKEN:
+			urls = self.secure_client.register_urls(data)
 		else:
 			urls = self.secure_client.register_urls()
 		self.local_station, self.public_station = urls

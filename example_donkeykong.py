@@ -22,7 +22,7 @@ api.login(USERNAME, PASSWORD)
 
 #Each game server has its own game server id and access token
 nex_token = api.get_nex_token(DKCTF.GAME_SERVER_ID)
-backend = backend.BackEndClient(DKCTF.GAME_SERVER_ID, DKCTF.ACCESS_KEY, DKCTF.NEX_VERSION)
+backend = backend.BackEndClient(DKCTF.ACCESS_KEY, DKCTF.NEX_VERSION)
 backend.connect(nex_token.host, nex_token.port)
 backend.login(
 	nex_token.username, nex_token.password,

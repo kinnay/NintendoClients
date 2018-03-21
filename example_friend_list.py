@@ -24,9 +24,9 @@ mii = api.get_mii(pid)
 
 nex_token = api.get_nex_token(friends.FriendsTitle.GAME_SERVER_ID)
 backend = backend.BackEndClient(
-	friends.FriendsTitle.GAME_SERVER_ID,
 	friends.FriendsTitle.ACCESS_KEY,
-	friends.FriendsTitle.NEX_VERSION
+	friends.FriendsTitle.NEX_VERSION,
+	backend.Settings("friends.cfg")
 )
 backend.connect(nex_token.host, nex_token.port)
 backend.login(

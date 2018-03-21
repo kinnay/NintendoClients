@@ -14,7 +14,7 @@ class FriendsTitle:
 	
 	GAME_SERVER_ID = 0x3200
 	ACCESS_KEY = "ridfebb9"
-	NEX_VERSION = 0
+	NEX_VERSION = 20000
 
 	
 class MiiV2(common.Data):
@@ -260,8 +260,8 @@ class FriendsClient:
 	
 	PROTOCOL_ID = 0x66
 	
-	def __init__(self, back_end):
-		self.client = back_end.secure_client
+	def __init__(self, backend):
+		self.client = backend.secure_client
 	
 	def get_all_information(self, nna_info, presence, birthday):
 		logger.info("Friends.get_all_information(...)")

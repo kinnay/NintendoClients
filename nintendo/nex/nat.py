@@ -16,8 +16,8 @@ class NATTraversalProtocol:
 
 
 class NATTraversalClient(NATTraversalProtocol):
-	def __init__(self, back_end):
-		self.client = back_end.secure_client
+	def __init__(self, backend):
+		self.client = backend.secure_client
 		
 	def request_probe_initiation_ext(self, target_urls, station_to_probe):
 		logger.info("NATTraversal.request_probe_initiation_ext(%s, %s)", target_urls, station_to_probe)

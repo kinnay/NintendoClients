@@ -25,8 +25,8 @@ class SecureClient(service.ServiceClient):
 	
 	PROTOCOL_ID = 0xB
 	
-	def __init__(self, back_end, access_key, ticket, auth_client):
-		super().__init__(back_end, access_key)
+	def __init__(self, backend, ticket, auth_client):
+		super().__init__(backend)
 		self.ticket = ticket
 		self.auth_client = auth_client
 		self.kerberos_encryption = kerberos.KerberosEncryption(self.ticket.key)
@@ -36,11 +36,11 @@ class SecureClient(service.ServiceClient):
 		self.principal_id = station_url["PID"]
 		
 	def connect(self, host, port):
-		stream = streams.StreamOut(self.back_end.version)
+		stream = streams.StreamOut(self.backend.settings)
 		stream.buffer(self.ticket.data)
 		
 		check_value = random.randint(0, 0xFFFFFFFF)
-		substream = streams.StreamOut(self.back_end.version)
+		substream = streams.StreamOut(self.backend.settings)
 		substream.uint(self.auth_client.pid)
 		substream.u32(self.connection_id)
 		substream.u32(check_value) #Used to check connection response
@@ -48,7 +48,7 @@ class SecureClient(service.ServiceClient):
 		stream.buffer(self.kerberos_encryption.encrypt(substream.data))
 		super().connect(host, port, stream.data)
 
-		stream = streams.StreamIn(self.client.connect_response, self.back_end.version)
+		stream = streams.StreamIn(self.client.connect_response, self.backend.settings)
 		if stream.u32() != 4: raise ConnectionError("Invalid connection response size")
 		if stream.u32() != (check_value + 1) & 0xFFFFFFFF:
 			raise ConnectionError("Connection response check failed")

@@ -50,8 +50,8 @@ class MatchMakingClient:
 
 	PROTOCOL_ID = 0x15
 
-	def __init__(self, back_end):
-		self.client = back_end.secure_client
+	def __init__(self, backend):
+		self.client = backend.secure_client
 		
 	def get_session_url(self, gid):
 		logger.info("MatchMaking.get_session_url(%08X)", gid)

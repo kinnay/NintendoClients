@@ -6,5 +6,5 @@ setup(
 	description = "Client for Nintendo game servers",
 	url = "https://github.com/Kinnay/NintendoClients",
 	packages = ["nintendo", "nintendo.common", "nintendo.nex", "nintendo.pia"],
-	package_data = {"nintendo": ["files/wiiu_cert.pem", "files/wiiu_key.pem"]}
+	package_data = {"nintendo": ["files/*.*"]}
 )

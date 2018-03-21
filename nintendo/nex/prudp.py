@@ -172,14 +172,7 @@ class PRUDPMessageV0:
 			packet.flags = type_flags >> 4
 			packet.type = type_flags & 0xF
 			packet.packet_id = packet_id
-			
-			payload_size = 0
-			if not packet.flags & FLAG_HAS_SIZE:
-				if packet.type != TYPE_DISCONNECT:
-					logger.error("(V0) FLAG_HAS_SIZE is required by client")
-					self.reset()
-					return packets
-			
+
 			offset = 11
 			if packet.type in [TYPE_SYN, TYPE_CONNECT]:
 				if len(self.buffer) < offset + 4: return packets
@@ -195,8 +188,10 @@ class PRUDPMessageV0:
 				if len(self.buffer) < offset + 2: return packets
 				payload_size = struct.unpack_from("<H", self.buffer, offset)[0]
 				offset += 2
-				
-			if len(self.buffer) < offset + payload_size:
+			else:
+				payload_size = len(self.buffer) - offset - 1
+
+			if len(self.buffer) < offset + payload_size + 1:
 				return packets
 				
 			checksum = self.buffer[offset + payload_size]
@@ -432,7 +427,7 @@ class DummyEncryption:
 	def set_key(self, key): pass
 	def encrypt(self, data): return data
 	def decrypt(self, data): return data
-		
+
 
 class PRUDPClient:
 
@@ -443,16 +438,22 @@ class PRUDPClient:
 
 	DEFAULT_KEY = b"CD&ML"
 
-	def __init__(self, settings, access_key):
-		logger.info("New client - access key=%s", access_key)
+	def __init__(self, settings):
 		self.settings = settings
+		self.transport_type = settings.get("prudp.transport")
+		self.stream_type = settings.get("prudp.stream_type")
+		self.fragment_size = settings.get("prudp.fragment_size")
+		self.resend_timeout = settings.get("prudp.resend_timeout")
+		self.ping_timeout = settings.get("prudp.ping_timeout")
+		self.silence_timeout = settings.get("prudp.silence_timeout")
 
+		access_key = settings.get("server.access_key")
 		self.signature_key = hashlib.md5(access_key).digest()
 		self.signature_base = sum(access_key)
 		
 		self.server_port = 1
-		if settings.transport_type == self.settings.TRANSPORT_UDP:
-			if settings.prudp_version == 0:
+		if self.transport_type == settings.TRANSPORT_UDP:
+			if settings.get("prudp.version") == 0:
 				self.packet_encoder = PRUDPMessageV0(self)
 			else:
 				self.packet_encoder = PRUDPMessageV1(self)
@@ -498,9 +499,9 @@ class PRUDPClient:
 		self.session_id = 0
 		
 		self.packet_encoder.reset()
-		if self.settings.transport_type == self.settings.TRANSPORT_UDP:
+		if self.transport_type == self.settings.TRANSPORT_UDP:
 			self.s = socket.Socket(socket.TYPE_UDP)
-		elif self.settings.transport_type == self.settings.TRANSPORT_TCP:
+		elif self.transport_type == self.settings.TRANSPORT_TCP:
 			self.s = socket.Socket(socket.TYPE_TCP)
 		else:
 			self.s = websocket.WebSocket()
@@ -512,7 +513,7 @@ class PRUDPClient:
 			
 		self.ack_events = {}
 		self.ping_event = None
-		self.timeout_event = scheduler.add_timeout(self.handle_silence_timeout, self.settings.silence_timeout)
+		self.timeout_event = scheduler.add_timeout(self.handle_silence_timeout, self.silence_timeout)
 		self.socket_event = scheduler.add_socket(self.handle_recv, self.s)
 
 		self.send_packet(self.syn_packet)
@@ -521,7 +522,7 @@ class PRUDPClient:
 			return False
 			
 		self.session_id = random.randint(0, 0xFF)
-		if self.settings.transport_type == self.settings.TRANSPORT_UDP:
+		if self.transport_type == self.settings.TRANSPORT_UDP:
 			self.client_signature = bytes([random.randint(0, 0xFF) for i in range(self.packet_encoder.signature_size())])
 		else:
 			self.client_signature = hmac.HMAC(self.signature_key, self.signature_key + self.server_signature).digest()
@@ -533,8 +534,8 @@ class PRUDPClient:
 			logger.error("PRUDP connection failed")
 			return False
 			
-		self.ping_event = scheduler.add_timeout(self.handle_ping, self.settings.ping_timeout, True)
-			
+		self.ping_event = scheduler.add_timeout(self.handle_ping, self.ping_timeout, True)
+
 		logger.info("PRUDP connection OK")
 		self.state = self.CONNECTED
 		return True
@@ -562,10 +563,10 @@ class PRUDPClient:
 
 		fragment_id = 1
 		while data:
-			if len(data) <= self.settings.fragment_size:
+			if len(data) <= self.fragment_size:
 				fragment_id = 0
-			self.send_fragment(data[:self.settings.fragment_size], fragment_id)
-			data = data[self.settings.fragment_size:]
+			self.send_fragment(data[:self.fragment_size], fragment_id)
+			data = data[self.fragment_size:]
 			fragment_id += 1
 
 	def send_fragment(self, data, fragment_id):
@@ -601,7 +602,7 @@ class PRUDPClient:
 					scheduler.remove(self.ack_events.pop(packet.packet_id))
 
 			elif packet.flags & FLAG_MULTI_ACK:
-				if self.settings.transport_type != self.settings.TRANSPORT_UDP or packet.multi_ack_version == 1:
+				if self.transport_type != self.settings.TRANSPORT_UDP or packet.multi_ack_version == 1:
 					ack_id = struct.unpack_from("<H", packet.payload, 2)[0]
 				else:
 					ack_id = struct.unpack("<H", packet.payload)[0]
@@ -653,7 +654,7 @@ class PRUDPClient:
 			logger.debug("(%i) Resending packet: %s", self.session_id, packet)
 			self.send_packet_raw(packet)
 			
-			event = scheduler.add_timeout(self.handle_ack_timeout, self.settings.resend_timeout, param=(packet, counter+1))
+			event = scheduler.add_timeout(self.handle_ack_timeout, self.resend_timeout, param=(packet, counter+1))
 			self.ack_events[packet.packet_id] = event
 		else:
 			logger.error("Packet timed out")
@@ -678,14 +679,14 @@ class PRUDPClient:
 		logger.debug("(%i) Sending packet: %s", self.session_id, packet)
 		
 		if packet.flags & FLAG_NEED_ACK:
-			event = scheduler.add_timeout(self.handle_ack_timeout, self.settings.resend_timeout, param=(packet, 0))
+			event = scheduler.add_timeout(self.handle_ack_timeout, self.resend_timeout, param=(packet, 0))
 			self.ack_events[packet.packet_id] = event
 		
 		self.send_packet_raw(packet)
 		
 	def send_packet_raw(self, packet):
 		packet.source_port = self.client_port
-		packet.source_type = self.settings.stream_type
+		packet.source_type = self.stream_type
 		packet.dest_port = self.server_port
-		packet.dest_type = self.settings.stream_type
+		packet.dest_type = self.stream_type
 		self.s.send(self.packet_encoder.encode(packet))

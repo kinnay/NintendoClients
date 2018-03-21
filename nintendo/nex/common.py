@@ -17,18 +17,18 @@ class Structure:
 		return 0
 
 	def encode(self, stream):
-		self.init_version(stream.version)
+		self.init_version(stream.settings.get("server.version"))
 		if self.version == -1:
 			self.streamin(stream)
 		else:
-			substream = streams.StreamOut(stream.version)
+			substream = streams.StreamOut(stream.settings)
 			self.streamin(substream)
 			
 			stream.u8(self.version)
 			stream.buffer(substream.data)
 
 	def decode(self, stream):
-		self.init_version(stream.version)
+		self.init_version(stream.settings.get("server.version"))
 		if self.version == -1:
 			self.streamout(stream)
 			
@@ -68,7 +68,7 @@ class DataHolder:
 	def encode(self, stream):	
 		stream.string(self.data.get_name())
 		
-		substream = streams.StreamOut(stream.version)
+		substream = streams.StreamOut(stream.settings)
 		substream.add(self.data)
 		
 		stream.u32(len(substream.data) + 4)

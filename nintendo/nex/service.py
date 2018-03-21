@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 class ServiceClient:
-	def __init__(self, back_end, access_key):
-		self.client = prudp.PRUDPClient(back_end.settings, access_key)
-		self.back_end = back_end
+	def __init__(self, backend):
+		self.client = prudp.PRUDPClient(backend.settings)
+		self.backend = backend
 
 		self.call_id = 0
 		self.responses = {}
@@ -32,7 +32,7 @@ class ServiceClient:
 			scheduler.remove(self.socket_event)
 			return
 
-		stream = streams.StreamIn(data, self.back_end.version)
+		stream = streams.StreamIn(data, self.backend.settings)
 		length = stream.u32()
 		protocol_id = stream.u8()
 
@@ -43,14 +43,14 @@ class ServiceClient:
 
 	def init_request(self, protocol_id, method_id):
 		self.call_id += 1
-		stream = streams.StreamOut(self.back_end.version)
+		stream = streams.StreamOut(self.backend.settings)
 		stream.u8(protocol_id | 0x80)
 		stream.u32(self.call_id)
 		stream.u32(method_id)
 		return stream, self.call_id
 		
 	def init_response(self, protocol_id, call_id, method_id, error=None):
-		stream = streams.StreamOut(self.back_end.version)
+		stream = streams.StreamOut(self.backend.settings)
 		stream.u8(protocol_id)
 		if error:
 			stream.u8(0)
@@ -73,8 +73,8 @@ class ServiceClient:
 		method_id = stream.u32()
 		logger.debug("Received RMC request: protocol=%i, call=%i, method=%i", protocol_id, call_id, method_id)
 		
-		if protocol_id in self.back_end.protocol_map:
-			self.back_end.protocol_map[protocol_id].handle_request(self, call_id, method_id, stream)
+		if protocol_id in self.backend.protocol_map:
+			self.backend.protocol_map[protocol_id].handle_request(self, call_id, method_id, stream)
 		else:
 			logger.warning("Received RMC request with unsupported protocol id: 0x%X", protocol_id)
 			

@@ -153,9 +153,9 @@ class MatchmakeExtensionClient:
 	
 	PROTOCOL_ID = 0x6D
 	
-	def __init__(self, back_end):
-		self.back_end = back_end
-		self.client = back_end.secure_client
+	def __init__(self, backend):
+		self.backend = backend
+		self.client = backend.secure_client
 		
 	def auto_matchmake(self, gathering, message):
 		logger.info("MatchmakeExtension.auto_matchmake(...)")
