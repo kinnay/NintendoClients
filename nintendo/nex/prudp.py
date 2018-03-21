@@ -104,8 +104,9 @@ class PRUDPPacket:
 	
 	
 class PRUDPMessageV0:
-	def __init__(self, client):
+	def __init__(self, client, settings):
 		self.client = client
+		self.settings = settings
 		self.reset()
 		
 	def reset(self):
@@ -121,11 +122,19 @@ class PRUDPMessageV0:
 		checksum += sum(struct.pack("<I", temp))
 		return checksum & 0xFF
 		
+	def calc_data_signature(self, packet):
+		data = packet.payload
+		if self.settings.get("prudp.signature_version") == 0:
+			data = self.client.secure_key + struct.pack("<HB", packet.packet_id, packet.fragment_id) + data
+
+		if data:
+			return hmac.HMAC(self.client.signature_key, data).digest()[:4]
+		return struct.pack("<I", 0x12345678)
+		
 	def calc_packet_signature(self, packet, signature):
-		if packet.type == TYPE_DATA:
-			if packet.payload:
-				return hmac.HMAC(self.client.signature_key, packet.payload).digest()[:4]
-			return struct.pack("<I", 0x12345678)
+		if packet.type == TYPE_DATA: return self.calc_data_signature(packet)
+		if packet.type == TYPE_DISCONNECT and self.settings.get("prudp.signature_version") == 0:
+			return self.calc_data_signature(packet)
 		return signature if signature else bytes(4)
 		
 	def encode(self, packet):
@@ -212,8 +221,9 @@ class PRUDPMessageV0:
 
 	
 class PRUDPMessageV1:
-	def __init__(self, client):
+	def __init__(self, client, settings):
 		self.client = client
+		self.settings = settings
 		self.reset()
 		
 	def reset(self):
@@ -330,8 +340,9 @@ class PRUDPMessageV1:
 
 		
 class PRUDPLiteMessage:
-	def __init__(self, client):
+	def __init__(self, client, settings):
 		self.client = client
+		self.settings = settings
 		self.reset()
 		
 	def reset(self):
@@ -454,13 +465,13 @@ class PRUDPClient:
 		self.server_port = 1
 		if self.transport_type == settings.TRANSPORT_UDP:
 			if settings.get("prudp.version") == 0:
-				self.packet_encoder = PRUDPMessageV0(self)
+				self.packet_encoder = PRUDPMessageV0(self, settings)
 			else:
-				self.packet_encoder = PRUDPMessageV1(self)
+				self.packet_encoder = PRUDPMessageV1(self, settings)
 			self.encryption = RC4Encryption(self.DEFAULT_KEY)
 			self.client_port = 0xF
 		else:
-			self.packet_encoder = PRUDPLiteMessage(self)
+			self.packet_encoder = PRUDPLiteMessage(self, settings)
 			self.encryption = DummyEncryption()
 			self.client_port = 0x1F
 			

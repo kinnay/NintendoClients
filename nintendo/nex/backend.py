@@ -21,6 +21,7 @@ class Settings:
 		"prudp.resend_timeout": float,
 		"prudp.ping_timeout": float,
 		"prudp.silence_timeout": float,
+		"prudp.signature_version": int,
 
 		"kerberos.key_size": int,
 		"kerberos.key_derivation": int,
@@ -45,10 +46,9 @@ class Settings:
 	
 	def get(self, field): return self.settings[field]
 	def set(self, field, value):
-		if field in self.field_types:
-			self.settings[field] = self.field_types[field](value)
-		else:
-			logger.warning("Unknown setting '%s'" %field)
+		if field not in self.field_types:
+			raise ValueError("Unknown setting: %s" %field)
+		self.settings[field] = self.field_types[field](value)
 
 	def load(self, filename):
 		filename = pkg_resources.resource_filename("nintendo", "files/%s" %filename)
@@ -61,7 +61,7 @@ class Settings:
 						field, value = line.split("=", 1)
 						self.set(field.strip(), value.strip())
 					else:
-						logger.warning("Ignoring line %i in config file" %linenum)
+						raise ValueError("Syntax error at line %i" %linenum)
 				linenum += 1
 
 
