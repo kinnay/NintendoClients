@@ -7,14 +7,14 @@ logger = logging.getLogger(__name__)
 
 class NotificationEvent(common.Structure):
 	def streamout(self, stream):
-		self.pid = stream.u32()
+		self.pid = stream.uint()
 		self.type = stream.u32()
-		self.param1 = stream.u32()
-		self.param2 = stream.u32()
+		self.param1 = stream.uint()
+		self.param2 = stream.uint()
 		self.text = stream.string()
 		
 		if self.version >= 0:
-			self.param3 = stream.u32()
+			self.param3 = stream.uint()
 
 			
 class NotificationHandler:

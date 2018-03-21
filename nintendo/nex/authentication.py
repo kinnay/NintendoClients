@@ -156,7 +156,7 @@ class AuthenticationClient(service.ServiceClient):
 		encrypted_ticket = stream.buffer()
 		ticket_data = streams.StreamIn(self.kerberos_encryption.decrypt(encrypted_ticket), stream.version)
 		ticket_key = ticket_data.read(key_length)
-		ticket_data.u32() #Unknown
+		ticket_data.uint() #Unknown
 		ticket_buffer = ticket_data.buffer()
 
 		logger.info("Authentication.request_ticket -> %s", ticket_key.hex())
