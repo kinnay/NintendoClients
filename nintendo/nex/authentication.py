@@ -125,7 +125,7 @@ class AuthenticationClient(service.ServiceClient):
 		stream = self.get_response(call_id)
 		result = stream.u32()
 		if result & 0x80000000:
-			raise AuthenticationError("NEX authentication failed (%s)" %errors.error_names.get(result, "unknown error"))
+			raise AuthenticationError("Login failed (%s)" %errors.error_names.get(result, "unknown error"))
 			
 		self.pid = stream.uint()
 		kerberos_data = stream.buffer()
@@ -149,12 +149,14 @@ class AuthenticationClient(service.ServiceClient):
 		#--- response ---
 		stream = self.get_response(call_id)
 		result = stream.u32()
+		if result & 0x80000000:
+			raise AuthenticationError("Ticket request failed (%s)" %errors.error_names.get(result, "unknown error"))
 
 		encrypted_ticket = stream.buffer()
-		ticket_data = streams.StreamIn(self.kerberos_encryption.decrypt(encrypted_ticket), stream.settings)
-		ticket_key = ticket_data.read(self.settings.get("kerberos.key_size"))
-		ticket_data.uint() #Unknown
-		ticket_buffer = ticket_data.buffer()
+		ticket_stream = streams.StreamIn(self.kerberos_encryption.decrypt(encrypted_ticket), stream.settings)
+		ticket_key = ticket_stream.read(self.settings.get("kerberos.key_size"))
+		ticket_stream.uint() #Unknown
+		ticket_buffer = ticket_stream.buffer()
 
 		logger.info("Authentication.request_ticket -> %s", ticket_key.hex())
 		return kerberos.Ticket(ticket_key, ticket_buffer)
