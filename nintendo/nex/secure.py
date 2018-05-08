@@ -25,10 +25,10 @@ class SecureClient(service.ServiceClient):
 	
 	PROTOCOL_ID = 0xB
 	
-	def __init__(self, backend, ticket, auth_client):
-		super().__init__(backend)
+	def __init__(self, backend, ticket):
+		super().__init__(backend, service.ServiceClient.SECURE)
 		self.ticket = ticket
-		self.auth_client = auth_client
+		self.auth_client = backend.auth_client
 		self.kerberos_encryption = kerberos.KerberosEncryption(self.ticket.key)
 		
 		station_url = self.auth_client.secure_station

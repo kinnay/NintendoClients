@@ -9,8 +9,20 @@ logger = logging.getLogger(__name__)
 
 
 class ServiceClient:
-	def __init__(self, backend):
+
+	AUTHENTICATION = 0
+	SECURE = 1
+	
+	server_ports = {
+		AUTHENTICATION: 1,
+		SECURE: 2
+	}
+
+	def __init__(self, backend, type):
 		self.client = prudp.PRUDPClient(backend.settings)
+		if backend.settings.get("prudp.transport") != backend.settings.TRANSPORT_UDP:
+			self.client.server_port = self.server_ports[type]
+
 		self.backend = backend
 
 		self.call_id = 0

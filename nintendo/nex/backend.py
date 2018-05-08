@@ -92,6 +92,7 @@ class BackEndClient:
 		}
 		
 	def connect(self, host, port):
+		self.auth_addr = host, port
 		self.auth_client = authentication.AuthenticationClient(self)
 		self.auth_client.connect(host, port)
 		
@@ -109,8 +110,10 @@ class BackEndClient:
 		ticket = self.auth_client.request_ticket()
 		host = self.auth_client.secure_station["address"]
 		port = self.auth_client.secure_station["port"]
+		if host == "0.0.0.1":
+			host, port = self.auth_addr
 		
-		self.secure_client = secure.SecureClient(self, ticket, self.auth_client)
+		self.secure_client = secure.SecureClient(self, ticket)
 		self.secure_client.connect(host, port)
 		if data and flags & self.SECURE_TOKEN:
 			urls = self.secure_client.register_urls(data)

@@ -93,7 +93,7 @@ class AuthenticationClient(service.ServiceClient):
 	PROTOCOL_ID = 0xA
 	
 	def __init__(self, backend):
-		super().__init__(backend)
+		super().__init__(backend, service.ServiceClient.AUTHENTICATION)
 		self.settings = backend.settings
 		if self.settings.get("kerberos.key_derivation") == 0:
 			self.key_derivation = KeyDerivationOld(65000, 1024)

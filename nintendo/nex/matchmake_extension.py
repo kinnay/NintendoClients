@@ -233,8 +233,7 @@ class MatchmakeExtensionClient:
 
 	METHOD_MK8_JOIN_FRIEND_ROOM = 40
 
-	#This might be a generic join method. I'm calling it join_friend_room
-	#because that's what I'm using it for at the moment
+	#This might be a generic join method
 	def join_friend_room(self, gid, unk1, unk2, unk3, unk4):
 		logger.info("MatchmakeExtension.join_friend_room(%08X, %s, %i, %04X, %08X)", gid, unk1, unk2, unk3, unk4)
 		#--- request ---
