@@ -598,7 +598,7 @@ class PRUDPClient:
 		
 	def handle_recv(self, data):
 		if not data:
-			logger.debug("Connection was closed")
+			logger.debug("(%i) Connection was closed" %self.session_id)
 			self.state = self.DISCONNECTED
 			self.remove_events()
 			return
