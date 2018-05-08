@@ -67,10 +67,7 @@ print("Highest time:", format_time(stats[ranking.RankingClient.STAT_HIGHEST_SCOR
 
 print("Rankings:")
 for rankdata in rankings.datas:
-	millisec = rankdata.score % 1000
-	seconds = rankdata.score // 1000 % 60
-	minutes = rankdata.score // 1000 // 60
-	time = "%i:%02i.%03i" %(minutes, seconds, millisec)
+	time = format_time(rankdata.score)
 	print("\t%5i   %20s   %s" %(rankdata.rank, names[rankdata.pid], time))
 	
 #Let's download the replay file of whoever is in 500th place
