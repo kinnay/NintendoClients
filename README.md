@@ -11,6 +11,7 @@ Requirements:
 Example scripts:
 * example_donkeykong.py downloads and prints DKC Tropical Freeze rankings, and downloads the replay file of the world record
 * example_mariokart.py downloads and prints Mario Kart 8 rankings, and downloads a replay file
+* example_mariokartdeluxe.py downloads and prints Mario Kart 8 Deluxe rankings
 * example_miis.py requests and prints all kinds of information about the primary mii associated with a NNID
 * example_friend_list.py requests and prints your friend list, incoming and outgoing friend requests, and blacklist
 * example_friend_notifications.py listens for and prints friend notifications (when a friend starts a game for example)
