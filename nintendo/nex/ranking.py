@@ -28,7 +28,7 @@ class RankingOrderParam(common.Structure):
 
 class RankingRankData(common.Structure):
 	def streamout(self, stream):
-		self.pid = stream.u32()
+		self.pid = stream.uint()
 		self.unique_id = stream.u64()
 		self.rank = stream.u32()
 		self.category = stream.u32()
@@ -128,7 +128,7 @@ class RankingClient:
 		stream.u32(category)
 		stream.add(order)
 		stream.u64(unique_id)
-		stream.u32(pid)
+		stream.uint(pid)
 		self.client.send_message(stream)
 		
 		#--- response ---
