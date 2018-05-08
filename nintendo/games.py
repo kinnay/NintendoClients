@@ -1,4 +1,6 @@
 
+#===== Wii U Games =====#
+
 class DKCTF:
 	TITLE_ID_EUR = 0x0005000010138300
 	TITLE_ID_USA = 0x0005000010137F00
@@ -33,3 +35,10 @@ class SMM:
 	ACCESS_KEY = "9f2b4678"
 	NEX_VERSION = 30810 #3.8.10 (AMA patch)
 	SERVER_VERSION = 3017
+	
+#===== Switch Games =====#
+
+class MK8Deluxe:
+	GAME_SERVER_ID = 0x2B309E01
+	ACCESS_KEY = "09c1c475"
+	NEX_VERSION = 40007 #4.0.7 (apptrbs)
