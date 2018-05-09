@@ -76,8 +76,6 @@ class WebSocket:
 			self.state = STATE_DISCONNECTED
 
 		self.socket_event = scheduler.add_socket(self.handle_recv, self.s)
-		self.ping_event = scheduler.add_timeout(self.handle_ping, 4, True)
-		self.ping_timeout = None
 		
 		handshake = self.handshake_template %(path, host)
 		self.s.send(handshake.encode("ascii"))
@@ -93,9 +91,6 @@ class WebSocket:
 		
 	def remove_events(self):
 		scheduler.remove(self.socket_event)
-		scheduler.remove(self.ping_event)
-		if self.ping_timeout:
-			scheduler.remove(self.ping_timeout)
 			
 	def handle_recv(self, data):
 		if not data:
@@ -153,15 +148,6 @@ class WebSocket:
 				self.fragments = b""
 			
 			self.buffer = self.buffer[offset + size:]
-			
-	def handle_ping(self):
-		self.send_packet(OPCODE_PING)
-		self.ping_timeout = scheduler.add_timeout(self.handle_ping_timeout, 3)
-		
-	def handle_ping_timeout(self):
-		logger.error("Connection died: no pong received")
-		self.state = STATE_DISCONNECTED
-		self.remove_events()
 		
 	def apply_mask(self, data, key):
 		return bytes([data[i] ^ key[i % 4] for i in range(len(data))])
