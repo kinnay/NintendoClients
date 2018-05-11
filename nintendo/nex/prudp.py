@@ -686,8 +686,10 @@ class PRUDPClient:
 		ack = PRUDPPacket(packet.type, FLAG_ACK)
 		ack.packet_id = packet.packet_id
 		ack.fragment_id = packet.fragment_id
+		if self.transport_type != self.settings.TRANSPORT_UDP:
+			ack.packet_id -= 1 #No idea why this is necessary
+			
 		logger.debug("(%i) Sending ack: %s", self.session_id, ack)
-
 		self.send_packet_raw(ack)
 		
 	def wait_ack(self, packet):
