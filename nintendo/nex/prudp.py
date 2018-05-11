@@ -611,6 +611,7 @@ class PRUDPClient:
 		for packet in packets:
 			logger.debug("(%i) Packet received: %s" %(self.session_id, packet))
 			if packet.flags & FLAG_ACK:
+				logger.debug("(%i) Packet acknowledged: %s" %(self.session_id, packet))
 				if packet.packet_id in self.ack_events:
 					if packet.type == TYPE_SYN:
 						self.server_signature = packet.signature
@@ -623,6 +624,7 @@ class PRUDPClient:
 					ack_id = struct.unpack_from("<H", packet.payload, 2)[0]
 				else:
 					ack_id = struct.unpack("<H", packet.payload)[0]
+				logger.debug("(%i) Aggregate ack up to packet %i" %(self.session_id, ack_id))
 				for packet_id in list(self.ack_events.keys()):
 					if packet_id <= ack_id:
 						scheduler.remove(self.ack_events.pop(packet_id))
