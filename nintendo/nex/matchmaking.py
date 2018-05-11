@@ -1,4 +1,6 @@
 
+from nintendo.nex import common
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -52,6 +54,20 @@ class MatchMakingClient:
 
 	def __init__(self, backend):
 		self.client = backend.secure_client
+		
+	def find_by_sql_query(self, query, result_range):
+		logger.info("MatchMaking.find_by_sql_query(%s, [%i, %i])", query, result_range.offset, result_range.size)
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_FIND_BY_SQL_QUERY)
+		stream.string(query)
+		stream.add(result_range)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		gatherings = stream.list(lambda s: s.extract(common.DataHolder).data)
+		logger.info("MatchMaking.find_by_sql_query -> %i results", len(gatherings))
+		return gatherings
 		
 	def get_session_url(self, gid):
 		logger.info("MatchMaking.get_session_url(%08X)", gid)

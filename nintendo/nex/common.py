@@ -149,3 +149,13 @@ class DateTime:
 	@classmethod
 	def make(cls, day, month, year, hour, minute, second):
 		return cls(second | (minute << 6) | (hour << 12) | (day << 17) | (month << 22) | (year << 26))
+		
+		
+class ResultRange(Structure):
+	def __init__(self, offset, size):
+		self.offset = offset
+		self.size = size
+	
+	def streamin(self, stream):
+		stream.u32(self.offset)
+		stream.u32(self.size)
