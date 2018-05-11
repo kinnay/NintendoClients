@@ -628,23 +628,24 @@ class PRUDPClient:
 						scheduler.remove(self.ack_events.pop(packet_id))
 						
 			else:
-				self.packet_queue[packet.packet_id] = packet
-				while self.packet_id_in in self.packet_queue:
-					packet = self.packet_queue.pop(self.packet_id_in)
-					self.handle_packet(packet)
-					self.packet_id_in += 1
+				if packet.flags & FLAG_NEED_ACK:
+					self.send_ack(packet)
+					if packet.type == TYPE_DISCONNECT:
+						self.send_ack(packet)
+						self.send_ack(packet)
+			
+				if packet.packet_id >= self.packet_id_in:
+					self.packet_queue[packet.packet_id] = packet
+					while self.packet_id_in in self.packet_queue:
+						packet = self.packet_queue.pop(self.packet_id_in)
+						self.handle_packet(packet)
+						self.packet_id_in += 1
 				
 			if self.ping_event:
 				self.ping_event.reset()
 			self.timeout_event.reset()
 			
 	def handle_packet(self, packet):
-		if packet.flags & FLAG_NEED_ACK:
-			self.send_ack(packet)
-			if packet.type == TYPE_DISCONNECT:
-				self.send_ack(packet)
-				self.send_ack(packet)
-	
 		if packet.type == TYPE_DATA:
 			self.fragment_buffer += self.encryption.decrypt(packet.payload)
 			if packet.fragment_id == 0:
