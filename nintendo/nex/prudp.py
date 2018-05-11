@@ -556,6 +556,10 @@ class PRUDPClient:
 	def close(self):
 		if self.state != self.DISCONNECTED:
 			self.state = self.DISCONNECTING
+			
+			scheduler.remove(self.ping_event)
+			self.ping_event = None
+			
 			packet = PRUDPPacket(TYPE_DISCONNECT, FLAG_RELIABLE | FLAG_NEED_ACK)
 			self.send_packet(packet)
 			self.wait_ack(packet)
