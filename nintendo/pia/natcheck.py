@@ -36,9 +36,6 @@ class NATDetecter:
 		return request, socket.inet_ntoa(host), port
 		
 	def get_nat_properties(self):
-		#I've only tested this at home. If you have a different
-		#NAT setup this function might fail or return incorrect
-		#values. Any help/testing would be appreciated.
 		self.init_socket()
 
 		start_time = time.monotonic()
