@@ -56,6 +56,19 @@ class AccountManagementClient:
 	def __init__(self, backend):
 		self.client = backend.secure_client
 		
+	def test_capability(self, capability):
+		logger.info("AccountManagement.test_capability(%i)", capability)
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_TEST_CAPABILITY)
+		stream.u32(capability)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		result = stream.bool()
+		logger.info("AccountManagement.test_capability -> %s", result)
+		return result
+		
 	def get_name(self, pid):
 		logger.info("AccountManagement.get_name(%i)", pid)
 		#--- request ---
