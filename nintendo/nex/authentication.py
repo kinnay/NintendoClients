@@ -134,7 +134,8 @@ class AuthenticationClient(service.ServiceClient):
 		
 		kerberos_key = self.key_derivation.derive_key(password.encode("ascii"), self.pid)
 		self.kerberos_encryption = kerberos.KerberosEncryption(kerberos_key)
-		self.kerberos_encryption.decrypt(kerberos_data) #Validate kerberos key
+		if not self.kerberos_encryption.check_hmac(kerberos_data):
+			raise AuthenticationError("Kerberos key validation failed (incorrect password)")
 
 		logger.info("Authentication.login(_ex) -> (%08X, %s, %s)", self.pid, self.secure_station, server_name)
 		
