@@ -46,9 +46,9 @@ class SecureClient(service.ServiceClient):
 		substream.u32(check_value) #Used to check connection response
 		
 		stream.buffer(self.kerberos_encryption.encrypt(substream.get()))
-		super().connect(host, port, stream.get())
+		response = super().connect(host, port, stream.get())
 
-		stream = streams.StreamIn(self.client.connect_response, self.backend.settings)
+		stream = streams.StreamIn(response, self.backend.settings)
 		if stream.u32() != 4: raise ConnectionError("Invalid connection response size")
 		if stream.u32() != (check_value + 1) & 0xFFFFFFFF:
 			raise ConnectionError("Connection response check failed")

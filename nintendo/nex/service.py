@@ -33,6 +33,7 @@ class ServiceClient:
 			raise ConnectionError("Connection failed")
 			
 		self.socket_event = scheduler.add_socket(self.handle_recv, self.client)
+		return self.client.connect_response
 		
 	def close(self):
 		scheduler.remove(self.socket_event)
