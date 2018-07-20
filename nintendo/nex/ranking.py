@@ -17,7 +17,7 @@ class RankingOrderParam(common.Structure):
 		self.offset = offset
 		self.count = count
 		
-	def streamin(self, stream):
+	def save(self, stream):
 		stream.u8(self.order_calc)
 		stream.u8(self.group_index)
 		stream.u8(self.group_num)
@@ -27,7 +27,7 @@ class RankingOrderParam(common.Structure):
 
 
 class RankingRankData(common.Structure):
-	def streamout(self, stream):
+	def load(self, stream):
 		self.pid = stream.uint()
 		self.unique_id = stream.u64()
 		self.rank = stream.u32()
@@ -39,14 +39,14 @@ class RankingRankData(common.Structure):
 
 
 class RankingResult(common.Structure):
-	def streamout(self, stream):	
+	def load(self, stream):	
 		self.datas = stream.list(RankingRankData)
 		self.total = stream.u32()
 		self.since_time = stream.datetime()
 	
 	
 class RankingStats(common.Structure):
-	def streamout(self, stream):
+	def load(self, stream):
 		self.stats = stream.list(stream.double)
 
 

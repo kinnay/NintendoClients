@@ -25,7 +25,7 @@ class MatchmakeSessionSearchCriteria(common.Structure):
 		self.selection_method = selection_method
 		self.vacant_participants = vacant_participants
 	
-	def streamin(self, stream):
+	def save(self, stream):
 		stream.list(self.attribs, stream.string)
 		stream.string(self.game_mode)
 		stream.string(self.min_participants)
@@ -65,7 +65,7 @@ class MatchmakeSession(common.Structure):
 		self.gathering = stream.extract(matchmake_common.Gathering)
 		super().decode(stream)
 
-	def streamin(self, stream):
+	def save(self, stream):
 		stream.u32(self.game_mode)
 		stream.list(self.attribs, stream.u32)
 		stream.bool(self.open_participation)
@@ -78,7 +78,7 @@ class MatchmakeSession(common.Structure):
 		if self.version >= 0:
 			stream.u32(self.option)
 		
-	def streamout(self, stream):
+	def load(self, stream):
 		self.game_mode = stream.u32()
 		self.attribs = stream.list(stream.u32)
 		self.open_participation = stream.bool()
@@ -94,7 +94,7 @@ common.DataHolder.register(MatchmakeSession, "MatchmakeSession")
 
 
 class SimplePlayingSession(common.Structure):
-	def streamout(self, stream):
+	def load(self, stream):
 		self.pid = stream.u32()
 		self.gid = stream.u32()
 		self.game_mode = stream.u32()

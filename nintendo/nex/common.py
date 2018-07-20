@@ -19,10 +19,10 @@ class Structure:
 	def encode(self, stream):
 		self.init_version(stream.settings.get("server.version"))
 		if self.version == -1:
-			self.streamin(stream)
+			self.save(stream)
 		else:
 			substream = streams.StreamOut(stream.settings)
-			self.streamin(substream)
+			self.save(substream)
 			
 			stream.u8(self.version)
 			stream.buffer(substream.get())
@@ -30,22 +30,22 @@ class Structure:
 	def decode(self, stream):
 		self.init_version(stream.settings.get("server.version"))
 		if self.version == -1:
-			self.streamout(stream)
+			self.load(stream)
 			
 		else:
 			version = stream.u8()
 			if version != self.version:
 				logger.info("Structure version (%i) doesn't match expected version (%i)" %(version, self.version))
 				self.version = version
-			self.streamout(stream.substream())
+			self.load(stream.substream())
 			
-	def streamin(self, stream): raise NotImplementedError("Structure.streamin")
-	def streamout(self, stream): raise NotImplementedError("Structure.streamout")
+	def save(self, stream): raise NotImplementedError("Structure.save")
+	def load(self, stream): raise NotImplementedError("Structure.load")
 	
 	
 class DataObj(Structure):
-	def streamin(self, stream): pass
-	def streamout(self, stream): pass
+	def save(self, stream): pass
+	def load(self, stream): pass
 	
 	
 class Data(Structure):
@@ -156,6 +156,6 @@ class ResultRange(Structure):
 		self.offset = offset
 		self.size = size
 	
-	def streamin(self, stream):
+	def save(self, stream):
 		stream.u32(self.offset)
 		stream.u32(self.size)

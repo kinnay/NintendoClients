@@ -16,7 +16,7 @@ class NintendoNotificationEventGeneral(common.Data):
 	def get_name(self):
 		return "NintendoNotificationEventGeneral"
 
-	def streamout(self, stream):
+	def load(self, stream):
 		self.param1 = stream.u32()
 		self.param2 = stream.u64()
 		self.param3 = stream.u64()
@@ -25,7 +25,7 @@ common.DataHolder.register(NintendoNotificationEventGeneral, "NintendoNotificati
 
 
 class NintendoNotificationEvent(common.Structure):
-	def streamout(self, stream):
+	def load(self, stream):
 		self.type = stream.u32()
 		self.pid = stream.u32()
 		self.data = stream.anydata()

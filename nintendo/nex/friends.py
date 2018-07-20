@@ -28,14 +28,14 @@ class MiiV2(common.Data):
 	def get_name(self):
 		return "MiiV2"
 		
-	def streamin(self, stream):
+	def save(self, stream):
 		stream.string(self.name)
 		stream.u8(self.unk1)
 		stream.u8(self.unk2)
 		stream.buffer(self.data.build())
 		stream.datetime(self.datetime)
 	
-	def streamout(self, stream):
+	def load(self, stream):
 		self.name = stream.string()
 		self.unk1 = stream.u8()
 		self.unk2 = stream.u8()
@@ -54,13 +54,13 @@ class PrincipalBasicInfo(common.Data):
 	def get_name(self):
 		return "PrincipalBasicInfo"
 
-	def streamin(self, stream):	
+	def save(self, stream):	
 		stream.u32(self.pid)
 		stream.string(self.nnid)
 		stream.add(self.mii)
 		stream.u8(self.unk)
 		
-	def streamout(self, stream):
+	def load(self, stream):
 		self.pid = stream.u32()
 		self.nnid = stream.string()
 		self.mii = stream.extract(MiiV2)
@@ -77,12 +77,12 @@ class NNAInfo(common.Data):
 	def get_name(self):
 		return "NNAInfo"
 
-	def streamin(self, stream):	
+	def save(self, stream):	
 		stream.add(self.principal_info)
 		stream.u8(self.unk1)
 		stream.u8(self.unk2)
 		
-	def streamout(self, stream):
+	def load(self, stream):
 		self.principal_info = stream.extract(PrincipalBasicInfo)
 		self.unk1 = stream.u8()
 		self.unk2 = stream.u8()
@@ -97,11 +97,11 @@ class GameKey(common.Data):
 	def get_name(self):
 		return "GameKey"
 		
-	def streamin(self, stream):
+	def save(self, stream):
 		stream.u64(self.title_id)
 		stream.u16(self.title_version)
 		
-	def streamout(self, stream):
+	def load(self, stream):
 		self.title_id = stream.u64()
 		self.title_version = stream.u16()
 common.DataHolder.register(GameKey, "GameKey")
@@ -129,7 +129,7 @@ class NintendoPresenceV2(common.Data):
 	def get_name(self):
 		return "NintendoPresenceV2"
 		
-	def streamin(self, stream):
+	def save(self, stream):
 		stream.u32(self.unk1)
 		stream.u8(self.is_online)
 		stream.add(self.game_key)
@@ -146,7 +146,7 @@ class NintendoPresenceV2(common.Data):
 		stream.u8(self.unk11)
 		stream.u8(self.unk12)
 		
-	def streamout(self, stream):
+	def load(self, stream):
 		self.unk1 = stream.u32()
 		self.is_online = stream.u8()
 		self.game_key = stream.extract(GameKey)
@@ -169,7 +169,7 @@ class PrincipalPreference(common.Data):
 	def get_name(self):
 		return "PrincipalPreference"
 
-	def streamout(self, stream):
+	def load(self, stream):
 		self.unk1 = stream.bool()
 		self.unk2 = stream.bool()
 		self.unk3 = stream.bool()
@@ -181,7 +181,7 @@ class Comment(common.Data):
 	def get_name(self):
 		return "Comment"
 	
-	def streamout(self, stream):
+	def load(self, stream):
 		self.unk = stream.u8()
 		self.text = stream.string()
 		self.changed = stream.datetime()
@@ -192,7 +192,7 @@ class FriendInfo(common.Data):
 	def get_name(self):
 		return "FriendInfo"
 
-	def streamout(self, stream):
+	def load(self, stream):
 		self.nna_info = stream.extract(NNAInfo)
 		self.presence = stream.extract(NintendoPresenceV2)
 		self.comment = stream.extract(Comment)
@@ -206,7 +206,7 @@ class FriendRequestMessage(common.Data):
 	def get_name(self):
 		return "FriendRequestMessage"
 
-	def streamout(self, stream):
+	def load(self, stream):
 		self.unk1 = stream.u64()
 		self.unk2 = stream.u8()
 		self.unk3 = stream.u8()
@@ -223,7 +223,7 @@ class FriendRequest(common.Data):
 	def get_name(self):
 		return "FriendRequest"
 
-	def streamout(self, stream):
+	def load(self, stream):
 		self.principal_info = stream.extract(PrincipalBasicInfo)
 		self.message = stream.extract(FriendRequestMessage)
 		self.sent = stream.datetime()
@@ -234,7 +234,7 @@ class BlacklistedPrincipal(common.Data):
 	def get_name(self):
 		return "BlacklistedPrincipal"
 
-	def streamout(self, stream):
+	def load(self, stream):
 		self.principal_info = stream.extract(PrincipalBasicInfo)
 		self.game_key = stream.extract(GameKey)
 		self.since = stream.datetime()
@@ -245,7 +245,7 @@ class PersistentNotification(common.Data):
 	def get_name(self):
 		return "PersistentNotification"
 
-	def streamout(self, stream):
+	def load(self, stream):
 		self.unk1 = stream.u64()
 		self.unk2 = stream.u32()
 		self.unk3 = stream.u32()

@@ -18,7 +18,7 @@ class Gathering(common.Structure):
 	def get_name(self):
 		return "Gathering"
 	
-	def streamin(self, stream):
+	def save(self, stream):
 		stream.u32(self.id)
 		stream.u32(self.owner_pid)
 		stream.u32(self.host_pid)
@@ -30,7 +30,7 @@ class Gathering(common.Structure):
 		stream.u32(self.state)
 		stream.string(self.description)
 		
-	def streamout(self, stream):
+	def load(self, stream):
 		self.id = stream.u32()
 		self.owner_pid = stream.u32()
 		self.host_pid = stream.u32()

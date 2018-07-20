@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 class AccountData(common.Structure):
-	def streamout(self, stream):
+	def load(self, stream):
 		self.pid = stream.uint()
 		self.name = stream.string()
 		self.groups = stream.u32()

@@ -11,26 +11,26 @@ class PersistenceTarget(common.Structure):
 		self.owner_id = owner_id
 		self.persistence_id = persistence_id
 	
-	def streamin(self, stream):
+	def save(self, stream):
 		stream.uint(self.owner_id)
 		stream.u16(self.persistence_id)
 
 	
 class DataStorePermission(common.Structure):
-	def streamout(self, stream):
+	def load(self, stream):
 		self.permission = stream.u8()
 		self.recipients = stream.list(stream.u32)
 		
 	
 class DataStoreRatingInfo(common.Structure):
-	def streamout(self, stream):
+	def load(self, stream):
 		self.total_value = stream.s64()
 		self.count = stream.u32()
 		self.initial_value = stream.s64()
 	
 
 class DataStoreRatingInfoWithSlot(common.Structure):
-	def streamout(self, stream):
+	def load(self, stream):
 		self.slot = stream.u8()
 		self.rating_info = stream.extract(DataStoreRatingInfo)
 	
@@ -42,7 +42,7 @@ class DataStoreGetMetaParam(common.Structure):
 		self.result_option = result_option
 		self.access_password = access_password
 		
-	def streamin(self, stream):
+	def save(self, stream):
 		stream.u64(self.data_id)
 		stream.add(self.persistence_target)
 		stream.u8(self.result_option)
@@ -50,7 +50,7 @@ class DataStoreGetMetaParam(common.Structure):
 		
 		
 class DataStoreMetaInfo(common.Structure):
-	def streamout(self, stream):
+	def load(self, stream):
 		self.data_id = stream.u64()
 		self.owner_id = stream.uint()
 		self.size = stream.u32()
@@ -80,7 +80,7 @@ class DataStorePrepareGetParam(common.Structure):
 		self.access_password = access_password
 		self.extra_data = extra_data
 	
-	def streamin(self, stream):
+	def save(self, stream):
 		stream.u64(self.data_id)
 		stream.u32(self.lock_id)
 		stream.add(self.persistence_target)
@@ -91,13 +91,13 @@ class DataStorePrepareGetParam(common.Structure):
 
 			
 class DataStoreKeyValue(common.Structure):
-	def streamout(self, stream):
+	def load(self, stream):
 		self.key = stream.string()
 		self.value = stream.string()
 
 	
 class DataStoreReqGetInfo(common.Structure):
-	def streamout(self, stream):
+	def load(self, stream):
 		self.url = stream.string()
 		self.headers = {item.key: item.value for item in stream.list(DataStoreKeyValue)}
 		self.size = stream.u32()

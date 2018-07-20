@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 class NotificationEvent(common.Structure):
-	def streamout(self, stream):
+	def load(self, stream):
 		self.pid = stream.uint()
 		self.type = stream.u32()
 		self.param1 = stream.uint()

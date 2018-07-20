@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class ConnectionData(common.Structure):
-	def streamout(self, stream):
+	def load(self, stream):
 		self.station = stream.stationurl()
 		self.connection_id = stream.u32()
 

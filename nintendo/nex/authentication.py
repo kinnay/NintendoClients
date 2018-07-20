@@ -18,7 +18,7 @@ class AuthenticationInfo(common.Data):
 	def get_name(self):
 		return "AuthenticationInfo"
 
-	def streamin(self, stream):
+	def save(self, stream):
 		stream.string(self.token)
 		stream.u32(3)
 		stream.u8(1)
@@ -33,7 +33,7 @@ class NintendoLoginData(common.Data):
 	def get_name(self):
 		return "NintendoLoginData"
 		
-	def streamin(self, stream):
+	def save(self, stream):
 		stream.string(self.token)
 common.DataHolder.register(NintendoLoginData, "NintendoLoginData")
 	
@@ -42,7 +42,7 @@ class RVConnectionData(common.Structure):
 	def get_version(self, nex_version):
 		return 1
 	
-	def streamout(self, stream):
+	def load(self, stream):
 		self.main_station = stream.stationurl()
 		self.special_protocols = stream.list(stream.u8)
 		self.special_station = stream.stationurl()
