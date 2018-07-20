@@ -65,7 +65,7 @@ class MatchMakingClient:
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		gatherings = stream.list(lambda s: s.extract(common.DataHolder).data)
+		gatherings = stream.list(stream.anydata)
 		logger.info("MatchMaking.find_by_sql_query -> %i results", len(gatherings))
 		return gatherings
 		

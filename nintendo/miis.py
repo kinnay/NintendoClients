@@ -47,8 +47,8 @@ class MiiData:
 		self.copyable = bool(stream.bit())
 		self.mii_version = stream.u8()
 		
-		self.author_id = stream.list(stream.u8, 8)
-		self.mii_id = stream.list(stream.u8, 10)
+		self.author_id = stream.repeat(stream.u8, 8)
+		self.mii_id = stream.repeat(stream.u8, 10)
 			
 		self.unk5 = stream.read(2)
 		
@@ -138,8 +138,8 @@ class MiiData:
 		stream.bit(self.copyable)
 		stream.u8(self.mii_version)
 		
-		stream.list(self.author_id, stream.u8)
-		stream.list(self.mii_id, stream.u8)
+		stream.repeat(self.author_id, stream.u8)
+		stream.repeat(self.mii_id, stream.u8)
 		
 		stream.write(self.unk5)
 		
@@ -211,7 +211,7 @@ class MiiData:
 		#FFLStoreData
 		stream.write(self.unk48)
 
-		data = self.swap_endian(stream.data)
+		data = self.swap_endian(stream.get())
 		outstream.write(data)
 		outstream.u16(util.crc16(data + b"\0\0"))
 		
@@ -237,7 +237,7 @@ class MiiData:
 	def build(self):
 		stream = streams.StreamOut(">")
 		self.encode(stream)
-		return stream.data
+		return stream.get()
 	
 	@classmethod
 	def parse(cls, data):

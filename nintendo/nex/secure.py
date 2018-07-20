@@ -45,8 +45,8 @@ class SecureClient(service.ServiceClient):
 		substream.u32(self.connection_id)
 		substream.u32(check_value) #Used to check connection response
 		
-		stream.buffer(self.kerberos_encryption.encrypt(substream.data))
-		super().connect(host, port, stream.data)
+		stream.buffer(self.kerberos_encryption.encrypt(substream.get()))
+		super().connect(host, port, stream.get())
 
 		stream = streams.StreamIn(self.client.connect_response, self.backend.settings)
 		if stream.u32() != 4: raise ConnectionError("Invalid connection response size")
@@ -83,7 +83,7 @@ class SecureClient(service.ServiceClient):
 		#--- request ---
 		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_REGISTER_EX)
 		stream.list(urls, stream.stationurl)
-		stream.add(common.DataHolder(login_data))
+		stream.anydata(login_data)
 		self.send_message(stream)
 		
 		#--- response ---
@@ -108,7 +108,7 @@ class SecureClient(service.ServiceClient):
 		#--- response ---
 		stream = self.get_response(call_id)
 		result = stream.bool()
-		connection_data = stream.list(lambda: stream.extract(ConnectionData))
+		connection_data = stream.list(ConnectionData)
 		logger.info("Secure.request_connection_data -> (%i, %s)", result, [dat.station for dat in connection_data])
 		return result, connection_data
 		

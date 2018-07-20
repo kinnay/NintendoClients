@@ -15,7 +15,7 @@ class StreamOut(streams.StreamOut):
 
 	def list(self, list, func):
 		self.u32(len(list))
-		super().list(list, func)
+		self.repeat(list, func)
 		
 	def string(self, string):
 		if string is None:
@@ -42,6 +42,9 @@ class StreamOut(streams.StreamOut):
 	def add(self, inst):
 		inst.encode(self)
 		
+	def anydata(self, inst):
+		self.add(common.DataHolder(inst))
+		
 		
 class StreamIn(streams.StreamIn):
 	def __init__(self, data, settings):
@@ -54,7 +57,12 @@ class StreamIn(streams.StreamIn):
 		return self.u32()
 
 	def list(self, func):
-		return super().list(func, self.u32())
+		return self.repeat(func, self.u32())
+		
+	def repeat(self, func, count):
+		if isinstance(func, type) and issubclass(func, common.Structure):
+			return [self.extract(func) for i in range(count)]
+		return super().repeat(func, count)
 		
 	def string(self):
 		length = self.u16()
@@ -74,6 +82,9 @@ class StreamIn(streams.StreamIn):
 		inst = cls.__new__(cls)
 		inst.decode(self)
 		return inst
+		
+	def anydata(self):
+		return self.extract(common.DataHolder).data
 		
 	def substream(self):
 		return StreamIn(self.buffer(), self.settings)

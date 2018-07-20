@@ -28,7 +28,7 @@ class NintendoNotificationEvent(common.Structure):
 	def streamout(self, stream):
 		self.type = stream.u32()
 		self.pid = stream.u32()
-		self.data = stream.extract(common.DataHolder).data
+		self.data = stream.anydata()
 
 
 class NintendoNotificationHandler:

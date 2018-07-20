@@ -25,7 +25,7 @@ class Structure:
 			self.streamin(substream)
 			
 			stream.u8(self.version)
-			stream.buffer(substream.data)
+			stream.buffer(substream.get())
 
 	def decode(self, stream):
 		self.init_version(stream.settings.get("server.version"))
@@ -71,8 +71,8 @@ class DataHolder:
 		substream = streams.StreamOut(stream.settings)
 		substream.add(self.data)
 		
-		stream.u32(len(substream.data) + 4)
-		stream.buffer(substream.data)
+		stream.u32(len(substream.get()) + 4)
+		stream.buffer(substream.get())
 		
 	def decode(self, stream):
 		name = stream.string()

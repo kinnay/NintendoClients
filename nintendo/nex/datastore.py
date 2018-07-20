@@ -69,7 +69,7 @@ class DataStoreMetaInfo(common.Structure):
 		self.referred_time = stream.datetime()
 		self.expire_time = stream.datetime()
 		self.tags = stream.list(stream.string)
-		self.ratings = stream.list(lambda: stream.extract(DataStoreRatingInfoWithSlot))
+		self.ratings = stream.list(DataStoreRatingInfoWithSlot)
 
 
 class DataStorePrepareGetParam(common.Structure):
@@ -94,12 +94,12 @@ class DataStoreKeyValue(common.Structure):
 	def streamout(self, stream):
 		self.key = stream.string()
 		self.value = stream.string()
-			
+
 	
 class DataStoreReqGetInfo(common.Structure):
 	def streamout(self, stream):
 		self.url = stream.string()
-		self.headers = {item.key: item.value for item in stream.list(lambda: stream.extract(DataStoreKeyValue))}
+		self.headers = {item.key: item.value for item in stream.list(DataStoreKeyValue)}
 		self.size = stream.u32()
 		self.root_ca_cert = stream.buffer()
 		
@@ -196,7 +196,7 @@ class DataStoreClient:
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		infos = stream.list(lambda: stream.extract(DataStoreMetaInfo))
+		infos = stream.list(DataStoreMetaInfo)
 		results = stream.list(stream.u32) #Error codes
 		return infos
 	

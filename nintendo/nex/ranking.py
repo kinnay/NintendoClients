@@ -40,7 +40,7 @@ class RankingRankData(common.Structure):
 
 class RankingResult(common.Structure):
 	def streamout(self, stream):	
-		self.datas = stream.list(lambda: stream.extract(RankingRankData))
+		self.datas = stream.list(RankingRankData)
 		self.total = stream.u32()
 		self.since_time = stream.datetime()
 	

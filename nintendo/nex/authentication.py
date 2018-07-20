@@ -1,5 +1,5 @@
 
-from nintendo.nex import service, common, streams, kerberos, friends, errors
+from nintendo.nex import service, common, streams, kerberos, errors
 import hashlib
 import struct
 
@@ -115,7 +115,7 @@ class AuthenticationClient(service.ServiceClient):
 		#--- request ---
 		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_LOGIN_EX)
 		stream.string(username)
-		stream.add(common.DataHolder(auth_info))
+		stream.anydata(auth_info)
 		self.send_message(stream)
 		
 		#--- response ---
@@ -153,7 +153,7 @@ class AuthenticationClient(service.ServiceClient):
 			raise AuthenticationError("Ticket request failed (%s)" %errors.error_names.get(result, "unknown error"))
 
 		encrypted_ticket = stream.buffer()
-		ticket_stream = streams.StreamIn(self.kerberos_encryption.decrypt(encrypted_ticket), stream.settings)
+		ticket_stream = streams.StreamIn(self.kerberos_encryption.decrypt(encrypted_ticket), self.backend.settings)
 		ticket_key = ticket_stream.read(self.settings.get("kerberos.key_size"))
 		ticket_stream.uint() #Unknown
 		ticket_buffer = ticket_stream.buffer()

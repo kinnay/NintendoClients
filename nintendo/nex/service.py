@@ -76,7 +76,7 @@ class ServiceClient:
 		
 	def send_message(self, stream):
 		if self.client.is_connected():
-			self.client.send(struct.pack("I", len(stream.data)) + stream.data)
+			self.client.send(struct.pack("I", len(stream.get())) + stream.get())
 		else:
 			raise RuntimeError("Can't send message on disconnected service client")
 			

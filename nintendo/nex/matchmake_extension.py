@@ -161,13 +161,13 @@ class MatchmakeExtensionClient:
 		logger.info("MatchmakeExtension.auto_matchmake(...)")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_AUTO_MATCHMAKE_POSTPONE)
-		stream.add(common.DataHolder(gathering))
+		stream.anydata(gathering)
 		stream.string(message)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		object = stream.extract(common.DataHolder).data
+		object = stream.anydata()
 		logger.info("MatchmakeExtension.auto_matchmake -> %s", object.get_name())
 		return object
 		
@@ -186,6 +186,20 @@ class MatchmakeExtensionClient:
 		session_key = stream.buffer()
 		logger.info("MatchmakeExtension.create_matchmake_session -> (%08X, %s)", gid, session_key.hex())
 		return gid, session_key
+		
+	def join_matchmake_session(self, gid, message):
+		logger.info("MatchmakeExtension.join_matchmake_session(%i, %s)", gid, message)
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_JOIN_MATCHMAKE_SESSION)
+		stream.u32(gid)
+		stream.string(message)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		session_key = stream.buffer()
+		logger.info("MatchmakeExtension.join_matchmake_session -> %s", session_key.hex())
+		return session_key
 		
 	#This seems to be the method that's used by most games
 	def auto_matchmake_with_search_criteria(self, search_criteria, gathering, message):
@@ -213,7 +227,7 @@ class MatchmakeExtensionClient:
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		sessions = stream.list(lambda: stream.extract(SimplePlayingSession))
+		sessions = stream.list(SimplePlayingSession)
 		logger.info("MatchmakeExtension.get_simple_playing_session -> done")
 		return sessions
 
@@ -229,24 +243,3 @@ class MatchmakeExtensionClient:
 		session = stream.extract(MatchmakeSession)
 		logger.info("MatchmakeExtension.find_matchmake_session_by_gid_detail -> done")
 		return session
-		
-
-	METHOD_MK8_JOIN_FRIEND_ROOM = 40
-
-	#This might be a generic join method
-	def join_friend_room(self, gid, unk1, unk2, unk3, unk4):
-		logger.info("MatchmakeExtension.join_friend_room(%08X, %s, %i, %04X, %08X)", gid, unk1, unk2, unk3, unk4)
-		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_MK8_JOIN_FRIEND_ROOM)
-		stream.u32(gid)
-		stream.string(unk1)
-		stream.bool(unk2)
-		stream.u16(unk3)
-		stream.u32(unk4)
-		self.client.send_message(stream)
-		
-		#--- response ---
-		stream = self.client.get_response(call_id)
-		data = stream.buffer()
-		logger.info("MatchmakeExtension.join_friend_room -> %s", data.hex())
-		return data
