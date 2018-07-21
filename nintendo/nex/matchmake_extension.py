@@ -175,7 +175,7 @@ class MatchmakeExtensionClient:
 		logger.info("MatchmakeExtension.create_matchmake_session(...)")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_CREATE_MATCHMAKE_SESSION)
-		stream.add(common.DataHolder(gathering))
+		stream.anydata(gathering)
 		stream.string(description)
 		stream.u16(player_count)
 		self.client.send_message(stream)
@@ -207,13 +207,13 @@ class MatchmakeExtensionClient:
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_AUTO_MATCHMAKE_WITH_SEARCH_CRITERIA_POSTPONE)
 		stream.list(search_criteria, stream.add)
-		stream.add(common.DataHolder(gathering))
+		stream.anydata(gathering)
 		stream.string(message)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		object = stream.extract(common.DataHolder).data
+		object = stream.anydata()
 		logger.info("MatchmakeExtension.auto_matchmake_with_search_criteria -> %s", object.get_name())
 		return object
 
