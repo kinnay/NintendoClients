@@ -95,7 +95,7 @@ common.DataHolder.register(MatchmakeSession, "MatchmakeSession")
 
 class SimplePlayingSession(common.Structure):
 	def load(self, stream):
-		self.pid = stream.u32()
+		self.pid = stream.uint()
 		self.gid = stream.u32()
 		self.game_mode = stream.u32()
 		self.attribute = stream.u32()
