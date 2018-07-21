@@ -90,6 +90,12 @@ class SimplePlayingSession(common.Structure):
 		self.gid = stream.u32()
 		self.game_mode = stream.u32()
 		self.attribute = stream.u32()
+		
+		
+class PlayingSession(common.Structure):
+	def load(self, stream):
+		self.pid = stream.uint()
+		self.gathering = stream.anydata()
 
 
 class MatchmakeExtensionClient:
@@ -207,6 +213,19 @@ class MatchmakeExtensionClient:
 		object = stream.anydata()
 		logger.info("MatchmakeExtension.auto_matchmake_with_search_criteria -> %s", object.get_name())
 		return object
+		
+	def get_playing_session(self, pids):
+		logger.info("MatchmakeExtension.get_playing_session(...)")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_PLAYING_SESSION)
+		stream.list(pids, stream.uint)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		sessions = stream.list(PlayingSession)
+		logger.info("MatchmakeExtension.get_playing_session -> done")
+		return sessions
 
 	def get_simple_playing_session(self, pids, include_login_user):
 		logger.info("MatchmakeExtension.get_simple_playing_session(...)")
