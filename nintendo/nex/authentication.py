@@ -39,7 +39,7 @@ common.DataHolder.register(NintendoLoginData, "NintendoLoginData")
 	
 	
 class RVConnectionData(common.Structure):
-	def get_version(self, nex_version):
+	def get_version(self):
 		return 1
 	
 	def load(self, stream):

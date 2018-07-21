@@ -40,10 +40,9 @@ class MatchmakeSessionSearchCriteria(common.Structure):
 			stream.u16(self.vacant_participants)
 		
 		
-class MatchmakeSession(common.Structure):
-	def __init__(self, gathering, game_mode, attribs, open_participation, matchmake_system,
-			 application_data, player_count, session_key, progress_score=None, option=None):
-		self.gathering = gathering
+class MatchmakeSession(matchmake_common.Gathering):
+	def __init__(self, game_mode, attribs, open_participation, matchmake_system, application_data,
+				 player_count, session_key, progress_score=None, option=None):
 		self.game_mode = game_mode
 		self.attribs = attribs
 		self.open_participation = open_participation
@@ -56,14 +55,6 @@ class MatchmakeSession(common.Structure):
 
 	def get_name(self):
 		return "MatchmakeSession"
-	
-	def encode(self, stream):
-		stream.add(self.gathering)
-		super().encode(stream)
-		
-	def decode(self, stream):
-		self.gathering = stream.extract(matchmake_common.Gathering)
-		super().decode(stream)
 
 	def save(self, stream):
 		stream.u32(self.game_mode)

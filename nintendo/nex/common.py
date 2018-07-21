@@ -5,57 +5,59 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+# Black magic going on here
 class Structure:
-	def init_version(self, nex_version):
-		self.nex_version = nex_version
-		if nex_version < 30500:
+	def init_version(self, cls):
+		if self.nex_version < 30500:
 			self.version = -1
 		else:
-			self.version = self.get_version(nex_version)
+			self.version = cls.get_version(self)
 			
-	def get_version(self, nex_version):
-		return 0
-
+	def get_version(self): return 0
+			
+	def get_hierarchy(self):
+		hierarchy = []
+		cls = self.__class__
+		while cls != Structure:
+			hierarchy.append(cls)
+			cls = cls.__bases__[0]
+		return hierarchy[::-1]
+	
 	def encode(self, stream):
-		self.init_version(stream.settings.get("server.version"))
-		if self.version == -1:
-			self.save(stream)
-		else:
-			substream = streams.StreamOut(stream.settings)
-			self.save(substream)
-			
-			stream.u8(self.version)
-			stream.buffer(substream.get())
+		self.nex_version = stream.settings.get("server.version")
+		hierarchy = self.get_hierarchy()
+		for cls in hierarchy:
+			self.init_version(cls)
+			if self.version == -1:
+				cls.save(self, stream)
+			else:
+				substream = streams.StreamOut(stream.settings)
+				cls.save(self, substream)
+				
+				stream.u8(self.version)
+				stream.buffer(substream.get())
 
 	def decode(self, stream):
-		self.init_version(stream.settings.get("server.version"))
-		if self.version == -1:
-			self.load(stream)
-			
-		else:
-			version = stream.u8()
-			if version != self.version:
-				logger.info("Structure version (%i) doesn't match expected version (%i)" %(version, self.version))
-				self.version = version
-			self.load(stream.substream())
-			
-	def save(self, stream): raise NotImplementedError("Structure.save")
-	def load(self, stream): raise NotImplementedError("Structure.load")
-	
-	
-class DataObj(Structure):
-	def save(self, stream): pass
-	def load(self, stream): pass
+		self.nex_version = stream.settings.get("server.version")
+		hierarchy = self.get_hierarchy()
+		for cls in hierarchy:
+			self.init_version(cls)
+			if self.version == -1:
+				cls.load(self, stream)
+			else:
+				version = stream.u8()
+				if version != self.version:
+					logger.warning("Struct version (%i) doesn't match expected version (%i)" %(version, self.version))
+					self.version = version
+				cls.load(self, stream.substream())
+				
+	def load(self, stream): raise NotImplementedError("%s.load()" %self.__class__.__name__)
+	def save(self, stream): raise NotImplementedError("%s.save()" %self.__class__.__name__)
 	
 	
 class Data(Structure):
-	def encode(self, stream):
-		stream.add(DataObj())
-		super().encode(stream)
-		
-	def decode(self, stream):
-		stream.extract(DataObj)
-		super().decode(stream)
+	def save(self, stream): pass
+	def load(self, stream): pass
 
 
 class DataHolder:
