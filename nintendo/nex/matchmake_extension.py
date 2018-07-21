@@ -231,7 +231,7 @@ class MatchmakeExtensionClient:
 		logger.info("MatchmakeExtension.get_simple_playing_session(...)")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_SIMPLE_PLAYING_SESSION)
-		stream.list(pids, stream.u32)
+		stream.list(pids, stream.uint)
 		stream.bool(include_login_user)
 		self.client.send_message(stream)
 		
