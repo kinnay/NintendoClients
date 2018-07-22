@@ -108,60 +108,60 @@ common.DataHolder.register(GameKey, "GameKey")
 
 		
 class NintendoPresenceV2(common.Data):
-	def __init__(self, unk1, is_online, game_key, unk3, message, unk4, unk5,
-				 game_server_id, unk7, pid, gathering_id, data, unk10, unk11, unk12):
-		self.unk1 = unk1
+	def __init__(self, flags, is_online, game_key, unk1, message, unk2, unk3,
+				 game_server_id, unk4, pid, gathering_id, data, unk5, unk6, unk7):
+		self.flags = flags
 		self.is_online = is_online
 		self.game_key = game_key
-		self.unk3 = unk3
+		self.unk1 = unk1
 		self.message = message
-		self.unk4 = unk4
-		self.unk5 = unk5
+		self.unk2 = unk2
+		self.unk3 = unk3
 		self.game_server_id = game_server_id
-		self.unk7 = unk7
+		self.unk4 = unk4
 		self.pid = pid
 		self.gathering_id = gathering_id
-		self.data = data
-		self.unk10 = unk10
-		self.unk11 = unk11
-		self.unk12 = unk12
+		self.application_data = data
+		self.unk5 = unk5
+		self.unk6 = unk6
+		self.unk7 = unk7
 		
 	def get_name(self):
 		return "NintendoPresenceV2"
 		
 	def save(self, stream):
-		stream.u32(self.unk1)
+		stream.u32(self.flags)
 		stream.u8(self.is_online)
 		stream.add(self.game_key)
-		stream.u8(self.unk3)
+		stream.u8(self.unk1)
 		stream.string(self.message)
-		stream.u32(self.unk4)
-		stream.u8(self.unk5)
+		stream.u32(self.unk2)
+		stream.u8(self.unk3)
 		stream.u32(self.game_server_id)
-		stream.u32(self.unk7)
+		stream.u32(self.unk4)
 		stream.u32(self.pid)
 		stream.u32(self.gathering_id)
-		stream.buffer(self.data)
-		stream.u8(self.unk10)
-		stream.u8(self.unk11)
-		stream.u8(self.unk12)
+		stream.buffer(self.application_data)
+		stream.u8(self.unk5)
+		stream.u8(self.unk6)
+		stream.u8(self.unk7)
 		
 	def load(self, stream):
-		self.unk1 = stream.u32()
+		self.flags = stream.u32()
 		self.is_online = stream.u8()
 		self.game_key = stream.extract(GameKey)
-		self.unk3 = stream.u8()
+		self.unk1 = stream.u8()
 		self.message = stream.string()
-		self.unk4 = stream.u32()
-		self.unk5 = stream.u8()
+		self.unk2 = stream.u32()
+		self.unk3 = stream.u8()
 		self.game_server_id = stream.u32()
-		self.unk7 = stream.u32()
+		self.unk4 = stream.u32()
 		self.pid = stream.u32()
 		self.gathering_id = stream.u32()
-		self.data = stream.buffer()
-		self.unk10 = stream.u8()
-		self.unk11 = stream.u8()
-		self.unk12 = stream.u8()
+		self.application_data = stream.buffer()
+		self.unk5 = stream.u8()
+		self.unk6 = stream.u8()
+		self.unk7 = stream.u8()
 common.DataHolder.register(NintendoPresenceV2, "NintendoPresenceV2")
 		
 		
