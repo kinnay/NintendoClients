@@ -70,4 +70,4 @@ class NATDetecter:
 		
 		self.s.close()
 		
-		return NATProperties(local_address, public_address, nat_filtering, nat_mapping, lag)
+		return NATProperties(local_address, public_address, nat_filtering, nat_mapping, rtt)
