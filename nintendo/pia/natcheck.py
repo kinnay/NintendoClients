@@ -3,6 +3,10 @@ import socket
 import struct
 import time
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 primary_url = "nncs1.app.nintendowifi.net"
 secondary_url = "nncs2.app.nintendowifi.net"
 
@@ -36,6 +40,8 @@ class NATDetecter:
 		return request, socket.inet_ntoa(host), port
 		
 	def get_nat_properties(self):
+		logger.info("Detecting NAT properties")
+
 		self.init_socket()
 
 		start_time = time.monotonic()
