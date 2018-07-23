@@ -17,14 +17,16 @@ PASSWORD = "..." #Nintendo network password
 
 
 #This function logs in on a game server
-def backend_login(title, nintendo_login, settings=None):
+def backend_login(title, auth_info, login_data, settings=None):
 	api.set_title(title.TITLE_ID_EUR, title.LATEST_VERSION)
 	nex_token = api.get_nex_token(title.GAME_SERVER_ID)
 
-	if nintendo_login:
-		auth_info = authentication.NintendoLoginData(nex_token.token)
-	else:
+	auth_info = None
+	login_data = None
+	if auth_info:
 		auth_info = authentication.AuthenticationInfo(nex_token.token, title.SERVER_VERSION)
+	if login_data:
+		login_data = authentication.NintendoLoginData(nex_token.token)
 	
 	client = backend.BackEndClient(title.ACCESS_KEY, title.NEX_VERSION, settings)
 	client.connect(nex_token.host, nex_token.port)
@@ -39,8 +41,10 @@ api.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY)
 api.login(USERNAME, PASSWORD)
 
 #Connect to both the Mario Kart 8 server and the Wii U friends server
-friends_backend = backend_login(friends.FriendsTitle, True, backend.Settings("friends.cfg"))
-game_backend = backend_login(MK8, False)
+friends_backend = backend_login(
+	friends.FriendsTitle, False, True, backend.Settings("friends.cfg")
+)
+game_backend = backend_login(MK8, True, False)
 
 pid = game_backend.auth_client.pid
 

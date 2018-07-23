@@ -66,10 +66,6 @@ class Settings:
 
 
 class BackEndClient:
-
-	AUTH_TOKEN = 1
-	SECURE_TOKEN = 2
-
 	def __init__(self, access_key, version, settings=None):
 		if settings:
 			self.settings = settings.copy()
@@ -101,9 +97,9 @@ class BackEndClient:
 		if self.secure_client:
 			self.secure_client.close()
 		
-	def login(self, username, password, data=None, flags=AUTH_TOKEN):
-		if data and flags & self.AUTH_TOKEN:
-			self.auth_client.login_ex(username, password, data)
+	def login(self, username, password, auth_info=None, login_data=None):
+		if auth_info:
+			self.auth_client.login_ex(username, password, auth_info)
 		else:
 			self.auth_client.login(username, password)
 
@@ -115,8 +111,8 @@ class BackEndClient:
 		
 		self.secure_client = secure.SecureClient(self, ticket)
 		self.secure_client.connect(host, port)
-		if data and flags & self.SECURE_TOKEN:
-			urls = self.secure_client.register_urls(data)
+		if login_data:
+			urls = self.secure_client.register_urls(login_data)
 		else:
 			urls = self.secure_client.register_urls()
 		self.local_station, self.public_station = urls

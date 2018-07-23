@@ -41,6 +41,9 @@ class NotificationHandler(nintendo_notification.NintendoNotificationHandler):
 				print("%s is playing %s (description: %s)" %(name, game, description))
 			else:
 				print("%s is playing %s" %(name, game))
+				
+		else:
+			print("Unknown notification type %i (from %s)" %(event.type, name))
 
 api = account.AccountAPI()
 api.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY)
@@ -55,7 +58,7 @@ backend = backend.BackEndClient(
 )
 backend.connect(nex_token.host, nex_token.port)
 backend.login(
-	nex_token.username, nex_token.password,
+	nex_token.username, nex_token.password, None,
 	authentication.NintendoLoginData(nex_token.token)
 )
 backend.nintendo_notification_server.handler = NotificationHandler()

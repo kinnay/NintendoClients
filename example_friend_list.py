@@ -30,7 +30,7 @@ backend = backend.BackEndClient(
 )
 backend.connect(nex_token.host, nex_token.port)
 backend.login(
-	nex_token.username, nex_token.password,
+	nex_token.username, nex_token.password, None,
 	authentication.NintendoLoginData(nex_token.token)
 )
 
