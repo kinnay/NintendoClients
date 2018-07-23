@@ -1,6 +1,5 @@
 
 from nintendo.nex import backend, authentication, friends, matchmaking, common
-from nintendo.pia.session import PIASession
 from nintendo.account import AccountAPI
 from nintendo.games import MK8
 import struct
