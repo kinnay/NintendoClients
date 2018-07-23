@@ -1,4 +1,6 @@
 
+from nintendo.common import signal
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -46,7 +48,7 @@ class NATTraversalClient(NATTraversalProtocol):
 
 		
 class NATTraversalHandler:
-	def initiate_probe(self, station_to_probe): logger.warning("NATTraversal: unhandled request (InitiateProbe)")
+	initiate_probe = signal.Signal()
 		
 		
 class NATTraversalServer(NATTraversalProtocol):
@@ -63,7 +65,10 @@ class NATTraversalServer(NATTraversalProtocol):
 		
 	def initiate_probe(self, client, call_id, method_id, stream):
 		#--- request ---
-		self.handler.initiate_probe(stream.stationurl())
+		station_to_probe = stream.stationurl()
+		
+		logger.info("NATTraversalServer.initiate_probe(%s)", station_to_probe)
+		self.handler.initiate_probe(station_to_probe)
 		
 		#--- response ---
 		return client.init_response(self.PROTOCOL_ID, call_id, method_id)

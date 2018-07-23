@@ -1,4 +1,5 @@
 
+from nintendo.common import signal
 from nintendo.nex import common
 
 import logging
@@ -32,8 +33,7 @@ class NintendoNotificationEvent(common.Structure):
 
 
 class NintendoNotificationHandler:
-	def process_notification_event(self, event):
-		logger.warning("NintendoNotification: unhandled request (ProcessNotificationEvent)")
+	process_notification_event = signal.Signal()
 
 		
 class NintendoNotificationServer:
@@ -58,6 +58,11 @@ class NintendoNotificationServer:
 	def process_notification_event(self, client, call_id, method_id, stream):
 		#--- request ---
 		event = stream.extract(NintendoNotificationEvent)
+		
+		logger.info(
+			"NintendoNotificationServer.process_notification_event(%i, %i, %s)",
+			event.type, event.pid, event.data.get_name()
+		)
 		self.handler.process_notification_event(event)
 		
 		#--- response ---
