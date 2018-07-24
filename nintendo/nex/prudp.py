@@ -692,6 +692,7 @@ class PRUDPClient:
 		
 	def wait_ack(self, packet):
 		while self.state != self.DISCONNECTED and packet.packet_id in self.ack_events:
+			scheduler.update()
 			time.sleep(0.05)
 		return self.state != self.DISCONNECTED
 		

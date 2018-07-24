@@ -107,11 +107,18 @@ class ServiceClient:
 
 			self.responses[call_id] = (-1, stream)
 			
-	def get_response(self, call_id):
+	def get_response(self, call_id, timeout=5):
+		timer = 0
 		while call_id not in self.responses:
 			if not self.client.is_connected():
 				raise ConnectionError("RMC failed because the PRUDP connection was closed")
+
+			scheduler.update()
 			time.sleep(0.05)
+			
+			timer += 0.05
+			if timer >= timeout:
+				raise RuntimeError("RMC request timed out")
 			
 		error, stream = self.responses.pop(call_id)
 		if error != -1:

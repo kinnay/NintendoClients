@@ -24,10 +24,6 @@ class Socket:
 			return False
 		self.s.setblocking(False)
 		return True
-		
-	def bind(self, host, port):
-		self.s.bind((host, port))
-		self.s.setblocking(False)
 
 	def close(self): self.s.close()
 	def send(self, data): self.s.sendall(data)

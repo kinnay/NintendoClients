@@ -81,6 +81,7 @@ class WebSocket:
 		self.s.send(handshake.encode("ascii"))
 		
 		while self.state == STATE_CONNECTING:
+			scheduler.update()
 			time.sleep(0.05)
 		if self.state != STATE_CONNECTED:
 			logger.error("Websocket connection failed")

@@ -73,6 +73,20 @@ def add_timeout(callback, timeout, repeat=False, param=None):
 	
 def remove(event):
 	event.kill()
+	
+def process_events():
+	for event in events[:]:
+		try:
+			event.update()
+		except:
+			logger.error("An exception occurred while processing an event")
+			import traceback
+			traceback.print_exc()
+			event.kill()
+	
+def update():
+	if threading.current_thread() == thread:
+		process_events()
 
 def start_thread():
 	global thread
@@ -82,12 +96,5 @@ def start_thread():
 
 def event_loop():
 	while True:
-		for event in events[:]:
-			try:
-				event.update()
-			except:
-				logger.error("An exception occurred while processing an event")
-				import traceback
-				traceback.print_exc()
-				event.kill()
+		process_events()
 		time.sleep(0.02)
