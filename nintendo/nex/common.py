@@ -119,6 +119,10 @@ class StationUrl:
 	def get_type_id(self):
 		return self.url_types[self.url_type]
 		
+	def is_public(self): return bool(self["type"] & 2)
+	def is_behind_nat(self): return bool(self["type"] & 1)
+	def is_global(self): return self.is_public() and not self.is_behind_nat()
+		
 	def copy(self):
 		return StationUrl(self.url_type, **self.params)
 		
