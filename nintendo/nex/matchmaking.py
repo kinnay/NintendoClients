@@ -71,8 +71,8 @@ class MatchmakeSessionSearchCriteria(common.Structure):
 	def save(self, stream):
 		stream.list(self.attribs, stream.string)
 		stream.string(self.game_mode)
-		stream.string(self.min_participants)
-		stream.string(self.max_participants)
+		stream.string(self.min_players)
+		stream.string(self.max_players)
 		stream.string(self.matchmake_system)
 		stream.bool(self.vacant_only)
 		stream.bool(self.exclude_locked)
@@ -190,7 +190,7 @@ class MatchMakingClient:
 	METHOD_FIND_BY_DESCRIPTION_LIKE = 37
 	METHOD_REGISTER_LOCAL_URL = 38
 	METHOD_REGISTER_LOCAL_URLS = 39
-	METHOD_UPDATE_SESSION_HOST = 40
+	METHOD_UPDATE_SESSION_HOST_V1 = 40
 	METHOD_GET_SESSION_URLS = 41
 	METHOD_UPDATE_SESSION_HOST = 42
 
@@ -341,7 +341,6 @@ class MatchmakeExtensionClient:
 		logger.info("MatchmakeExtension.join_matchmake_session -> %s", session_key.hex())
 		return session_key
 		
-	#This seems to be the method that's used by most games
 	def auto_matchmake_with_search_criteria(self, search_criteria, gathering, message):
 		logger.info("MatchmakeExtension.auto_matchmake_with_search_criteria(...)")
 		#--- request ---
