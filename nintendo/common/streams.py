@@ -71,6 +71,7 @@ class StreamIn:
 	def skip(self, num): self.pos += num
 	def align(self, num): self.pos += (num - self.pos % num) % num
 	def eof(self): return self.pos >= len(self.data)
+	def available(self): return len(self.data) - self.pos
 		
 	def read(self, num):
 		data = self.data[self.pos : self.pos + num]

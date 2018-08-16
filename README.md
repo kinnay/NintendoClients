@@ -3,7 +3,7 @@ Python package to communicate with Nintendo servers
 
 To import this into your code, run `python setup.py install` or place the `nintendo` folder somewhere Python can find it.
 
-You might need to adjust your scripts if you update this package (it may receive backwards compatibility breaking changes at any time).
+You might need to adjust your scripts if you pull new commits from this package (it may receive backwards compatibility breaking changes at any time).
 
 Take a look at the [wiki](https://github.com/Kinnay/NintendoClients/wiki) for protocol documentation and other useful information.
 

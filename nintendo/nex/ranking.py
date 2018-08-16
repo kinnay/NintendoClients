@@ -156,7 +156,7 @@ class RankingClient:
 			if flags & (1 << i):
 				stats[1 << i] = result.stats[i]
 		return stats
-		
+	
 	def get_ranking_by_pid_list(self, pids, mode, category, order, unique_id):
 		logger.info("Ranking.get_ranking_by_pid_list(%s, %i, %08X, <order param>, %016X)", pids, mode, category, unique_id)
 		#--- request ---

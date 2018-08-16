@@ -6,7 +6,6 @@ import hashlib
 import hmac
 import struct
 import random
-import time
 
 import logging
 logger = logging.getLogger(__name__)
@@ -438,8 +437,6 @@ class DummyEncryption:
 	def set_key(self, key): pass
 	def encrypt(self, data): return data
 	def decrypt(self, data): return data
-
-	
 	
 
 class PRUDPClient:
@@ -693,7 +690,6 @@ class PRUDPClient:
 	def wait_ack(self, packet):
 		while self.state != self.DISCONNECTED and packet.packet_id in self.ack_events:
 			scheduler.update()
-			time.sleep(0.05)
 		return self.state != self.DISCONNECTED
 		
 	def send_packet(self, packet):

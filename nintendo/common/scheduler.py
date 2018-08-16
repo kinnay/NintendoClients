@@ -87,6 +87,7 @@ def process_events():
 def update():
 	if threading.current_thread() == thread:
 		process_events()
+	time.sleep(0.02)
 
 def start_thread():
 	global thread

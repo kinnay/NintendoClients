@@ -97,6 +97,12 @@ class StationUrl:
 		"prudps": 2,
 		"udp": 3
 	}
+	
+	url_schemes = {
+		1: "prudp",
+		2: "prudps",
+		3: "udp"
+	}
 
 	def __init__(self, url_type="prudp", **kwargs):
 		self.url_type = url_type
@@ -116,8 +122,14 @@ class StationUrl:
 	def __setitem__(self, field, value):
 		self.params[field] = value
 		
+	def get_address(self):
+		return self["address"], self["port"]
+		
 	def get_type_id(self):
 		return self.url_types[self.url_type]
+		
+	def set_type_id(self, id):
+		self.url_type = self.url_schemes[id]
 		
 	def is_public(self): return bool(self["type"] & 2)
 	def is_behind_nat(self): return bool(self["type"] & 1)
