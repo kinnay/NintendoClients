@@ -6,6 +6,7 @@ import hashlib
 import hmac
 import struct
 import random
+import zlib
 
 import logging
 logger = logging.getLogger(__name__)
@@ -105,25 +106,39 @@ class PRUDPPacket:
 class PRUDPMessageV0:
 	def __init__(self, client, settings):
 		self.client = client
-		self.settings = settings
+		self.signature_version = settings.get("prudp_v0.signature_version")
+		self.flags_version = settings.get("prudp_v0.flags_version")
+		self.checksum_version = settings.get("prudp_v0.checksum_version")
 		self.reset()
 		
 	def reset(self):
 		self.buffer = b""
 	def signature_size(self): return 4
+	
+	def checksum_size(self):
+		if self.checksum_version == 0:
+			return 4
+		return 1
 		
 	def calc_checksum(self, data):
-		words = struct.unpack_from("<%iI" %(len(data) // 4), data)
-		temp = sum(words) & 0xFFFFFFFF
-		
-		checksum = self.client.signature_base
-		checksum += sum(data[len(data) & ~3:])
-		checksum += sum(struct.pack("<I", temp))
-		return checksum & 0xFF
+		if self.checksum_version == 0:
+			data = data.ljust((len(data) + 3) & ~3, b"\0")
+			base = self.client.signature_base & 0xFF
+			words = struct.unpack("<%iI" %(len(data) // 4), data)
+			return (base + sum(words)) & 0xFFFFFFFF
+
+		else:
+			words = struct.unpack_from("<%iI" %(len(data) // 4), data)
+			temp = sum(words) & 0xFFFFFFFF
+			
+			checksum = self.client.signature_base
+			checksum += sum(data[len(data) & ~3:])
+			checksum += sum(struct.pack("<I", temp))
+			return checksum & 0xFF
 		
 	def calc_data_signature(self, packet):
 		data = packet.payload
-		if self.settings.get("prudp.signature_version") == 0:
+		if self.signature_version == 0:
 			data = self.client.secure_key + struct.pack("<HB", packet.packet_id, packet.fragment_id) + data
 
 		if data:
@@ -132,13 +147,24 @@ class PRUDPMessageV0:
 		
 	def calc_packet_signature(self, packet, signature):
 		if packet.type == TYPE_DATA: return self.calc_data_signature(packet)
-		if packet.type == TYPE_DISCONNECT and self.settings.get("prudp.signature_version") == 0:
+		if packet.type == TYPE_DISCONNECT and self.signature_version == 0:
 			return self.calc_data_signature(packet)
 		return signature if signature else bytes(4)
 		
+	def header_format(self):
+		if self.flags_version == 0:
+			return "<BBBB4sH"
+		return "<BBHB4sH"
+		
 	def encode(self, packet):
 		packet.flags &= ~FLAG_HAS_SIZE
-		header = struct.pack("<BBHB4sH",
+
+		if self.flags_version == 0:
+			type_field = packet.type | (packet.flags << 3)
+		else:
+			type_field = packet.type | (packet.flags << 4)
+		
+		header = struct.pack(self.header_format(),
 			packet.source_port | (packet.source_type << 4),
 			packet.dest_port | (packet.dest_type << 4),
 			packet.type | (packet.flags << 4),
@@ -149,8 +175,11 @@ class PRUDPMessageV0:
 		
 		options = self.encode_options(packet)
 		data = header + options + packet.payload
-		checksum = self.calc_checksum(data)
-		return data + struct.pack("<B", checksum)
+		if self.checksum_size() == 1:
+			data += struct.pack("<B", self.calc_checksum())
+		elif self.checksum_size() == 4:
+			data += struct.pack("<I", self.calc_checksum())
+		return data
 		
 	def encode_options(self, packet):
 		options = b""
@@ -168,18 +197,23 @@ class PRUDPMessageV0:
 		packets = []
 		while self.buffer:
 			if len(self.buffer) < 12: return packets
-				
+			
 			source, dest, type_flags, session_id, signature, packet_id = \
-				struct.unpack_from("<BBHB4sH", self.buffer)
+				struct.unpack_from(self.header_format(), self.buffer)
 				
 			packet = PRUDPPacket()
 			packet.source_type = source >> 4
 			packet.source_port = source & 0xF
 			packet.dest_type = dest >> 4
 			packet.dest_port = dest & 0xF
-			packet.flags = type_flags >> 4
-			packet.type = type_flags & 0xF
 			packet.packet_id = packet_id
+
+			if self.flags_version == 0:
+				packet.flags = type_flags >> 3
+				packet.type = type_flags & 7
+			else:
+				packet.flags = type_flags >> 4
+				packet.type = type_flags & 0xF
 
 			offset = 11
 			if packet.type in [TYPE_SYN, TYPE_CONNECT]:
@@ -197,12 +231,16 @@ class PRUDPMessageV0:
 				payload_size = struct.unpack_from("<H", self.buffer, offset)[0]
 				offset += 2
 			else:
-				payload_size = len(self.buffer) - offset - 1
+				payload_size = len(self.buffer) - offset - self.checksum_size()
 
-			if len(self.buffer) < offset + payload_size + 1:
+			if len(self.buffer) < offset + payload_size + self.checksum_size():
 				return packets
-				
-			checksum = self.buffer[offset + payload_size]
+
+			if self.checksum_size() == 1:
+				checksum = self.buffer[offset + payload_size]
+			elif self.checksum_size() == 4:
+				checksum = struct.unpack_from("<I", self.buffer, offset + payload_size)
+
 			if self.calc_checksum(self.buffer[:offset + payload_size]) != checksum:
 				logger.error("(V0) Invalid checksum")
 				self.reset()
@@ -214,7 +252,7 @@ class PRUDPMessageV0:
 				self.reset()
 				return packets
 			
-			self.buffer = self.buffer[offset + payload_size + 1:]
+			self.buffer = self.buffer[offset + payload_size + self.checksum_size():]
 			packets.append(packet)
 		return packets
 
@@ -438,6 +476,28 @@ class DummyEncryption:
 	def encrypt(self, data): return data
 	def decrypt(self, data): return data
 	
+	
+class ZlibCompression:
+	def compress(self, data):
+		compressed = zlib.compress(data)
+		ratio = int(len(data) / len(compressed) + 1)
+		return bytes([ratio]) + compressed
+		
+	def decompress(self, data):
+		decompressed = zlib.decompress(data[1:])
+		ratio = int(len(decompressed) / (len(data) - 1) + 1)
+		if ratio != data[0]:
+			logger.warning(
+				"Unexpected compression ratio (expected %i, got %i)",
+				ratio, data[0]
+			)
+		return decompressed
+		
+		
+class DummyCompression:
+	def compress(self, data): return data
+	def decompress(self, data): return data
+	
 
 class PRUDPClient:
 
@@ -456,6 +516,7 @@ class PRUDPClient:
 		self.resend_timeout = settings.get("prudp.resend_timeout")
 		self.ping_timeout = settings.get("prudp.ping_timeout")
 		self.silence_timeout = settings.get("prudp.silence_timeout")
+		self.use_compression = settings.get("prudp.compression")
 
 		access_key = settings.get("server.access_key")
 		self.signature_key = hashlib.md5(access_key).digest()
@@ -473,6 +534,11 @@ class PRUDPClient:
 			self.packet_encoder = PRUDPLiteMessage(self, settings)
 			self.encryption = DummyEncryption()
 			self.client_port = 0x1F
+			
+		if settings.get("prudp.compression") == 0:
+			self.compression = DummyCompression()
+		else:
+			self.compression = ZlibCompression()
 			
 		self.syn_packet = PRUDPPacket(TYPE_SYN, FLAG_NEED_ACK)
 		self.syn_packet.signature = bytes(16)
@@ -584,9 +650,12 @@ class PRUDPClient:
 			fragment_id += 1
 
 	def send_fragment(self, data, fragment_id):
+		data = self.compression.compress(data)
+		data = self.encryption.encrypt(data)
+
 		packet = PRUDPPacket(TYPE_DATA, FLAG_RELIABLE | FLAG_NEED_ACK)
 		packet.fragment_id = fragment_id
-		packet.payload = self.encryption.encrypt(data)
+		packet.payload = data
 		self.send_packet(packet)
 		
 	def remove_events(self):
@@ -646,7 +715,9 @@ class PRUDPClient:
 			
 	def handle_packet(self, packet):
 		if packet.type == TYPE_DATA:
-			self.fragment_buffer += self.encryption.decrypt(packet.payload)
+			payload = self.encryption.decrypt(packet.payload)
+			payload = self.compression.decompress(payload)
+			self.fragment_buffer += payload
 			if packet.fragment_id == 0:
 				self.packets.append(self.fragment_buffer)
 				self.fragment_buffer = b""

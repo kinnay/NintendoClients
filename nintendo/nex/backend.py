@@ -21,7 +21,11 @@ class Settings:
 		"prudp.resend_timeout": float,
 		"prudp.ping_timeout": float,
 		"prudp.silence_timeout": float,
-		"prudp.signature_version": int,
+		"prudp.compression": int,
+		
+		"prudp_v0.signature_version": int,
+		"prudp_v0.flags_version": int,
+		"prudp_v0.checksum_version": int,
 
 		"kerberos.key_size": int,
 		"kerberos.key_derivation": int,
