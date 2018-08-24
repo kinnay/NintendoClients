@@ -176,9 +176,9 @@ class PRUDPMessageV0:
 		options = self.encode_options(packet)
 		data = header + options + packet.payload
 		if self.checksum_size() == 1:
-			data += struct.pack("<B", self.calc_checksum())
+			data += struct.pack("<B", self.calc_checksum(data))
 		elif self.checksum_size() == 4:
-			data += struct.pack("<I", self.calc_checksum())
+			data += struct.pack("<I", self.calc_checksum(data))
 		return data
 		
 	def encode_options(self, packet):
