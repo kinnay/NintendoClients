@@ -5,6 +5,7 @@ from nintendo.pia.transport import ReliableTransport
 from nintendo.pia.packet import PIAMessage
 from nintendo.common import signal
 import collections
+import struct
 
 import logging
 logger = logging.getLogger(__name__)
@@ -142,8 +143,8 @@ class MeshProtocol:
 	on_join_response = signal.Signal()
 	on_join_denied = signal.Signal()
 	
-	station_joined = signal.Signal()
-	station_left = signal.Signal()
+	on_destroy_request = signal.Signal()
+	on_destroy_response = signal.Signal()
 
 	def __init__(self, session):
 		self.session = session
@@ -154,6 +155,8 @@ class MeshProtocol:
 		self.handlers = {
 			self.MESSAGE_JOIN_REQUEST: self.handle_join_request,
 			self.MESSAGE_JOIN_RESPONSE: self.handle_join_response,
+			self.MESSAGE_DESTROY_MESH: self.handle_destroy_mesh,
+			self.MESSAGE_DESTROY_RESPONSE: self.handle_destroy_response,
 			self.MESSAGE_UPDATE_MESH: self.handle_update_mesh
 		}
 		
@@ -199,11 +202,22 @@ class MeshProtocol:
 			self.station_protocol.send_ack(station, message)
 			self.join_response_decoder.parse(station, message)
 			
+	def handle_destroy_mesh(self, station, message):
+		logger.info("Received destroy request")
+		station_address = StationAddress.deserialize(message[4:])
+		station_index = message[1]
+		self.on_destroy_request(station, station_index, station_address)
+		
+	def handle_destroy_response(self, station, message):
+		logger.info("Received destroy response")
+		station_index = message[1]
+		self.on_destroy_response(station, station_index)
+			
 	def handle_update_mesh(self, station, message):
-		print("Mesh update")
+		logger.warning("TODO: Handle mesh update")
 			
 	def send_join_request(self, station):
-		logger.debug("Sending join request")
+		logger.info("Sending join request")
 		
 		data = bytes([
 			self.MESSAGE_JOIN_REQUEST, self.session.station.index, 0, 0
@@ -213,7 +227,7 @@ class MeshProtocol:
 		self.send(station, data, 0, True)
 		
 	def send_join_response(self, station, assigned_index, host_index, stations):
-		logger.debug("Sending join response")
+		logger.info("Sending join response")
 
 		infosize = (StationConnectionInfo.sizeof() + 4) & ~3
 		limit = self.transport.size_limit() - 0xC
@@ -239,15 +253,21 @@ class MeshProtocol:
 			self.send(station, data, 0, True)
 		
 	def send_deny_join(self, station, reason):
-		logger.debug("Denying join request")
+		logger.info("Denying join request")
 		data = bytes([self.MESSAGE_JOIN_RESPONSE, 0, 0xFF, 0xFF, reason])
 		self.send(station, data, 0)
 		self.send(station, data, 8)
 		
-	def send_update_mesh(self, counter, host_index, stations):
-		logger.debug("Sending mesh update")
+	def send_destroy_response(self, station, station_index):
+		logger.info("Sending destroy response")
+		data = bytes([self.MESSAGE_DESTROY_RESPONSE, station_index])
+		self.send(station, data, 0)
+		self.send(station, data, 8)
 		
-		data += struct.pack(
+	def send_update_mesh(self, counter, host_index, stations):
+		logger.info("Sending mesh update")
+		
+		data = struct.pack(
 			">BBBBIBBBB", self.MESSAGE_UPDATE_MESH, len(stations),
 			host_index, 0, counter, 1, 0, host_index, 0
 		)
@@ -276,12 +296,16 @@ class MeshMgr:
 	join_denied = signal.Signal()
 	station_joined = signal.Signal()
 
+	mesh_destroyed = signal.Signal()
+
 	def __init__(self, session):
 		self.session = session
 		self.protocol = session.mesh_protocol
 		self.protocol.on_join_request.add(self.handle_join_request)
 		self.protocol.on_join_response.add(self.handle_join_response)
 		self.protocol.on_join_denied.add(self.handle_join_denied)
+		self.protocol.on_destroy_request.add(self.handle_destroy_request)
+		self.protocol.on_destroy_response.add(self.handle_destroy_response)
 		
 		self.station_mgr = session.station_mgr
 		self.station_mgr.station_connected.add(self.handle_station_connected)
@@ -298,7 +322,7 @@ class MeshMgr:
 	def is_host(self):
 		return self.session.station.index == self.host_index
 		
-	def handle_join_request(self, station, station_index, station_address):
+	def handle_join_request(self, station, station_index, station_addr):
 		if self.is_host():
 			if station != self.station_mgr.find_by_address(station_addr.address):
 				logger.warning("Received join request with unexpected station address")
@@ -335,6 +359,13 @@ class MeshMgr:
 	
 	def handle_join_denied(self, station, reason):
 		self.join_denied(station)
+		
+	def handle_destroy_request(self, station, station_index, station_address):
+		self.protocol.send_destroy_response(self.session.station.index)
+		self.mesh_destroyed()
+		
+	def handle_destroy_response(self, station, station_index):
+		pass #TODO: Implement this later
 	
 	def send_join_response(self, station):
 		index = self.stations.next_index()

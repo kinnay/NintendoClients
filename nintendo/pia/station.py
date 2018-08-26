@@ -141,12 +141,15 @@ class StationTable:
 		for station in self.stations:
 			if station.address == address:
 				return station
+			if station.connection_info.public_station.address.address == address or \
+			   station.connection_info.local_station.address.address == address:
+				return station
 				
 	def find_by_rvcid(self, rvcid):
 		for station in self.stations:
 			if station.rvcid == rvcid:
 				return station
-				
+
 				
 class StationProtocol:
 
@@ -225,6 +228,7 @@ class StationProtocol:
 		logger.debug("Sending connection response")
 		data = bytes([self.MESSAGE_CONNECTION_RESPONSE, 0, 3, 3])
 		data += self.session.station.identification_info.serialize()
+		data += b"\0\0" #Alignment
 		self.send(station, data, True)
 		
 	def send_deny_connection(self, station, reason):
@@ -272,10 +276,10 @@ class StationMgr:
 		station.connection_info = connection_info
 		station.connection_id = connection_id
 		
-		self.protocol.send_connection_response(station)
-		
 		if not is_inverse:
 			self.protocol.send_connection_request(station, True)
+
+		self.protocol.send_connection_response(station)
 			
 	def handle_connection_response(self, station, identification_info):
 		station.identification_info = identification_info
