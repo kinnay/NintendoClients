@@ -5,7 +5,8 @@ To import this into your code, run `python setup.py install` or place the `ninte
 
 You might need to adjust your scripts if you pull new commits from this package (it may receive backwards compatibility breaking changes at any time).
 
-Take a look at the [wiki](https://github.com/Kinnay/NintendoClients/wiki) for protocol documentation and other useful information.
+### Documentation
+https://github.com/Kinnay/NintendoClients/wiki
 
 ### Requirements
 * Python 3 (tested with 3.6.4)
