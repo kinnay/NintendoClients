@@ -27,5 +27,4 @@ class P2PSocket:
 	def send(self, data, addr):
 		self.s.sendto(data, addr)
 			
-	def get_address(self): return self.s.getsockname()[0]
-	def get_port(self): return self.s.getsockname()[1]
+	def client_address(self): return self.s.getsockname()

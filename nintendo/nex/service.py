@@ -36,8 +36,13 @@ class ServiceClient:
 		return self.client.connect_response
 		
 	def close(self):
-		scheduler.remove(self.socket_event)
-		self.client.close()
+		if self.is_connected():
+			scheduler.remove(self.socket_event)
+			self.client.close()
+		
+	def is_connected(self): return self.client.is_connected()
+	def client_address(self): return self.client.client_address()
+	def server_address(self): return self.client.server_address()
 		
 	def handle_recv(self, data):
 		if not data:

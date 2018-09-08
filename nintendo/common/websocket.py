@@ -184,5 +184,5 @@ class WebSocket:
 		if self.packets:
 			return self.packets.pop(0)
 			
-	def get_address(self): return self.s.get_address()
-	def get_port(self): return self.s.get_port()
+	def client_address(self): return self.s.client_address()
+	def server_address(self): return self.s.server_address()

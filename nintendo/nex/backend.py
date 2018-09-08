@@ -78,8 +78,8 @@ class BackEndClient:
 		self.settings.set("server.access_key", access_key)
 		self.settings.set("server.version", version)
 		
-		self.auth_client = None
-		self.secure_client = None
+		self.auth_client = authentication.AuthenticationClient(self)
+		self.secure_client = secure.SecureClient(self)
 		
 		self.nat_traversal_server = nat.NATTraversalServer()
 		self.notification_server = notification.NotificationServer()
@@ -92,14 +92,11 @@ class BackEndClient:
 		}
 		
 	def connect(self, host, port):
-		self.auth_addr = host, port
-		self.auth_client = authentication.AuthenticationClient(self)
 		self.auth_client.connect(host, port)
 		
 	def close(self):
 		self.auth_client.close()
-		if self.secure_client:
-			self.secure_client.close()
+		self.secure_client.close()
 		
 	def login(self, username, password, auth_info=None, login_data=None):
 		if auth_info:
@@ -111,9 +108,9 @@ class BackEndClient:
 		host = self.auth_client.secure_station["address"]
 		port = self.auth_client.secure_station["port"]
 		if host == "0.0.0.1":
-			host, port = self.auth_addr
+			host, port = self.auth_client.server_address()
 		
-		self.secure_client = secure.SecureClient(self, ticket)
+		self.secure_client.set_ticket(ticket)
 		self.secure_client.connect(host, port)
 		if login_data:
 			urls = self.secure_client.register_urls(login_data)
@@ -123,3 +120,6 @@ class BackEndClient:
 		
 	def login_guest(self):
 		self.login("guest", "MMQea3n!fsik")
+		
+	def get_pid(self):
+		return self.auth_client.pid

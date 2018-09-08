@@ -15,6 +15,8 @@ class Socket:
 		else:
 			tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
 			self.s = ssl.wrap_socket(tcp)
+			
+		self.server_addr = None
 		
 	def connect(self, host, port, timeout=3):
 		self.s.settimeout(timeout)
@@ -23,6 +25,7 @@ class Socket:
 		except socket.timeout:
 			return False
 		self.s.setblocking(False)
+		self.server_addr = host, port
 		return True
 
 	def close(self): self.s.close()
@@ -35,5 +38,5 @@ class Socket:
 		except OSError:
 			return b""
 			
-	def get_address(self): return self.s.getsockname()[0]
-	def get_port(self): return self.s.getsockname()[1]
+	def client_address(self): return self.s.getsockname()
+	def server_address(self): return self.server_addr

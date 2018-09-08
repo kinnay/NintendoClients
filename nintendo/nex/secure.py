@@ -25,27 +25,27 @@ class SecureClient(service.ServiceClient):
 	
 	PROTOCOL_ID = 0xB
 	
-	def __init__(self, backend, ticket):
+	def __init__(self, backend):
 		super().__init__(backend, service.ServiceClient.SECURE)
-		self.ticket = ticket
 		self.auth_client = backend.auth_client
-		self.kerberos_encryption = kerberos.KerberosEncryption(self.ticket.key)
-		
-		station_url = self.auth_client.secure_station
-		self.connection_id = station_url["CID"]
-		self.principal_id = station_url["PID"]
+		self.ticket = None
+	
+	def set_ticket(self, ticket):
+		self.ticket = ticket
 		
 	def connect(self, host, port):
+		encryption = kerberos.KerberosEncryption(self.ticket.key)
+	
 		stream = streams.StreamOut(self.backend.settings)
 		stream.buffer(self.ticket.data)
 		
 		check_value = random.randint(0, 0xFFFFFFFF)
 		substream = streams.StreamOut(self.backend.settings)
 		substream.uint(self.auth_client.pid)
-		substream.u32(self.connection_id)
+		substream.u32(self.auth_client.secure_station["CID"])
 		substream.u32(check_value) #Used to check connection response
 		
-		stream.buffer(self.kerberos_encryption.encrypt(substream.get()))
+		stream.buffer(encryption.encrypt(substream.get()))
 		response = super().connect(host, port, stream.get())
 
 		stream = streams.StreamIn(response, self.backend.settings)
@@ -55,8 +55,9 @@ class SecureClient(service.ServiceClient):
 		self.client.set_secure_key(self.ticket.key)
 
 	def register_urls(self, login_data=None):
+		client_addr = self.client.client_address()
 		local_station = common.StationUrl(
-			address=self.client.get_address(), port=self.client.get_port(), sid=15, natm=0, natf=0, upnp=0, pmp=0
+			address=client_addr[0], port=client_addr[1], sid=15, natm=0, natf=0, upnp=0, pmp=0
 		)
 		
 		if login_data:

@@ -46,7 +46,7 @@ friends_backend = backend_login(
 )
 game_backend = backend_login(MK8, True, False)
 
-pid = game_backend.auth_client.pid
+pid = game_backend.get_pid()
 
 friends_client = friends.FriendsClient(friends_backend)
 matchmaker = matchmaking.MatchmakeExtensionClient(game_backend)
