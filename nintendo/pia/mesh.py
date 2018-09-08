@@ -143,6 +143,9 @@ class MeshProtocol:
 	on_join_response = signal.Signal()
 	on_join_denied = signal.Signal()
 	
+	on_leave_request = signal.Signal()
+	on_leave_response = signal.Signal()
+	
 	on_destroy_request = signal.Signal()
 	on_destroy_response = signal.Signal()
 
@@ -155,6 +158,8 @@ class MeshProtocol:
 		self.handlers = {
 			self.MESSAGE_JOIN_REQUEST: self.handle_join_request,
 			self.MESSAGE_JOIN_RESPONSE: self.handle_join_response,
+			self.MESSAGE_LEAVE_REQUEST: self.handle_leave_request,
+			self.MESSAGE_LEAVE_RESPONSE: self.handle_leave_response,
 			self.MESSAGE_DESTROY_MESH: self.handle_destroy_mesh,
 			self.MESSAGE_DESTROY_RESPONSE: self.handle_destroy_response,
 			self.MESSAGE_UPDATE_MESH: self.handle_update_mesh
@@ -201,6 +206,12 @@ class MeshProtocol:
 		else:
 			self.station_protocol.send_ack(station, message)
 			self.join_response_decoder.parse(station, message)
+			
+	def handle_leave_request(self, station, message):
+		logger.warning("TODO: Handle leave request")
+		
+	def handle_leave_response(self, station, message):
+		logger.warning("TODO: Handle leave response")
 			
 	def handle_destroy_mesh(self, station, message):
 		logger.info("Received destroy request")
@@ -358,10 +369,11 @@ class MeshMgr:
 				logger.warning("Tried to assign station to occupied index")
 	
 	def handle_join_denied(self, station, reason):
+		logger.info("Join denied (%i)" %reason)
 		self.join_denied(station)
 		
 	def handle_destroy_request(self, station, station_index, station_address):
-		self.protocol.send_destroy_response(self.session.station.index)
+		self.protocol.send_destroy_response(station, self.session.station.index)
 		self.mesh_destroyed()
 		
 	def handle_destroy_response(self, station, station_index):

@@ -31,3 +31,4 @@ class RttProtocol:
 				self.send(station, True, time)
 		else:
 			logger.warning("Unknown RttProtocol port: %i", message.protocol_port)
+			

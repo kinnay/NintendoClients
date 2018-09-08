@@ -170,6 +170,9 @@ class StationProtocol:
 	on_connection_response = signal.Signal()
 	on_connection_denied = signal.Signal()
 	
+	on_disconnection_request = signal.Signal()
+	on_disconnection_response = signal.Signal()
+	
 	def __init__(self, session):
 		self.session = session
 		self.transport = session.transport
@@ -178,6 +181,8 @@ class StationProtocol:
 		self.handlers = {
 			self.MESSAGE_CONNECTION_REQUEST: self.handle_connection_request,
 			self.MESSAGE_CONNECTION_RESPONSE: self.handle_connection_response,
+			self.MESSAGE_DISCONNECTION_REQUEST: self.handle_disconnection_request,
+			self.MESSAGE_DISCONNECTION_RESPONSE: self.handle_disconnection_response,
 			self.MESSAGE_ACK: self.handle_ack
 		}
 		
@@ -214,6 +219,14 @@ class StationProtocol:
 			identification_info = IdentificationInfo.deserialize(message[4:])
 			self.send_ack(station, message)
 			self.on_connection_response(station, identification_info)
+			
+	def handle_disconnection_request(self, station, message):
+		logger.info("Received disconnection request")
+		self.on_disconnection_request(station)
+		
+	def handle_disconnection_response(self, station, message):
+		logger.info("Received disconnection response")
+		self.on_disconnection_response(station)
 		
 	def handle_ack(self, station, message):
 		self.resender.handle_ack(message)
@@ -234,6 +247,16 @@ class StationProtocol:
 	def send_deny_connection(self, station, reason):
 		logger.debug("Denying connection request")
 		data = bytes([self.MESSAGE_CONNECTION_RESPONSE, reason, 3, 0])
+		self.send(station, data)
+		
+	def send_disconnection_request(self, station):
+		logger.debug("Sending disconnection request")
+		data = bytes([self.MESSAGE_DISCONNECTION_REQUEST])
+		self.send(station, data)
+		
+	def send_disconnection_response(self, station):
+		logger.debug("Sending disconnection response")
+		data = bytes([self.MESSAGE_DISCONNECTION_RESPONSE])
 		self.send(station, data)
 		
 	def send_ack(self, station, message):
@@ -257,13 +280,16 @@ class StationProtocol:
 class StationMgr:
 
 	station_connected = signal.Signal()
+	station_disconnected = signal.Signal()
 	connection_denied = signal.Signal()
 
 	def __init__(self, session):
 		self.protocol = session.station_protocol
 		self.protocol.on_connection_request.add(self.handle_connection_request)
 		self.protocol.on_connection_response.add(self.handle_connection_response)
-		self.protocol.on_connection_denied(self.handle_connection_denied)
+		self.protocol.on_connection_denied.add(self.handle_connection_denied)
+		self.protocol.on_disconnection_request.add(self.handle_disconnection_request)
+		self.protocol.on_disconnection_response.add(self.handle_disconnection_response)
 		
 		self.stations = StationTable()
 		
@@ -282,6 +308,7 @@ class StationMgr:
 		self.protocol.send_connection_response(station)
 			
 	def handle_connection_response(self, station, identification_info):
+		logger.info("Station connected: %s" %identification_info.name)
 		station.identification_info = identification_info
 		station.is_connected = True
 		self.station_connected(station)
@@ -289,11 +316,24 @@ class StationMgr:
 	def handle_connection_denied(self, station, reason):
 		self.connection_denied(station)
 		
+	def handle_disconnection_request(self, station):
+		self.protocol.send_disconnection_response(station)
+		
+	def handle_disconnection_response(self, station):
+		station.is_connected = False
+		self.station_disconnected(station)
+		
 	def connect(self, station):
 		if station.is_connected:
 			self.station_connected(station)
 		else:
 			self.protocol.send_connection_request(station)
+			
+	def disconnect(self, station):
+		if not station.is_connected:
+			self.station_disconnected(station)
+		else:
+			self.protocol.send_disconnection_request(station)
 		
 	def create(self, address, rvcid): return self.stations.create(address, rvcid)
 	

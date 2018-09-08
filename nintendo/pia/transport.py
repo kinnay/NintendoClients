@@ -61,7 +61,7 @@ class PacketTransport:
 			packet.connection_id = 0
 			packet.packet_id = 0
 		else:
-			packet.connection_id = station.connection_id
+			packet.connection_id = self.session.station.connection_id
 			packet.packet_id = station.next_sequence_id()
 
 		data = packet.encode(self.session_key)
@@ -90,6 +90,8 @@ class MessageTransport:
 		
 	def send(self, station, message, add_mask=False):	
 		message.destination = 0
+		if station.index != 0xFD:
+			message.destination = 1 << station.index
 		message.station_key = self.session.rvcid
 		message.station_index = self.session.station.index
 		
