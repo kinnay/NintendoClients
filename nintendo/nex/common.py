@@ -1,5 +1,6 @@
 
 from nintendo.nex import streams
+import datetime
 
 import logging
 logger = logging.getLogger(__name__)
@@ -161,12 +162,24 @@ class DateTime:
 	def month(self): return (self.value >> 22) & 15
 	def year(self): return self.value >> 26
 	
+	def timestamp(self):
+		dt = datetime.datetime(
+			self.year(), self.month(), self.day(),
+			self.hour(), self.minute(), self.second()
+		)
+		return dt.timestamp()
+	
 	def __repr__(self):
 		return "%i-%i-%i %i:%02i:%02i" %(self.day(), self.month(), self.year(), self.hour(), self.minute(), self.second())
 		
 	@classmethod
 	def make(cls, day, month, year, hour, minute, second):
 		return cls(second | (minute << 6) | (hour << 12) | (day << 17) | (month << 22) | (year << 26))
+		
+	@classmethod
+	def fromtimestamp(cls, timestamp):
+		dt = datetime.datetime.fromtimestamp(timestamp)
+		return cls.make(dt.day, dt.month, dt.year, dt.hour, dt.minute, dt.second)
 		
 		
 class ResultRange(Structure):
