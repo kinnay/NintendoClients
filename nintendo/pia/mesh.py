@@ -3,7 +3,7 @@ from nintendo.pia.common import StationAddress
 from nintendo.pia.station import StationConnectionInfo
 from nintendo.pia.transport import ReliableTransport
 from nintendo.pia.packet import PIAMessage
-from nintendo.common import signal
+from nintendo.common import scheduler, signal
 import collections
 import struct
 
@@ -39,6 +39,9 @@ class StationList:
 	def __getitem__(self, index):
 		filtered = list(filter(None, self.stations))
 		return filtered[index]
+		
+	def __contains__(self, station):
+		return station in self.stations
 
 		
 class StationInfo(collections.namedtuple("StationInfo", "connection_info index")):
@@ -148,6 +151,8 @@ class MeshProtocol:
 	
 	on_destroy_request = signal.Signal()
 	on_destroy_response = signal.Signal()
+	
+	on_mesh_update = signal.Signal()
 
 	def __init__(self, session):
 		self.session = session
@@ -193,14 +198,12 @@ class MeshProtocol:
 		self.handlers[message_type](station, message)
 
 	def handle_join_request(self, station, message):
-		logger.info("Received join request")
 		station_address = StationAddress.deserialize(message[4:])
 		station_index = message[1]
 		self.station_protocol.send_ack(station, message)
 		self.on_join_request(station, station_index, station_address)
 		
 	def handle_join_response(self, station, message):
-		logger.info("Received join response")
 		if message[1] == 0:
 			self.on_join_denied(station, message[4])
 		else:
@@ -208,24 +211,35 @@ class MeshProtocol:
 			self.join_response_decoder.parse(station, message)
 			
 	def handle_leave_request(self, station, message):
-		logger.warning("TODO: Handle leave request")
+		station_address = StationAddress.deserialize(message[4:])
+		station_index = message[1]
+		self.on_leave_request(station, station_index, station_address)
 		
 	def handle_leave_response(self, station, message):
-		logger.warning("TODO: Handle leave response")
+		station_address = StationAddress.deserialize(message[4:])
+		station_index = message[1]
+		self.on_leave_response(station, station_index, station_address)
 			
 	def handle_destroy_mesh(self, station, message):
-		logger.info("Received destroy request")
 		station_address = StationAddress.deserialize(message[4:])
 		station_index = message[1]
 		self.on_destroy_request(station, station_index, station_address)
 		
 	def handle_destroy_response(self, station, message):
-		logger.info("Received destroy response")
 		station_index = message[1]
 		self.on_destroy_response(station, station_index)
 			
 	def handle_update_mesh(self, station, message):
-		logger.warning("TODO: Handle mesh update")
+		length = message[1]
+		
+		infos = []
+		offset = 12
+		for i in range(length):
+			info = StationInfo.deserialize(message[offset:])
+			offset += StationInfo.sizeof()
+			infos.append(info)
+			
+		self.on_mesh_update(infos)
 			
 	def send_join_request(self, station):
 		logger.info("Sending join request")
@@ -302,12 +316,17 @@ class MeshProtocol:
 
 			
 class MeshMgr:
-
-	join_succeeded = signal.Signal()
-	join_denied = signal.Signal()
-	station_joined = signal.Signal()
-
+	
+	mesh_created = signal.Signal()
 	mesh_destroyed = signal.Signal()
+	
+	station_joined = signal.Signal()
+	station_left = signal.Signal()
+	
+	JOIN_OK = 0
+	JOIN_DENIED = 1
+	JOIN_WAITING = 2
+	JOIN_NONE = 3
 
 	def __init__(self, session):
 		self.session = session
@@ -315,20 +334,21 @@ class MeshMgr:
 		self.protocol.on_join_request.add(self.handle_join_request)
 		self.protocol.on_join_response.add(self.handle_join_response)
 		self.protocol.on_join_denied.add(self.handle_join_denied)
+		self.protocol.on_leave_request.add(self.handle_leave_request)
+		self.protocol.on_leave_response.add(self.handle_leave_response)
 		self.protocol.on_destroy_request.add(self.handle_destroy_request)
 		self.protocol.on_destroy_response.add(self.handle_destroy_response)
+		self.protocol.on_mesh_update.add(self.handle_mesh_update)
 		
 		self.station_mgr = session.station_mgr
-		self.station_mgr.station_connected.add(self.handle_station_connected)
+		self.connection_mgr = session.connection_mgr
 		
 		self.stations = StationList()
 		self.host_index = None
 		
 		self.update_counter = -1
 		
-		self.expecting_join_response = False
-		
-		self.pending_connect = {}
+		self.join_state = self.JOIN_NONE
 		
 	def is_host(self):
 		return self.session.station.index == self.host_index
@@ -339,7 +359,11 @@ class MeshMgr:
 				logger.warning("Received join request with unexpected station address")
 				self.protocol.send_deny_join(station, 2)
 			else:
-				self.send_join_response(station)
+				logger.info("Received join request")
+				index = self.stations.next_index()
+				self.protocol.send_join_response(station, index, self.host_index, self.stations)
+				self.stations.add(station)
+				self.protocol.assign_sliding_window(station)
 				self.send_update_mesh()
 				self.station_joined(station)
 		else:
@@ -347,17 +371,63 @@ class MeshMgr:
 			self.protocol.send_deny_join(station, 1)
 
 	def handle_join_response(self, station, host_index, my_index, infos):
-		if not self.expecting_join_response:
+		if self.join_state != self.JOIN_WAITING:
 			logger.warning("Unexpected join response received")
 		else:
-			self.expecting_join_response = False
+			host_index = infos[host_index].index
+			my_index = infos[my_index].index
+			logger.info("Received join response: (%i, %i)" %(host_index, my_index))
+			self.join_state = self.JOIN_OK
 			self.host_index = host_index
 			self.stations.add(self.session.station, my_index)
-			for info in infos:
-				rvcid = info.connection_info.public_station.rvcid
-				self.pending_connect[rvcid] = info.index
-			self.join_succeeded(infos)
+			self.stations.add(station, host_index)
+			self.protocol.assign_sliding_window(station)
+			self.mesh_created(host_index, my_index)
+			self.station_joined(station)
 	
+	def handle_join_denied(self, station, reason):
+		logger.info("Join denied (%i)" %reason)
+		self.join_state = self.JOIN_DENIED
+		
+	def handle_leave_request(self, station, station_index, station_address):
+		if self.is_host():
+			logger.warning("TODO: Handle leave request")
+		else:
+			logger.warning("Unexpected leave request received")
+			
+	def handle_leave_response(self, station, station_index, station_address):
+		logger.warning("Unexpected leave response received")
+		
+	def handle_destroy_request(self, station, station_index, station_address):
+		if self.is_host():
+			logger.warning("Unexpected destroy request received")
+		else:
+			self.protocol.send_destroy_response(station, self.session.station.index)
+			self.mesh_destroyed()
+		
+	def handle_destroy_response(self, station, station_index):
+		logger.warning("Unexpected destroy response received")
+		
+	def handle_mesh_update(self, infos):
+		disconnect_list = list(self.stations)
+		connect_list = []
+		for info in infos:
+			station = self.station_mgr.find_by_connection_info(info.connection_info)
+			if station in disconnect_list:
+				disconnect_list.remove(station)
+				if station.index != info.index:
+					logger.error("Station index changed unexpectedly (%i -> %i)",
+					             station.index, info.index)
+			else:
+				rvcid = info.connection_info.public_station.rvcid
+				station = self.station_mgr.create(None, rvcid)
+				self.stations.add(station, info.index)
+				self.protocol.assign_sliding_window(station)
+				if station.index < self.session.station.index:
+					connect_list.append(info.connection_info)
+					
+		self.connection_mgr.connect(*connect_list)
+		
 	def handle_station_connected(self, station):
 		if station.rvcid in self.pending_connect:
 			index = self.pending_connect.pop(station.rvcid)
@@ -367,25 +437,6 @@ class MeshMgr:
 				self.station_joined(station)
 			else:
 				logger.warning("Tried to assign station to occupied index")
-	
-	def handle_join_denied(self, station, reason):
-		logger.info("Join denied (%i)" %reason)
-		self.join_denied(station)
-		
-	def handle_destroy_request(self, station, station_index, station_address):
-		self.protocol.send_destroy_response(station, self.session.station.index)
-		self.mesh_destroyed()
-		
-	def handle_destroy_response(self, station, station_index):
-		pass #TODO: Implement this later
-	
-	def send_join_response(self, station):
-		index = self.stations.next_index()
-		self.protocol.send_join_response(
-			station, index, self.host_index, self.stations
-		)
-		self.stations.add(station)
-		self.protocol.assign_sliding_window(station)
 		
 	def send_update_mesh(self):
 		self.update_counter += 1
@@ -398,5 +449,19 @@ class MeshMgr:
 		self.host_index = self.session.station.index
 	
 	def join(self, host_station):
-		self.expecting_join_response = True
+		self.join_state = self.JOIN_WAITING
 		self.protocol.send_join_request(host_station)
+		while self.join_state == self.JOIN_WAITING:
+			scheduler.update()
+		if self.join_state == self.JOIN_DENIED:
+			raise RuntimeError("Join request denied")
+		
+		logger.info("Wait until all stations are connected")
+		all_connected = False
+		while not all_connected:
+			all_connected = True
+			for station in self.stations:
+				if not station.is_connected:
+					all_connected = False
+			scheduler.update()
+		logger.info("Successfully joined a mesh!")

@@ -49,20 +49,18 @@ class NATTraversalProtocol:
 		
 	def handle_probe_request(self, station, message):
 		probe = NATProbeData.deserialize(message)
-		logger.debug("Received probe request (%i, %i)", probe.connection_id, probe.system_time)
 		self.on_probe_request(station, probe)
 		
 	def handle_probe_reply(self, station, message):
 		probe = NATProbeData.deserialize(message)
-		logger.debug("Received probe reply: (%i, %i)", probe.connection_id, probe.system_time)
 		self.on_probe_reply(station, probe)
 		
 	def send_probe_request(self, station, count=1):
-		logger.debug("Sending NAT probe to %s", station.address)
+		logger.info("Sending NAT probe to %s", station.address)
 		self.send_probe(station, NATProbeData.REQUEST, self.PORT_PROBE_REQUEST, count)
 		
 	def send_probe_reply(self, station, count=1):
-		logger.debug("Sending NAT probe reply to %s", station.address)
+		logger.info("Sending NAT probe reply to %s", station.address)
 		self.send_probe(station, NATProbeData.REPLY, self.PORT_PROBE_REPLY, count)
 		
 	def send_probe(self, station, probe_type, protocol_port, count=1):
@@ -104,22 +102,23 @@ class NATTraversalMgr:
 		return station
 	
 	def handle_probe_request(self, station, probe):
+		logger.info("Received probe request (%i, %i)", probe.connection_id, probe.system_time)
 		self.protocol.send_probe_reply(station)
 		
 	def handle_probe_reply(self, station, probe):
-		logger.info("NAT traversal finished: %s", station.address)
+		logger.info("Received probe reply: (%i, %i)", probe.connection_id, probe.system_time)
 		self.past_traversals[station.rvcid] = time.monotonic()
 		self.nat_traversal_finished(station)
 		
-	def handle_initiate_probe(self, url):
-		logger.debug("Received NAT probe request for %s" %url)
-		if url["probeinit"] == 1:
-			self.request_probe_initiation(url)
-		station = self.init_station(url)
+	def handle_initiate_probe(self, source):
+		logger.info("Received probe initiation request for %s" %source)
+		if source["probeinit"] == 1:
+			self.request_probe_initiation(source)
+		station = self.init_station(source)
 		self.protocol.send_probe_request(station, 3)
 		
 	def request_probe_initiation(self, target):
-		logger.debug("Sending probe request to %s" %target)
+		logger.info("Sending probe initiation request to %s" %target)
 		if target["type"] == 0:
 			source = self.backend.local_station
 		else:
@@ -135,6 +134,7 @@ class NATTraversalMgr:
 		self.client.request_probe_initiation_ext([target], source)
 		
 	def report_nat_properties(self, props):
+		logger.info("Reporting NAT properties")
 		self.client.report_nat_properties(
 			props.nat_mapping, props.nat_filtering, props.rtt
 		)
@@ -142,12 +142,12 @@ class NATTraversalMgr:
 	def start_nat_traversal(self, url):
 		rvcid = url["RVCID"]
 		if rvcid in self.past_traversals:
-			if time.monotonic() - self.past_traversals[rvcid] < 90:
+			if time.monotonic() - self.past_traversals[rvcid] < 30:
 				station = self.station_mgr.find_by_rvcid(rvcid)
 				self.nat_traversal_finished(station)
 				return
 
 		logger.info("Starting NAT traversal for %s" %url)
-		url = url.copy()
-		url["probeinit"] = 0
-		self.request_probe_initiation(url)
+		target = url.copy()
+		target["probeinit"] = 0
+		self.request_probe_initiation(target)

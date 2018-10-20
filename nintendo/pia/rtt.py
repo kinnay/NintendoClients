@@ -27,7 +27,7 @@ class RttProtocol:
 		if message.protocol_port == 0:
 			response, time = struct.unpack(">IxxxxQ", message.payload)
 			if not response:
-				logger.info("Received rtt info request")
+				logger.debug("Received rtt info request")
 				self.send(station, True, time)
 		else:
 			logger.warning("Unknown RttProtocol port: %i", message.protocol_port)

@@ -122,7 +122,7 @@ class StationTable:
 		return iter(self.stations)
 		
 	def create(self, address, rvcid):
-		if self.find_by_address(address):
+		if address and self.find_by_address(address):
 			raise ValueError("Station already exists with address %s" %address)
 		if self.find_by_rvcid(rvcid):
 			raise ValueError("Station already exists with rvcid %i" %rvcid)
@@ -141,9 +141,10 @@ class StationTable:
 		for station in self.stations:
 			if station.address == address:
 				return station
-			if station.connection_info.public_station.address.address == address or \
-			   station.connection_info.local_station.address.address == address:
-				return station
+			if station.connection_info:
+				if station.connection_info.public_station.address.address == address or \
+				   station.connection_info.local_station.address.address == address:
+					return station
 				
 	def find_by_rvcid(self, rvcid):
 		for station in self.stations:
@@ -197,8 +198,6 @@ class StationProtocol:
 			logger.warning("Only unreliable station protocol is supported")
 		
 	def handle_connection_request(self, station, message):
-		logger.info("Received connection request")
-		
 		if message[2] != 3:
 			logger.warning("Unsupported version number found in connection request")
 			self.send_deny_connection(station, 2)
@@ -212,7 +211,6 @@ class StationProtocol:
 		self.on_connection_request(station, connection_info, connection_id, is_inverse)
 		
 	def handle_connection_response(self, station, message):
-		logger.info("Received connection response")
 		if message[1]:
 			self.on_connection_denied(station, message[1])
 		else:
@@ -221,47 +219,48 @@ class StationProtocol:
 			self.on_connection_response(station, identification_info)
 			
 	def handle_disconnection_request(self, station, message):
-		logger.info("Received disconnection request")
 		self.on_disconnection_request(station)
 		
 	def handle_disconnection_response(self, station, message):
-		logger.info("Received disconnection response")
 		self.on_disconnection_response(station)
 		
 	def handle_ack(self, station, message):
 		self.resender.handle_ack(message)
 		
 	def send_connection_request(self, station, is_inverse=False):
-		logger.debug("Sending connection request")
+		if is_inverse:
+			logger.info("Sending inverse connection request")
+		else:
+			logger.info("Sending connection request")
 		data = bytes([self.MESSAGE_CONNECTION_REQUEST, self.session.station.connection_id, 3, is_inverse])
 		data += self.session.station.connection_info.serialize()
 		self.send(station, data, True)
 		
 	def send_connection_response(self, station):
-		logger.debug("Sending connection response")
+		logger.info("Sending connection response")
 		data = bytes([self.MESSAGE_CONNECTION_RESPONSE, 0, 3, 3])
 		data += self.session.station.identification_info.serialize()
 		data += b"\0\0" #Alignment
 		self.send(station, data, True)
 		
 	def send_deny_connection(self, station, reason):
-		logger.debug("Denying connection request")
+		logger.info("Denying connection request")
 		data = bytes([self.MESSAGE_CONNECTION_RESPONSE, reason, 3, 0])
 		self.send(station, data)
 		
 	def send_disconnection_request(self, station):
-		logger.debug("Sending disconnection request")
+		logger.info("Sending disconnection request")
 		data = bytes([self.MESSAGE_DISCONNECTION_REQUEST])
 		self.send(station, data)
 		
 	def send_disconnection_response(self, station):
-		logger.debug("Sending disconnection response")
+		logger.info("Sending disconnection response")
 		data = bytes([self.MESSAGE_DISCONNECTION_RESPONSE])
 		self.send(station, data)
 		
 	def send_ack(self, station, message):
-		logger.debug("Sending ack message")
 		ack_id = struct.unpack_from(">I", message, -4)[0]
+		logger.info("Acknowledging packet (%i)" %ack_id)
 		data = struct.pack(">BxxxI", self.MESSAGE_ACK, ack_id)
 		self.send(station, data)
 		
@@ -293,12 +292,15 @@ class StationMgr:
 		
 		self.stations = StationTable()
 		
+		self.pending_connect = []
+		
 	def handle_connection_request(self, station, connection_info, connection_id, is_inverse):
 		if station != self.stations.find_by_connection_info(connection_info):
 			logger.warning("Unexpected station connection info found in connection request")
 			self.protocol.send_deny_connection(station, 1)
 			return
 			
+		logger.info("Received connection request")
 		station.connection_info = connection_info
 		station.connection_id = connection_id
 		
@@ -308,26 +310,48 @@ class StationMgr:
 		self.protocol.send_connection_response(station)
 			
 	def handle_connection_response(self, station, identification_info):
-		logger.info("Station connected: %s" %identification_info.name)
-		station.identification_info = identification_info
-		station.is_connected = True
-		self.station_connected(station)
+		if station in self.pending_connect:
+			logger.info("Station connected: %s" %identification_info.name)
+			self.pending_connect.remove(station)
+			station.identification_info = identification_info
+			station.is_connected = True
+			self.station_connected(station)
+		else:
+			logger.debug("Unexpected connection response received: %s" %identification_info.name)
 			
 	def handle_connection_denied(self, station, reason):
-		self.connection_denied(station)
+		if station in self.pending_connect:
+			logger.info("Received denying connection response (reason=%i)" %reason)
+			self.pending_connect.remove(station)
+			self.connection_denied(station)
+		else:
+			logger.warning("Unexpected denying connection response received")
 		
 	def handle_disconnection_request(self, station):
+		logger.info("Received disconnection request")
 		self.protocol.send_disconnection_response(station)
+		if station.is_connected:
+			station.is_connected = False
+			self.station_disconnected(station)
 		
 	def handle_disconnection_response(self, station):
-		station.is_connected = False
-		self.station_disconnected(station)
+		if station.is_connected:
+			logger.info("Received disconnection response")
+			station.is_connected = False
+			self.station_disconnected(station)
+		else:
+			logger.warning("Unexpected disconnection response received")
 		
 	def connect(self, station):
 		if station.is_connected:
 			self.station_connected(station)
 		else:
+			self.pending_connect.append(station)
 			self.protocol.send_connection_request(station)
+			
+	def cancel_connection(self, station):
+		if station in self.pending_connect:
+			self.pending_connect.remove(station)
 			
 	def disconnect(self, station):
 		if not station.is_connected:

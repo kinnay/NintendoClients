@@ -144,6 +144,7 @@ class ResendingTransport:
 	def handle_ack(self, payload):
 		ack_id = struct.unpack_from(">I", payload, -4)[0]
 		if ack_id in self.messages:
+			logger.info("Packet acknowledged (%i)" %ack_id)
 			message = self.messages.pop(ack_id)
 			scheduler.remove(message.timeout)
 		else:

@@ -28,6 +28,7 @@ class ConnectionMgr:
 		self.nat_mgr.nat_traversal_finished.add(self.handle_nat_traversal_finished)
 		self.station_mgr = session.station_mgr
 		self.station_mgr.station_connected.add(self.handle_station_connected)
+		self.station_mgr.station_disconnected.add(self.handle_station_disconnected)
 		self.station_mgr.connection_denied.add(self.handle_connection_denied)
 		
 		self.timeouts = {}
@@ -35,7 +36,13 @@ class ConnectionMgr:
 		self.pending_connect = []
 		self.results = {}
 	
-	def connect(self, info):
+	def connect(self, *infos):
+		for info in infos:
+			self.connect_async(info)
+		for info in infos:
+			self.wait(info)
+		
+	def connect_async(self, info):
 		target_ip = info.public_station.address.address.host
 		my_ip = self.backend.public_station["address"]
 		
@@ -44,21 +51,22 @@ class ConnectionMgr:
 			target = info.local_station
 	
 		rvcid = target.rvcid
-		if rvcid == self.session.rvcid:
-			self.results[rvcid] = self.RESULT_OK
-		else:
-			self.results[rvcid] = self.RESULT_NONE
+		if self.results.get(rvcid) != self.RESULT_OK:
+			if rvcid == self.session.rvcid:
+				self.results[rvcid] = self.RESULT_OK
+			else:
+				self.results[rvcid] = self.RESULT_NONE
 
-			self.timeouts[rvcid] = scheduler.add_timeout(
-				self.handle_timeout, 8, False, rvcid
-			)
-			
-			self.pending_nat.append(rvcid)
-			self.nat_mgr.start_nat_traversal(target.to_station_url())
+				self.timeouts[rvcid] = scheduler.add_timeout(
+					self.handle_timeout, 8, False, rvcid
+				)
+				
+				self.pending_nat.append(rvcid)
+				self.nat_mgr.start_nat_traversal(target.to_station_url())
 		
 	def wait(self, info):
 		rvcid = info.public_station.rvcid
-		while rvcid in self.pending_nat or rvcid in self.pending_connect:
+		while self.results[rvcid] == self.RESULT_NONE:
 			scheduler.update()
 			
 		result = self.results[rvcid]
@@ -69,15 +77,17 @@ class ConnectionMgr:
 		
 	def handle_nat_traversal_finished(self, station):
 		if station.rvcid in self.pending_nat:
+			logger.info("NAT traversal completed")
 			self.pending_connect.append(station.rvcid)
 			self.pending_nat.remove(station.rvcid)
 			self.station_mgr.connect(station)
 			
 	def handle_station_connected(self, station):
 		if station.rvcid in self.pending_connect:
+			logger.info("Successfully connected to station")
+			self.pending_connect.remove(station.rvcid)
 			self.results[station.rvcid] = self.RESULT_OK
 			scheduler.remove(self.timeouts.pop(station.rvcid))
-			self.pending_connect.remove(station.rvcid)
 			
 	def handle_connection_denied(self, station):
 		if station.rvcid in self.pending_connect:
@@ -87,67 +97,19 @@ class ConnectionMgr:
 			
 	def handle_timeout(self, rvcid):
 		logger.warning("Connection attempt timed out (rvcid=%i)", rvcid)
-		self.results[rvcid] = self.RESULT_TIMEOUT
 		self.timeouts.pop(rvcid)
 		if rvcid in self.pending_nat:
 			self.pending_nat.remove(rvcid)
 		if rvcid in self.pending_connect:
 			self.pending_connect.remove(rvcid)
-			
-			
-class JoinMeshJob:
-	def __init__(self, session, host_urls):
-		self.backend = session.backend
-		self.connection_mgr = session.connection_mgr
-		self.station_mgr = session.station_mgr
-		self.mesh_mgr = session.mesh_mgr
 
-		self.host_urls = host_urls
-		
-	def execute(self):
-		self.completed = False
-		host_station = self.connect_to_host()
-		self.mesh_mgr.join_succeeded.add(self.handle_join_succeeded)
-		self.mesh_mgr.join(host_station)
-		self.wait_completed()
-		self.mesh_mgr.join_succeeded.remove(self.handle_join_succeeded)
-		
-	def wait_completed(self):
-		while not self.completed:
-			scheduler.update()
-		
-	def connect_to_host(self):
-		public_url = None
-		local_url = None
-		
-		for url in self.host_urls:
-			if url.is_public():
-				public_url = url
-			else:
-				local_url = url
-				
-		if not public_url or not local_url:
-			raise ValueError("Incomplete station url list")
-			
-		public_location = StationLocation.from_station_url(public_url)
-		local_location = StationLocation.from_station_url(local_url)
-		conn_info = StationConnectionInfo(public_location, local_location)
-		
-		self.connection_mgr.connect(conn_info)
-		self.connection_mgr.wait(conn_info)
-		return self.station_mgr.find_by_rvcid(public_url["RVCID"])
-		
-	def handle_join_succeeded(self, station_infos):
-		infos = []
-		for info in station_infos:
-			conn_info = info.connection_info
-			self.connection_mgr.connect(conn_info)
-			infos.append(conn_info)
+			station = self.station_mgr.find_by_rvcid(rvcid)
+			self.station_mgr.cancel_connection(station)
+		self.results[rvcid] = self.RESULT_TIMEOUT
 
-		for conn_info in infos:
-			self.connection_mgr.wait(conn_info)
-			
-		self.completed = True
+	def handle_station_disconnected(self, station):
+		if self.results.get(station.rvcid) == self.RESULT_OK:
+			del self.results[station.rvcid]
 		
 		
 class PIASession:
@@ -176,9 +138,9 @@ class PIASession:
 		
 		self.station_mgr = StationMgr(self)
 		self.nat_mgr = NATTraversalMgr(self)
+		self.connection_mgr = ConnectionMgr(self)
 		self.mesh_mgr = MeshMgr(self)
 		self.keep_alive_mgr = KeepAliveMgr(self)
-		self.connection_mgr = ConnectionMgr(self)
 		
 	def start(self, identification, name):
 		logger.info("Initializing PIA session")
@@ -201,6 +163,7 @@ class PIASession:
 			
 	def create_local_station(self, props, identification, name):
 		self.station = self.station_mgr.create(props.local_address, self.rvcid)
+		self.station.is_connected = True
 	
 		local_station_url = self.backend.local_station.copy()
 		local_station_url["natm"] = props.nat_mapping
@@ -226,8 +189,28 @@ class PIASession:
 		self.mesh_mgr.create()
 		
 	def join_mesh(self, host_urls):
-		job = JoinMeshJob(self, host_urls)
-		job.execute()
+		station = self.connect_to_host(host_urls)
+		self.mesh_mgr.join(station)
+		
+	def connect_to_host(self, host_urls):
+		public_url = None
+		local_url = None
+		
+		for url in host_urls:
+			if url.is_public():
+				public_url = url
+			else:
+				local_url = url
+				
+		if not public_url or not local_url:
+			raise ValueError("Incomplete station url list")
+			
+		public_location = StationLocation.from_station_url(public_url)
+		local_location = StationLocation.from_station_url(local_url)
+		conn_info = StationConnectionInfo(public_location, local_location)
+		
+		self.connection_mgr.connect(conn_info)
+		return self.station_mgr.find_by_rvcid(public_url["RVCID"])
 		
 	def handle_packet(self, station, packet):
 		protocol_id = packet.protocol_id
