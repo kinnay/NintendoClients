@@ -1,6 +1,5 @@
 
 from nintendo.nex import service, common, streams, kerberos, errors
-import hashlib
 import struct
 
 import logging
@@ -51,35 +50,6 @@ class RVConnectionData(common.Structure):
 		if self.version >= 1:
 			self.server_time = stream.datetime()
 
-			
-class KeyDerivationOld:
-	def __init__(self, base_count, pid_count):
-		self.base_count = base_count
-		self.pid_count = pid_count
-		
-	def derive_key(self, password, pid):
-		key = password
-		for i in range(self.base_count + pid % self.pid_count):
-			key = hashlib.md5(key).digest()
-		return key
-		
-		
-class KeyDerivationNew:
-	def __init__(self, base_count, pid_count):
-		self.base_count = base_count
-		self.pid_count = pid_count
-		
-	def derive_key(self, password, pid):
-		key = password
-		for i in range(self.base_count):
-			key = hashlib.md5(key).digest()
-			
-		key += struct.pack("<Q", pid)
-		for i in range(self.pid_count):
-			key = hashlib.md5(key).digest()
-			
-		return key
-
 
 class AuthenticationClient(service.ServiceClient):
 	
@@ -95,23 +65,19 @@ class AuthenticationClient(service.ServiceClient):
 	def __init__(self, backend):
 		super().__init__(backend, service.ServiceClient.AUTHENTICATION)
 		self.settings = backend.settings
-		if self.settings.get("kerberos.key_derivation") == 0:
-			self.key_derivation = KeyDerivationOld(65000, 1024)
-		else:
-			self.key_derivation = KeyDerivationNew(1, 1)
 		
-	def login(self, username, password):
-		logger.info("Authentication.login(%s, %s)", username, password)
+	def login(self, username):
+		logger.info("Authentication.login(%s)", username)
 		#--- request ---
 		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_LOGIN)
 		stream.string(username)
 		self.send_message(stream)
 		
 		#--- response ---
-		self.handle_login_result(call_id, password)
+		return self.handle_login_result(call_id)
 		
-	def login_ex(self, username, password, auth_info):
-		logger.info("Authentication.login_ex(%s, %s, %s)", username, password, auth_info.__class__.__name__)
+	def login_ex(self, username, auth_info):
+		logger.info("Authentication.login_ex(%s, %s)", username, auth_info.__class__.__name__)
 		#--- request ---
 		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_LOGIN_EX)
 		stream.string(username)
@@ -119,48 +85,39 @@ class AuthenticationClient(service.ServiceClient):
 		self.send_message(stream)
 		
 		#--- response ---
-		self.handle_login_result(call_id, password)
+		return self.handle_login_result(call_id)
 		
-	def handle_login_result(self, call_id, password):
+	def handle_login_result(self, call_id):
 		stream = self.get_response(call_id)
 		result = stream.u32()
 		if result & 0x80000000:
 			raise AuthenticationError("Login failed (%s)" %errors.error_names.get(result, "unknown error"))
 			
 		self.pid = stream.uint()
-		kerberos_data = stream.buffer()
+		ticket_data = stream.buffer()
 		self.secure_station = stream.extract(RVConnectionData).main_station
 		server_name = stream.string()
-		
-		kerberos_key = self.key_derivation.derive_key(password.encode("ascii"), self.pid)
-		self.kerberos_encryption = kerberos.KerberosEncryption(kerberos_key)
-		if not self.kerberos_encryption.check_hmac(kerberos_data):
-			raise AuthenticationError("Kerberos key validation failed (incorrect password)")
 
-		logger.info("Authentication.login(_ex) -> (%08X, %s, %s)", self.pid, self.secure_station, server_name)
+		logger.info("Authentication.login(_ex) -> (%i, %s, %s)", self.pid, self.secure_station, server_name)
+		return kerberos.Ticket(ticket_data)
 		
-	def request_ticket(self):
-		logger.info("Authentication.request_ticket()")
+	def request_ticket(self, source, target):
+		logger.info("Authentication.request_ticket(%i, %i)", source, target)
 		#--- request ---
 		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_REQUEST_TICKET)
-		stream.uint(self.pid)
-		stream.uint(self.secure_station["PID"])
+		stream.uint(source)
+		stream.uint(target)
 		self.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.get_response(call_id)
 		result = stream.u32()
 		if result & 0x80000000:
 			raise AuthenticationError("Ticket request failed (%s)" %errors.error_names.get(result, "unknown error"))
 
-		encrypted_ticket = stream.buffer()
-		ticket_stream = streams.StreamIn(self.kerberos_encryption.decrypt(encrypted_ticket), self.backend.settings)
-		ticket_key = ticket_stream.read(self.settings.get("kerberos.key_size"))
-		ticket_stream.uint() #Unknown
-		ticket_buffer = ticket_stream.buffer()
-
-		logger.info("Authentication.request_ticket -> %s", ticket_key.hex())
-		return kerberos.Ticket(ticket_key, ticket_buffer)
+		ticket_data = stream.buffer()
+		logger.info("Authentication.request_ticket -> %i bytes" %len(ticket_data))
+		return kerberos.Ticket(ticket_data)
 		
 	def get_pid(self, name):
 		logger.info("Authentication.get_pid(%s)", name)

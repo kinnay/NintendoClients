@@ -1,6 +1,6 @@
 
 from nintendo.nex import nat, notification, nintendo_notification, \
-	authentication, secure, friends, common
+	authentication, secure, kerberos, common
 import pkg_resources
 
 import logging
@@ -81,6 +81,11 @@ class BackEndClient:
 		self.auth_client = authentication.AuthenticationClient(self)
 		self.secure_client = secure.SecureClient(self)
 		
+		if self.settings.get("kerberos.key_derivation") == 0:
+			self.key_derivation = kerberos.KeyDerivationOld(65000, 1024)
+		else:
+			self.key_derivation = kerberos.KeyDerivationNew(1, 1)
+		
 		self.nat_traversal_server = nat.NATTraversalServer()
 		self.notification_server = notification.NotificationServer()
 		self.nintendo_notification_server = nintendo_notification.NintendoNotificationServer()
@@ -100,11 +105,20 @@ class BackEndClient:
 		
 	def login(self, username, password, auth_info=None, login_data=None):
 		if auth_info:
-			self.auth_client.login_ex(username, password, auth_info)
+			self.auth_client.login_ex(username, auth_info)
 		else:
-			self.auth_client.login(username, password)
+			self.auth_client.login(username)
 
-		ticket = self.auth_client.request_ticket()
+		kerberos_key = self.key_derivation.derive_key(
+			password.encode("ascii"), self.auth_client.pid
+		)
+		kerberos_encryption = kerberos.KerberosEncryption(kerberos_key)
+			
+		ticket = self.auth_client.request_ticket(
+			self.auth_client.pid, self.auth_client.secure_station["PID"]
+		)
+		ticket.decrypt(kerberos_encryption, self.settings)
+
 		host = self.auth_client.secure_station["address"]
 		port = self.auth_client.secure_station["port"]
 		if host == "0.0.0.1":
