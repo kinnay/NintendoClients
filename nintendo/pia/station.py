@@ -69,12 +69,12 @@ class StationConnectionInfo(collections.namedtuple("StationConnectionInfo", "pub
 class IdentificationInfo(collections.namedtuple("IdentificationInfo", "id name")):
 	@classmethod
 	def deserialize(cls, data):
-		identification = data[:32].decode("ascii").rstrip("\0")
+		identification = data[:32].rstrip(b"\0")
 		name = data[32:64].decode("utf_16_be").rstrip("\0")
 		return cls(identification, name)
 		
 	def serialize(self):
-		data = self.id.encode("ascii").ljust(32, b"\0")
+		data = self.id.ljust(32, b"\0")
 		data += self.name.encode("utf_16_be").ljust(32, b"\0")
 		data += bytes([len(self.name), 0])
 		return data
