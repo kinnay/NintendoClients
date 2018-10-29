@@ -1,6 +1,7 @@
 
 from nintendo.common import crypto
 from nintendo.nex import streams
+import struct
 import hashlib
 import hmac
 

@@ -1,6 +1,5 @@
 
 from nintendo.nex import service, common, streams, kerberos, errors
-import struct
 
 import logging
 logger = logging.getLogger(__name__)
