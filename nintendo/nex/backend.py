@@ -105,19 +105,22 @@ class BackEndClient:
 		
 	def login(self, username, password, auth_info=None, login_data=None):
 		if auth_info:
-			self.auth_client.login_ex(username, auth_info)
+			ticket = self.auth_client.login_ex(username, auth_info)
 		else:
-			self.auth_client.login(username)
+			ticket = self.auth_client.login(username)
 
 		kerberos_key = self.key_derivation.derive_key(
 			password.encode("ascii"), self.auth_client.pid
 		)
 		kerberos_encryption = kerberos.KerberosEncryption(kerberos_key)
-			
-		ticket = self.auth_client.request_ticket(
-			self.auth_client.pid, self.auth_client.secure_station["PID"]
-		)
+		
 		ticket.decrypt(kerberos_encryption, self.settings)
+		
+		if ticket.pid != self.auth_client.secure_station["PID"]:
+			ticket = self.auth_client.request_ticket(
+				self.auth_client.pid, self.auth_client.secure_station["PID"]
+			)
+			ticket.decrypt(kerberos_encryption, self.settings)
 
 		host = self.auth_client.secure_station["address"]
 		port = self.auth_client.secure_station["port"]
