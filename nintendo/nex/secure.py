@@ -103,7 +103,7 @@ class SecureClient(service.ServiceClient):
 		#--- request ---
 		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_REQUEST_CONNECTION_DATA)
 		stream.u32(cid)
-		stream.u32(pid)
+		stream.uint(pid)
 		self.send_message(stream)
 		
 		#--- response ---
@@ -118,7 +118,7 @@ class SecureClient(service.ServiceClient):
 		#--- request ---
 		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_REQUEST_URLS)
 		stream.u32(cid)
-		stream.u32(pid)
+		stream.uint(pid)
 		self.send_message(stream)
 		
 		#--- response ---
