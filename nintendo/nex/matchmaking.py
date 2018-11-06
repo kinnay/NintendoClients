@@ -25,8 +25,8 @@ class Gathering(common.Structure):
 	
 	def save(self, stream):
 		stream.u32(self.id)
-		stream.u32(self.owner_pid)
-		stream.u32(self.host_pid)
+		stream.uint(self.owner_pid)
+		stream.uint(self.host_pid)
 		stream.u16(self.player_min)
 		stream.u16(self.player_max)
 		stream.u32(self.participation_policy)
@@ -37,8 +37,8 @@ class Gathering(common.Structure):
 		
 	def load(self, stream):
 		self.id = stream.u32()
-		self.owner_pid = stream.u32()
-		self.host_pid = stream.u32()
+		self.owner_pid = stream.uint()
+		self.host_pid = stream.uint()
 		self.player_min = stream.u16()
 		self.player_max = stream.u16()
 		self.participation_policy = stream.u32()
