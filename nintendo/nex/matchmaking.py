@@ -199,6 +199,19 @@ class MatchMakingClient:
 	def __init__(self, backend):
 		self.client = backend.secure_client
 		
+	def find_by_participants(self, pids):
+		logger.info("MatchMaking.find_by_participants(%s)", pids)
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_FIND_BY_PARTICIPANTS)
+		stream.list(pids, stream.uint)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		gatherings = stream.list(stream.anydata)
+		logger.info("MatchMaking.find_by_participants -> %i results", len(gatherings))
+		return gatherings
+		
 	def find_by_sql_query(self, query, result_range):
 		logger.info("MatchMaking.find_by_sql_query(%s, [%i, %i])", query, result_range.offset, result_range.size)
 		#--- request ---
