@@ -12,7 +12,7 @@ class PersistenceTarget(common.Structure):
 		self.persistence_id = persistence_id
 	
 	def save(self, stream):
-		stream.uint(self.owner_id)
+		stream.pid(self.owner_id)
 		stream.u16(self.persistence_id)
 
 	
@@ -52,7 +52,7 @@ class DataStoreGetMetaParam(common.Structure):
 class DataStoreMetaInfo(common.Structure):
 	def load(self, stream):
 		self.data_id = stream.u64()
-		self.owner_id = stream.uint()
+		self.owner_id = stream.pid()
 		self.size = stream.u32()
 		self.name = stream.string()
 		self.data_type = stream.u16()

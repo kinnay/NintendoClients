@@ -25,8 +25,8 @@ class Gathering(common.Structure):
 	
 	def save(self, stream):
 		stream.u32(self.id)
-		stream.uint(self.owner_pid)
-		stream.uint(self.host_pid)
+		stream.pid(self.owner_pid)
+		stream.pid(self.host_pid)
 		stream.u16(self.player_min)
 		stream.u16(self.player_max)
 		stream.u32(self.participation_policy)
@@ -37,8 +37,8 @@ class Gathering(common.Structure):
 		
 	def load(self, stream):
 		self.id = stream.u32()
-		self.owner_pid = stream.uint()
-		self.host_pid = stream.uint()
+		self.owner_pid = stream.pid()
+		self.host_pid = stream.pid()
 		self.player_min = stream.u16()
 		self.player_max = stream.u16()
 		self.participation_policy = stream.u32()
@@ -137,7 +137,7 @@ common.DataHolder.register(MatchmakeSession, "MatchmakeSession")
 
 class SimplePlayingSession(common.Structure):
 	def load(self, stream):
-		self.pid = stream.uint()
+		self.pid = stream.pid()
 		self.gid = stream.u32()
 		self.game_mode = stream.u32()
 		self.attribute = stream.u32()
@@ -145,7 +145,7 @@ class SimplePlayingSession(common.Structure):
 		
 class PlayingSession(common.Structure):
 	def load(self, stream):
-		self.pid = stream.uint()
+		self.pid = stream.pid()
 		self.gathering = stream.anydata()
 
 
@@ -203,7 +203,7 @@ class MatchMakingClient:
 		logger.info("MatchMaking.find_by_participants(%s)", pids)
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_FIND_BY_PARTICIPANTS)
-		stream.list(pids, stream.uint)
+		stream.list(pids, stream.pid)
 		self.client.send_message(stream)
 		
 		#--- response ---
@@ -373,7 +373,7 @@ class MatchmakeExtensionClient:
 		logger.info("MatchmakeExtension.get_playing_session(...)")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_PLAYING_SESSION)
-		stream.list(pids, stream.uint)
+		stream.list(pids, stream.pid)
 		self.client.send_message(stream)
 		
 		#--- response ---
@@ -386,7 +386,7 @@ class MatchmakeExtensionClient:
 		logger.info("MatchmakeExtension.get_simple_playing_session(...)")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_SIMPLE_PLAYING_SESSION)
-		stream.list(pids, stream.uint)
+		stream.list(pids, stream.pid)
 		stream.bool(include_login_user)
 		self.client.send_message(stream)
 		

@@ -41,7 +41,7 @@ class SecureClient(service.ServiceClient):
 		
 		check_value = random.randint(0, 0xFFFFFFFF)
 		substream = streams.StreamOut(self.backend.settings)
-		substream.uint(self.auth_client.pid)
+		substream.pid(self.auth_client.pid)
 		substream.u32(self.auth_client.secure_station["CID"])
 		substream.u32(check_value) #Used to check connection response
 		
@@ -103,7 +103,7 @@ class SecureClient(service.ServiceClient):
 		#--- request ---
 		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_REQUEST_CONNECTION_DATA)
 		stream.u32(cid)
-		stream.uint(pid)
+		stream.pid(pid)
 		self.send_message(stream)
 		
 		#--- response ---
@@ -118,7 +118,7 @@ class SecureClient(service.ServiceClient):
 		#--- request ---
 		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_REQUEST_URLS)
 		stream.u32(cid)
-		stream.uint(pid)
+		stream.pid(pid)
 		self.send_message(stream)
 		
 		#--- response ---

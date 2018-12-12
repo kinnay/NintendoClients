@@ -92,7 +92,7 @@ class AuthenticationClient(service.ServiceClient):
 		if result & 0x80000000:
 			raise AuthenticationError("Login failed (%s)" %errors.error_names.get(result, "unknown error"))
 			
-		self.pid = stream.uint()
+		self.pid = stream.pid()
 		ticket_data = stream.buffer()
 		self.secure_station = stream.extract(RVConnectionData).main_station
 		server_name = stream.string()
@@ -104,8 +104,8 @@ class AuthenticationClient(service.ServiceClient):
 		logger.info("Authentication.request_ticket(%i, %i)", source, target)
 		#--- request ---
 		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_REQUEST_TICKET)
-		stream.uint(source)
-		stream.uint(target)
+		stream.pid(source)
+		stream.pid(target)
 		self.send_message(stream)
 		
 		#--- response ---
@@ -127,7 +127,7 @@ class AuthenticationClient(service.ServiceClient):
 		
 		#--- response ---
 		stream = self.get_response(call_id)
-		pid = stream.uint()
+		pid = stream.pid()
 		logger.info("Authentication.get_pid -> %i", pid)
 		return pid
 		
@@ -135,7 +135,7 @@ class AuthenticationClient(service.ServiceClient):
 		logger.info("Authentication.get_name(%i)", id)
 		#--- request ---
 		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_GET_NAME)
-		stream.uint(id)
+		stream.pid(id)
 		self.send_message(stream)
 		
 		#--- response ---

@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 class AccountData(common.Structure):
 	def load(self, stream):
-		self.pid = stream.uint()
+		self.pid = stream.pid()
 		self.name = stream.string()
 		self.groups = stream.u32()
 		self.email = stream.string()
@@ -73,7 +73,7 @@ class AccountManagementClient:
 		logger.info("AccountManagement.get_name(%i)", pid)
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_NAME)
-		stream.uint(pid)
+		stream.pid(pid)
 		self.client.send_message(stream)
 		
 		#--- response ---

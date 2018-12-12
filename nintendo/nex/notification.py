@@ -8,14 +8,14 @@ logger = logging.getLogger(__name__)
 
 class NotificationEvent(common.Structure):
 	def load(self, stream):
-		self.pid = stream.uint()
+		self.pid = stream.pid()
 		self.type = stream.u32()
-		self.param1 = stream.uint()
-		self.param2 = stream.uint()
+		self.param1 = stream.pid()
+		self.param2 = stream.pid()
 		self.text = stream.string()
 		
 		if self.version >= 0:
-			self.param3 = stream.uint()
+			self.param3 = stream.pid()
 
 			
 class NotificationHandler:

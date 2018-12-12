@@ -68,5 +68,5 @@ class Ticket:
 		decrypted = kerberos.decrypt(self.encrypted)
 		stream = streams.StreamIn(decrypted, settings)
 		self.key = stream.read(settings.get("kerberos.key_size"))
-		self.pid = stream.uint()
+		self.pid = stream.pid()
 		self.data = stream.buffer()

@@ -30,7 +30,7 @@ class Settings:
 		"kerberos.key_size": int,
 		"kerberos.key_derivation": int,
 		
-		"common.int_size": int,
+		"common.pid_size": int,
 		
 		"server.version": int,
 		"server.access_key": str.encode
