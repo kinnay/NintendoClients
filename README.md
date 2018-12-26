@@ -10,7 +10,7 @@ https://github.com/Kinnay/NintendoClients/wiki
 
 ### Requirements
 * Python 3 (tested with 3.6.4)
-* Python requests (http://docs.python-requets.org)
+* Python requests (http://docs.python-requests.org)
 * BeautifulSoup4 and lxml
 
 ### Example scripts
