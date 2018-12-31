@@ -1,6 +1,7 @@
 
-from nintendo.nex import nat, notification, nintendo_notification, \
-	authentication, secure, kerberos, common
+from nintendo.nex import account, authentication, common, datastore, \
+	friends, kerberos, matchmaking, notification, ranking, secure, \
+	service, nattraversal
 import pkg_resources
 
 import logging
@@ -78,65 +79,99 @@ class BackEndClient:
 		self.settings.set("server.access_key", access_key)
 		self.settings.set("server.version", version)
 		
-		self.auth_client = authentication.AuthenticationClient(self)
-		self.secure_client = secure.SecureClient(self)
+		self.auth_client = service.ServiceClient(self.settings)
+		self.secure_client = service.ServiceClient(self.settings)
+		
+		self.auth_proto = authentication.AuthenticationClient(self.auth_client)
+		self.secure_proto = secure.SecureConnectionClient(self.secure_client)
 		
 		if self.settings.get("kerberos.key_derivation") == 0:
 			self.key_derivation = kerberos.KeyDerivationOld(65000, 1024)
 		else:
 			self.key_derivation = kerberos.KeyDerivationNew(1, 1)
-		
-		self.nat_traversal_server = nat.NATTraversalServer()
-		self.notification_server = notification.NotificationServer()
-		self.nintendo_notification_server = nintendo_notification.NintendoNotificationServer()
-
-		self.protocol_map = {
-			self.nat_traversal_server.PROTOCOL_ID: self.nat_traversal_server,
-			self.notification_server.PROTOCOL_ID: self.notification_server,
-			self.nintendo_notification_server.PROTOCOL_ID: self.nintendo_notification_server
-		}
+			
+		self.my_pid = None
+		self.local_station = None
+		self.public_station = None
 		
 	def connect(self, host, port):
-		self.auth_client.connect(host, port)
+		# Connect to authentication server
+		self.auth_client.connect(host, port, 1)
 		
 	def close(self):
 		self.auth_client.close()
 		self.secure_client.close()
 		
 	def login(self, username, password, auth_info=None, login_data=None):
+		# Call login method on authentication protocol
 		if auth_info:
-			ticket = self.auth_client.login_ex(username, auth_info)
+			response = self.auth_proto.login_ex(username, auth_info)
 		else:
-			ticket = self.auth_client.login(username)
+			response = self.auth_proto.login(username)
+			
+		# Check for errors
+		response.result.raise_if_error()
+		
+		self.my_pid = response.pid
+		
+		secure_station = response.connection_data.main_station
 
+		# Derive kerberos key from password
 		kerberos_key = self.key_derivation.derive_key(
-			password.encode("ascii"), self.auth_client.pid
+			password.encode("ascii"), response.pid
 		)
-		kerberos_encryption = kerberos.KerberosEncryption(kerberos_key)
 		
-		ticket.decrypt(kerberos_encryption, self.settings)
+		# Decrypt ticket from login response
+		ticket = kerberos.Ticket(response.ticket)
+		ticket.decrypt(kerberos_key, self.settings)
 		
-		if ticket.pid != self.auth_client.secure_station["PID"]:
-			ticket = self.auth_client.request_ticket(
-				self.auth_client.pid, self.auth_client.secure_station["PID"]
+		if ticket.target_pid != secure_station["PID"]:
+			# Request ticket for secure server
+			response = self.auth_proto.request_ticket(
+				self.my_pid, secure_station["PID"]
 			)
-			ticket.decrypt(kerberos_encryption, self.settings)
+			
+			# Check for errors and decrypt ticket
+			response.result.raise_if_error()
+			ticket = kerberos.Ticket(response.ticket)
+			ticket.decrypt(kerberos_key, self.settings)
+			
+		ticket.source_pid = self.my_pid
+		ticket.target_cid = secure_station["CID"]
 
-		host = self.auth_client.secure_station["address"]
-		port = self.auth_client.secure_station["port"]
+		# The secure server may reside at the same
+		# address as the authentication server
+		host = secure_station["address"]
+		port = secure_station["port"]
 		if host == "0.0.0.1":
 			host, port = self.auth_client.server_address()
+			
+		# Connect to secure server
+		server_sid = secure_station["sid"]
+		self.secure_client.connect(host, port, server_sid, ticket)
 		
-		self.secure_client.set_ticket(ticket)
-		self.secure_client.connect(host, port)
+		# Create a stationurl for our local client address
+		client_addr = self.secure_client.client_address()
+		self.local_station = common.StationUrl(
+			address=client_addr[0], port=client_addr[1],
+			sid=self.secure_client.stream_id(),
+			natm=0, natf=0, upnp=0, pmp=0
+		)
+		
+		# Register urls on secure server
 		if login_data:
-			urls = self.secure_client.register_urls(login_data)
+			response = self.secure_proto.register_ex([self.local_station], login_data)
 		else:
-			urls = self.secure_client.register_urls()
-		self.local_station, self.public_station = urls
+			response = self.secure_proto.register([self.local_station])
+
+		# Check for errors and update urls
+		response.result.raise_if_error()
+		self.public_station = response.public_station
+		self.public_station["RVCID"] = response.connection_id
+		self.local_station["RVCID"] = response.connection_id
 		
 	def login_guest(self):
 		self.login("guest", "MMQea3n!fsik")
 		
 	def get_pid(self):
-		return self.auth_client.pid
+		return self.my_pid

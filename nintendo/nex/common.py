@@ -1,4 +1,5 @@
 
+from nintendo.nex.errors import error_names, error_codes
 from nintendo.nex import streams
 import datetime
 
@@ -6,15 +7,48 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class RMCError(Exception): pass
+
+
+class ResponseObject:
+	pass
+
+	
+class Result:
+	def __init__(self, code):
+		if type(code) == str:
+			code = error_codes[code]
+		self.error_code = code
+		
+	def is_success(self):
+		return self.error_code == 0x10001
+		
+	def is_error(self):
+		return self.error_code != 0x10001
+	
+	def code(self):
+		return self.error_code
+		
+	def name(self):
+		if self.is_success():
+			return "success"
+		return error_names.get(self.error_code, "unknown error")
+		
+	def raise_if_error(self):
+		if self.is_error():
+			raise RMCError("%s (0x%08X)" %(self.name(), self.error_code))
+	
+
 # Black magic going on here
 class Structure:
-	def init_version(self, cls):
-		if self.nex_version < 30500:
-			self.version = -1
+	def init_version(self, cls, settings):
+		nex_version = settings.get("server.version")
+		if nex_version < 30500:
+			return -1
 		else:
-			self.version = cls.get_version(self)
+			return cls.get_version(self, settings)
 			
-	def get_version(self): return 0
+	def get_version(self, settings): return 0
 			
 	def get_hierarchy(self):
 		hierarchy = []
@@ -25,31 +59,28 @@ class Structure:
 		return hierarchy[::-1]
 	
 	def encode(self, stream):
-		self.nex_version = stream.settings.get("server.version")
 		hierarchy = self.get_hierarchy()
 		for cls in hierarchy:
-			self.init_version(cls)
-			if self.version == -1:
+			version = self.init_version(cls, stream.settings)
+			if version == -1:
 				cls.save(self, stream)
 			else:
 				substream = streams.StreamOut(stream.settings)
 				cls.save(self, substream)
 				
-				stream.u8(self.version)
+				stream.u8(version)
 				stream.buffer(substream.get())
 
 	def decode(self, stream):
-		self.nex_version = stream.settings.get("server.version")
 		hierarchy = self.get_hierarchy()
 		for cls in hierarchy:
-			self.init_version(cls)
-			if self.version == -1:
+			expected_version = self.init_version(cls, stream.settings)
+			if expected_version == -1:
 				cls.load(self, stream)
 			else:
 				version = stream.u8()
-				if version != self.version:
-					logger.warning("Struct version (%i) doesn't match expected version (%i)" %(version, self.version))
-					self.version = version
+				if version != expected_version:
+					logger.warning("Struct version (%i) doesn't match expected version (%i)" %(version, expected_version))
 				cls.load(self, stream.substream())
 				
 	def load(self, stream): raise NotImplementedError("%s.load()" %self.__class__.__name__)
@@ -65,11 +96,11 @@ class DataHolder:
 
 	object_map = {}
 
-	def __init__(self, data):
-		self.data = data
+	def __init__(self):
+		self.data = None
 		
 	def encode(self, stream):	
-		stream.string(self.data.get_name())
+		stream.string(self.data.__class__.__name__)
 		
 		substream = streams.StreamOut(stream.settings)
 		substream.add(self.data)

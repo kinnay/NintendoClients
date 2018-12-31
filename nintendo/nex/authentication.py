@@ -1,145 +1,296 @@
 
-from nintendo.nex import service, common, streams, kerberos, errors
+# This file was generated automatically from authentication.proto
+
+from nintendo.nex import common
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class AuthenticationError(Exception): pass
-
-
 class AuthenticationInfo(common.Data):
-	def __init__(self, token, server_version):
-		self.token = token
-		self.server_version = server_version
-		
-	def get_name(self):
-		return "AuthenticationInfo"
+	def __init__(self):
+		super().__init__()
+		self.token = None
+		self.ngs_version = 3
+		self.token_type = 1
+		self.server_version = None
+
+	def check_required(self, settings):
+		for field in ['token', 'server_version']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+
+	def load(self, stream):
+		self.token = stream.string()
+		self.ngs_version = stream.u32()
+		self.token_type = stream.u8()
+		self.server_version = stream.u32()
 
 	def save(self, stream):
+		self.check_required(stream.settings)
 		stream.string(self.token)
-		stream.u32(3)
-		stream.u8(1)
+		stream.u32(self.ngs_version)
+		stream.u8(self.token_type)
 		stream.u32(self.server_version)
 common.DataHolder.register(AuthenticationInfo, "AuthenticationInfo")
 
 
 class NintendoLoginData(common.Data):
-	def __init__(self, token):
-		self.token = token
-		
-	def get_name(self):
-		return "NintendoLoginData"
-		
+	def __init__(self):
+		super().__init__()
+		self.token = None
+
+	def check_required(self, settings):
+		for field in ['token']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+
+	def load(self, stream):
+		self.token = stream.string()
+
 	def save(self, stream):
+		self.check_required(stream.settings)
 		stream.string(self.token)
 common.DataHolder.register(NintendoLoginData, "NintendoLoginData")
-	
-	
+
+
 class RVConnectionData(common.Structure):
-	def get_version(self):
-		return 1
-	
+	def __init__(self):
+		super().__init__()
+		self.main_station = None
+		self.special_protocols = None
+		self.special_station = None
+		self.server_time = None
+
+	def get_version(self, settings):
+		version = 0
+		if settings.get("server.version") >= 30500:
+			version = 1
+		return version
+
+	def check_required(self, settings):
+		for field in ['main_station', 'special_protocols', 'special_station']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+		if settings.get("server.version") >= 30500:
+			for field in ['server_time']:
+				if getattr(self, field) is None:
+					raise ValueError("No value assigned to required field: %s" %field)
+
 	def load(self, stream):
 		self.main_station = stream.stationurl()
 		self.special_protocols = stream.list(stream.u8)
 		self.special_station = stream.stationurl()
-		
-		self.server_time = None
-		if self.version >= 1:
-			self.server_time = stream.datetime()
+		if stream.settings.get("server.version") >= 30500:
+						self.server_time = stream.datetime()
+
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.stationurl(self.main_station)
+		stream.list(self.special_protocols, stream.u8)
+		stream.stationurl(self.special_station)
+		if stream.settings.get("server.version") >= 30500:
+						stream.datetime(self.server_time)
 
 
-class AuthenticationClient(service.ServiceClient):
-	
+class AuthenticationProtocol:
 	METHOD_LOGIN = 1
 	METHOD_LOGIN_EX = 2
 	METHOD_REQUEST_TICKET = 3
 	METHOD_GET_PID = 4
 	METHOD_GET_NAME = 5
-	METHOD_LOGIN_WITH_CONTEXT = 6
-	
-	PROTOCOL_ID = 0xA
-	
-	def __init__(self, backend):
-		super().__init__(backend, service.ServiceClient.AUTHENTICATION)
-		self.settings = backend.settings
-		
-	def login(self, username):
-		logger.info("Authentication.login(%s)", username)
-		#--- request ---
-		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_LOGIN)
-		stream.string(username)
-		self.send_message(stream)
-		
-		#--- response ---
-		return self.handle_login_result(call_id)
-		
-	def login_ex(self, username, auth_info):
-		logger.info("Authentication.login_ex(%s, %s)", username, auth_info.__class__.__name__)
-		#--- request ---
-		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_LOGIN_EX)
-		stream.string(username)
-		stream.anydata(auth_info)
-		self.send_message(stream)
-		
-		#--- response ---
-		return self.handle_login_result(call_id)
-		
-	def handle_login_result(self, call_id):
-		stream = self.get_response(call_id)
-		result = stream.u32()
-		if result & 0x80000000:
-			raise AuthenticationError("Login failed (%s)" %errors.error_names.get(result, "unknown error"))
-			
-		self.pid = stream.pid()
-		ticket_data = stream.buffer()
-		self.secure_station = stream.extract(RVConnectionData).main_station
-		server_name = stream.string()
 
-		logger.info("Authentication.login(_ex) -> (%i, %s, %s)", self.pid, self.secure_station, server_name)
-		return kerberos.Ticket(ticket_data)
-		
-	def request_ticket(self, source, target):
-		logger.info("Authentication.request_ticket(%i, %i)", source, target)
+	PROTOCOL_ID = 0xA
+
+
+class AuthenticationClient(AuthenticationProtocol):
+	def __init__(self, client):
+		self.client = client
+
+	def login(self, username):
+		logger.info("AuthenticationClient.login()")
 		#--- request ---
-		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_REQUEST_TICKET)
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_LOGIN)
+		stream.string(username)
+		self.client.send_message(stream)
+
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		obj = common.ResponseObject()
+		obj.result = stream.result()
+		obj.pid = stream.pid()
+		obj.ticket = stream.buffer()
+		obj.connection_data = stream.extract(RVConnectionData)
+		obj.server_name = stream.string()
+		logger.info("AuthenticationClient.login -> done")
+		return obj
+
+	def login_ex(self, username, extra_data):
+		logger.info("AuthenticationClient.login_ex()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_LOGIN_EX)
+		stream.string(username)
+		stream.anydata(extra_data)
+		self.client.send_message(stream)
+
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		obj = common.ResponseObject()
+		obj.result = stream.result()
+		obj.pid = stream.pid()
+		obj.ticket = stream.buffer()
+		obj.connection_data = stream.extract(RVConnectionData)
+		obj.server_name = stream.string()
+		logger.info("AuthenticationClient.login_ex -> done")
+		return obj
+
+	def request_ticket(self, source, target):
+		logger.info("AuthenticationClient.request_ticket()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_REQUEST_TICKET)
 		stream.pid(source)
 		stream.pid(target)
-		self.send_message(stream)
-		
-		#--- response ---
-		stream = self.get_response(call_id)
-		result = stream.u32()
-		if result & 0x80000000:
-			raise AuthenticationError("Ticket request failed (%s)" %errors.error_names.get(result, "unknown error"))
+		self.client.send_message(stream)
 
-		ticket_data = stream.buffer()
-		logger.info("Authentication.request_ticket -> %i bytes" %len(ticket_data))
-		return kerberos.Ticket(ticket_data)
-		
-	def get_pid(self, name):
-		logger.info("Authentication.get_pid(%s)", name)
-		#--- request ---
-		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_GET_PID)
-		stream.string(name)
-		self.send_message(stream)
-		
 		#--- response ---
-		stream = self.get_response(call_id)
+		stream = self.client.get_response(call_id)
+		obj = common.ResponseObject()
+		obj.result = stream.result()
+		obj.ticket = stream.buffer()
+		logger.info("AuthenticationClient.request_ticket -> done")
+		return obj
+
+	def get_pid(self, username):
+		logger.info("AuthenticationClient.get_pid()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_PID)
+		stream.string(username)
+		self.client.send_message(stream)
+
+		#--- response ---
+		stream = self.client.get_response(call_id)
 		pid = stream.pid()
-		logger.info("Authentication.get_pid -> %i", pid)
+		logger.info("AuthenticationClient.get_pid -> done")
 		return pid
-		
-	def get_name(self, id):
-		logger.info("Authentication.get_name(%i)", id)
+
+	def get_name(self, pid):
+		logger.info("AuthenticationClient.get_name()")
 		#--- request ---
-		stream, call_id = self.init_request(self.PROTOCOL_ID, self.METHOD_GET_NAME)
-		stream.pid(id)
-		self.send_message(stream)
-		
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_NAME)
+		stream.pid(pid)
+		self.client.send_message(stream)
+
 		#--- response ---
-		stream = self.get_response(call_id)
+		stream = self.client.get_response(call_id)
 		name = stream.string()
-		logger.info("Authentication.get_name -> %s", name)
+		logger.info("AuthenticationClient.get_name -> done")
 		return name
+
+
+class AuthenticationServer(AuthenticationProtocol):
+	def __init__(self):
+		self.methods = {
+			self.METHOD_LOGIN: self.handle_login,
+			self.METHOD_LOGIN_EX: self.handle_login_ex,
+			self.METHOD_REQUEST_TICKET: self.handle_request_ticket,
+			self.METHOD_GET_PID: self.handle_get_pid,
+			self.METHOD_GET_NAME: self.handle_get_name,
+		}
+
+	def handle(self, method_id, input, output):
+		if method_id in self.methods:
+			return self.methods[method_id](input, output)
+		logger.warning("Unknown method called on AuthenticationServer: %i", method_id)
+		return common.Result("Core::NotImplemented")
+
+	def handle_login(self, input, output):
+		logger.info("AuthenticationServer.login()")
+		#--- request ---
+		username = input.string()
+		response = common.ResponseObject()
+		self.login(response, username)
+
+		#--- response ---
+		for field in ['result', 'pid', 'ticket', 'connection_data', 'server_name']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in response object: %s" %field)
+		output.result(response.result)
+		output.pid(response.pid)
+		output.buffer(response.ticket)
+		output.add(response.connection_data)
+		output.string(response.server_name)
+
+	def handle_login_ex(self, input, output):
+		logger.info("AuthenticationServer.login_ex()")
+		#--- request ---
+		username = input.string()
+		extra_data = input.anydata()
+		response = common.ResponseObject()
+		self.login_ex(response, username, extra_data)
+
+		#--- response ---
+		for field in ['result', 'pid', 'ticket', 'connection_data', 'server_name']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in response object: %s" %field)
+		output.result(response.result)
+		output.pid(response.pid)
+		output.buffer(response.ticket)
+		output.add(response.connection_data)
+		output.string(response.server_name)
+
+	def handle_request_ticket(self, input, output):
+		logger.info("AuthenticationServer.request_ticket()")
+		#--- request ---
+		source = input.pid()
+		target = input.pid()
+		response = common.ResponseObject()
+		self.request_ticket(response, source, target)
+
+		#--- response ---
+		for field in ['result', 'ticket']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in response object: %s" %field)
+		output.result(response.result)
+		output.buffer(response.ticket)
+
+	def handle_get_pid(self, input, output):
+		logger.info("AuthenticationServer.get_pid()")
+		#--- request ---
+		username = input.string()
+		response = self.get_pid(username)
+
+		#--- response ---
+		if not isinstance(response, int):
+			raise RuntimeError("Expected int, got %s" %response.__class__.__name__)
+		output.pid(response)
+
+	def handle_get_name(self, input, output):
+		logger.info("AuthenticationServer.get_name()")
+		#--- request ---
+		pid = input.pid()
+		response = self.get_name(pid)
+
+		#--- response ---
+		if not isinstance(response, str):
+			raise RuntimeError("Expected str, got %s" %response.__class__.__name__)
+		output.string(response)
+
+	def login(self, *args):
+		logger.warning("AuthenticationServer.login not implemented")
+		return common.Result("Core::NotImplemented")
+
+	def login_ex(self, *args):
+		logger.warning("AuthenticationServer.login_ex not implemented")
+		return common.Result("Core::NotImplemented")
+
+	def request_ticket(self, *args):
+		logger.warning("AuthenticationServer.request_ticket not implemented")
+		return common.Result("Core::NotImplemented")
+
+	def get_pid(self, *args):
+		logger.warning("AuthenticationServer.get_pid not implemented")
+		return common.Result("Core::NotImplemented")
+
+	def get_name(self, *args):
+		logger.warning("AuthenticationServer.get_name not implemented")
+		return common.Result("Core::NotImplemented")

@@ -13,23 +13,20 @@ backend = backend.BackEndClient(
 backend.connect(HOST, PORT)
 backend.login_guest()
 
-ranking_client = ranking.RankingClient(backend)
+order_param = ranking.RankingOrderParam()
+order_param.order_calc = ranking.RankingOrderCalc.ORDINAL
+order_param.offset = 0 #Start with world record
+order_param.count = 20 #Download 20 highscores
+
+ranking_client = ranking.RankingClient(backend.secure_client)
 rankings = ranking_client.get_ranking(
-	ranking.RankingClient.MODE_GLOBAL,
-	TRACK_ID,
-	ranking.RankingOrderParam(
-		ranking.RankingOrderParam.ORDINAL, #"1234" ranking
-		0xFF, 0, 2,
-		0, 20 #Download top 20
-	),
-	0, 0
+	ranking.RankingMode.GLOBAL, TRACK_ID,
+	order_param, 0, 0
 )
+
 stats = ranking_client.get_stats(
-	TRACK_ID,
-	ranking.RankingOrderParam(
-		ranking.RankingOrderParam.ORDINAL, 0xFF, 0, 2, 0, 0
-	)
-)
+	TRACK_ID, order_param, ranking.RankingStatFlags.ALL
+).stats
 
 def format_time(score):
 	millisec = score % 1000
@@ -38,11 +35,11 @@ def format_time(score):
 	return "%i:%02i.%03i" %(minutes, seconds, millisec)
 	
 #Print some interesting stats
-print("Total:", int(stats[ranking.RankingClient.STAT_RANKING_COUNT]))
-print("Total time:", format_time(stats[ranking.RankingClient.STAT_TOTAL_SCORE]))
-print("Average time:", format_time(stats[ranking.RankingClient.STAT_AVERAGE_SCORE]))
-print("Lowest time:", format_time(stats[ranking.RankingClient.STAT_LOWEST_SCORE]))
-print("Highest time:", format_time(stats[ranking.RankingClient.STAT_HIGHEST_SCORE]))
+print("Total:", int(stats[0]))
+print("Total time:", format_time(stats[1]))
+print("Average time:", format_time(stats[2]))
+print("Lowest time:", format_time(stats[3]))
+print("Highest time:", format_time(stats[4]))
 
 print("Rankings:")
 for rankdata in rankings.datas:

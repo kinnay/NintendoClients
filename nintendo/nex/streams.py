@@ -12,6 +12,9 @@ class StreamOut(streams.StreamOut):
 			self.u64(value)
 		else:
 			self.u32(value)
+			
+	def result(self, result):
+		self.u32(result.code())
 
 	def list(self, list, func):
 		self.u32(len(list))
@@ -43,7 +46,9 @@ class StreamOut(streams.StreamOut):
 		inst.encode(self)
 		
 	def anydata(self, inst):
-		self.add(common.DataHolder(inst))
+		holder = common.DataHolder()
+		holder.data = inst
+		self.add(holder)
 		
 		
 class StreamIn(streams.StreamIn):
@@ -55,6 +60,9 @@ class StreamIn(streams.StreamIn):
 		if self.settings.get("common.pid_size") == 8:
 			return self.u64()
 		return self.u32()
+		
+	def result(self):
+		return common.Result(self.u32())
 
 	def list(self, func):
 		return self.repeat(func, self.u32())
@@ -79,7 +87,7 @@ class StreamIn(streams.StreamIn):
 	def qbuffer(self): return self.read(self.u16())
 		
 	def extract(self, cls):
-		inst = cls.__new__(cls)
+		inst = cls()
 		inst.decode(self)
 		return inst
 		

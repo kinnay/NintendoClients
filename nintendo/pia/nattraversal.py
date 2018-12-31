@@ -1,6 +1,6 @@
 
 from nintendo.pia.packet import PIAMessage
-from nintendo.nex.nat import NATTraversalClient
+from nintendo.nex.nat import NATTraversalClient, NATTraversalServer
 from nintendo.common import signal
 import collections
 import struct
@@ -72,7 +72,7 @@ class NATTraversalProtocol:
 			message.protocol_port = protocol_port
 			message.payload = probe.serialize()
 			self.transport.send(station, message)
-
+			
 			
 class NATTraversalMgr:
 
@@ -85,9 +85,10 @@ class NATTraversalMgr:
 		self.protocol.on_probe_request.add(self.handle_probe_request)
 		self.protocol.on_probe_reply.add(self.handle_probe_reply)
 		
-		server = session.backend.nat_traversal_server
-		server.handler.initiate_probe.add(self.handle_initiate_probe)
-		self.client = NATTraversalClient(session.backend)
+		server = NATTraversalServer()
+		server.initiate_probe = self.handle_initiate_probe
+		self.backend.secure_client.register_server(server)
+		self.client = NATTraversalClient(self.backend.secure_client)
 		
 		self.station_mgr = session.station_mgr
 		

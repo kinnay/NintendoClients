@@ -2,6 +2,10 @@
 from nintendo.nex import backend, authentication, ranking, datastore
 from nintendo.games import MK8
 from nintendo import account
+import requests
+
+import logging
+logging.basicConfig(level=logging.INFO)
 
 #Device id can be retrieved with a call to MCP_GetDeviceId on the Wii U
 #Serial number can be found on the back of the Wii U
@@ -27,28 +31,23 @@ api.login(USERNAME, PASSWORD)
 nex_token = api.get_nex_token(MK8.GAME_SERVER_ID)
 backend = backend.BackEndClient(MK8.ACCESS_KEY, MK8.NEX_VERSION)
 backend.connect(nex_token.host, nex_token.port)
-backend.login(
-	nex_token.username, nex_token.password,
-	authentication.AuthenticationInfo(nex_token.token, MK8.SERVER_VERSION)
+backend.login(nex_token.username, nex_token.password)
+
+ranking_client = ranking.RankingClient(backend.secure_client)
+
+order_param = ranking.RankingOrderParam()
+order_param.order_calc = ranking.RankingOrderCalc.ORDINAL
+order_param.offset = 499 #Start at 500th place
+order_param.count = 20 #Download 20 highscores
+
+rankings = ranking_client.get_ranking(
+	ranking.RankingMode.GLOBAL, TRACK_ID,
+	order_param, 0, 0
 )
 
-ranking_client = ranking.RankingClient(backend)
-rankings = ranking_client.get_ranking(
-	ranking.RankingClient.MODE_GLOBAL,
-	TRACK_ID,
-	ranking.RankingOrderParam(
-		ranking.RankingOrderParam.ORDINAL, #"1234" ranking
-		0xFF, 0, 2,
-		499, 20 #Download 500th to 520th place
-	),
-	0, 0
-)
 stats = ranking_client.get_stats(
-	TRACK_ID,
-	ranking.RankingOrderParam(
-		ranking.RankingOrderParam.ORDINAL, 0xFF, 0, 2, 0, 0
-	)
-)
+	TRACK_ID, order_param, ranking.RankingStatFlags.ALL
+).stats
 
 def format_time(score):
 	millisec = score % 1000
@@ -57,13 +56,13 @@ def format_time(score):
 	return "%i:%02i.%03i" %(minutes, seconds, millisec)
 	
 names = api.get_nnids([data.pid for data in rankings.datas])
-	
+
 #Print some interesting stats
-print("Total:", int(stats[ranking.RankingClient.STAT_RANKING_COUNT]))
-print("Total time:", format_time(stats[ranking.RankingClient.STAT_TOTAL_SCORE]))
-print("Average time:", format_time(stats[ranking.RankingClient.STAT_AVERAGE_SCORE]))
-print("Lowest time:", format_time(stats[ranking.RankingClient.STAT_LOWEST_SCORE]))
-print("Highest time:", format_time(stats[ranking.RankingClient.STAT_HIGHEST_SCORE]))
+print("Total:", int(stats[0]))
+print("Total time:", format_time(stats[1]))
+print("Average time:", format_time(stats[2]))
+print("Lowest time:", format_time(stats[3]))
+print("Highest time:", format_time(stats[4]))
 
 print("Rankings:")
 for rankdata in rankings.datas:
@@ -71,17 +70,20 @@ for rankdata in rankings.datas:
 	print("\t%5i   %20s   %s" %(rankdata.rank, names[rankdata.pid], time))
 	
 #Let's download the replay file of whoever is in 500th place
-store = datastore.DataStore(backend)
+store = datastore.DataStoreClient(backend.secure_client)
+
 rankdata = rankings.datas[0]
-filedata = store.get_object(
-	datastore.DataStorePrepareGetParam(
-		0, 0, datastore.PersistenceTarget(rankdata.pid, TRACK_ID - 16), 0,
-		["WUP", str(REGION_ID), REGION_NAME, str(COUNTRY_ID), COUNTRY_NAME, ""]
-	)
-)
+get_param = datastore.DataStorePrepareGetParam()
+get_param.persistence_target.owner_id = rankdata.pid
+get_param.persistence_target.persistence_id = TRACK_ID - 16
+get_param.extra_data = ["WUP", str(REGION_ID), REGION_NAME, str(COUNTRY_ID), COUNTRY_NAME, ""]
+
+req_info = store.prepare_get_object(get_param)
+headers = {header.key: header.value for header in req_info.headers}
+replay_data = requests.get("http://" + req_info.url, headers=headers).content
 
 with open("replay.bin", "wb") as f:
-	f.write(filedata)
+	f.write(replay_data)
 
 #Close connection
 backend.close()

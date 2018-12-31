@@ -1,4 +1,5 @@
 
+from nintendo.common import scheduler
 from nintendo.pia.natcheck import NATDetecter
 from nintendo.pia.nattraversal import NATTraversalProtocol, NATTraversalMgr
 from nintendo.pia.station import StationLocation, StationConnectionInfo, \
@@ -8,7 +9,7 @@ from nintendo.pia.keepalive import KeepAliveProtocol, KeepAliveMgr
 from nintendo.pia.unreliable import UnreliableProtocol
 from nintendo.pia.rtt import RttProtocol
 from nintendo.pia.transport import MessageTransport, ResendingTransport
-from nintendo.common import scheduler
+from nintendo.nex import secure
 
 import logging
 logger = logging.getLogger(__name__)
@@ -117,6 +118,8 @@ class PIASession:
 		self.backend = backend
 		self.session_key = session_key
 		
+		self.secure_client = secure.SecureConnectionClient(backend.secure_client)
+		
 		self.transport = MessageTransport(self)
 		self.resending_transport = ResendingTransport(self.transport)
 		
@@ -175,7 +178,7 @@ class PIASession:
 		public_station_url["natf"] = props.nat_filtering
 		public_station_url["port"] = props.public_address[1]
 		
-		self.backend.secure_client.replace_url(self.backend.local_station, local_station_url)
+		self.secure_client.replace_url(self.backend.local_station, local_station_url)
 		self.backend.local_station = local_station_url
 		self.backend.public_station = public_station_url
 		

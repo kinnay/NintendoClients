@@ -1,6 +1,10 @@
 
 from nintendo.nex import backend, authentication, friends, common
+from nintendo.games import Friends
 from nintendo import account
+
+import logging
+logging.basicConfig(level=logging.INFO)
 
 #Device id can be retrieved with a call to MCP_GetDeviceId on the Wii U
 #Serial number can be found on the back of the Wii U
@@ -16,50 +20,45 @@ PASSWORD = "..." #Nintendo network password
 
 api = account.AccountAPI()
 api.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY)
-api.set_title(friends.FriendsTitle.TITLE_ID_EUR, friends.FriendsTitle.LATEST_VERSION)
+api.set_title(Friends.TITLE_ID_EUR, Friends.LATEST_VERSION)
 api.login(USERNAME, PASSWORD)
 
 pid = api.get_pid(USERNAME)
 mii = api.get_mii(pid)
 
-nex_token = api.get_nex_token(friends.FriendsTitle.GAME_SERVER_ID)
+nex_token = api.get_nex_token(Friends.GAME_SERVER_ID)
+
 backend = backend.BackEndClient(
-	friends.FriendsTitle.ACCESS_KEY,
-	friends.FriendsTitle.NEX_VERSION,
+	Friends.ACCESS_KEY, Friends.NEX_VERSION,
 	backend.Settings("friends.cfg")
 )
 backend.connect(nex_token.host, nex_token.port)
+
+login_data = authentication.NintendoLoginData()
+login_data.token = nex_token.token
 backend.login(
-	nex_token.username, nex_token.password, None,
-	authentication.NintendoLoginData(nex_token.token)
+	nex_token.username, nex_token.password,
+	None, login_data
 )
 
-#Even though you're sending your username and pid to the server, you can't
-#requests friend information of other people. You'll always get your own data
-client = friends.FriendsClient(backend)
-principal_preference, comment, friends, requests_sent, requests_received, \
-  blacklist, unk1, notifications, unk2 = client.get_all_information(
-	friends.NNAInfo(
-		friends.PrincipalBasicInfo(
-			pid, USERNAME, #Pid and nnid
-			#If you change mii name or data here it will also be changed on Nintendo's servers
-			friends.MiiV2(mii.name, 0, 0, mii.data, common.DateTime(0)),
-			2
-		),
-		0x5E, 0x0B
-	),
-	#NintendoPresenceV2 tells the server about your online status, which
-	#game you're currently playing, etc. This will be shown to your friends
-	#in their friend list (unless you disabled this feature).
-	friends.NintendoPresenceV2(
-		0, 0, friends.GameKey(0, 0), 0, None, 0, 0, 0, 0, 0, 0, b"", 3, 3, 3
-	),
+nna_info = friends.NNAInfo()
+nna_info.principal_info.pid = pid
+nna_info.principal_info.nnid = USERNAME
+nna_info.principal_info.mii.name = mii.name
+nna_info.principal_info.mii.data = mii.data.build()
+
+#NintendoPresenceV2 tells the server about your online status, which
+#game you're currently playing, etc. This will be shown to your friends
+#in their friend list (unless you disabled this feature).	
+presence = friends.NintendoPresenceV2()
+
+client = friends.FriendsClient(backend.secure_client)
+response = client.get_all_information(
+	nna_info, presence,
 	#Enter your birthday here
-	common.DateTime.make(31, 12, 2000, 0, 0, 0)
+	common.DateTime.make(15, 11, 1999, 0, 0, 0)
 )
 
-
-#Now print everything
 
 def print_requests(requests):
 	for request in requests:
@@ -75,14 +74,14 @@ def print_requests(requests):
 	print()
 
 
-if comment.text:
-	print("Your status message: %s (last changed on %s)" %(comment.text, comment.changed))
+if response.comment.text:
+	print("Your status message: %s (last changed on %s)" %(response.comment.text, response.comment.changed))
 else:
 	print("You don't have a status message")
 
-if friends:
+if response.friends:
 	print("Friends:")
-	for friend in friends:
+	for friend in response.friends:
 		principal_info = friend.nna_info.principal_info
 		print("\tNNID:", principal_info.nnid)
 		print("\tName:", principal_info.mii.name)
@@ -102,21 +101,21 @@ if friends:
 else:
 	print("You don't have any friends")
 
-if requests_sent:
+if response.sent_requests:
 	print("Friend requests sent:")
-	print_requests(requests_sent)
+	print_requests(response.sent_requests)
 else:
 	print("You haven't sent any friend requests")
 	
-if requests_received:
+if response.received_requests:
 	print("Friend requests received:")
-	print_requests(requests_received)
+	print_requests(response.received_requests)
 else:
 	print("You haven't received any friend requests")
 	
-if blacklist:
+if response.blacklist:
 	print("Blacklist:")
-	for item in blacklist:
+	for item in response.blacklist:
 		principal_info = item.principal_info
 		print("\tWho: %s (%s)" %(principal_info.nnid, principal_info.mii.name))
 		if item.game_key.title_id:

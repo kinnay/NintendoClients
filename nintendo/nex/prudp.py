@@ -139,7 +139,7 @@ class PRUDPMessageV0:
 	def calc_data_signature(self, packet):
 		data = packet.payload
 		if self.signature_version == 0:
-			data = self.client.secure_key + struct.pack("<HB", packet.packet_id, packet.fragment_id) + data
+			data = self.client.session_key + struct.pack("<HB", packet.packet_id, packet.fragment_id) + data
 
 		if data:
 			return hmac.HMAC(self.client.signature_key, data).digest()[:4]
@@ -270,7 +270,7 @@ class PRUDPMessageV1:
 	def calc_packet_signature(self, header, options, signature, payload):
 		mac = hmac.HMAC(self.client.signature_key)
 		mac.update(header[4:])
-		mac.update(self.client.secure_key)
+		mac.update(self.client.session_key)
 		mac.update(struct.pack("<I", self.client.signature_base))
 		mac.update(signature)
 		mac.update(options)
@@ -545,23 +545,25 @@ class PRUDPClient:
 		self.connect_packet = PRUDPPacket(TYPE_CONNECT, FLAG_RELIABLE | FLAG_NEED_ACK)
 		self.state = self.DISCONNECTED
 		
-	def set_secure_key(self, key):
+	def set_session_key(self, key):
 		self.encryption.set_key(key)
-		self.secure_key = key
+		self.session_key = key
 		
 	def is_connected(self): return self.state == self.CONNECTED
 	def client_address(self): return self.s.client_address()
 	def server_address(self): return self.s.server_address()
 		
-	def connect(self, host, port, payload=b""):
+	def connect(self, host, port, stream_id, payload=b""):
 		if self.state != self.DISCONNECTED:
 			raise RuntimeError("Socket was not disconnected")
 	
 		logger.info("Connecting to %s:%i", host, port)
 		self.state = self.CONNECTING
+		
+		self.server_port = stream_id
 
 		self.encryption.set_key(self.DEFAULT_KEY)
-		self.secure_key = b""
+		self.session_key = b""
 		
 		self.server_signature = b""
 		self.client_signature = b""

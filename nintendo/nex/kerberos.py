@@ -60,13 +60,18 @@ class KerberosEncryption:
 class Ticket:
 	def __init__(self, encrypted):
 		self.encrypted = encrypted
-		self.key = None
-		self.pid = None #Server pid
-		self.data = None
 		
-	def decrypt(self, kerberos, settings):
+		self.session_key = None
+		self.target_pid = None
+		self.internal = None
+		
+		self.source_pid = None
+		self.target_cid = None
+		
+	def decrypt(self, key, settings):
+		kerberos = KerberosEncryption(key)
 		decrypted = kerberos.decrypt(self.encrypted)
 		stream = streams.StreamIn(decrypted, settings)
-		self.key = stream.read(settings.get("kerberos.key_size"))
-		self.pid = stream.pid()
-		self.data = stream.buffer()
+		self.session_key = stream.read(settings.get("kerberos.key_size"))
+		self.target_pid = stream.pid()
+		self.internal = stream.buffer()
