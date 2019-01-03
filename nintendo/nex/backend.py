@@ -97,7 +97,8 @@ class BackEndClient:
 		
 	def connect(self, host, port):
 		# Connect to authentication server
-		self.auth_client.connect(host, port, 1)
+		if not self.auth_client.connect(host, port, 1):
+			raise ConnectionError("Couldn't connect to authentication server")
 		
 	def close(self):
 		self.auth_client.close()
@@ -149,7 +150,8 @@ class BackEndClient:
 			
 		# Connect to secure server
 		server_sid = secure_station["sid"]
-		self.secure_client.connect(host, port, server_sid, ticket)
+		if not self.secure_client.connect(host, port, server_sid, ticket):
+			raise ConnectionError("Couldn't connect to secure server")
 		
 		# Create a stationurl for our local client address
 		client_addr = self.secure_client.local_address()

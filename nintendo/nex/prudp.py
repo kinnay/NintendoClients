@@ -368,7 +368,7 @@ class PRUDPMessageV1:
 				packet.fragment_id = options[OPTION_FRAGMENT]
 			
 			packet.payload = self.buffer[30 + option_size : 30 + option_size + payload_size]
-
+			
 			if self.calc_packet_signature(header, option_data, self.client.source_signature, packet.payload) != checksum:
 				logger.error("(V1) Invalid packet signature")
 				self.reset()
@@ -607,7 +607,7 @@ class PRUDPClient:
 		self.socket_event = scheduler.add_socket(self.handle_recv, self.sock)
 
 		syn_packet = PRUDPPacket(TYPE_SYN, FLAG_NEED_ACK)
-		syn_packet.signature = bytes(16)
+		syn_packet.signature = bytes(self.packet_encoder.signature_size())
 		self.send_packet(syn_packet)
 		if not self.wait_ack(syn_packet):
 			logger.error("SYN handshake failed")
@@ -644,18 +644,19 @@ class PRUDPClient:
 		
 		self.local_port = stream_id
 		
-		self.source_signature = secrets.token_bytes(self.packet_encoder.signature_size())
-		
 		self.timeout_event = scheduler.add_timeout(self.handle_silence_timeout, self.silence_timeout)
 		self.socket_event = scheduler.add_socket(self.handle_recv, self.sock)
+		
+		next(self.packet_id_out)
 		
 		while self.state == self.ACCEPTING:
 			scheduler.update()
 		return self.state == self.CONNECTED
 		
 	def close(self):
-		scheduler.remove(self.ping_event)
-		self.ping_event = None
+		if self.ping_event:
+			scheduler.remove(self.ping_event)
+			self.ping_event = None
 		
 		if self.state == self.CONNECTED:
 			self.state = self.DISCONNECTING
@@ -741,22 +742,12 @@ class PRUDPClient:
 						scheduler.remove(self.ack_events.pop(packet_id))
 						
 			else:
-				if packet.type == TYPE_SYN: pass
-				elif packet.type == TYPE_CONNECT:
-					if self.state == self.ACCEPTING:
-						self.target_signature = packet.signature
-						if not self.validate_connection_request(packet.payload):
-							self.state = self.DISCONNECTED
-							self.remove_events()
-							return
-						self.state = self.CONNECTED
-				else:
-					if packet.packet_id >= self.packet_id_in:
-						self.packet_queue[packet.packet_id] = packet
-						while self.packet_id_in in self.packet_queue:
-							packet = self.packet_queue.pop(self.packet_id_in)
-							self.handle_packet(packet)
-							self.packet_id_in += 1
+				if packet.packet_id >= self.packet_id_in:
+					self.packet_queue[packet.packet_id] = packet
+					while self.packet_id_in in self.packet_queue:
+						packet = self.packet_queue.pop(self.packet_id_in)
+						self.handle_packet(packet)
+						self.packet_id_in += 1
 							
 				if packet.flags & FLAG_NEED_ACK:
 					self.send_ack(packet)
@@ -769,7 +760,20 @@ class PRUDPClient:
 			self.timeout_event.reset()
 			
 	def handle_packet(self, packet):
-		if packet.type == TYPE_DATA:
+		if packet.type == TYPE_SYN:
+			self.remote_port = packet.source_port
+			self.source_signature = secrets.token_bytes(self.packet_encoder.signature_size())
+		
+		elif packet.type == TYPE_CONNECT:
+			if self.state == self.ACCEPTING:
+				self.target_signature = packet.signature
+				if not self.validate_connection_request(packet.payload):
+					self.state = self.DISCONNECTED
+					self.remove_events()
+					return
+				self.state = self.CONNECTED
+		
+		elif packet.type == TYPE_DATA:
 			payload = self.encryption.decrypt(packet.payload)
 			payload = self.compression.decompress(payload)
 			self.fragment_buffer += payload
@@ -778,7 +782,7 @@ class PRUDPClient:
 				self.fragment_buffer = b""
 				
 		elif packet.type == TYPE_DISCONNECT:
-			logger.info("(%i) Server closed connection")
+			logger.info("(%i) Server closed connection", self.session_id)
 			self.state = self.DISCONNECTED
 			self.remove_events()
 			
@@ -812,6 +816,7 @@ class PRUDPClient:
 		if packet.type == TYPE_SYN:
 			ack.signature = self.source_signature
 		elif packet.type == TYPE_CONNECT:
+			ack.signature = bytes(self.packet_encoder.signature_size())
 			ack.payload = self.build_connection_response()
 			
 		logger.debug("(%i) Sending ack: %s", self.session_id, ack)
@@ -876,8 +881,9 @@ class RVSecureClient(PRUDPClient):
 		return stream.get()
 		
 	def build_connection_response(self):
-		if self.server_ticket:
-			return struct.pack("<II", 4, (self.check_value + 1) & 0xFFFFFFFF)
+		if not self.server_ticket:
+			return b""
+		return struct.pack("<II", 4, (self.check_value + 1) & 0xFFFFFFFF)
 	
 	def validate_connection_request(self, payload):
 		if not self.server_key or not payload:
@@ -980,4 +986,4 @@ class RVSecureServer(PRUDPServer):
 	def handle(self, socket):
 		client = RVSecureClient(self.settings, socket)
 		if client.accept(self.stream_id, self.server_key):
-			self.accept(client)
+			self.sockets.append(client)

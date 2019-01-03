@@ -37,10 +37,12 @@ class RMCClient:
 		if not self.sock.connect(host, port, stream_id, ticket):
 			return False
 		self.socket_event = scheduler.add_socket(self.handle_recv, self.sock)
+		return True
 		
 	def accept(self):
 		if self.sock.server_ticket:
 			self.pid = self.sock.server_ticket.source_pid
+		self.socket_event = scheduler.add_socket(self.handle_recv, self.sock)
 		return True
 		
 	def close(self):
@@ -129,7 +131,7 @@ class RMCClient:
 			result = stream.result()
 			call_id = stream.u32()
 
-			logger.warning("RMC failed with error code %08X", result.code())
+			logger.warning("RMC failed with error code 0x%08X", result.code())
 			self.responses[call_id] = (result, None)
 
 		else:

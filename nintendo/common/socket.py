@@ -85,8 +85,8 @@ class UDPServer:
 	def update(self):
 		try:
 			data, addr = self.s.recvfrom(4096)
-			if addr not in self.sockets:
-				sock = UDPWrapper(addr)
+			if addr not in self.packets:
+				sock = UDPWrapper(self, addr)
 				self.packets[addr] = []
 				self.incoming.append(sock)
 			self.packets[addr].append(data)
