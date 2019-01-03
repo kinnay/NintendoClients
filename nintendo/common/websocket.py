@@ -288,7 +288,7 @@ class WebSocketServer:
 		if client.accept():
 			self.sockets.append(client)
 		
-	def accept(self, client):
+	def accept(self):
 		if self.sockets:
 			return self.sockets.pop(0)
 	

@@ -66,6 +66,14 @@ class Timeout(Event):
 		self.deadline = time.time() + self.timeout
 		
 		
+class Callback(Event):
+	def __init__(self, callback, param):
+		super().__init__(callback, param)
+		
+	def update(self):
+		self.trigger()
+		
+		
 thread = None
 events = []
 
@@ -85,6 +93,12 @@ def add_server(callback, socket, param=None):
 def add_timeout(callback, timeout, repeat=False, param=None):
 	start_thread()
 	event = Timeout(callback, param, timeout, repeat)
+	events.append(event)
+	return event
+	
+def add_callback(callback, param=None):
+	start_thread()
+	event = Callback(callback, param)
 	events.append(event)
 	return event
 	

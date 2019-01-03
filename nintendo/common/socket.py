@@ -9,6 +9,7 @@ TYPE_SSL = 2
 
 class Socket:
 	def __init__(self, type):
+		self.type = type
 		if type == TYPE_UDP:
 			self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 		elif type == TYPE_TCP:
@@ -58,9 +59,66 @@ class Socket:
 	def remote_address(self): return self.remote_addr
 	
 	
+class UDPServer:
+	def __init__(self):
+		self.s = self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+		self.incoming = []
+		self.packets = {}
+		
+	def bind(self, host, port):
+		self.s.bind((host, port))
+	
+	def listen(self):
+		self.s.setblocking(False)
+		scheduler.add_callback(self.update)
+		
+	def remove(self, addr):
+		del self.packets[addr]
+		
+	def recvfrom(self, addr):
+		if self.packets[addr]:
+			return self.packets[addr].pop(0)
+	
+	def sendto(self, addr, data):
+		self.s.sendto(data, addr)
+		
+	def update(self):
+		try:
+			data, addr = self.s.recvfrom(4096)
+			if addr not in self.sockets:
+				sock = UDPWrapper(addr)
+				self.packets[addr] = []
+				self.incoming.append(sock)
+			self.packets[addr].append(data)
+		except BlockingIOError:
+			pass
+			
+	def accept(self):
+		if self.incoming:
+			return self.incoming.pop(0)
+			
+			
+class UDPWrapper:
+	def __init__(self, server, addr):
+		self.server = server
+		self.addr = addr
+		
+	def close(self):
+		self.server.remove(self.addr)
+		
+	def recv(self):
+		return self.server.recvfrom(self.addr)
+		
+	def send(self, data):
+		self.server.sendto(self.addr, data)
+	
+	
 class SocketServer:
 	def __init__(self, type):
-		self.socket = Socket(type)
+		if type == TYPE_UDP:
+			self.socket = UDPServer()
+		else:
+			self.socket = Socket(type)
 		self.event = None
 		
 		self.incoming = []
@@ -70,6 +128,6 @@ class SocketServer:
 		self.socket.listen()
 		scheduler.add_server(self.incoming.append, self.socket)
 		
-	def accept(self, client):
+	def accept(self):
 		if self.incoming:
 			return self.incoming.pop(0)

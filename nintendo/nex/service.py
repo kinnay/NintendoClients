@@ -175,7 +175,7 @@ class RMCServer:
 			raise ValueError("Server protocol with id 0x%X already exists" %protocol.PROTOCOL_ID)
 		self.protocols[protocol.PROTOCOL_ID] = protocol
 		
-	def start(self, host, port, stream_id, key=None):
+	def start(self, host, port, stream_id=1, key=None):
 		self.server.start(host, port, stream_id, key)
 		scheduler.add_server(self.handle, self.server)
 		

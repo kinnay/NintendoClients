@@ -967,7 +967,7 @@ class PRUDPServer:
 		if client.accept(self.stream_id):
 			self.sockets.append(client)
 		
-	def accept(self, client):
+	def accept(self):
 		if self.sockets:
 			return self.sockets.pop(0)
 		
