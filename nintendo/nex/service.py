@@ -9,15 +9,24 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ServiceClient:
-	def __init__(self, settings):
-		self.client = prudp.PRUDPClient(settings)
-		
+class RMCClient:
+	def __init__(self, settings, sock=None):
 		self.settings = settings
+		self.sock = sock
+		
+		if not self.sock:
+			self.sock = prudp.RVSecureClient(settings)
+			
+		if not isinstance(self.sock, prudp.RVSecureClient):
+			raise TypeError("RMC protocol must lie on top of RVSecure client")
+		
 		self.servers = {}
-
+		self.pid = None
+		
 		self.call_id = 0
 		self.responses = {}
+		
+		self.socket_event = None
 		
 	def register_server(self, server):
 		if server.PROTOCOL_ID in self.servers:
@@ -25,55 +34,25 @@ class ServiceClient:
 		self.servers[server.PROTOCOL_ID] = server
 		
 	def connect(self, host, port, stream_id, ticket=None):
-		if ticket:
-			check_value = random.randint(0, 0xFFFFFFFF)
-			request = self.build_connection_request(check_value, ticket)
-			response = self.connect_socket(host, port, stream_id, request)
-			self.check_connection_response(response, check_value)
-			
-			self.client.set_session_key(ticket.session_key)
-		else:
-			self.connect_socket(host, port, stream_id, b"")
-			
-		self.socket_event = scheduler.add_socket(self.handle_recv, self.client)
-		return self.client.connect_response
+		if not self.sock.connect(host, port, stream_id, ticket):
+			return False
+		self.socket_event = scheduler.add_socket(self.handle_recv, self.sock)
 		
-	def connect_socket(self, host, port, stream_id, payload):
-		if not self.client.connect(host, port, stream_id, payload):
-			raise ConnectionError("PRUDP connection failed")
-		return self.client.connect_response
-		
-	def build_connection_request(self, check_value, ticket):
-		kerb = kerberos.KerberosEncryption(ticket.session_key)
-		
-		stream = streams.StreamOut(self.settings)
-		stream.buffer(ticket.internal)
-		
-		substream = streams.StreamOut(self.settings)
-		substream.pid(ticket.source_pid)
-		substream.u32(ticket.target_cid)
-		substream.u32(check_value) #Used to check connection response
-		
-		stream.buffer(kerb.encrypt(substream.get()))
-		return stream.get()
-		
-	def check_connection_response(self, response, check_value):
-		stream = streams.StreamIn(response, self.settings)
-		if stream.u32() != 4: raise ConnectionError("Invalid connection response size")
-		if stream.u32() != (check_value + 1) & 0xFFFFFFFF:
-			raise ConnectionError("Connection response check failed")
-		
-	def stream_id(self):
-		return self.client.client_port
+	def accept(self):
+		if self.sock.server_ticket:
+			self.pid = self.sock.server_ticket.source_pid
+		return True
 		
 	def close(self):
-		if self.is_connected():
+		if self.socket_event:
 			scheduler.remove(self.socket_event)
-			self.client.close()
+		self.sock.close()
 		
-	def is_connected(self): return self.client.is_connected()
-	def client_address(self): return self.client.client_address()
-	def server_address(self): return self.client.server_address()
+	def stream_id(self): return self.sock.local_port
+		
+	def is_connected(self): return self.sock.is_connected()
+	def local_address(self): return self.sock.local_address()
+	def remote_address(self): return self.sock.remote_address()
 		
 	def handle_recv(self, data):
 		if not data:
@@ -112,8 +91,8 @@ class ServiceClient:
 		return stream
 		
 	def send_message(self, stream):
-		if self.client.is_connected():
-			self.client.send(struct.pack("I", len(stream.get())) + stream.get())
+		if self.sock.is_connected():
+			self.sock.send(struct.pack("I", len(stream.get())) + stream.get())
 		else:
 			raise RuntimeError("Can't send message on disconnected service client")
 			
@@ -125,7 +104,7 @@ class ServiceClient:
 		if protocol_id in self.servers:
 			response = self.init_response(protocol_id, call_id, method_id)
 			try:
-				result = self.servers[protocol_id].handle(method_id, stream, response)
+				result = self.servers[protocol_id].handle(self.pid, method_id, stream, response)
 			except Exception as e:
 				logger.error("Exception occurred while handling method call")
 				import traceback
@@ -163,7 +142,7 @@ class ServiceClient:
 	def get_response(self, call_id, timeout=5):
 		start = time.monotonic()
 		while call_id not in self.responses:
-			if not self.client.is_connected():
+			if not self.sock.is_connected():
 				raise ConnectionError("RMC failed because the PRUDP connection was closed")
 
 			scheduler.update()
@@ -176,3 +155,32 @@ class ServiceClient:
 		if result:
 			result.raise_if_error()
 		return stream
+		
+		
+class RMCServer:
+	def __init__(self, settings, server=None):
+		self.settings = settings
+		self.server = server
+		
+		if not self.server:
+			self.server = prudp.RVSecureServer(settings)
+			
+		if not isinstance(self.server, prudp.RVSecureServer):
+			raise TypeError("RMC server must lie on top of RVSecure server")
+			
+		self.protocols = {}
+		
+	def register_protocol(self, protocol):
+		if protocol.PROTOCOL_ID in self.protocols:
+			raise ValueError("Server protocol with id 0x%X already exists" %protocol.PROTOCOL_ID)
+		self.protocols[protocol.PROTOCOL_ID] = protocol
+		
+	def start(self, host, port, stream_id, key=None):
+		self.server.start(host, port, stream_id, key)
+		scheduler.add_server(self.handle, self.server)
+		
+	def handle(self, socket):
+		client = RMCClient(self.settings, socket)
+		if client.accept():
+			for protocol in self.protocols.values():
+				client.register_server(protocol)

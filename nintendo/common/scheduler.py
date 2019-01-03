@@ -33,6 +33,17 @@ class Socket(Event):
 		data = self.socket.recv()
 		if data is not None:
 			self.trigger(data)
+			
+			
+class Server(Event):
+	def __init__(self, callback, param, socket):
+		super().__init__(callback, param)
+		self.socket = socket
+		
+	def update(self):
+		client = self.socket.accept()
+		if client is not None:
+			self.trigger(client)
 
 		
 class Timeout(Event):
@@ -62,6 +73,12 @@ events = []
 def add_socket(callback, socket, param=None):
 	start_thread()
 	event = Socket(callback, param, socket)
+	events.append(event)
+	return event
+	
+def add_server(callback, socket, param=None):
+	start_thread()
+	event = Server(callback, param, socket)
 	events.append(event)
 	return event
 

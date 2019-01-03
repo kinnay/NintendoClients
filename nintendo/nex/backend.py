@@ -20,6 +20,7 @@ class Settings:
 		"prudp.stream_type": int,
 		"prudp.fragment_size": int,
 		"prudp.resend_timeout": float,
+		"prudp.resend_limit": int,
 		"prudp.ping_timeout": float,
 		"prudp.silence_timeout": float,
 		"prudp.compression": int,
@@ -79,8 +80,8 @@ class BackEndClient:
 		self.settings.set("server.access_key", access_key)
 		self.settings.set("server.version", version)
 		
-		self.auth_client = service.ServiceClient(self.settings)
-		self.secure_client = service.ServiceClient(self.settings)
+		self.auth_client = service.RMCClient(self.settings)
+		self.secure_client = service.RMCClient(self.settings)
 		
 		self.auth_proto = authentication.AuthenticationClient(self.auth_client)
 		self.secure_proto = secure.SecureConnectionClient(self.secure_client)
@@ -122,7 +123,7 @@ class BackEndClient:
 		)
 		
 		# Decrypt ticket from login response
-		ticket = kerberos.Ticket(response.ticket)
+		ticket = kerberos.ClientTicket(response.ticket)
 		ticket.decrypt(kerberos_key, self.settings)
 		
 		if ticket.target_pid != secure_station["PID"]:
@@ -133,7 +134,7 @@ class BackEndClient:
 			
 			# Check for errors and decrypt ticket
 			response.result.raise_if_error()
-			ticket = kerberos.Ticket(response.ticket)
+			ticket = kerberos.ClientTicket(response.ticket)
 			ticket.decrypt(kerberos_key, self.settings)
 			
 		ticket.source_pid = self.my_pid
@@ -144,14 +145,14 @@ class BackEndClient:
 		host = secure_station["address"]
 		port = secure_station["port"]
 		if host == "0.0.0.1":
-			host, port = self.auth_client.server_address()
+			host, port = self.auth_client.remote_address()
 			
 		# Connect to secure server
 		server_sid = secure_station["sid"]
 		self.secure_client.connect(host, port, server_sid, ticket)
 		
 		# Create a stationurl for our local client address
-		client_addr = self.secure_client.client_address()
+		client_addr = self.secure_client.local_address()
 		self.local_station = common.StationUrl(
 			address=client_addr[0], port=client_addr[1],
 			sid=self.secure_client.stream_id(),

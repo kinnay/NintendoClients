@@ -16,7 +16,10 @@ class Socket:
 			tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
 			self.s = ssl.wrap_socket(tcp)
 			
-		self.server_addr = None
+		self.remote_addr = None
+		
+	def bind(self, host, port):
+		self.s.bind((host, port))
 		
 	def connect(self, host, port, timeout=3):
 		self.s.settimeout(timeout)
@@ -25,8 +28,20 @@ class Socket:
 		except socket.timeout:
 			return False
 		self.s.setblocking(False)
-		self.server_addr = host, port
+		self.remote_addr = host, port
 		return True
+	
+	def listen(self):
+		self.s.listen()
+		self.s.setblocking(False)
+	
+	def accept(self):
+		try:
+			sock, addr = self.s.accept()
+			sock.remote_addr = addr
+			return sock
+		except BlockingIOError:
+			pass
 
 	def close(self): self.s.close()
 	def send(self, data): self.s.sendall(data)
@@ -38,5 +53,22 @@ class Socket:
 		except OSError:
 			return b""
 			
-	def client_address(self): return self.s.getsockname()
-	def server_address(self): return self.server_addr
+	def local_address(self): return self.s.getsockname()
+	def remote_address(self): return self.remote_addr
+	
+	
+class SocketServer:
+	def __init__(self, type):
+		self.socket = Socket(type)
+		self.event = None
+		
+		self.incoming = []
+		
+	def start(self, host, port):
+		self.socket.bind(host, port)
+		self.socket.listen()
+		scheduler.add_server(self.incoming.append, self.socket)
+		
+	def accept(self, client):
+		if self.incoming:
+			return self.incoming.pop(0)

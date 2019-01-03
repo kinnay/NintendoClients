@@ -57,7 +57,7 @@ class KerberosEncryption:
 		return encrypted + mac.digest()
 
 
-class Ticket:
+class ClientTicket:
 	def __init__(self, encrypted):
 		self.encrypted = encrypted
 		
@@ -75,3 +75,26 @@ class Ticket:
 		self.session_key = stream.read(settings.get("kerberos.key_size"))
 		self.target_pid = stream.pid()
 		self.internal = stream.buffer()
+		
+		
+class ServerTicket:
+	def __init__(self, encrypted):
+		self.encrypted = encrypted
+		
+		self.expiration = None
+		self.source_pid = None
+		self.session_key = None
+		
+	def decrypt(self, key, settings):
+		stream = streams.StreamIn(self.encrypted, settings)
+		ticket_key = stream.buffer()
+		ticket_body = stream.buffer()
+		final_key = hashlib.md5(key + ticket_key)
+		
+		kerberos = KerberosEncryption(final_key)
+		decrypted = kerberos.decrypt(ticket_body)
+		
+		stream = streams.StreamIn(decrypted, settings)
+		self.expiration = stream.datetime()
+		self.source_pid = stream.pid()
+		self.session_key = stream.read(settings.get("kerberos.key_size"))
