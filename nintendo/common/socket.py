@@ -1,4 +1,5 @@
 
+from nintendo.common import scheduler
 import socket
 import ssl
 

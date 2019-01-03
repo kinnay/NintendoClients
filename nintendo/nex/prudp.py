@@ -950,7 +950,7 @@ class PRUDPServer:
 			transport_type = settings.get("prudp.transport")
 			if transport_type == settings.TRANSPORT_UDP:
 				self.server = socket.SocketServer(socket.TYPE_UDP)
-			elif transport.type == settings.TRANSPORT_TCP:
+			elif transport_type == settings.TRANSPORT_TCP:
 				self.server = socket.SocketServer(socket.TYPE_TCP)
 			else:
 				self.server = websocket.WebSocketServer(True)
