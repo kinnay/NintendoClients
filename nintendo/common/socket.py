@@ -8,15 +8,18 @@ TYPE_TCP = 1
 TYPE_SSL = 2
 
 class Socket:
-	def __init__(self, type):
+	def __init__(self, type, sock=None):
 		self.type = type
-		if type == TYPE_UDP:
-			self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-		elif type == TYPE_TCP:
-			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-		else:
-			tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-			self.s = ssl.wrap_socket(tcp)
+		
+		self.s = sock
+		if not self.s:
+			if type == TYPE_UDP:
+				self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+			elif type == TYPE_TCP:
+				self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+			else:
+				tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+				self.s = ssl.wrap_socket(tcp)
 			
 		self.remote_addr = None
 		
@@ -40,8 +43,9 @@ class Socket:
 	def accept(self):
 		try:
 			sock, addr = self.s.accept()
-			sock.remote_addr = addr
-			return sock
+			wrapper = Socket(self.type, sock)
+			wrapper.remote_addr = addr
+			return wrapper
 		except BlockingIOError:
 			pass
 
