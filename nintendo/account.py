@@ -204,7 +204,7 @@ class AccountAPI:
 			data["password_type"] = "hash"
 
 		request = Request(self)
-		response = request.get(
+		response = request.post(
 			"oauth20/access_token/generate",
 			data = data
 		)
