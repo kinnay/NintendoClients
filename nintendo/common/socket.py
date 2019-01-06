@@ -1,7 +1,12 @@
 
 from nintendo.common import scheduler
+import pkg_resources
 import socket
 import ssl
+
+CERT = pkg_resources.resource_filename("nintendo", "files/wiiu_common.crt")
+KEY = pkg_resources.resource_filename("nintendo", "files/wiiu_common.key")
+
 
 TYPE_UDP = 0
 TYPE_TCP = 1
@@ -15,11 +20,8 @@ class Socket:
 		if not self.s:
 			if type == TYPE_UDP:
 				self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-			elif type == TYPE_TCP:
+			elif type == TYPE_TCP or type == TYPE_SSL:
 				self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-			else:
-				tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-				self.s = ssl.wrap_socket(tcp)
 			
 		self.remote_addr = None
 		
@@ -27,6 +29,9 @@ class Socket:
 		self.s.bind((host, port))
 		
 	def connect(self, host, port, timeout=3):
+		if self.type == TYPE_SSL:
+			self.s = ssl.wrap_socket(self.s)
+		
 		self.s.settimeout(timeout)
 		try:
 			self.s.connect((host, port))
@@ -37,6 +42,9 @@ class Socket:
 		return True
 	
 	def listen(self):
+		if self.type == TYPE_SSL:
+			self.s = ssl.wrap_socket(self.s, certfile=CERT, keyfile=KEY, server_side=True)
+		
 		self.s.listen()
 		self.s.setblocking(False)
 	
