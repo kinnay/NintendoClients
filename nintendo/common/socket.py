@@ -61,6 +61,7 @@ class Socket:
 	def accept(self):
 		try:
 			sock, addr = self.s.accept()
+			sock.setblocking(False)
 			wrapper = Socket(self.type, sock)
 			wrapper.remote_addr = addr
 			return wrapper
