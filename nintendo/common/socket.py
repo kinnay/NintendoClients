@@ -4,8 +4,8 @@ import pkg_resources
 import socket
 import ssl
 
-CERT = pkg_resources.resource_filename("nintendo", "files/wiiu_common.crt")
-KEY = pkg_resources.resource_filename("nintendo", "files/wiiu_common.key")
+CERT = pkg_resources.resource_filename("nintendo", "files/server.crt")
+KEY = pkg_resources.resource_filename("nintendo", "files/server.key")
 
 
 TYPE_UDP = 0
@@ -25,12 +25,19 @@ class Socket:
 			
 		self.remote_addr = None
 		
+		self.certfile = None
+		self.keyfile = None
+		
+	def set_certificate(self, certfile, keyfile):
+		self.certfile = certfile
+		self.keyfile = keyfile
+		
 	def bind(self, host, port):
 		self.s.bind((host, port))
 		
 	def connect(self, host, port, timeout=3):
 		if self.type == TYPE_SSL:
-			self.s = ssl.wrap_socket(self.s)
+			self.s = ssl.wrap_socket(self.s, self.keyfile, self.certfile)
 		
 		self.s.settimeout(timeout)
 		try:
@@ -43,7 +50,10 @@ class Socket:
 	
 	def listen(self):
 		if self.type == TYPE_SSL:
-			self.s = ssl.wrap_socket(self.s, certfile=CERT, keyfile=KEY, server_side=True)
+			if not self.certfile or not self.keyfile:
+				self.certfile = CERT
+				self.keyfile = KEY
+			self.s = ssl.wrap_socket(self.s, self.keyfile, self.certfile, True)
 		
 		self.s.listen()
 		self.s.setblocking(False)
@@ -127,15 +137,25 @@ class UDPWrapper:
 	
 class SocketServer:
 	def __init__(self, type):
+		self.type = type
 		if type == TYPE_UDP:
 			self.socket = UDPServer()
 		else:
 			self.socket = Socket(type)
 		self.event = None
 		
+		self.certfile = None
+		self.keyfile = None
+		
 		self.incoming = []
 		
+	def set_certificate(self, certfile, keyfile):
+		self.certfile = certfile
+		self.keyfile = keyfile
+		
 	def start(self, host, port):
+		if self.type == TYPE_SSL:
+			self.socket.set_certificate(self.certfile, self.keyfile)
 		self.socket.bind(host, port)
 		self.socket.listen()
 		scheduler.add_server(self.incoming.append, self.socket)
