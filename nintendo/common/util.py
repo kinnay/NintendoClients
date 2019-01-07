@@ -1,9 +1,13 @@
 
 import struct
 import socket
+import string
 
 def ip_to_hex(ip):
 	return struct.unpack(">I", socket.inet_aton(ip))[0]
+	
+def is_numeric(s):
+	return all(c in string.digits for c in s)
 
 def crc16(data):
 	hash = 0
