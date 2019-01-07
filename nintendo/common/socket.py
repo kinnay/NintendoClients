@@ -4,6 +4,9 @@ import pkg_resources
 import socket
 import ssl
 
+import logging
+logger = logging.getLogger(__name__)
+
 CERT = pkg_resources.resource_filename("nintendo", "files/server.crt")
 KEY = pkg_resources.resource_filename("nintendo", "files/server.key")
 
@@ -65,6 +68,8 @@ class Socket:
 			wrapper = Socket(self.type, sock)
 			wrapper.remote_addr = addr
 			return wrapper
+		except ssl.SSLError:
+			logger.warning("SSL handshake failed")
 		except BlockingIOError:
 			pass
 
