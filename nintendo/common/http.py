@@ -1,5 +1,6 @@
 
 from . import socket, signal, util, scheduler
+from requests.structures import CaseInsensitiveDict
 
 import logging
 logger = logging.getLogger(__name__)
@@ -7,11 +8,40 @@ logger = logging.getLogger(__name__)
 
 class HTTPRequest:
 	def __init__(self):
+		self.client = None
 		self.method = None
 		self.path = None
 		self.version = None
-		self.headers = {}
+		self.headers = CaseInsensitiveDict()
 		self.body = b""
+		
+		
+RESPONSE_TEMPLATE = "%s %i %s\r\n%s\r\n"
+		
+class HTTPResponse:
+	status_names = {
+		200: "OK",
+		404: "Not Found"
+	}
+	
+	def __init__(self, status):
+		self.version = "HTTP/1.1"
+		self.status = status
+		self.headers = CaseInsensitiveDict()
+		self.body = b""
+		
+	def encode(self):
+		self.headers["Content-Length"] = len(self.body)
+		
+		headers = ""
+		for key, value in self.headers.items():
+			headers += "%s: %s\r\n" %(key, value)
+		header = RESPONSE_TEMPLATE %(
+			self.version, self.status,
+			self.status_names[self.status],
+			headers
+		)
+		return header.encode("ascii") + self.body
 
 	
 class HTTPState:
@@ -28,11 +58,12 @@ class HTTPState:
 		self.state = self.state_header
 		self.event = scheduler.add_socket(self.handle_recv, socket)
 		self.request = HTTPRequest()
+		self.request.client = socket
 		
 	def handle_recv(self, data):
 		if not data:
 			scheduler.remove(self.event)
-			self.close_event(self)
+			return
 		
 		self.buffer += data
 		result = self.state()
@@ -86,6 +117,8 @@ class HTTPState:
 		
 		self.message_event(self.request)
 		self.state = self.state_header
+		self.request = HTTPRequest()
+		self.request.client = self.socket
 		return self.RESULT_OK
 
 	
@@ -101,12 +134,19 @@ class HTTPServer:
 				self.server = socket.SocketServer(socket.TYPE_TCP)
 				
 	def start(self, host, port):
+		logger.info("Starting HTTP server at %s:%i", host, port)
 		self.server.start(host, port)
 		scheduler.add_server(self.handle_conn, self.server)
 		
 	def handle_conn(self, socket):
 		state = HTTPState(socket)
-		state.message_event.add(self.handle)
+		state.message_event.add(self.handle_req)
+		
+	def handle_req(self, request):
+		logger.debug("Received HTTP request: %s %s", request.method, request.path)
+		response = self.handle(request)
+		logger.debug("Sending HTTP response (%i)", response.status)
+		request.client.send(response.encode())
 		
 	def handle(self, request):
 		pass
