@@ -498,101 +498,101 @@ class MatchMakingServer(MatchMakingProtocol):
 			self.METHOD_UPDATE_SESSION_HOST: self.handle_update_session_host,
 		}
 
-	def handle(self, method_id, input, output):
+	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](input, output)
+			return self.methods[method_id](caller_id, input, output)
 		logger.warning("Unknown method called on MatchMakingServer: %i", method_id)
 		return common.Result("Core::NotImplemented")
 
-	def handle_register_gathering(self, input, output):
+	def handle_register_gathering(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.register_gathering is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_unregister_gathering(self, input, output):
+	def handle_unregister_gathering(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.unregister_gathering is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_unregister_gatherings(self, input, output):
+	def handle_unregister_gatherings(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.unregister_gatherings is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_update_gathering(self, input, output):
+	def handle_update_gathering(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.update_gathering is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_invite(self, input, output):
+	def handle_invite(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.invite is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_accept_invitation(self, input, output):
+	def handle_accept_invitation(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.accept_invitation is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_decline_invitation(self, input, output):
+	def handle_decline_invitation(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.decline_invitation is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_cancel_invitation(self, input, output):
+	def handle_cancel_invitation(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.cancel_invitation is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_invitations_sent(self, input, output):
+	def handle_get_invitations_sent(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.get_invitations_sent is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_invitations_received(self, input, output):
+	def handle_get_invitations_received(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.get_invitations_received is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_participate(self, input, output):
+	def handle_participate(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.participate is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_cancel_participation(self, input, output):
+	def handle_cancel_participation(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.cancel_participation is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_participants(self, input, output):
+	def handle_get_participants(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.get_participants is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_add_partitipants(self, input, output):
+	def handle_add_partitipants(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.add_partitipants is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_detailed_participants(self, input, output):
+	def handle_get_detailed_participants(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.get_detailed_participants is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_participants_urls(self, input, output):
+	def handle_get_participants_urls(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.get_participants_urls is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_find_by_type(self, input, output):
+	def handle_find_by_type(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.find_by_type is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_find_by_description(self, input, output):
+	def handle_find_by_description(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.find_by_description is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_find_by_description_regex(self, input, output):
+	def handle_find_by_description_regex(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.find_by_description_regex is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_find_by_id(self, input, output):
+	def handle_find_by_id(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.find_by_id is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_find_by_single_id(self, input, output):
+	def handle_find_by_single_id(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.find_by_single_id is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_find_by_owner(self, input, output):
+	def handle_find_by_owner(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.find_by_owner is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_find_by_participants(self, input, output):
+	def handle_find_by_participants(self, caller_id, input, output):
 		logger.info("MatchMakingServer.find_by_participants()")
 		#--- request ---
 		pids = input.list(input.pid)
@@ -603,11 +603,11 @@ class MatchMakingServer(MatchMakingProtocol):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.anydata)
 
-	def handle_find_invitations(self, input, output):
+	def handle_find_invitations(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.find_invitations is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_find_by_sql_query(self, input, output):
+	def handle_find_by_sql_query(self, caller_id, input, output):
 		logger.info("MatchMakingServer.find_by_sql_query()")
 		#--- request ---
 		query = input.string()
@@ -619,67 +619,67 @@ class MatchMakingServer(MatchMakingProtocol):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.anydata)
 
-	def handle_launch_session(self, input, output):
+	def handle_launch_session(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.launch_session is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_update_session_url(self, input, output):
+	def handle_update_session_url(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.update_session_url is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_session_url(self, input, output):
+	def handle_get_session_url(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.get_session_url is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_state(self, input, output):
+	def handle_get_state(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.get_state is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_set_state(self, input, output):
+	def handle_set_state(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.set_state is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_report_stats(self, input, output):
+	def handle_report_stats(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.report_stats is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_stats(self, input, output):
+	def handle_get_stats(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.get_stats is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_delete_gathering(self, input, output):
+	def handle_delete_gathering(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.delete_gathering is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_pending_deletions(self, input, output):
+	def handle_get_pending_deletions(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.get_pending_deletions is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_delete_from_deletions(self, input, output):
+	def handle_delete_from_deletions(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.delete_from_deletions is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_migrate_gathering_ownership(self, input, output):
+	def handle_migrate_gathering_ownership(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.migrate_gathering_ownership is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_find_by_description_like(self, input, output):
+	def handle_find_by_description_like(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.find_by_description_like is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_register_local_url(self, input, output):
+	def handle_register_local_url(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.register_local_url is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_register_local_urls(self, input, output):
+	def handle_register_local_urls(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.register_local_urls is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_update_session_host_v1(self, input, output):
+	def handle_update_session_host_v1(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.update_session_host_v1 is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_session_urls(self, input, output):
+	def handle_get_session_urls(self, caller_id, input, output):
 		logger.info("MatchMakingServer.get_session_urls()")
 		#--- request ---
 		gid = input.u32()
@@ -690,7 +690,7 @@ class MatchMakingServer(MatchMakingProtocol):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.stationurl)
 
-	def handle_update_session_host(self, input, output):
+	def handle_update_session_host(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.update_session_host is unsupported")
 		return common.Result("Core::NotImplemented")
 
@@ -759,21 +759,21 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 			self.METHOD_WITHDRAW_MATCHMAKING_ALL: self.handle_withdraw_matchmaking_all,
 		}
 
-	def handle(self, method_id, input, output):
+	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](input, output)
+			return self.methods[method_id](caller_id, input, output)
 		logger.warning("Unknown method called on MatchmakeExtensionServer: %i", method_id)
 		return common.Result("Core::NotImplemented")
 
-	def handle_close_participation(self, input, output):
+	def handle_close_participation(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.close_participation is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_open_participation(self, input, output):
+	def handle_open_participation(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.open_participation is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_auto_matchmake_postpone(self, input, output):
+	def handle_auto_matchmake_postpone(self, caller_id, input, output):
 		logger.info("MatchmakeExtensionServer.auto_matchmake_postpone()")
 		#--- request ---
 		gathering = input.anydata()
@@ -785,22 +785,22 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 			raise RuntimeError("Expected common.Data, got %s" %response.__class__.__name__)
 		output.anydata(response)
 
-	def handle_browse_matchmake_session(self, input, output):
+	def handle_browse_matchmake_session(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.browse_matchmake_session is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_browse_matchmake_session_with_host_urls(self, input, output):
+	def handle_browse_matchmake_session_with_host_urls(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.browse_matchmake_session_with_host_urls is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_create_matchmake_session(self, input, output):
+	def handle_create_matchmake_session(self, caller_id, input, output):
 		logger.info("MatchmakeExtensionServer.create_matchmake_session()")
 		#--- request ---
 		gathering = input.anydata()
 		description = input.string()
 		participation_count = input.u16()
 		response = common.ResponseObject()
-		self.create_matchmake_session(response, gathering, description, participation_count)
+		self.create_matchmake_session(caller_id, response, gathering, description, participation_count)
 
 		#--- response ---
 		for field in ['gid', 'session_key']:
@@ -809,7 +809,7 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 		output.u32(response.gid)
 		output.buffer(response.session_key)
 
-	def handle_join_matchmake_session(self, input, output):
+	def handle_join_matchmake_session(self, caller_id, input, output):
 		logger.info("MatchmakeExtensionServer.join_matchmake_session()")
 		#--- request ---
 		gid = input.u32()
@@ -821,35 +821,35 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 			raise RuntimeError("Expected bytes, got %s" %response.__class__.__name__)
 		output.buffer(response)
 
-	def handle_modify_current_game_attribute(self, input, output):
+	def handle_modify_current_game_attribute(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.modify_current_game_attribute is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_update_notification_data(self, input, output):
+	def handle_update_notification_data(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.update_notification_data is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_friend_notification_data(self, input, output):
+	def handle_get_friend_notification_data(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.get_friend_notification_data is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_update_application_buffer(self, input, output):
+	def handle_update_application_buffer(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.update_application_buffer is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_update_matchmake_session_attribute(self, input, output):
+	def handle_update_matchmake_session_attribute(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.update_matchmake_session_attribute is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_getlst_friend_notification_data(self, input, output):
+	def handle_getlst_friend_notification_data(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.getlst_friend_notification_data is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_update_matchmake_session(self, input, output):
+	def handle_update_matchmake_session(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.update_matchmake_session is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_auto_matchmake_with_search_criteria_postpone(self, input, output):
+	def handle_auto_matchmake_with_search_criteria_postpone(self, caller_id, input, output):
 		logger.info("MatchmakeExtensionServer.auto_matchmake_with_search_criteria_postpone()")
 		#--- request ---
 		search_criteria = input.list(MatchmakeSessionSearchCriteria)
@@ -862,7 +862,7 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 			raise RuntimeError("Expected common.Data, got %s" %response.__class__.__name__)
 		output.anydata(response)
 
-	def handle_get_playing_session(self, input, output):
+	def handle_get_playing_session(self, caller_id, input, output):
 		logger.info("MatchmakeExtensionServer.get_playing_session()")
 		#--- request ---
 		pids = input.list(input.pid)
@@ -873,63 +873,63 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.add)
 
-	def handle_create_community(self, input, output):
+	def handle_create_community(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.create_community is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_update_community(self, input, output):
+	def handle_update_community(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.update_community is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_join_community(self, input, output):
+	def handle_join_community(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.join_community is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_find_community_by_gathering_id(self, input, output):
+	def handle_find_community_by_gathering_id(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.find_community_by_gathering_id is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_find_official_community(self, input, output):
+	def handle_find_official_community(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.find_official_community is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_find_community_by_participant(self, input, output):
+	def handle_find_community_by_participant(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.find_community_by_participant is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_update_privacy_setting(self, input, output):
+	def handle_update_privacy_setting(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.update_privacy_setting is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_my_black_list(self, input, output):
+	def handle_get_my_black_list(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.get_my_black_list is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_add_to_black_list(self, input, output):
+	def handle_add_to_black_list(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.add_to_black_list is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_remove_from_black_list(self, input, output):
+	def handle_remove_from_black_list(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.remove_from_black_list is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_clear_my_black_list(self, input, output):
+	def handle_clear_my_black_list(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.clear_my_black_list is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_report_violation(self, input, output):
+	def handle_report_violation(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.report_violation is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_is_violation_user(self, input, output):
+	def handle_is_violation_user(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.is_violation_user is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_join_matchmake_session_ex(self, input, output):
+	def handle_join_matchmake_session_ex(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.join_matchmake_session_ex is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_simple_playing_session(self, input, output):
+	def handle_get_simple_playing_session(self, caller_id, input, output):
 		logger.info("MatchmakeExtensionServer.get_simple_playing_session()")
 		#--- request ---
 		pids = input.list(input.pid)
@@ -941,43 +941,43 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.add)
 
-	def handle_get_simple_community(self, input, output):
+	def handle_get_simple_community(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.get_simple_community is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_auto_matchmake_with_gathering_id_postpone(self, input, output):
+	def handle_auto_matchmake_with_gathering_id_postpone(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.auto_matchmake_with_gathering_id_postpone is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_update_progress_score(self, input, output):
+	def handle_update_progress_score(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.update_progress_score is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_debug_notify_event(self, input, output):
+	def handle_debug_notify_event(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.debug_notify_event is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_generate_matchmake_session_system_password(self, input, output):
+	def handle_generate_matchmake_session_system_password(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.generate_matchmake_session_system_password is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_clear_matchmake_session_system_password(self, input, output):
+	def handle_clear_matchmake_session_system_password(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.clear_matchmake_session_system_password is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_create_matchmake_session_with_param(self, input, output):
+	def handle_create_matchmake_session_with_param(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.create_matchmake_session_with_param is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_join_matchmake_session_with_param(self, input, output):
+	def handle_join_matchmake_session_with_param(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.join_matchmake_session_with_param is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_auto_matchmake_with_param_postpone(self, input, output):
+	def handle_auto_matchmake_with_param_postpone(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.auto_matchmake_with_param_postpone is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_find_matchmake_session_by_gathering_id_detail(self, input, output):
+	def handle_find_matchmake_session_by_gathering_id_detail(self, caller_id, input, output):
 		logger.info("MatchmakeExtensionServer.find_matchmake_session_by_gathering_id_detail()")
 		#--- request ---
 		gid = input.u32()
@@ -988,27 +988,27 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 			raise RuntimeError("Expected MatchmakeSession, got %s" %response.__class__.__name__)
 		output.add(response)
 
-	def handle_browse_matchmake_session_no_holder(self, input, output):
+	def handle_browse_matchmake_session_no_holder(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.browse_matchmake_session_no_holder is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_browse_matchmake_session_with_host_urls_no_holder(self, input, output):
+	def handle_browse_matchmake_session_with_host_urls_no_holder(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.browse_matchmake_session_with_host_urls_no_holder is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_update_matchmake_session_part(self, input, output):
+	def handle_update_matchmake_session_part(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.update_matchmake_session_part is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_request_matchmaking(self, input, output):
+	def handle_request_matchmaking(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.request_matchmaking is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_withdraw_matchmaking(self, input, output):
+	def handle_withdraw_matchmaking(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.withdraw_matchmaking is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_withdraw_matchmaking_all(self, input, output):
+	def handle_withdraw_matchmaking_all(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.withdraw_matchmaking_all is unsupported")
 		return common.Result("Core::NotImplemented")
 

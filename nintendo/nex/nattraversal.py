@@ -83,36 +83,36 @@ class NATTraversalServer(NATTraversalProtocol):
 			self.METHOD_REPORT_NAT_TRAVERSAL_RESULT_DETAIL: self.handle_report_nat_traversal_result_detail,
 		}
 
-	def handle(self, method_id, input, output):
+	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](input, output)
+			return self.methods[method_id](caller_id, input, output)
 		logger.warning("Unknown method called on NATTraversalServer: %i", method_id)
 		return common.Result("Core::NotImplemented")
 
-	def handle_request_probe_initiation(self, input, output):
+	def handle_request_probe_initiation(self, caller_id, input, output):
 		logger.info("NATTraversalServer.request_probe_initiation()")
 		#--- request ---
 		target_urls = input.list(input.stationurl)
 		self.request_probe_initiation(target_urls)
 
-	def handle_initiate_probe(self, input, output):
+	def handle_initiate_probe(self, caller_id, input, output):
 		logger.info("NATTraversalServer.initiate_probe()")
 		#--- request ---
 		station_to_probe = input.stationurl()
 		self.initiate_probe(station_to_probe)
 
-	def handle_request_probe_initiation_ext(self, input, output):
+	def handle_request_probe_initiation_ext(self, caller_id, input, output):
 		logger.info("NATTraversalServer.request_probe_initiation_ext()")
 		#--- request ---
 		target_urls = input.list(input.stationurl)
 		station_to_probe = input.stationurl()
 		self.request_probe_initiation_ext(target_urls, station_to_probe)
 
-	def handle_report_nat_traversal_result(self, input, output):
+	def handle_report_nat_traversal_result(self, caller_id, input, output):
 		logger.warning("NATTraversalSever.report_nat_traversal_result is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_report_nat_properties(self, input, output):
+	def handle_report_nat_properties(self, caller_id, input, output):
 		logger.info("NATTraversalServer.report_nat_properties()")
 		#--- request ---
 		natm = input.u32()
@@ -120,11 +120,11 @@ class NATTraversalServer(NATTraversalProtocol):
 		rtt = input.u32()
 		self.report_nat_properties(natm, natf, rtt)
 
-	def handle_get_relay_signature_key(self, input, output):
+	def handle_get_relay_signature_key(self, caller_id, input, output):
 		logger.warning("NATTraversalSever.get_relay_signature_key is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_report_nat_traversal_result_detail(self, input, output):
+	def handle_report_nat_traversal_result_detail(self, caller_id, input, output):
 		logger.warning("NATTraversalSever.report_nat_traversal_result_detail is unsupported")
 		return common.Result("Core::NotImplemented")
 

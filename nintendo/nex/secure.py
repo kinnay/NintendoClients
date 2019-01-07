@@ -156,18 +156,18 @@ class SecureConnectionServer(SecureConnectionProtocol):
 			self.METHOD_SEND_REPORT: self.handle_send_report,
 		}
 
-	def handle(self, method_id, input, output):
+	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](input, output)
+			return self.methods[method_id](caller_id, input, output)
 		logger.warning("Unknown method called on SecureConnectionServer: %i", method_id)
 		return common.Result("Core::NotImplemented")
 
-	def handle_register(self, input, output):
+	def handle_register(self, caller_id, input, output):
 		logger.info("SecureConnectionServer.register()")
 		#--- request ---
 		urls = input.list(input.stationurl)
 		response = common.ResponseObject()
-		self.register(response, urls)
+		self.register(caller_id, response, urls)
 
 		#--- response ---
 		for field in ['result', 'connection_id', 'public_station']:
@@ -177,13 +177,13 @@ class SecureConnectionServer(SecureConnectionProtocol):
 		output.u32(response.connection_id)
 		output.stationurl(response.public_station)
 
-	def handle_request_connection_data(self, input, output):
+	def handle_request_connection_data(self, caller_id, input, output):
 		logger.info("SecureConnectionServer.request_connection_data()")
 		#--- request ---
 		cid = input.u32()
 		pid = input.pid()
 		response = common.ResponseObject()
-		self.request_connection_data(response, cid, pid)
+		self.request_connection_data(caller_id, response, cid, pid)
 
 		#--- response ---
 		for field in ['result', 'connection_data']:
@@ -192,13 +192,13 @@ class SecureConnectionServer(SecureConnectionProtocol):
 		output.bool(response.result)
 		output.list(response.connection_data, output.add)
 
-	def handle_request_urls(self, input, output):
+	def handle_request_urls(self, caller_id, input, output):
 		logger.info("SecureConnectionServer.request_urls()")
 		#--- request ---
 		cid = input.u32()
 		pid = input.pid()
 		response = common.ResponseObject()
-		self.request_urls(response, cid, pid)
+		self.request_urls(caller_id, response, cid, pid)
 
 		#--- response ---
 		for field in ['result', 'urls']:
@@ -207,13 +207,13 @@ class SecureConnectionServer(SecureConnectionProtocol):
 		output.bool(response.result)
 		output.list(response.urls, output.stationurl)
 
-	def handle_register_ex(self, input, output):
+	def handle_register_ex(self, caller_id, input, output):
 		logger.info("SecureConnectionServer.register_ex()")
 		#--- request ---
 		urls = input.list(input.stationurl)
 		login_data = input.anydata()
 		response = common.ResponseObject()
-		self.register_ex(response, urls, login_data)
+		self.register_ex(caller_id, response, urls, login_data)
 
 		#--- response ---
 		for field in ['result', 'connection_id', 'public_station']:
@@ -223,19 +223,19 @@ class SecureConnectionServer(SecureConnectionProtocol):
 		output.u32(response.connection_id)
 		output.stationurl(response.public_station)
 
-	def handle_test_connectivity(self, input, output):
+	def handle_test_connectivity(self, caller_id, input, output):
 		logger.info("SecureConnectionServer.test_connectivity()")
 		#--- request ---
 		self.test_connectivity()
 
-	def handle_replace_url(self, input, output):
+	def handle_replace_url(self, caller_id, input, output):
 		logger.info("SecureConnectionServer.replace_url()")
 		#--- request ---
 		url = input.stationurl()
 		new = input.stationurl()
 		self.replace_url(url, new)
 
-	def handle_send_report(self, input, output):
+	def handle_send_report(self, caller_id, input, output):
 		logger.info("SecureConnectionServer.send_report()")
 		#--- request ---
 		report_id = input.u32()

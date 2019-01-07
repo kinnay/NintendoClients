@@ -869,7 +869,7 @@ def get_python_type(type):
 	return type.name
 
 def generate_server_method(protocol, method):
-	code = "\tdef handle_%s(self, input, output):\n" %method.name
+	code = "\tdef handle_%s(self, caller_id, input, output):\n" %method.name
 	if method.response is None: #Unsupported method
 		code += "\t\tlogger.warning(\"%sSever.%s is unsupported\")\n" %(protocol.name, method.name)
 		code += "\t\treturn common.Result(\"Core::NotImplemented\")\n\n"
@@ -889,7 +889,7 @@ def generate_server_method(protocol, method):
 	if len(fields) > 1:
 		field_names = [f.name for f in fields]
 		code += "\t\tresponse = common.ResponseObject()\n"
-		code += "\t\tself.%s(response" %method.name
+		code += "\t\tself.%s(caller_id, response" %method.name
 		if params:
 			code += ", " + params
 		code += ")\n\n"
@@ -925,9 +925,9 @@ SERVER_TEMPLATE = """class %sServer(%sProtocol):
 		self.methods = {
 %s		}
 
-	def handle(self, method_id, input, output):
+	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](input, output)
+			return self.methods[method_id](caller_id, input, output)
 		logger.warning("Unknown method called on %sServer: %%i", method_id)
 		return common.Result("Core::NotImplemented")
 

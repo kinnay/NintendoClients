@@ -197,18 +197,18 @@ class AuthenticationServer(AuthenticationProtocol):
 			self.METHOD_GET_NAME: self.handle_get_name,
 		}
 
-	def handle(self, method_id, input, output):
+	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](input, output)
+			return self.methods[method_id](caller_id, input, output)
 		logger.warning("Unknown method called on AuthenticationServer: %i", method_id)
 		return common.Result("Core::NotImplemented")
 
-	def handle_login(self, input, output):
+	def handle_login(self, caller_id, input, output):
 		logger.info("AuthenticationServer.login()")
 		#--- request ---
 		username = input.string()
 		response = common.ResponseObject()
-		self.login(response, username)
+		self.login(caller_id, response, username)
 
 		#--- response ---
 		for field in ['result', 'pid', 'ticket', 'connection_data', 'server_name']:
@@ -220,13 +220,13 @@ class AuthenticationServer(AuthenticationProtocol):
 		output.add(response.connection_data)
 		output.string(response.server_name)
 
-	def handle_login_ex(self, input, output):
+	def handle_login_ex(self, caller_id, input, output):
 		logger.info("AuthenticationServer.login_ex()")
 		#--- request ---
 		username = input.string()
 		extra_data = input.anydata()
 		response = common.ResponseObject()
-		self.login_ex(response, username, extra_data)
+		self.login_ex(caller_id, response, username, extra_data)
 
 		#--- response ---
 		for field in ['result', 'pid', 'ticket', 'connection_data', 'server_name']:
@@ -238,13 +238,13 @@ class AuthenticationServer(AuthenticationProtocol):
 		output.add(response.connection_data)
 		output.string(response.server_name)
 
-	def handle_request_ticket(self, input, output):
+	def handle_request_ticket(self, caller_id, input, output):
 		logger.info("AuthenticationServer.request_ticket()")
 		#--- request ---
 		source = input.pid()
 		target = input.pid()
 		response = common.ResponseObject()
-		self.request_ticket(response, source, target)
+		self.request_ticket(caller_id, response, source, target)
 
 		#--- response ---
 		for field in ['result', 'ticket']:
@@ -253,7 +253,7 @@ class AuthenticationServer(AuthenticationProtocol):
 		output.result(response.result)
 		output.buffer(response.ticket)
 
-	def handle_get_pid(self, input, output):
+	def handle_get_pid(self, caller_id, input, output):
 		logger.info("AuthenticationServer.get_pid()")
 		#--- request ---
 		username = input.string()
@@ -264,7 +264,7 @@ class AuthenticationServer(AuthenticationProtocol):
 			raise RuntimeError("Expected int, got %s" %response.__class__.__name__)
 		output.pid(response)
 
-	def handle_get_name(self, input, output):
+	def handle_get_name(self, caller_id, input, output):
 		logger.info("AuthenticationServer.get_name()")
 		#--- request ---
 		pid = input.pid()

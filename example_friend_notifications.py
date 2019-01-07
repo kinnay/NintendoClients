@@ -23,7 +23,7 @@ class NotificationServer(notification.NintendoNotificationServer):
 		super().__init__()
 		self.name_cache = {}
 		
-	def process_nintendo_notification_event(self, event):
+	def process_nintendo_notification_event(self, caller, event):
 		pid = event.pid
 		if pid not in self.name_cache:
 			self.name_cache[pid] = api.get_nnid(pid)
@@ -50,8 +50,8 @@ class NotificationServer(notification.NintendoNotificationServer):
 		else:
 			print("Unknown notification type %i (from %s)" %(event.type, name))
 		
-	def process_presence_change_event(self, event):
-		self.process_nintendo_notification_event(event)
+	def process_presence_change_event(self, caller, event):
+		self.process_nintendo_notification_event(caller, event)
 
 
 api = account.AccountAPI()

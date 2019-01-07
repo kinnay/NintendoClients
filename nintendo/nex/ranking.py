@@ -248,33 +248,33 @@ class RankingServer(RankingProtocol):
 			self.METHOD_GET_CACHED_TOPX_RANKINGS: self.handle_get_cached_topx_rankings,
 		}
 
-	def handle(self, method_id, input, output):
+	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](input, output)
+			return self.methods[method_id](caller_id, input, output)
 		logger.warning("Unknown method called on RankingServer: %i", method_id)
 		return common.Result("Core::NotImplemented")
 
-	def handle_upload_score(self, input, output):
+	def handle_upload_score(self, caller_id, input, output):
 		logger.warning("RankingSever.upload_score is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_delete_score(self, input, output):
+	def handle_delete_score(self, caller_id, input, output):
 		logger.warning("RankingSever.delete_score is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_delete_all_scores(self, input, output):
+	def handle_delete_all_scores(self, caller_id, input, output):
 		logger.warning("RankingSever.delete_all_scores is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_upload_common_data(self, input, output):
+	def handle_upload_common_data(self, caller_id, input, output):
 		logger.warning("RankingSever.upload_common_data is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_delete_common_data(self, input, output):
+	def handle_delete_common_data(self, caller_id, input, output):
 		logger.warning("RankingSever.delete_common_data is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_common_data(self, input, output):
+	def handle_get_common_data(self, caller_id, input, output):
 		logger.info("RankingServer.get_common_data()")
 		#--- request ---
 		unique_id = input.u64()
@@ -285,15 +285,15 @@ class RankingServer(RankingProtocol):
 			raise RuntimeError("Expected bytes, got %s" %response.__class__.__name__)
 		output.buffer(response)
 
-	def handle_change_attributes(self, input, output):
+	def handle_change_attributes(self, caller_id, input, output):
 		logger.warning("RankingSever.change_attributes is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_change_all_attributes(self, input, output):
+	def handle_change_all_attributes(self, caller_id, input, output):
 		logger.warning("RankingSever.change_all_attributes is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_ranking(self, input, output):
+	def handle_get_ranking(self, caller_id, input, output):
 		logger.info("RankingServer.get_ranking()")
 		#--- request ---
 		mode = input.u8()
@@ -308,11 +308,11 @@ class RankingServer(RankingProtocol):
 			raise RuntimeError("Expected RankingResult, got %s" %response.__class__.__name__)
 		output.add(response)
 
-	def handle_get_approx_order(self, input, output):
+	def handle_get_approx_order(self, caller_id, input, output):
 		logger.warning("RankingSever.get_approx_order is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_stats(self, input, output):
+	def handle_get_stats(self, caller_id, input, output):
 		logger.info("RankingServer.get_stats()")
 		#--- request ---
 		category = input.u32()
@@ -325,7 +325,7 @@ class RankingServer(RankingProtocol):
 			raise RuntimeError("Expected RankingStats, got %s" %response.__class__.__name__)
 		output.add(response)
 
-	def handle_get_ranking_by_pid_list(self, input, output):
+	def handle_get_ranking_by_pid_list(self, caller_id, input, output):
 		logger.info("RankingServer.get_ranking_by_pid_list()")
 		#--- request ---
 		pids = input.list(input.pid)
@@ -340,15 +340,15 @@ class RankingServer(RankingProtocol):
 			raise RuntimeError("Expected RankingResult, got %s" %response.__class__.__name__)
 		output.add(response)
 
-	def handle_get_ranking_by_unique_id_list(self, input, output):
+	def handle_get_ranking_by_unique_id_list(self, caller_id, input, output):
 		logger.warning("RankingSever.get_ranking_by_unique_id_list is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_cached_topx_ranking(self, input, output):
+	def handle_get_cached_topx_ranking(self, caller_id, input, output):
 		logger.warning("RankingSever.get_cached_topx_ranking is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_cached_topx_rankings(self, input, output):
+	def handle_get_cached_topx_rankings(self, caller_id, input, output):
 		logger.warning("RankingSever.get_cached_topx_rankings is unsupported")
 		return common.Result("Core::NotImplemented")
 

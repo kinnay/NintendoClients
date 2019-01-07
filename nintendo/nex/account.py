@@ -567,13 +567,13 @@ class AccountServer(AccountProtocol):
 			self.METHOD_DISCONNECT_ALL_PRINCIPALS: self.handle_disconnect_all_principals,
 		}
 
-	def handle(self, method_id, input, output):
+	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](input, output)
+			return self.methods[method_id](caller_id, input, output)
 		logger.warning("Unknown method called on AccountServer: %i", method_id)
 		return common.Result("Core::NotImplemented")
 
-	def handle_create_account(self, input, output):
+	def handle_create_account(self, caller_id, input, output):
 		logger.info("AccountServer.create_account()")
 		#--- request ---
 		name = input.string()
@@ -587,13 +587,13 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 
-	def handle_delete_account(self, input, output):
+	def handle_delete_account(self, caller_id, input, output):
 		logger.info("AccountServer.delete_account()")
 		#--- request ---
 		pid = input.pid()
 		self.delete_account(pid)
 
-	def handle_disable_account(self, input, output):
+	def handle_disable_account(self, caller_id, input, output):
 		logger.info("AccountServer.disable_account()")
 		#--- request ---
 		pid = input.pid()
@@ -606,7 +606,7 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 
-	def handle_change_password(self, input, output):
+	def handle_change_password(self, caller_id, input, output):
 		logger.info("AccountServer.change_password()")
 		#--- request ---
 		new_key = input.string()
@@ -617,7 +617,7 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
 		output.bool(response)
 
-	def handle_test_capability(self, input, output):
+	def handle_test_capability(self, caller_id, input, output):
 		logger.info("AccountServer.test_capability()")
 		#--- request ---
 		capability = input.u32()
@@ -628,7 +628,7 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
 		output.bool(response)
 
-	def handle_get_name(self, input, output):
+	def handle_get_name(self, caller_id, input, output):
 		logger.info("AccountServer.get_name()")
 		#--- request ---
 		pid = input.pid()
@@ -639,11 +639,11 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected str, got %s" %response.__class__.__name__)
 		output.string(response)
 
-	def handle_get_account_data(self, input, output):
+	def handle_get_account_data(self, caller_id, input, output):
 		logger.info("AccountServer.get_account_data()")
 		#--- request ---
 		response = common.ResponseObject()
-		self.get_account_data(response)
+		self.get_account_data(caller_id, response)
 
 		#--- response ---
 		for field in ['result', 'data']:
@@ -652,11 +652,11 @@ class AccountServer(AccountProtocol):
 		output.result(response.result)
 		output.add(response.data)
 
-	def handle_get_private_data(self, input, output):
+	def handle_get_private_data(self, caller_id, input, output):
 		logger.info("AccountServer.get_private_data()")
 		#--- request ---
 		response = common.ResponseObject()
-		self.get_private_data(response)
+		self.get_private_data(caller_id, response)
 
 		#--- response ---
 		for field in ['result', 'data']:
@@ -665,11 +665,11 @@ class AccountServer(AccountProtocol):
 		output.bool(response.result)
 		output.anydata(response.data)
 
-	def handle_get_public_data(self, input, output):
+	def handle_get_public_data(self, caller_id, input, output):
 		logger.info("AccountServer.get_public_data()")
 		#--- request ---
 		response = common.ResponseObject()
-		self.get_public_data(response)
+		self.get_public_data(caller_id, response)
 
 		#--- response ---
 		for field in ['result', 'data']:
@@ -678,12 +678,12 @@ class AccountServer(AccountProtocol):
 		output.bool(response.result)
 		output.anydata(response.data)
 
-	def handle_get_multiple_public_data(self, input, output):
+	def handle_get_multiple_public_data(self, caller_id, input, output):
 		logger.info("AccountServer.get_multiple_public_data()")
 		#--- request ---
 		pids = input.list(input.pid)
 		response = common.ResponseObject()
-		self.get_multiple_public_data(response, pids)
+		self.get_multiple_public_data(caller_id, response, pids)
 
 		#--- response ---
 		for field in ['result', 'data']:
@@ -692,7 +692,7 @@ class AccountServer(AccountProtocol):
 		output.bool(response.result)
 		output.list(response.data, output.anydata)
 
-	def handle_update_account_name(self, input, output):
+	def handle_update_account_name(self, caller_id, input, output):
 		logger.info("AccountServer.update_account_name()")
 		#--- request ---
 		name = input.string()
@@ -703,7 +703,7 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 
-	def handle_update_account_email(self, input, output):
+	def handle_update_account_email(self, caller_id, input, output):
 		logger.info("AccountServer.update_account_email()")
 		#--- request ---
 		email = input.string()
@@ -714,7 +714,7 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 
-	def handle_update_custom_data(self, input, output):
+	def handle_update_custom_data(self, caller_id, input, output):
 		logger.info("AccountServer.update_custom_data()")
 		#--- request ---
 		public_data = input.anydata()
@@ -726,7 +726,7 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 
-	def handle_find_by_name_regex(self, input, output):
+	def handle_find_by_name_regex(self, caller_id, input, output):
 		logger.info("AccountServer.find_by_name_regex()")
 		#--- request ---
 		groups = input.u32()
@@ -739,7 +739,7 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.add)
 
-	def handle_update_account_expiry_date(self, input, output):
+	def handle_update_account_expiry_date(self, caller_id, input, output):
 		logger.info("AccountServer.update_account_expiry_date()")
 		#--- request ---
 		pid = input.pid()
@@ -747,7 +747,7 @@ class AccountServer(AccountProtocol):
 		message = input.string()
 		self.update_account_expiry_date(pid, expiry, message)
 
-	def handle_update_account_effective_date(self, input, output):
+	def handle_update_account_effective_date(self, caller_id, input, output):
 		logger.info("AccountServer.update_account_effective_date()")
 		#--- request ---
 		pid = input.pid()
@@ -755,13 +755,13 @@ class AccountServer(AccountProtocol):
 		message = input.string()
 		self.update_account_effective_date(pid, effective_from, message)
 
-	def handle_update_status(self, input, output):
+	def handle_update_status(self, caller_id, input, output):
 		logger.info("AccountServer.update_status()")
 		#--- request ---
 		status = input.string()
 		self.update_status(status)
 
-	def handle_get_status(self, input, output):
+	def handle_get_status(self, caller_id, input, output):
 		logger.info("AccountServer.get_status()")
 		#--- request ---
 		pid = input.pid()
@@ -772,12 +772,12 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected str, got %s" %response.__class__.__name__)
 		output.string(response)
 
-	def handle_get_last_connection_stats(self, input, output):
+	def handle_get_last_connection_stats(self, caller_id, input, output):
 		logger.info("AccountServer.get_last_connection_stats()")
 		#--- request ---
 		pid = input.pid()
 		response = common.ResponseObject()
-		self.get_last_connection_stats(response, pid)
+		self.get_last_connection_stats(caller_id, response, pid)
 
 		#--- response ---
 		for field in ['last_session_login', 'last_session_logout', 'current_session_login']:
@@ -787,7 +787,7 @@ class AccountServer(AccountProtocol):
 		output.datetime(response.last_session_logout)
 		output.datetime(response.current_session_login)
 
-	def handle_reset_password(self, input, output):
+	def handle_reset_password(self, caller_id, input, output):
 		logger.info("AccountServer.reset_password()")
 		#--- request ---
 		response = self.reset_password()
@@ -797,7 +797,7 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
 		output.bool(response)
 
-	def handle_create_account_with_custom_data(self, input, output):
+	def handle_create_account_with_custom_data(self, caller_id, input, output):
 		logger.info("AccountServer.create_account_with_custom_data()")
 		#--- request ---
 		name = input.string()
@@ -808,11 +808,11 @@ class AccountServer(AccountProtocol):
 		private_data = input.anydata()
 		self.create_account_with_custom_data(name, key, groups, email, public_data, private_data)
 
-	def handle_retrieve_account(self, input, output):
+	def handle_retrieve_account(self, caller_id, input, output):
 		logger.info("AccountServer.retrieve_account()")
 		#--- request ---
 		response = common.ResponseObject()
-		self.retrieve_account(response)
+		self.retrieve_account(caller_id, response)
 
 		#--- response ---
 		for field in ['account_data', 'public_data', 'private_data']:
@@ -822,7 +822,7 @@ class AccountServer(AccountProtocol):
 		output.anydata(response.public_data)
 		output.anydata(response.private_data)
 
-	def handle_update_account(self, input, output):
+	def handle_update_account(self, caller_id, input, output):
 		logger.info("AccountServer.update_account()")
 		#--- request ---
 		key = input.string()
@@ -831,7 +831,7 @@ class AccountServer(AccountProtocol):
 		private_data = input.anydata()
 		self.update_account(key, email, public_data, private_data)
 
-	def handle_change_password_by_guest(self, input, output):
+	def handle_change_password_by_guest(self, caller_id, input, output):
 		logger.info("AccountServer.change_password_by_guest()")
 		#--- request ---
 		name = input.string()
@@ -839,7 +839,7 @@ class AccountServer(AccountProtocol):
 		key = input.string()
 		self.change_password_by_guest(name, email, key)
 
-	def handle_find_by_name_like(self, input, output):
+	def handle_find_by_name_like(self, caller_id, input, output):
 		logger.info("AccountServer.find_by_name_like()")
 		#--- request ---
 		groups = input.u32()
@@ -852,7 +852,7 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.add)
 
-	def handle_custom_create_account(self, input, output):
+	def handle_custom_create_account(self, caller_id, input, output):
 		logger.info("AccountServer.custom_create_account()")
 		#--- request ---
 		name = input.string()
@@ -867,7 +867,7 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected int, got %s" %response.__class__.__name__)
 		output.pid(response)
 
-	def handle_nintendo_create_account(self, input, output):
+	def handle_nintendo_create_account(self, caller_id, input, output):
 		logger.info("AccountServer.nintendo_create_account()")
 		#--- request ---
 		name = input.string()
@@ -876,7 +876,7 @@ class AccountServer(AccountProtocol):
 		email = input.string()
 		auth_data = input.anydata()
 		response = common.ResponseObject()
-		self.nintendo_create_account(response, name, key, groups, email, auth_data)
+		self.nintendo_create_account(caller_id, response, name, key, groups, email, auth_data)
 
 		#--- response ---
 		for field in ['pid', 'pid_hmac']:
@@ -885,7 +885,7 @@ class AccountServer(AccountProtocol):
 		output.pid(response.pid)
 		output.string(response.pid_hmac)
 
-	def handle_lookup_or_create_account(self, input, output):
+	def handle_lookup_or_create_account(self, caller_id, input, output):
 		logger.info("AccountServer.lookup_or_create_account()")
 		#--- request ---
 		name = input.string()
@@ -900,7 +900,7 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected int, got %s" %response.__class__.__name__)
 		output.pid(response)
 
-	def handle_disconnect_principal(self, input, output):
+	def handle_disconnect_principal(self, caller_id, input, output):
 		logger.info("AccountServer.disconnect_principal()")
 		#--- request ---
 		pid = input.pid()
@@ -911,7 +911,7 @@ class AccountServer(AccountProtocol):
 			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
 		output.bool(response)
 
-	def handle_disconnect_all_principals(self, input, output):
+	def handle_disconnect_all_principals(self, caller_id, input, output):
 		logger.info("AccountServer.disconnect_all_principals()")
 		#--- request ---
 		response = self.disconnect_all_principals()

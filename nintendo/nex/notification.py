@@ -167,13 +167,13 @@ class NotificationServer(NotificationProtocol):
 			self.METHOD_PROCESS_NOTIFICATION_EVENT: self.handle_process_notification_event,
 		}
 
-	def handle(self, method_id, input, output):
+	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](input, output)
+			return self.methods[method_id](caller_id, input, output)
 		logger.warning("Unknown method called on NotificationServer: %i", method_id)
 		return common.Result("Core::NotImplemented")
 
-	def handle_process_notification_event(self, input, output):
+	def handle_process_notification_event(self, caller_id, input, output):
 		logger.info("NotificationServer.process_notification_event()")
 		#--- request ---
 		event = input.extract(NotificationEvent)
@@ -191,19 +191,19 @@ class NintendoNotificationServer(NintendoNotificationProtocol):
 			self.METHOD_PROCESS_PRESENCE_CHANGE_EVENT: self.handle_process_presence_change_event,
 		}
 
-	def handle(self, method_id, input, output):
+	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](input, output)
+			return self.methods[method_id](caller_id, input, output)
 		logger.warning("Unknown method called on NintendoNotificationServer: %i", method_id)
 		return common.Result("Core::NotImplemented")
 
-	def handle_process_nintendo_notification_event(self, input, output):
+	def handle_process_nintendo_notification_event(self, caller_id, input, output):
 		logger.info("NintendoNotificationServer.process_nintendo_notification_event()")
 		#--- request ---
 		event = input.extract(NintendoNotificationEvent)
 		self.process_nintendo_notification_event(event)
 
-	def handle_process_presence_change_event(self, input, output):
+	def handle_process_presence_change_event(self, caller_id, input, output):
 		logger.info("NintendoNotificationServer.process_presence_change_event()")
 		#--- request ---
 		event = input.extract(NintendoNotificationEvent)
