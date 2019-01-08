@@ -141,8 +141,8 @@ class Request:
 	def format(self, url):
 		return "https://account.nintendo.net/v1/api/%s" %url
 		
-	def get(self, url, data=None, params=None):
-		req = requests.Request("GET", self.format(url), self.headers, data=data, params=params)
+	def get(self, url, params=None):
+		req = requests.Request("GET", self.format(url), self.headers, params=params)
 		return self.request(req)
 		
 	def post(self, url, data=None):
@@ -215,7 +215,7 @@ class AccountAPI:
 		
 	def refresh_login(self):
 		request = Request(self)
-		response = request.get(
+		response = request.post(
 			"oauth20/access_token/generate",
 			data = {
 				"grant_type": "refresh_token",
@@ -263,7 +263,7 @@ class AccountAPI:
 		request = Request(self)
 		request.post(
 			"support/validate/email",
-			{"email": email}
+			data = {"email": email}
 		)
 		#An error is thrown if validation fails
 		
