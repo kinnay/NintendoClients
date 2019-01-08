@@ -1,19 +1,54 @@
 
 from . import socket, signal, util, scheduler
-from requests.structures import CaseInsensitiveDict
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class HTTPRequest:
+class HTTPFormData:
 	def __init__(self):
-		self.client = None
+		self.fields = {}
+		
+	def parse(self, data):
+		fields = data.split("&")
+		for field in fields:
+			if not "=" in field:
+				logger.warning("Malformed form parameter")
+				return False
+			key, value = field.split("=", 1)
+			self.fields[key] = value
+		return True
+		
+	def __contains__(self, item):
+		return item in self.fields
+		
+	def __getitem__(self, item):
+		return self.fields[item]
+
+
+class HTTPRequest:
+	def __init__(self, client):
+		self.client = client
+		
 		self.method = None
 		self.path = None
 		self.version = None
-		self.headers = CaseInsensitiveDict()
-		self.body = b""
+		self.headers = util.CaseInsensitiveDict()
+		self.body = ""
+		
+		self.params = HTTPFormData()
+		self.form = HTTPFormData()
+		
+	def process(self):
+		if "?" in self.path:
+			self.path, params = self.path.split("?", 1)
+			if not self.params.parse(params):
+				return False
+				
+		if self.headers.get("Content-Type") == "application/x-www-form-urlencoded":
+			if not self.form.parse(self.body):
+				return False
+		return True
 		
 		
 RESPONSE_TEMPLATE = "%s %i %s\r\n%s\r\n"
@@ -21,14 +56,18 @@ RESPONSE_TEMPLATE = "%s %i %s\r\n%s\r\n"
 class HTTPResponse:
 	status_names = {
 		200: "OK",
-		404: "Not Found"
+		400: "Bad Request",
+		401: "Unauthorized",
+		403: "Forbidden",
+		404: "Not Found",
+		405: "Method Not Allowed"
 	}
 	
 	def __init__(self, status):
 		self.version = "HTTP/1.1"
 		self.status = status
-		self.headers = CaseInsensitiveDict()
-		self.body = b""
+		self.headers = util.CaseInsensitiveDict()
+		self.body = ""
 		
 	def encode(self):
 		self.headers["Content-Length"] = len(self.body)
@@ -41,7 +80,7 @@ class HTTPResponse:
 			self.status_names[self.status],
 			headers
 		)
-		return header.encode("ascii") + self.body
+		return (header + self.body).encode("ascii")
 
 	
 class HTTPState:
@@ -57,8 +96,7 @@ class HTTPState:
 		self.buffer = b""
 		self.state = self.state_header
 		self.event = scheduler.add_socket(self.handle_recv, socket)
-		self.request = HTTPRequest()
-		self.request.client = socket
+		self.request = HTTPRequest(socket)
 		
 	def handle_recv(self, data):
 		if not data:
@@ -71,8 +109,20 @@ class HTTPState:
 			result = self.state()
 			
 		if result == self.RESULT_ERROR:
-			self.socket.close()
+			logger.warning("Failed to parse HTTP request")
+			response = HTTPResponse(400)
+			self.socket.send(response.encode())
+			
 			scheduler.remove(self.event)
+			self.socket.close()
+			
+	def finish(self):
+		if not self.request.process():
+			return self.RESULT_ERROR
+		self.message_event(self.request)
+		self.request = HTTPRequest(self.socket)
+		self.state = self.state_header
+		return self.RESULT_OK
 			
 	def handle_header(self, data):
 		try:
@@ -95,18 +145,16 @@ class HTTPState:
 				return self.RESULT_ERROR
 			key, value = header.split(": ", 1)
 			self.request.headers[key.lower()] = value
-			
-		if "content-length" in self.request.headers:
-			if not util.is_numeric(self.request.headers["content-length"]):
+		
+		if "Content-Length" in self.request.headers:
+			if not util.is_numeric(self.request.headers["Content-Length"]):
 				logger.warning("Invalid Content-Length header")
 				return self.RESULT_ERROR
 			
 			self.state = self.state_body
-			
+		
 		else:
-			self.message_event(self.request)
-			self.request = HTTPRequest()
-			self.request.client = self.socket
+			return self.finish()
 		return self.RESULT_OK
 	
 	def state_header(self):
@@ -116,18 +164,18 @@ class HTTPState:
 		return self.RESULT_INCOMPLETE
 		
 	def state_body(self):
-		length = int(self.request.headers["content-length"])
+		length = int(self.request.headers["Content-Length"])
 		if len(self.buffer) < length:
 			return self.RESULT_INCOMPLETE
 		
-		self.request.body = self.buffer[:length]
+		try:
+			self.request.body = self.buffer[:length].decode("ascii")
+		except UnicodeDecodeError:
+			logger.warning("Failed to decode HTTP request body")
+			return self.RESULT_ERROR
 		self.buffer = self.buffer[length:]
 		
-		self.message_event(self.request)
-		self.state = self.state_header
-		self.request = HTTPRequest()
-		self.request.client = self.socket
-		return self.RESULT_OK
+		return self.finish()
 
 	
 class HTTPServer:
