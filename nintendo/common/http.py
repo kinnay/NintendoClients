@@ -17,7 +17,7 @@ class HTTPRequest:
 		
 		
 RESPONSE_TEMPLATE = "%s %i %s\r\n%s\r\n"
-		
+
 class HTTPResponse:
 	status_names = {
 		200: "OK",
@@ -78,10 +78,12 @@ class HTTPState:
 		try:
 			lines = data.decode("ascii").splitlines()
 		except UnicodeDecodeError:
+			logger.warning("Failed to decode HTTP request")
 			return self.RESULT_ERROR
 		
 		fields = lines[0].split()
 		if len(fields) != 3:
+			logger.warning("Invalid HTTP request")
 			return self.RESULT_ERROR
 			
 		self.request.method = fields[0]
@@ -89,16 +91,22 @@ class HTTPState:
 		self.request.version = fields[2]
 		for header in lines[1:]:
 			if not ": " in header:
+				logger.warning("Invalid HTTP request header")
 				return self.RESULT_ERROR
 			key, value = header.split(": ", 1)
 			self.request.headers[key.lower()] = value
 			
-		if not "content-length" in self.request.headers:
-			return self.RESULT_ERROR
-		if not util.is_numeric(self.request.headers["content-length"]):
-			return self.RESULT_ERROR
+		if "content-length" in self.request.headers:
+			if not util.is_numeric(self.request.headers["content-length"]):
+				logger.warning("Invalid Content-Length header")
+				return self.RESULT_ERROR
 			
-		self.state = self.state_body
+			self.state = self.state_body
+			
+		else:
+			self.message_event(self.request)
+			self.request = HTTPRequest()
+			self.request.client = self.socket
 		return self.RESULT_OK
 	
 	def state_header(self):
