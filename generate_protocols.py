@@ -917,7 +917,7 @@ def generate_server_stub(protocol, method):
 		return ""
 	code = "\tdef %s(self, *args):\n" %method.name
 	code += "\t\tlogger.warning(\"%sServer.%s not implemented\")\n" %(protocol.name, method.name)
-	code += "\t\treturn common.Result(\"Core::NotImplemented\")\n"
+	code += "\t\traise common.RMCError(\"Core::NotImplemented\")\n"
 	return code + "\n"
 
 SERVER_TEMPLATE = """class %sServer(%sProtocol):
@@ -928,8 +928,9 @@ SERVER_TEMPLATE = """class %sServer(%sProtocol):
 	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
 			return self.methods[method_id](caller_id, input, output)
-		logger.warning("Unknown method called on %sServer: %%i", method_id)
-		return common.Result("Core::NotImplemented")
+		else:
+			logger.warning("Unknown method called on %sServer: %%i", method_id)
+			raise common.RMCError("Core::NotImplemented")
 
 """
 def generate_server(protocol):

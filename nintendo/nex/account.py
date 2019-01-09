@@ -570,8 +570,9 @@ class AccountServer(AccountProtocol):
 	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
 			return self.methods[method_id](caller_id, input, output)
-		logger.warning("Unknown method called on AccountServer: %i", method_id)
-		return common.Result("Core::NotImplemented")
+		else:
+			logger.warning("Unknown method called on AccountServer: %i", method_id)
+			raise common.RMCError("Core::NotImplemented")
 
 	def handle_create_account(self, caller_id, input, output):
 		logger.info("AccountServer.create_account()")
@@ -923,120 +924,120 @@ class AccountServer(AccountProtocol):
 
 	def create_account(self, *args):
 		logger.warning("AccountServer.create_account not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def delete_account(self, *args):
 		logger.warning("AccountServer.delete_account not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def disable_account(self, *args):
 		logger.warning("AccountServer.disable_account not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def change_password(self, *args):
 		logger.warning("AccountServer.change_password not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def test_capability(self, *args):
 		logger.warning("AccountServer.test_capability not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_name(self, *args):
 		logger.warning("AccountServer.get_name not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_account_data(self, *args):
 		logger.warning("AccountServer.get_account_data not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_private_data(self, *args):
 		logger.warning("AccountServer.get_private_data not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_public_data(self, *args):
 		logger.warning("AccountServer.get_public_data not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_multiple_public_data(self, *args):
 		logger.warning("AccountServer.get_multiple_public_data not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def update_account_name(self, *args):
 		logger.warning("AccountServer.update_account_name not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def update_account_email(self, *args):
 		logger.warning("AccountServer.update_account_email not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def update_custom_data(self, *args):
 		logger.warning("AccountServer.update_custom_data not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def find_by_name_regex(self, *args):
 		logger.warning("AccountServer.find_by_name_regex not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def update_account_expiry_date(self, *args):
 		logger.warning("AccountServer.update_account_expiry_date not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def update_account_effective_date(self, *args):
 		logger.warning("AccountServer.update_account_effective_date not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def update_status(self, *args):
 		logger.warning("AccountServer.update_status not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_status(self, *args):
 		logger.warning("AccountServer.get_status not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_last_connection_stats(self, *args):
 		logger.warning("AccountServer.get_last_connection_stats not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def reset_password(self, *args):
 		logger.warning("AccountServer.reset_password not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def create_account_with_custom_data(self, *args):
 		logger.warning("AccountServer.create_account_with_custom_data not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def retrieve_account(self, *args):
 		logger.warning("AccountServer.retrieve_account not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def update_account(self, *args):
 		logger.warning("AccountServer.update_account not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def change_password_by_guest(self, *args):
 		logger.warning("AccountServer.change_password_by_guest not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def find_by_name_like(self, *args):
 		logger.warning("AccountServer.find_by_name_like not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def custom_create_account(self, *args):
 		logger.warning("AccountServer.custom_create_account not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def nintendo_create_account(self, *args):
 		logger.warning("AccountServer.nintendo_create_account not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def lookup_or_create_account(self, *args):
 		logger.warning("AccountServer.lookup_or_create_account not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def disconnect_principal(self, *args):
 		logger.warning("AccountServer.disconnect_principal not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def disconnect_all_principals(self, *args):
 		logger.warning("AccountServer.disconnect_all_principals not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")

@@ -251,8 +251,9 @@ class RankingServer(RankingProtocol):
 	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
 			return self.methods[method_id](caller_id, input, output)
-		logger.warning("Unknown method called on RankingServer: %i", method_id)
-		return common.Result("Core::NotImplemented")
+		else:
+			logger.warning("Unknown method called on RankingServer: %i", method_id)
+			raise common.RMCError("Core::NotImplemented")
 
 	def handle_upload_score(self, caller_id, input, output):
 		logger.warning("RankingSever.upload_score is unsupported")
@@ -354,16 +355,16 @@ class RankingServer(RankingProtocol):
 
 	def get_common_data(self, *args):
 		logger.warning("RankingServer.get_common_data not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_ranking(self, *args):
 		logger.warning("RankingServer.get_ranking not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_stats(self, *args):
 		logger.warning("RankingServer.get_stats not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_ranking_by_pid_list(self, *args):
 		logger.warning("RankingServer.get_ranking_by_pid_list not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")

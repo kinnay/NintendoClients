@@ -170,8 +170,9 @@ class NotificationServer(NotificationProtocol):
 	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
 			return self.methods[method_id](caller_id, input, output)
-		logger.warning("Unknown method called on NotificationServer: %i", method_id)
-		return common.Result("Core::NotImplemented")
+		else:
+			logger.warning("Unknown method called on NotificationServer: %i", method_id)
+			raise common.RMCError("Core::NotImplemented")
 
 	def handle_process_notification_event(self, caller_id, input, output):
 		logger.info("NotificationServer.process_notification_event()")
@@ -181,7 +182,7 @@ class NotificationServer(NotificationProtocol):
 
 	def process_notification_event(self, *args):
 		logger.warning("NotificationServer.process_notification_event not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 
 class NintendoNotificationServer(NintendoNotificationProtocol):
@@ -194,8 +195,9 @@ class NintendoNotificationServer(NintendoNotificationProtocol):
 	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
 			return self.methods[method_id](caller_id, input, output)
-		logger.warning("Unknown method called on NintendoNotificationServer: %i", method_id)
-		return common.Result("Core::NotImplemented")
+		else:
+			logger.warning("Unknown method called on NintendoNotificationServer: %i", method_id)
+			raise common.RMCError("Core::NotImplemented")
 
 	def handle_process_nintendo_notification_event(self, caller_id, input, output):
 		logger.info("NintendoNotificationServer.process_nintendo_notification_event()")
@@ -211,8 +213,8 @@ class NintendoNotificationServer(NintendoNotificationProtocol):
 
 	def process_nintendo_notification_event(self, *args):
 		logger.warning("NintendoNotificationServer.process_nintendo_notification_event not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def process_presence_change_event(self, *args):
 		logger.warning("NintendoNotificationServer.process_presence_change_event not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")

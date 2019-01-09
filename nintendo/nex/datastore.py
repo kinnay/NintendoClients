@@ -430,8 +430,9 @@ class DataStoreServer(DataStoreProtocol):
 	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
 			return self.methods[method_id](caller_id, input, output)
-		logger.warning("Unknown method called on DataStoreServer: %i", method_id)
-		return common.Result("Core::NotImplemented")
+		else:
+			logger.warning("Unknown method called on DataStoreServer: %i", method_id)
+			raise common.RMCError("Core::NotImplemented")
 
 	def handle_prepare_get_object_v1(self, caller_id, input, output):
 		logger.warning("DataStoreSever.prepare_get_object_v1 is unsupported")
@@ -643,12 +644,12 @@ class DataStoreServer(DataStoreProtocol):
 
 	def get_meta(self, *args):
 		logger.warning("DataStoreServer.get_meta not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def prepare_get_object(self, *args):
 		logger.warning("DataStoreServer.prepare_get_object not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_metas_multiple_param(self, *args):
 		logger.warning("DataStoreServer.get_metas_multiple_param not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")

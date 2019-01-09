@@ -200,8 +200,9 @@ class AuthenticationServer(AuthenticationProtocol):
 	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
 			return self.methods[method_id](caller_id, input, output)
-		logger.warning("Unknown method called on AuthenticationServer: %i", method_id)
-		return common.Result("Core::NotImplemented")
+		else:
+			logger.warning("Unknown method called on AuthenticationServer: %i", method_id)
+			raise common.RMCError("Core::NotImplemented")
 
 	def handle_login(self, caller_id, input, output):
 		logger.info("AuthenticationServer.login()")
@@ -277,20 +278,20 @@ class AuthenticationServer(AuthenticationProtocol):
 
 	def login(self, *args):
 		logger.warning("AuthenticationServer.login not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def login_ex(self, *args):
 		logger.warning("AuthenticationServer.login_ex not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def request_ticket(self, *args):
 		logger.warning("AuthenticationServer.request_ticket not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_pid(self, *args):
 		logger.warning("AuthenticationServer.get_pid not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_name(self, *args):
 		logger.warning("AuthenticationServer.get_name not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")

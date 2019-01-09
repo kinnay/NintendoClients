@@ -107,10 +107,15 @@ class RMCClient:
 			response = self.init_response(protocol_id, call_id, method_id)
 			try:
 				result = self.servers[protocol_id].handle(self.pid, method_id, stream, response)
+			except common.RMCError as e:
+				logger.info("RMC failed with error 0x%08X (%s)" %(e.error_code, e.error_name))
+				result = common.Result(e.error_code)
 			except Exception as e:
 				logger.error("Exception occurred while handling method call")
+				
 				import traceback
 				traceback.print_exc()
+				
 				if isinstance(e, TypeError): result = common.Result("PythonCore::TypeError")
 				elif isinstance(e, IndexError): result = common.Result("PythonCore::IndexError")
 				elif isinstance(e, MemoryError): result = common.Result("PythonCore::MemoryError")

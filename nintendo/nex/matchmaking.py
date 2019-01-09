@@ -501,8 +501,9 @@ class MatchMakingServer(MatchMakingProtocol):
 	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
 			return self.methods[method_id](caller_id, input, output)
-		logger.warning("Unknown method called on MatchMakingServer: %i", method_id)
-		return common.Result("Core::NotImplemented")
+		else:
+			logger.warning("Unknown method called on MatchMakingServer: %i", method_id)
+			raise common.RMCError("Core::NotImplemented")
 
 	def handle_register_gathering(self, caller_id, input, output):
 		logger.warning("MatchMakingSever.register_gathering is unsupported")
@@ -696,15 +697,15 @@ class MatchMakingServer(MatchMakingProtocol):
 
 	def find_by_participants(self, *args):
 		logger.warning("MatchMakingServer.find_by_participants not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def find_by_sql_query(self, *args):
 		logger.warning("MatchMakingServer.find_by_sql_query not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_session_urls(self, *args):
 		logger.warning("MatchMakingServer.get_session_urls not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 
 class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
@@ -762,8 +763,9 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
 			return self.methods[method_id](caller_id, input, output)
-		logger.warning("Unknown method called on MatchmakeExtensionServer: %i", method_id)
-		return common.Result("Core::NotImplemented")
+		else:
+			logger.warning("Unknown method called on MatchmakeExtensionServer: %i", method_id)
+			raise common.RMCError("Core::NotImplemented")
 
 	def handle_close_participation(self, caller_id, input, output):
 		logger.warning("MatchmakeExtensionSever.close_participation is unsupported")
@@ -1014,28 +1016,28 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 
 	def auto_matchmake_postpone(self, *args):
 		logger.warning("MatchmakeExtensionServer.auto_matchmake_postpone not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def create_matchmake_session(self, *args):
 		logger.warning("MatchmakeExtensionServer.create_matchmake_session not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def join_matchmake_session(self, *args):
 		logger.warning("MatchmakeExtensionServer.join_matchmake_session not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def auto_matchmake_with_search_criteria_postpone(self, *args):
 		logger.warning("MatchmakeExtensionServer.auto_matchmake_with_search_criteria_postpone not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_playing_session(self, *args):
 		logger.warning("MatchmakeExtensionServer.get_playing_session not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def get_simple_playing_session(self, *args):
 		logger.warning("MatchmakeExtensionServer.get_simple_playing_session not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def find_matchmake_session_by_gathering_id_detail(self, *args):
 		logger.warning("MatchmakeExtensionServer.find_matchmake_session_by_gathering_id_detail not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")

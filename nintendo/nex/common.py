@@ -7,7 +7,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class RMCError(Exception): pass
+class RMCError(Exception):
+	def __init__(self, code):
+		if type(code) == str:
+			code = error_codes[code]
+		self.error_code = code
+		self.error_name = error_names[code]
+		
+	def __str__(self):
+		return "%s (0x%08X)" %(self.error_name, self.error_code)
 
 
 class ResponseObject:
@@ -36,7 +44,7 @@ class Result:
 		
 	def raise_if_error(self):
 		if self.is_error():
-			raise RMCError("%s (0x%08X)" %(self.name(), self.error_code))
+			raise RMCError(self.error_code)
 	
 
 # Black magic going on here

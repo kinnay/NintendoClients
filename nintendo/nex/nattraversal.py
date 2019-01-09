@@ -86,8 +86,9 @@ class NATTraversalServer(NATTraversalProtocol):
 	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
 			return self.methods[method_id](caller_id, input, output)
-		logger.warning("Unknown method called on NATTraversalServer: %i", method_id)
-		return common.Result("Core::NotImplemented")
+		else:
+			logger.warning("Unknown method called on NATTraversalServer: %i", method_id)
+			raise common.RMCError("Core::NotImplemented")
 
 	def handle_request_probe_initiation(self, caller_id, input, output):
 		logger.info("NATTraversalServer.request_probe_initiation()")
@@ -130,16 +131,16 @@ class NATTraversalServer(NATTraversalProtocol):
 
 	def request_probe_initiation(self, *args):
 		logger.warning("NATTraversalServer.request_probe_initiation not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def initiate_probe(self, *args):
 		logger.warning("NATTraversalServer.initiate_probe not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def request_probe_initiation_ext(self, *args):
 		logger.warning("NATTraversalServer.request_probe_initiation_ext not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def report_nat_properties(self, *args):
 		logger.warning("NATTraversalServer.report_nat_properties not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")

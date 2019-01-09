@@ -469,8 +469,9 @@ class FriendsServer(FriendsProtocol):
 	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
 			return self.methods[method_id](caller_id, input, output)
-		logger.warning("Unknown method called on FriendsServer: %i", method_id)
-		return common.Result("Core::NotImplemented")
+		else:
+			logger.warning("Unknown method called on FriendsServer: %i", method_id)
+			raise common.RMCError("Core::NotImplemented")
 
 	def handle_get_all_information(self, caller_id, input, output):
 		logger.info("FriendsServer.get_all_information()")
@@ -575,8 +576,8 @@ class FriendsServer(FriendsProtocol):
 
 	def get_all_information(self, *args):
 		logger.warning("FriendsServer.get_all_information not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def update_presence(self, *args):
 		logger.warning("FriendsServer.update_presence not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")

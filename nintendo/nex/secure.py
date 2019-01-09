@@ -159,8 +159,9 @@ class SecureConnectionServer(SecureConnectionProtocol):
 	def handle(self, caller_id, method_id, input, output):
 		if method_id in self.methods:
 			return self.methods[method_id](caller_id, input, output)
-		logger.warning("Unknown method called on SecureConnectionServer: %i", method_id)
-		return common.Result("Core::NotImplemented")
+		else:
+			logger.warning("Unknown method called on SecureConnectionServer: %i", method_id)
+			raise common.RMCError("Core::NotImplemented")
 
 	def handle_register(self, caller_id, input, output):
 		logger.info("SecureConnectionServer.register()")
@@ -244,28 +245,28 @@ class SecureConnectionServer(SecureConnectionProtocol):
 
 	def register(self, *args):
 		logger.warning("SecureConnectionServer.register not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def request_connection_data(self, *args):
 		logger.warning("SecureConnectionServer.request_connection_data not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def request_urls(self, *args):
 		logger.warning("SecureConnectionServer.request_urls not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def register_ex(self, *args):
 		logger.warning("SecureConnectionServer.register_ex not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def test_connectivity(self, *args):
 		logger.warning("SecureConnectionServer.test_connectivity not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def replace_url(self, *args):
 		logger.warning("SecureConnectionServer.replace_url not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
 
 	def send_report(self, *args):
 		logger.warning("SecureConnectionServer.send_report not implemented")
-		return common.Result("Core::NotImplemented")
+		raise common.RMCError("Core::NotImplemented")
