@@ -84,7 +84,6 @@ class HTTPResponse:
 
 	
 class HTTPState:
-	message_event = signal.Signal()
 	
 	RESULT_OK = 0
 	RESULT_INCOMPLETE = 1
@@ -97,6 +96,8 @@ class HTTPState:
 		self.state = self.state_header
 		self.event = scheduler.add_socket(self.handle_recv, socket)
 		self.request = HTTPRequest(socket)
+		
+		message_event = signal.Signal()
 		
 	def handle_recv(self, data):
 		if not data:
