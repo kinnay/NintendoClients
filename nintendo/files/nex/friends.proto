@@ -1,0 +1,133 @@
+
+protocol Friends : 102 {
+	struct MiiV2 : Data {
+		string name;
+		u8 unk1 = 0;
+		u8 unk2 = 0;
+		buffer data;
+		datetime datetime = 0;
+	}
+	
+	struct PrincipalBasicInfo : Data {
+		pid pid;
+		string nnid;
+		MiiV2 mii;
+		u8 unk = 2;
+	}
+	
+	struct NNAInfo : Data {
+		PrincipalBasicInfo principal_info;
+		u8 unk1 = 94;
+		u8 unk2 = 11;
+	}
+	
+	struct GameKey : Data {
+		u64 title_id = 0;
+		u16 title_version = 0;
+	}
+	
+	struct NintendoPresenceV2 : Data {
+		u32 flags = 0;
+		bool is_online = false;
+		GameKey game_key;
+		u8 unk1 = 0;
+		string message = "";
+		u32 unk2 = 0;
+		u8 unk3 = 0;
+		u32 game_server_id = 0;
+		u32 unk4 = 0;
+		u32 pid = 0;
+		u32 gathering_id = 0;
+		buffer application_data = "";
+		u8 unk5 = 3;
+		u8 unk6 = 3;
+		u8 unk7 = 3;
+	}
+	
+	struct PrincipalPreference : Data {
+		bool unk1;
+		bool unk2;
+		bool unk3;
+	}
+	
+	struct Comment : Data {
+		u8 unk;
+		string text;
+		datetime changed;
+	}
+	
+	struct FriendInfo : Data {
+		NNAInfo nna_info;
+		NintendoPresenceV2 presence;
+		Comment comment;
+		datetime befriended;
+		datetime last_online;
+		u64 unk;
+	}
+	
+	struct FriendRequestMessage : Data {
+		u64 unk1;
+		u8 unk2;
+		u8 unk3;
+		string message;
+		u8 unk4;
+		string string;
+		GameKey game_key;
+		datetime datetime;
+		datetime expires;
+	}
+	
+	struct FriendRequest : Data {
+		PrincipalBasicInfo principal_info;
+		FriendRequestMessage message;
+		datetime sent;
+	}
+	
+	struct BlacklistedPrincipal : Data {
+		PrincipalBasicInfo principal_info;
+		GameKey game_key;
+		datetime since;
+	}
+	
+	struct PersistentNotification : Data {
+		u64 unk1;
+		u32 unk2;
+		u32 unk3;
+		u32 unk4;
+		string string;
+	}
+	
+	method get_all_information(NNAInfo nna_info, NintendoPresenceV2 presence, datetime birthday) {
+		PrincipalPreference principal_preference;
+		Comment comment;
+		list<FriendInfo> friends;
+		list<FriendRequest> sent_requests;
+		list<FriendRequest> received_requests;
+		list<BlacklistedPrincipal> blacklist;
+		bool unk1;
+		list<PersistentNotification> notifications;
+		bool unk2;
+	}
+	
+	method add_friend;
+	method add_friend_by_name;
+	method remove_friend;
+	method add_friend_request;
+	method cancel_friend_request;
+	method accept_friend_request;
+	method delete_friend_request;
+	method deny_friend_request;
+	method mark_friend_requests_as_received;
+	method add_black_list;
+	method remove_black_list;
+	
+	method update_presence(NintendoPresenceV2 presence) {}
+	
+	method update_mii;
+	method update_comment;
+	method update_preference;
+	method get_basic_info;
+	method delete_friend_flags;
+	method check_setting_status;
+	method get_request_block_settings;
+}

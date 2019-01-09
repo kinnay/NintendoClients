@@ -1,0 +1,202 @@
+
+protocol MatchMaking : 21 {
+	struct Gathering {
+		u32 id = 0;
+		pid owner_pid = 0;
+		pid host_pid = 0;
+		u16 player_min = 0;
+		u16 player_max = 0;
+		u32 participation_policy = 1;
+		u32 policy_argument = 0;
+		u32 flags = 512;
+		u32 state = 0;
+		string description = "";
+	}
+
+	method register_gathering;
+	method unregister_gathering;
+	method unregister_gatherings;
+	method update_gathering;
+	method invite;
+	method accept_invitation;
+	method decline_invitation;
+	method cancel_invitation;
+	method get_invitations_sent;
+	method get_invitations_received;
+	method participate;
+	method cancel_participation;
+	method get_participants;
+	method add_partitipants;
+	method get_detailed_participants;
+	method get_participants_urls;
+	method find_by_type;
+	method find_by_description;
+	method find_by_description_regex;
+	method find_by_id;
+	method find_by_single_id;
+	method find_by_owner;
+	
+	method find_by_participants(list<pid> pids) {
+		list<anydata> gatherings;
+	}
+	
+	method find_invitations;
+	
+	method find_by_sql_query(string query, ResultRange range) {
+		list<anydata> gatherings;
+	}
+	
+	method launch_session;
+	method update_session_url;
+	method get_session_url;
+	method get_state;
+	method set_state;
+	method report_stats;
+	method get_stats;
+	method delete_gathering;
+	method get_pending_deletions;
+	method delete_from_deletions;
+	method migrate_gathering_ownership;
+	method find_by_description_like;
+	method register_local_url;
+	method register_local_urls;
+	method update_session_host_v1;
+	
+	method get_session_urls(u32 gid) {
+		list<stationurl> urls;
+	}
+	
+	method update_session_host;
+}
+
+protocol MatchmakeExtension : 109 {
+	enum MatchmakeSystem {
+		GLOBAL = 1,
+		FRIENDS = 2
+	}
+
+	struct MatchmakeSessionSearchCriteria {
+		list<string> attribs;
+		string game_mode;
+		string min_players;
+		string max_players;
+		string matchmake_system;
+		bool vacant_only;
+		bool exclude_locked;
+		bool exclude_non_host_pid;
+		u32 selection_method;
+		
+		[server.version >= 30500] {
+			u16 vacant_participants;
+		}
+	}
+	
+	struct MatchmakeSession : Gathering {
+		u32 game_mode = 0;
+		list<u32> attribs = [0, 0, 0, 0, 0, 0];
+		bool open_participation = true;
+		u32 matchmake_system = 0;
+		buffer application_data = "";
+		u32 player_count = 0;
+		
+		[server.version >= 30500] {
+			u8 progress_score = 100;
+		}
+		
+		buffer session_key = "";
+		
+		[server.version >= 30500] {
+			u32 option = 0;
+		}
+	}
+	
+	struct SimplePlayingSession {
+		pid pid;
+		u32 gid;
+		u32 game_mode;
+		u32 attribute;
+	}
+	
+	struct PlayingSession {
+		pid pid;
+		anydata gathering;
+	}
+
+	method close_participation;
+	method open_participation;
+	
+	method auto_matchmake_postpone(anydata gathering, string message) {
+		anydata gathering;
+	}
+	
+	method browse_matchmake_session;
+	method browse_matchmake_session_with_host_urls;
+	
+	method create_matchmake_session(anydata gathering, string description, u16 participation_count) {
+		u32 gid;
+		buffer session_key;
+	}
+	
+	method join_matchmake_session(u32 gid, string message) {
+		buffer session_key;
+	}
+	
+	method modify_current_game_attribute;
+	method update_notification_data;
+	method get_friend_notification_data;
+	method update_application_buffer;
+	method update_matchmake_session_attribute;
+	method getlst_friend_notification_data;
+	method update_matchmake_session;
+	
+	method auto_matchmake_with_search_criteria_postpone(
+		list<MatchmakeSessionSearchCriteria> search_criteria,
+		anydata gathering, string message
+	) {
+		anydata gathering;
+	}
+	
+	method get_playing_session(list<pid> pids) {
+		list<PlayingSession> sessions;
+	}
+	
+	method create_community;
+	method update_community;
+	method join_community;
+	method find_community_by_gathering_id;
+	method find_official_community;
+	method find_community_by_participant;
+	method update_privacy_setting;
+	method get_my_black_list;
+	method add_to_black_list;
+	method remove_from_black_list;
+	method clear_my_black_list;
+	method report_violation;
+	method is_violation_user;
+	method join_matchmake_session_ex;
+	
+	method get_simple_playing_session(list<pid> pids, bool include_login_user) {
+		list<SimplePlayingSession> session;
+	}
+	
+	method get_simple_community;
+	method auto_matchmake_with_gathering_id_postpone;
+	method update_progress_score;
+	method debug_notify_event;
+	method generate_matchmake_session_system_password;
+	method clear_matchmake_session_system_password;
+	method create_matchmake_session_with_param;
+	method join_matchmake_session_with_param;
+	method auto_matchmake_with_param_postpone;
+	
+	method find_matchmake_session_by_gathering_id_detail(u32 gid) {
+		MatchmakeSession session;
+	}
+	
+	method browse_matchmake_session_no_holder;
+	method browse_matchmake_session_with_host_urls_no_holder;
+	method update_matchmake_session_part;
+	method request_matchmaking;
+	method withdraw_matchmaking;
+	method withdraw_matchmaking_all;
+}

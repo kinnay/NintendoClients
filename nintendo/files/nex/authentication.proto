@@ -1,0 +1,53 @@
+
+protocol Authentication : 10 {
+	struct AuthenticationInfo : Data {
+		string token;
+		u32 ngs_version = 3;
+		u8 token_type = 1;
+		u32 server_version;
+	}
+	
+	struct NintendoLoginData : Data {
+		string token;
+	}
+
+	struct RVConnectionData {
+		stationurl main_station;
+		list<u8> special_protocols;
+		stationurl special_station;
+		
+		[server.version >= 30500] {
+			#revision 1
+			datetime server_time;
+		}
+	}
+
+	method login(string username) {
+		result result;
+		pid pid;
+		buffer ticket;
+		RVConnectionData connection_data;
+		string server_name;
+	}
+	
+	method login_ex(string username, anydata extra_data) {
+		result result;
+		pid pid;
+		buffer ticket;
+		RVConnectionData connection_data;
+		string server_name;
+	}
+	
+	method request_ticket(pid source, pid target) {
+		result result;
+		buffer ticket;
+	}
+	
+	method get_pid(string username) {
+		pid pid;
+	}
+	
+	method get_name(pid pid) {
+		string name;
+	}
+}

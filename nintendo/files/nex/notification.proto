@@ -1,0 +1,41 @@
+
+protocol Notification : 14 {
+	struct NotificationEvent {
+		pid pid;
+		u32 type;
+		pid param1;
+		pid param2;
+		string text;
+		
+		[server.version >= 30500] {
+			pid param3;
+		}
+	}
+	
+	method process_notification_event(NotificationEvent event) {}
+}
+
+protocol NintendoNotification : 100 {
+	enum NintendoNotificationType {
+		LOGOUT = 10,
+		PRESENCE_CHANGE = 24,
+		UNFRIENDED = 26,
+		STATUS_CHANGE = 33
+	}
+	
+	struct NintendoNotificationEventGeneral : Data {
+		u32 param1;
+		u64 param2;
+		u64 param3;
+		string text;
+	}
+	
+	struct NintendoNotificationEvent {
+		u32 type;
+		pid pid;
+		anydata data;
+	}
+	
+	method process_nintendo_notification_event(NintendoNotificationEvent event) {}
+	method process_presence_change_event(NintendoNotificationEvent event) {}
+}

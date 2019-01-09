@@ -1,0 +1,83 @@
+
+protocol Ranking : 112 {
+	enum RankingOrderCalc {
+		STANDARD = 0,
+		ORDINAL = 1
+	}
+	
+	enum RankingMode {
+		GLOBAL = 0,
+		GLOBAL_ME = 1,
+		ME = 4
+	}
+	
+	enum RankingStatFlags {
+		RANKING_COUNT = 1,
+		TOTAL_SCORE = 2,
+		LOWEST_SCORE = 4,
+		HIGHEST_SCORE = 8,
+		AVERAGE_SCORE = 16,
+		ALL = 31
+	}
+
+	struct RankingOrderParam {
+		u8 order_calc = 0;
+		u8 group_index = 255;
+		u8 group_num = 0;
+		u8 time_scope = 2;
+		u32 offset;
+		u8 count;
+	}
+	
+	struct RankingRankData {
+		pid pid;
+		u64 unique_id;
+		u32 rank;
+		u32 category;
+		u32 score;
+		list<u8> groups;
+		u64 param;
+		buffer common_data;
+	}
+	
+	struct RankingResult {
+		list<RankingRankData> datas;
+		u32 total;
+		datetime since_time;
+	}
+	
+	struct RankingStats {
+		list<double> stats;
+	}
+
+	method upload_score;
+	method delete_score;
+	method delete_all_scores;
+	method upload_common_data;
+	method delete_common_data;
+	
+	method get_common_data(u64 unique_id) {
+		buffer data;
+	}
+	
+	method change_attributes;
+	method change_all_attributes;
+	
+	method get_ranking(u8 mode, u32 category, RankingOrderParam order, u64 unique_id, pid pid) {
+		RankingResult result;
+	}
+	
+	method get_approx_order;
+	
+	method get_stats(u32 category, RankingOrderParam order, u32 flags) {
+		RankingStats stats;
+	}
+	
+	method get_ranking_by_pid_list(list<pid> pids, u8 mode, u32 category, RankingOrderParam order, u64 unique_id) {
+		RankingResult result;
+	}
+	
+	method get_ranking_by_unique_id_list;
+	method get_cached_topx_ranking;
+	method get_cached_topx_rankings;
+}

@@ -1,0 +1,139 @@
+
+protocol DataStore : 115 {
+	struct PersistenceTarget {
+		pid owner_id = 0;
+		u16 persistence_id = 65535;
+	}
+	
+	struct DataStorePermission {
+		u8 permission;
+		list<u32> recipients;
+	}
+	
+	struct DataStoreRatingInfo {
+		s64 total_value;
+		u32 count;
+		s64 initial_value;
+	}
+	
+	struct DataStoreRatingInfoWithSlot {
+		u8 slot;
+		DataStoreRatingInfo info;
+	}
+	
+	struct DataStoreGetMetaParam {
+		u64 data_id = 0;
+		PersistenceTarget persistence_target;
+		u8 result_option = 0;
+		u64 access_password = 0;
+	}
+	
+	struct DataStoreMetaInfo {
+		u64 data_id;
+		pid owner_id;
+		u32 size;
+		string name;
+		u16 data_type;
+		qbuffer meta_binary;
+		DataStorePermission permission;
+		DataStorePermission delete_permission;
+		datetime create_time;
+		datetime update_time;
+		u16 period;
+		u8 status;
+		u32 referred_count;
+		u32 refer_data_id;
+		u32 flag;
+		datetime referred_time;
+		datetime expire_time;
+		list<string> tags;
+		list<DataStoreRatingInfoWithSlot> ratings;
+	}
+	
+	struct DataStorePrepareGetParam {
+		u64 data_id = 0;
+		u32 lock_id = 0;
+		PersistenceTarget persistence_target;
+		u64 access_password = 0;
+		
+		[server.version >= 30500] {
+			list<string> extra_data;
+		}
+	}
+	
+	struct DataStoreKeyValue {
+		string key;
+		string value;
+	}
+	
+	struct DataStoreReqGetInfo {
+		string url;
+		list<DataStoreKeyValue> headers;
+		u32 size;
+		buffer root_ca_cert;
+		
+		[server.version >= 30500] {
+			u64 data_id;
+		}
+	}
+	
+	method prepare_get_object_v1;
+	method prepare_post_object_v1;
+	method complete_post_object_v1;
+	method delete_object;
+	method delete_objects;
+	method change_meta_v1;
+	method change_metas_v1;
+	
+	method get_meta(DataStoreGetMetaParam param) {
+		DataStoreMetaInfo info;
+	}
+	
+	method get_metas;
+	method prepare_update_object;
+	method complete_update_object;
+	method search_object;
+	method get_notification_url;
+	method get_new_arrived_notifications_v1;
+	method rate_object;
+	method get_rating;
+	method get_ratings;
+	method reset_rating;
+	method reset_ratings;
+	method get_specific_meta_v1;
+	method post_meta_binary;
+	method touch_object;
+	method get_rating_with_log;
+	method prepare_post_object;
+	
+	method prepare_get_object(DataStorePrepareGetParam param) {
+		DataStoreReqGetInfo info;
+	}
+	
+	method complete_post_object;
+	method get_new_arrived_notifications;
+	method get_specific_meta;
+	method get_persistence_info;
+	method get_persistence_infos;
+	method perpetuate_object;
+	method unperpetuate_object;
+	method prepare_get_object_or_meta;
+	method get_password_info;
+	method get_password_infos;
+	
+	method get_metas_multiple_param(list<DataStoreGetMetaParam> params) {
+		list<DataStoreMetaInfo> infos;
+		list<result> results;
+	}
+	
+	method complete_post_objects;
+	method change_meta;
+	method change_metas;
+	method rate_objects;
+	method post_meta_binary_with_data_id;
+	method post_meta_binaries_with_data_id;
+	method rate_object_with_posting;
+	method rate_objects_with_posting;
+	method get_object_infos;
+	method search_object_light;
+}

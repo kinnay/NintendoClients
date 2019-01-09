@@ -1,0 +1,95 @@
+
+protocol Account : 25 {
+	struct AccountData {
+		pid pid;
+		string name;
+		u32 groups;
+		string email;
+		datetime creation_date;
+		datetime effective_date;
+		string not_effective_message;
+		datetime expiry_date;
+		string expired_message;
+	}
+	
+	struct BasicAccountInfo {
+		pid pid;
+		string name;
+	}
+	
+	method create_account(string name, string key, u32 groups, string email) {
+		result result;
+	}
+	method delete_account(pid pid) {}
+	method disable_account(pid pid, datetime until, string message) {
+		result result;
+	}
+	method change_password(string new_key) { bool result; }
+	method test_capability(u32 capability) { bool result; }
+	method get_name(pid pid) { string name; }
+	method get_account_data() {
+		result result;
+		AccountData data;
+	}
+	method get_private_data() {
+		bool result;
+		anydata data;
+	}
+	method get_public_data() {
+		bool result;
+		anydata data;
+	}
+	method get_multiple_public_data(list<pid> pids) {
+		bool result;
+		list<anydata> data;
+	}
+	method update_account_name(string name) { result result; }
+	method update_account_email(string email) { result result; }
+	method update_custom_data(anydata public_data, anydata private_data) {
+		result result;
+	}
+	method find_by_name_regex(u32 groups, string regex, ResultRange range) {
+		list<BasicAccountInfo> accounts;
+	}
+	method update_account_expiry_date(pid pid, datetime expiry, string message) {}
+	method update_account_effective_date(pid pid, datetime effective_from, string message) {}
+	method update_status(string status) {}
+	method get_status(pid pid) {
+		string status;
+	}
+	method get_last_connection_stats(pid pid) {
+		datetime last_session_login;
+		datetime last_session_logout;
+		datetime current_session_login;
+	}
+	method reset_password() { bool result; }
+	method create_account_with_custom_data(
+		string name, string key, u32 groups, string email,
+		anydata public_data, anydata private_data
+	) {}
+	method retrieve_account() {
+		AccountData account_data;
+		anydata public_data;
+		anydata private_data;
+	}
+	method update_account(
+		string key, string email, anydata public_data,
+		anydata private_data
+	) {}
+	method change_password_by_guest(string name, string email, string key) {}
+	method find_by_name_like(u32 groups, string like, ResultRange range) {
+		list<BasicAccountInfo> accounts;
+	}
+	method custom_create_account(string name, string key, u32 groups, string email, anydata auth_data) {
+		pid pid;
+	}
+	method nintendo_create_account(string name, string key, u32 groups, string email, anydata auth_data) {
+		pid pid;
+		string pid_hmac;
+	}
+	method lookup_or_create_account(string name, string key, u32 groups, string email, anydata auth_data) {
+		pid pid;
+	}
+	method disconnect_principal(pid pid) { bool result; }
+	method disconnect_all_principals() { bool result; }
+}
