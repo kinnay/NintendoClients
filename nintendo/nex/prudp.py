@@ -201,6 +201,7 @@ class PRUDPMessageV0:
 		while self.buffer:
 			if len(self.buffer) < 12: return packets
 			
+			#Extract packet header
 			source, dest, type_flags, session_id, signature, packet_id = \
 				struct.unpack_from(self.header_format(), self.buffer)
 				
@@ -219,16 +220,20 @@ class PRUDPMessageV0:
 				packet.type = type_flags & 0xF
 
 			offset = 11
+			
+			#Extract packet signature
 			if packet.type in [TYPE_SYN, TYPE_CONNECT]:
 				if len(self.buffer) < offset + 4: return packets
 				packet.signature = self.buffer[offset : offset + 4]
 				offset += 4
 
+			#Extract fragment id
 			if packet.type == TYPE_DATA:
 				if len(self.buffer) < offset + 1: return packets
 				packet.fragment_id = self.buffer[offset]
 				offset += 1
 
+			#Extract payload size
 			if packet.flags & FLAG_HAS_SIZE:
 				if len(self.buffer) < offset + 2: return packets
 				payload_size = struct.unpack_from("<H", self.buffer, offset)[0]
@@ -239,19 +244,29 @@ class PRUDPMessageV0:
 			if len(self.buffer) < offset + payload_size + self.checksum_size():
 				return packets
 
+			#Extract checksum
 			if self.checksum_size() == 1:
 				checksum = self.buffer[offset + payload_size]
 			elif self.checksum_size() == 4:
 				checksum = struct.unpack_from("<I", self.buffer, offset + payload_size)
 
-			if self.calc_checksum(self.buffer[:offset + payload_size]) != checksum:
-				logger.error("(V0) Invalid checksum")
+			#Verify checksum
+			expected_checksum = self.calc_checksum(self.buffer[:offset + payload_size])
+			if checksum != expected_checksum:
+				logger.error("(V0) Invalid checksum (expected %i, got %i)", checksum, expected_checksum)
 				self.reset()
 				return packets
+			
+			#Extract payload
 			packet.payload = self.buffer[offset : offset + payload_size]
 			
-			if signature != self.calc_packet_signature(packet, self.client.source_signature):
-				logger.error("(V0) Invalid packet signature")
+			#Verify packet signature
+			expected_signature = self.calc_packet_signature(packet, self.client.source_signature)
+			if signature != expected_signature:
+				logger.error(
+					"(V0) Invalid packet signature (expected %s, got %s)",
+					signature.hex(), expected_signature.hex()
+				)
 				self.reset()
 				return packets
 			
