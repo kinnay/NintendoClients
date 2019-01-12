@@ -82,7 +82,7 @@ class RVConnectionData(common.Structure):
 		self.special_protocols = stream.list(stream.u8)
 		self.special_station = stream.stationurl()
 		if stream.settings.get("server.version") >= 30500:
-						self.server_time = stream.datetime()
+			self.server_time = stream.datetime()
 
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -90,7 +90,7 @@ class RVConnectionData(common.Structure):
 		stream.list(self.special_protocols, stream.u8)
 		stream.stationurl(self.special_station)
 		if stream.settings.get("server.version") >= 30500:
-						stream.datetime(self.server_time)
+			stream.datetime(self.server_time)
 
 
 class AuthenticationProtocol:

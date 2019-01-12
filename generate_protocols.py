@@ -722,10 +722,11 @@ def generate_struct_check(protocol, vars, tabs):
 def generate_struct_load(protocol, vars, tabs, prefix):
 	code = ""
 	for field in vars.fields:
-		code += "\t" * tabs
 		if field.type == VariableItem.FIELD:
+			code += "\t" * tabs
 			code += "%s.%s = %s\n" %(prefix, field.obj.name, generate_extract(protocol, field.obj.type))
 		elif field.type == VariableItem.CONDITIONAL:
+			code += "\t" * tabs
 			code += generate_condition(field.obj)
 			code += generate_struct_load(protocol, field.obj.body, tabs + 1, prefix)
 	return code
@@ -733,10 +734,11 @@ def generate_struct_load(protocol, vars, tabs, prefix):
 def generate_struct_save(protocol, vars, tabs):
 	code = ""
 	for field in vars.fields:
-		code += "\t" * tabs
 		if field.type == VariableItem.FIELD:
+			code += "\t" * tabs
 			code += generate_encode(protocol, field.obj.type, "self." + field.obj.name) + "\n"
 		elif field.type == VariableItem.CONDITIONAL:
+			code += "\t" * tabs
 			code += generate_condition(field.obj)
 			code += generate_struct_save(protocol, field.obj.body, tabs + 1)
 	return code
