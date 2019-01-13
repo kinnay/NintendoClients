@@ -96,6 +96,7 @@ class PRUDPPacket:
 		self.source_type = None
 		self.dest_port = None
 		self.dest_type = None
+		self.session_id = None
 		self.packet_id = None
 		self.signature = None
 		self.fragment_id = 0
@@ -171,7 +172,7 @@ class PRUDPMessageV0:
 			packet.source_port | (packet.source_type << 4),
 			packet.dest_port | (packet.dest_type << 4),
 			packet.type | (packet.flags << 4),
-			self.client.session_id,
+			packet.session_id,
 			self.calc_packet_signature(packet, self.client.target_signature),
 			packet.packet_id
 		)
@@ -210,6 +211,7 @@ class PRUDPMessageV0:
 			packet.source_port = source & 0xF
 			packet.dest_type = dest >> 4
 			packet.dest_port = dest & 0xF
+			packet.session_id = session_id
 			packet.packet_id = packet_id
 
 			if self.flags_version == 0:
@@ -310,7 +312,7 @@ class PRUDPMessageV1:
 			packet.source_port | (packet.source_type << 4),
 			packet.dest_port | (packet.dest_type << 4),
 			packet.type | (packet.flags << 4),
-			self.client.session_id, packet.multi_ack_version, packet.packet_id
+			packet.session_id, packet.multi_ack_version, packet.packet_id
 		)
 		
 	def encode_options(self, packet):
@@ -361,6 +363,7 @@ class PRUDPMessageV1:
 			packet.dest_port = dest & 0xF
 			packet.flags = type_flags >> 4
 			packet.type = type_flags & 0xF
+			packet.session_id = session_id
 			packet.packet_id = packet_id
 			
 			option_data = self.buffer[30 : 30 + option_size:]
@@ -456,6 +459,7 @@ class PRUDPLiteMessage:
 			packet.flags = type_flags >> 4
 			packet.type = type_flags & 0xF
 			packet.packet_id = packet_id
+			packet.session_id = 0
 			
 			option_data = self.buffer[12 : 12 + option_size:]
 			options = decode_options(option_data)
@@ -578,7 +582,8 @@ class PRUDPClient:
 		self.fragment_buffer = b""
 		self.packet_id_out = itertools.count()
 		self.packet_id_in = 0
-		self.session_id = 0
+		self.local_session_id = 0
+		self.remote_session_id = 0
 		
 		self.ack_events = {}
 		self.ping_event = None
@@ -628,7 +633,7 @@ class PRUDPClient:
 			logger.error("SYN handshake failed")
 			return False
 			
-		self.session_id = random.randint(0, 0xFF)
+		self.local_session_id = random.randint(0, 0xFF)
 		if self.transport_type == self.settings.TRANSPORT_UDP:
 			self.source_signature = secrets.token_bytes(self.packet_encoder.signature_size())
 		else:
@@ -684,7 +689,7 @@ class PRUDPClient:
 		
 		self.state = self.DISCONNECTED
 		self.remove_events()
-		logger.debug("(%i) PRUDP connection closed", self.session_id)
+		logger.debug("(%i) PRUDP connection closed", self.local_session_id)
 			
 	def recv(self):
 		if self.state != self.CONNECTED: return b""
@@ -721,20 +726,38 @@ class PRUDPClient:
 			scheduler.remove(self.ping_event)
 		for event in self.ack_events.values():
 			scheduler.remove(event)
+			
+	def check_session_id(self, packet):
+		if packet.type == TYPE_SYN and packet.session_id != 0:
+			logger.error("Unexpected session id (expected 0, got %i)", packet.session_id)
+			return False
+		
+		if self.remote_session_id != 0 and self.remote_session_id != packet.session_id:
+			logger.error(
+				"Unexpected session id (expected %i, got %i)",
+				self.remote_session_id, packet.session_id
+			)
+			return False
+			
+		self.remote_session_id = packet.session_id
+		return True
 		
 	def handle_recv(self, data):
 		if not data:
-			logger.debug("(%i) Connection was closed" %self.session_id)
+			logger.debug("(%i) Connection was closed" %self.local_session_id)
 			self.state = self.DISCONNECTED
 			self.remove_events()
 			return
 
 		packets = self.packet_encoder.decode(data)
 		for packet in packets:
-			logger.debug("(%i) Packet received: %s" %(self.session_id, packet))
+			logger.debug("(%i) Packet received: %s" %(self.local_session_id, packet))
+			
+			if not self.check_session_id(packet):
+				continue
 			
 			if packet.flags & FLAG_ACK:
-				logger.debug("(%i) Packet acknowledged: %s" %(self.session_id, packet))
+				logger.debug("(%i) Packet acknowledged: %s" %(self.local_session_id, packet))
 				if packet.packet_id in self.ack_events:
 					if packet.type == TYPE_SYN:
 						self.target_signature = packet.signature
@@ -751,7 +774,7 @@ class PRUDPClient:
 					ack_id = struct.unpack_from("<H", packet.payload, 2)[0]
 				else:
 					ack_id = struct.unpack("<H", packet.payload)[0]
-				logger.debug("(%i) Aggregate ack up to packet %i" %(self.session_id, ack_id))
+				logger.debug("(%i) Aggregate ack up to packet %i" %(self.local_session_id, ack_id))
 				for packet_id in list(self.ack_events.keys()):
 					if packet_id <= ack_id:
 						scheduler.remove(self.ack_events.pop(packet_id))
@@ -797,7 +820,7 @@ class PRUDPClient:
 				self.fragment_buffer = b""
 				
 		elif packet.type == TYPE_DISCONNECT:
-			logger.info("(%i) Server closed connection", self.session_id)
+			logger.info("(%i) Server closed connection", self.local_session_id)
 			self.state = self.DISCONNECTED
 			self.remove_events()
 			
@@ -813,7 +836,7 @@ class PRUDPClient:
 	def handle_ack_timeout(self, param):
 		packet, counter = param
 		if counter < self.resend_limit:
-			logger.debug("(%i) Resending packet: %s", self.session_id, packet)
+			logger.debug("(%i) Resending packet: %s", self.local_session_id, packet)
 			self.send_packet_raw(packet)
 			
 			event = scheduler.add_timeout(self.handle_ack_timeout, self.resend_timeout, param=(packet, counter+1))
@@ -834,7 +857,7 @@ class PRUDPClient:
 			ack.signature = bytes(self.packet_encoder.signature_size())
 			ack.payload = self.build_connection_response()
 			
-		logger.debug("(%i) Sending ack: %s", self.session_id, ack)
+		logger.debug("(%i) Sending ack: %s", self.local_session_id, ack)
 		self.send_packet_raw(ack)
 		
 	def wait_ack(self, packet):
@@ -845,7 +868,7 @@ class PRUDPClient:
 	def send_packet(self, packet):
 		packet.packet_id = next(self.packet_id_out)
 
-		logger.debug("(%i) Sending packet: %s", self.session_id, packet)
+		logger.debug("(%i) Sending packet: %s", self.local_session_id, packet)
 		
 		if packet.flags & FLAG_NEED_ACK:
 			event = scheduler.add_timeout(self.handle_ack_timeout, self.resend_timeout, param=(packet, 0))
@@ -858,6 +881,7 @@ class PRUDPClient:
 		packet.source_type = self.stream_type
 		packet.dest_port = self.remote_port
 		packet.dest_type = self.stream_type
+		packet.session_id = self.local_session_id
 		self.sock.send(self.packet_encoder.encode(packet))
 		
 		
