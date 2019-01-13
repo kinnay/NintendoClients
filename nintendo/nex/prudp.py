@@ -729,7 +729,7 @@ class PRUDPClient:
 			
 	def check_session_id(self, packet):
 		if packet.type == TYPE_SYN and packet.session_id != 0:
-			logger.error("Unexpected session id (expected 0, got %i)", packet.session_id)
+			logger.error("Unexpected session id in SYN packet (expected 0, got %i)", packet.session_id)
 			return False
 		
 		if self.remote_session_id != 0 and self.remote_session_id != packet.session_id:
@@ -757,8 +757,8 @@ class PRUDPClient:
 				continue
 			
 			if packet.flags & FLAG_ACK:
-				logger.debug("(%i) Packet acknowledged: %s" %(self.local_session_id, packet))
 				if packet.packet_id in self.ack_events:
+					logger.debug("(%i) Packet acknowledged: %s" %(self.local_session_id, packet))
 					if packet.type == TYPE_SYN:
 						self.target_signature = packet.signature
 					elif packet.type == TYPE_CONNECT:
