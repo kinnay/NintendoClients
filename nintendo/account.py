@@ -164,6 +164,7 @@ class Request:
 class AccountAPI:
 	def __init__(self):
 		self.headers = {
+			"Accept-Language": "en",
 			"X-Nintendo-Platform-ID": "1",
 			"X-Nintendo-Device-Type": "2",
 			"X-Nintendo-Client-ID": "a2efa818a34fa16b8afbc8a74eba3eda",
@@ -176,18 +177,23 @@ class AccountAPI:
 		self.access_token = None
 		self.refresh_token = None
 		self.refresh_time = None
+		self.device_cert = None
 		
-	def set_device(self, device_id, serial_number, system_version, region, country):
+	def set_device(self, device_id, serial_number, system_version, region, country, device_cert=None):
 		self.headers["X-Nintendo-Device-ID"] = str(device_id)
 		self.headers["X-Nintendo-Serial-Number"] = serial_number
 		self.headers["X-Nintendo-System-Version"] = "%04X" %system_version
 		self.headers["X-Nintendo-Region"] = str(region)
 		self.headers["X-Nintendo-Country"] = country
+		self.device_cert = device_cert
 		
 	def set_title(self, title_id, application_version):
 		self.headers["X-Nintendo-Title-ID"] = "%016X" %title_id
 		self.headers["X-Nintendo-Unique-ID"] = "%05X" %((title_id & 0xFFFFF00) >> 8)
 		self.headers["X-Nintendo-Application-Version"] = "%04X" %application_version
+
+	def set_header(self, name, value):
+		self.headers[name] = value
 		
 	def get_access_token(self):
 		if time.time() >= self.refresh_time:
@@ -204,6 +210,9 @@ class AccountAPI:
 			data["password_type"] = "hash"
 
 		request = Request(self)
+		if self.device_cert:
+			request.headers["X-Nintendo-Device-Cert"] = self.device_cert
+
 		response = request.post(
 			"oauth20/access_token/generate",
 			data = data
@@ -215,6 +224,9 @@ class AccountAPI:
 		
 	def refresh_login(self):
 		request = Request(self)
+		if self.device_cert:
+			request.headers["X-Nintendo-Device-Cert"] = self.device_cert
+
 		response = request.post(
 			"oauth20/access_token/generate",
 			data = {
