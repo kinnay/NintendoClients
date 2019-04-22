@@ -106,7 +106,7 @@ class Profile(collections.namedtuple(
 			obj.off_device_flag.text == "Y",
 			int(obj.pid.text),
 			Email.parse(obj.email),
-			Mii.parse(obj.mii),
+			ProfileMii.parse(obj.mii),
 			int(obj.region.text),
 			obj.tz_name.text,
 			obj.user_id.text,
