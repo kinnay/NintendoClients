@@ -7,7 +7,7 @@ protocol DataStore : 115 {
 	
 	struct DataStorePermission {
 		u8 permission;
-		list<u32> recipients;
+		list<pid> recipients;
 	}
 	
 	struct DataStoreRatingInfo {
