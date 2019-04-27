@@ -161,7 +161,7 @@ class PRUDPMessageV0:
 		return "<BBHB4sH"
 		
 	def encode(self, packet):
-		packet.flags &= ~FLAG_HAS_SIZE
+		#packet.flags &= ~FLAG_HAS_SIZE
 
 		if self.flags_version == 0:
 			type_field = packet.type | (packet.flags << 3)
@@ -712,7 +712,7 @@ class PRUDPClient:
 		data = self.compression.compress(data)
 		data = self.encryption.encrypt(data)
 
-		packet = PRUDPPacket(TYPE_DATA, FLAG_RELIABLE | FLAG_NEED_ACK)
+		packet = PRUDPPacket(TYPE_DATA, FLAG_RELIABLE | FLAG_NEED_ACK | FLAG_HAS_SIZE)
 		packet.fragment_id = fragment_id
 		packet.payload = data
 		self.send_packet(packet)
@@ -848,11 +848,15 @@ class PRUDPClient:
 			self.remove_events()
 			
 	def send_ack(self, packet):
-		ack = PRUDPPacket(packet.type, FLAG_ACK)
+		flags = FLAG_ACK
+		if packet.type == TYPE_CONNECT:
+			flags |= FLAG_HAS_SIZE
+		ack = PRUDPPacket(packet.type, flags)
 		ack.packet_id = packet.packet_id
 		ack.fragment_id = packet.fragment_id
 		if packet.type == TYPE_SYN:
 			ack.signature = self.source_signature
+			ack.payload = b""
 		elif packet.type == TYPE_CONNECT:
 			ack.signature = bytes(self.packet_encoder.signature_size())
 			ack.payload = self.build_connection_response()
