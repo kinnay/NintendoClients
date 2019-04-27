@@ -934,12 +934,12 @@ class RVSecureClient(PRUDPClient):
 		
 		self.server_ticket = kerberos.ServerTicket(internal)
 		try:
-			self.server_ticket.decrypt(self.server_key)
+			self.server_ticket.decrypt(self.server_key, self.settings)
 		except ValueError:
 			logger.error("Internal ticket decryption failed")
 			return False
 			
-		if server_ticket.expiration.timestamp() < time.time():
+		if self.server_ticket.expiration.timestamp() < time.time():
 			logger.error("Ticket has expired")
 			return False
 			

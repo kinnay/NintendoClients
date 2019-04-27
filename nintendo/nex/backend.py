@@ -147,7 +147,7 @@ class BackEndClient:
 		port = secure_station["port"]
 		if host == "0.0.0.1":
 			host, port = self.auth_client.remote_address()
-			
+
 		# Connect to secure server
 		server_sid = secure_station["sid"]
 		if not self.secure_client.connect(host, port, server_sid, ticket):

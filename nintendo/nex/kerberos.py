@@ -63,7 +63,7 @@ class ClientTicket:
 		
 		self.session_key = None
 		self.target_pid = None
-		self.internal = None
+		self.internal = b""
 		
 		self.source_pid = None
 		self.target_cid = None
@@ -75,6 +75,18 @@ class ClientTicket:
 		self.session_key = stream.read(settings.get("kerberos.key_size"))
 		self.target_pid = stream.pid()
 		self.internal = stream.buffer()
+
+	def encrypt(self, key, settings):
+		stream = streams.StreamOut(settings)
+		if settings.get("kerberos.key_size") != len(self.session_key):
+			raise Exception("Incorrect session_key size")
+		stream.write(self.session_key)
+		stream.pid(self.target_pid)
+		stream.buffer(self.internal)
+
+		data = stream.get()
+		kerberos = KerberosEncryption(key)
+		return kerberos.encrypt(data)
 		
 		
 class ServerTicket:
@@ -89,8 +101,8 @@ class ServerTicket:
 		stream = streams.StreamIn(self.encrypted, settings)
 		ticket_key = stream.buffer()
 		ticket_body = stream.buffer()
-		final_key = hashlib.md5(key + ticket_key)
-		
+		final_key = hashlib.md5(key + ticket_key).digest()
+
 		kerberos = KerberosEncryption(final_key)
 		decrypted = kerberos.decrypt(ticket_body)
 		
@@ -98,3 +110,23 @@ class ServerTicket:
 		self.expiration = stream.datetime()
 		self.source_pid = stream.pid()
 		self.session_key = stream.read(settings.get("kerberos.key_size"))
+
+	def encrypt(self, key, ticket_key, settings):
+		stream = streams.StreamOut(settings)
+		stream.datetime(self.expiration)
+		stream.pid(self.source_pid)
+		if len(self.session_key) != settings.get("kerberos.key_size"):
+			raise Exception("Incorrect session_key length")
+		stream.write(self.session_key)
+
+		ticket_body = stream.get()
+
+		final_key = hashlib.md5(key + ticket_key).digest()
+
+		kerberos = KerberosEncryption(final_key)
+		encrypted = kerberos.encrypt(ticket_body)
+
+		stream = streams.StreamOut(settings)
+		stream.buffer(ticket_key)
+		stream.buffer(encrypted)
+		return stream.get()
