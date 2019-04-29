@@ -120,6 +120,8 @@ class UDPServer:
 			self.packets[addr].append(data)
 		except BlockingIOError:
 			pass
+		except ConnectionResetError:
+			pass
 			
 	def accept(self):
 		if self.incoming:
