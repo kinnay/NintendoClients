@@ -933,14 +933,14 @@ class RVSecureClient(PRUDPClient):
 			return True
 		
 		stream = streams.StreamIn(payload, self.settings)
-		internal = stream.buffer()
+		ticket = stream.buffer()
 		request = stream.buffer()
 		
-		self.server_ticket = kerberos.ServerTicket(internal)
+		self.server_ticket = kerberos.ServerTicket()
 		try:
-			self.server_ticket.decrypt(self.server_key, self.settings)
+			self.server_ticket.decrypt(ticket, self.server_key, self.settings)
 		except ValueError:
-			logger.error("Internal ticket decryption failed")
+			logger.error("Server ticket decryption failed")
 			return False
 			
 		if self.server_ticket.expiration.timestamp() < time.time():

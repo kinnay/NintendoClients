@@ -124,8 +124,8 @@ class BackEndClient:
 		)
 		
 		# Decrypt ticket from login response
-		ticket = kerberos.ClientTicket(response.ticket)
-		ticket.decrypt(kerberos_key, self.settings)
+		ticket = kerberos.ClientTicket()
+		ticket.decrypt(response.ticket, kerberos_key, self.settings)
 		
 		if ticket.target_pid != secure_station["PID"]:
 			# Request ticket for secure server
@@ -135,8 +135,8 @@ class BackEndClient:
 			
 			# Check for errors and decrypt ticket
 			response.result.raise_if_error()
-			ticket = kerberos.ClientTicket(response.ticket)
-			ticket.decrypt(kerberos_key, self.settings)
+			ticket = kerberos.ClientTicket()
+			ticket.decrypt(response.ticket, kerberos_key, self.settings)
 			
 		ticket.source_pid = self.my_pid
 		ticket.target_cid = secure_station["CID"]

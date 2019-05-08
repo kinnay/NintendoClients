@@ -2,6 +2,7 @@
 from nintendo.common import crypto
 from nintendo.nex import streams
 import struct
+import secrets
 import hashlib
 import hmac
 
@@ -58,9 +59,7 @@ class KerberosEncryption:
 
 
 class ClientTicket:
-	def __init__(self, encrypted):
-		self.encrypted = encrypted
-		
+	def __init__(self):
 		self.session_key = None
 		self.target_pid = None
 		self.internal = b""
@@ -68,9 +67,9 @@ class ClientTicket:
 		self.source_pid = None
 		self.target_cid = None
 		
-	def decrypt(self, key, settings):
+	def decrypt(self, data, key, settings):
 		kerberos = KerberosEncryption(key)
-		decrypted = kerberos.decrypt(self.encrypted)
+		decrypted = kerberos.decrypt(data)
 		stream = streams.StreamIn(decrypted, settings)
 		self.session_key = stream.read(settings.get("kerberos.key_size"))
 		self.target_pid = stream.pid()
@@ -79,7 +78,7 @@ class ClientTicket:
 	def encrypt(self, key, settings):
 		stream = streams.StreamOut(settings)
 		if settings.get("kerberos.key_size") != len(self.session_key):
-			raise Exception("Incorrect session_key size")
+			raise ValueError("Incorrect session_key size")
 		stream.write(self.session_key)
 		stream.pid(self.target_pid)
 		stream.buffer(self.internal)
@@ -90,14 +89,12 @@ class ClientTicket:
 		
 		
 class ServerTicket:
-	def __init__(self, encrypted):
-		self.encrypted = encrypted
-		
+	def __init__(self):
 		self.expiration = None
 		self.source_pid = None
 		self.session_key = None
 		
-	def decrypt(self, key, settings):
+	def decrypt(self, data, key, settings):
 		stream = streams.StreamIn(self.encrypted, settings)
 		ticket_key = stream.buffer()
 		ticket_body = stream.buffer()
@@ -111,12 +108,14 @@ class ServerTicket:
 		self.source_pid = stream.pid()
 		self.session_key = stream.read(settings.get("kerberos.key_size"))
 
-	def encrypt(self, key, ticket_key, settings):
+	def encrypt(self, key, settings):
+		ticket_key = secrets.token_bytes(16)
+		
 		stream = streams.StreamOut(settings)
 		stream.datetime(self.expiration)
 		stream.pid(self.source_pid)
 		if len(self.session_key) != settings.get("kerberos.key_size"):
-			raise Exception("Incorrect session_key length")
+			raise ValueError("Incorrect session_key length")
 		stream.write(self.session_key)
 
 		ticket_body = stream.get()
