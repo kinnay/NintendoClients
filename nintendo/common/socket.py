@@ -118,7 +118,7 @@ class UDPServer:
 				self.packets[addr] = []
 				self.incoming.append(sock)
 			self.packets[addr].append(data)
-		except BlockingIOError:
+		except (BlockingIOError, ConnectionResetError):
 			pass
 			
 	def accept(self):
