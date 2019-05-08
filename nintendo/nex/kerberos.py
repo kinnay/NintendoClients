@@ -95,7 +95,7 @@ class ServerTicket:
 		self.session_key = None
 		
 	def decrypt(self, data, key, settings):
-		stream = streams.StreamIn(self.encrypted, settings)
+		stream = streams.StreamIn(data, settings)
 		ticket_key = stream.buffer()
 		ticket_body = stream.buffer()
 		final_key = hashlib.md5(key + ticket_key).digest()
