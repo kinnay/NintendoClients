@@ -155,7 +155,7 @@ class BackEndClient:
 		
 		# Create a stationurl for our local client address
 		client_addr = self.secure_client.local_address()
-		self.local_station = common.StationUrl(
+		self.local_station = common.StationURL(
 			address=client_addr[0], port=client_addr[1],
 			sid=self.secure_client.stream_id(),
 			natm=0, natf=0, upnp=0, pmp=0

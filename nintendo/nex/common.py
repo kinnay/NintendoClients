@@ -126,7 +126,7 @@ class DataHolder:
 		cls.object_map[name] = object
 		
 		
-class StationUrl:
+class StationURL:
 
 	str_params = ["address"]
 	int_params = ["port", "stream", "sid", "PID", "CID", "type", "RVCID",
@@ -176,7 +176,7 @@ class StationUrl:
 	def is_global(self): return self.is_public() and not self.is_behind_nat()
 		
 	def copy(self):
-		return StationUrl(self.url_type, **self.params)
+		return StationURL(self.url_type, **self.params)
 		
 	@classmethod
 	def parse(cls, string):

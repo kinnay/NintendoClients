@@ -78,7 +78,7 @@ class StreamIn(streams.StreamIn):
 			return self.read(length).decode("utf8")[:-1] #Remove null-terminator
 			
 	def stationurl(self):
-		return common.StationUrl.parse(self.string())
+		return common.StationURL.parse(self.string())
 		
 	def datetime(self):
 		return common.DateTime(self.u64())

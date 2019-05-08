@@ -863,7 +863,7 @@ def get_python_type(type):
 		return "bytes"
 	elif type.name == "list": return "list"
 	elif type.name == "datetime": return "common.DateTime"
-	elif type.name == "stationurl": return "common.StationUrl"
+	elif type.name == "stationurl": return "common.StationURL"
 	elif type.name == "result": return "common.Result"
 	elif type.name == "anydata": return "common.Data"
 	elif type.name in COMMON_TYPES:

@@ -1,7 +1,7 @@
 
 from nintendo.pia.common import StationAddress, InetAddress
 from nintendo.pia.packet import PIAMessage
-from nintendo.nex.common import StationUrl
+from nintendo.nex.common import StationURL
 from nintendo.common import signal
 import collections
 import struct
@@ -24,7 +24,7 @@ class StationLocation(collections.namedtuple("StationLocation", "address pid cid
 		)
 		
 	def to_station_url(self):
-		url = StationUrl()
+		url = StationURL()
 		url.set_type_id(self.url_type)
 		url["address"] = self.address.address.host
 		url["port"] = self.address.address.port
