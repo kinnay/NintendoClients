@@ -784,7 +784,8 @@ class PRUDPClient:
 					self.packet_queue[packet.packet_id] = packet
 					while self.packet_id_in in self.packet_queue:
 						packet = self.packet_queue.pop(self.packet_id_in)
-						self.handle_packet(packet)
+						if not self.handle_packet(packet):
+							return
 						self.packet_id_in += 1
 							
 				if packet.flags & FLAG_NEED_ACK:
@@ -808,7 +809,7 @@ class PRUDPClient:
 				if not self.validate_connection_request(packet.payload):
 					self.state = self.DISCONNECTED
 					self.remove_events()
-					return
+					return False
 				self.state = self.CONNECTED
 		
 		elif packet.type == TYPE_DATA:
@@ -823,6 +824,7 @@ class PRUDPClient:
 			logger.info("(%i) Server closed connection", self.local_session_id)
 			self.state = self.DISCONNECTED
 			self.remove_events()
+		return True
 			
 	def handle_ping(self):
 		packet = PRUDPPacket(TYPE_PING, FLAG_RELIABLE | FLAG_NEED_ACK)
