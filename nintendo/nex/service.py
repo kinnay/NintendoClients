@@ -9,6 +9,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class RMCContext:
+	def __init__(self, client, pid):
+		self.client = client
+		self.pid = pid
+
+
 class RMCClient:
 	def __init__(self, settings, sock=None):
 		self.settings = settings
@@ -104,9 +110,10 @@ class RMCClient:
 		logger.debug("Received RMC request: protocol=%i, call=%i, method=%i", protocol_id, call_id, method_id)
 		
 		if protocol_id in self.servers:
+			context = RMCContext(self, self.pid)
 			response = self.init_response(protocol_id, call_id, method_id)
 			try:
-				result = self.servers[protocol_id].handle(self.pid, method_id, stream, response)
+				result = self.servers[protocol_id].handle(context, method_id, stream, response)
 			except common.RMCError as e:
 				logger.info("RMC failed with error 0x%08X (%s)" %(e.error_code, e.error_name))
 				result = common.Result(e.error_code)

@@ -116,7 +116,7 @@ class AuthenticationClient(AuthenticationProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.result = stream.result()
 		obj.pid = stream.pid()
 		obj.ticket = stream.buffer()
@@ -135,7 +135,7 @@ class AuthenticationClient(AuthenticationProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.result = stream.result()
 		obj.pid = stream.pid()
 		obj.ticket = stream.buffer()
@@ -154,7 +154,7 @@ class AuthenticationClient(AuthenticationProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.result = stream.result()
 		obj.ticket = stream.buffer()
 		logger.info("AuthenticationClient.request_ticket -> done")
@@ -197,79 +197,82 @@ class AuthenticationServer(AuthenticationProtocol):
 			self.METHOD_GET_NAME: self.handle_get_name,
 		}
 
-	def handle(self, caller_id, method_id, input, output):
+	def handle(self, context, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](caller_id, input, output)
+			return self.methods[method_id](context, input, output)
 		else:
 			logger.warning("Unknown method called on AuthenticationServer: %i", method_id)
 			raise common.RMCError("Core::NotImplemented")
 
-	def handle_login(self, caller_id, input, output):
+	def handle_login(self, context, input, output):
 		logger.info("AuthenticationServer.login()")
 		#--- request ---
 		username = input.string()
-		response = common.ResponseObject()
-		self.login(caller_id, response, username)
+		response = self.login(context, username)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['result', 'pid', 'ticket', 'connection_data', 'server_name']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.result(response.result)
 		output.pid(response.pid)
 		output.buffer(response.ticket)
 		output.add(response.connection_data)
 		output.string(response.server_name)
 
-	def handle_login_ex(self, caller_id, input, output):
+	def handle_login_ex(self, context, input, output):
 		logger.info("AuthenticationServer.login_ex()")
 		#--- request ---
 		username = input.string()
 		extra_data = input.anydata()
-		response = common.ResponseObject()
-		self.login_ex(caller_id, response, username, extra_data)
+		response = self.login_ex(context, username, extra_data)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['result', 'pid', 'ticket', 'connection_data', 'server_name']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.result(response.result)
 		output.pid(response.pid)
 		output.buffer(response.ticket)
 		output.add(response.connection_data)
 		output.string(response.server_name)
 
-	def handle_request_ticket(self, caller_id, input, output):
+	def handle_request_ticket(self, context, input, output):
 		logger.info("AuthenticationServer.request_ticket()")
 		#--- request ---
 		source = input.pid()
 		target = input.pid()
-		response = common.ResponseObject()
-		self.request_ticket(caller_id, response, source, target)
+		response = self.request_ticket(context, source, target)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['result', 'ticket']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.result(response.result)
 		output.buffer(response.ticket)
 
-	def handle_get_pid(self, caller_id, input, output):
+	def handle_get_pid(self, context, input, output):
 		logger.info("AuthenticationServer.get_pid()")
 		#--- request ---
 		username = input.string()
-		response = self.get_pid(username)
+		response = self.get_pid(context, username)
 
 		#--- response ---
 		if not isinstance(response, int):
 			raise RuntimeError("Expected int, got %s" %response.__class__.__name__)
 		output.pid(response)
 
-	def handle_get_name(self, caller_id, input, output):
+	def handle_get_name(self, context, input, output):
 		logger.info("AuthenticationServer.get_name()")
 		#--- request ---
 		pid = input.pid()
-		response = self.get_name(pid)
+		response = self.get_name(context, pid)
 
 		#--- response ---
 		if not isinstance(response, str):

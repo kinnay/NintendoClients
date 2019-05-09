@@ -18,7 +18,7 @@ class RMCError(Exception):
 		return "%s (0x%08X)" %(self.error_name, self.error_code)
 
 
-class ResponseObject:
+class RMCResponse:
 	pass
 
 	

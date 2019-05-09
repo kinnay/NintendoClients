@@ -53,7 +53,7 @@ class SecureConnectionClient(SecureConnectionProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.result = stream.result()
 		obj.connection_id = stream.u32()
 		obj.public_station = stream.stationurl()
@@ -70,7 +70,7 @@ class SecureConnectionClient(SecureConnectionProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.result = stream.bool()
 		obj.connection_data = stream.list(ConnectionData)
 		logger.info("SecureConnectionClient.request_connection_data -> done")
@@ -86,7 +86,7 @@ class SecureConnectionClient(SecureConnectionProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.result = stream.bool()
 		obj.urls = stream.list(stream.stationurl)
 		logger.info("SecureConnectionClient.request_urls -> done")
@@ -102,7 +102,7 @@ class SecureConnectionClient(SecureConnectionProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.result = stream.result()
 		obj.connection_id = stream.u32()
 		obj.public_station = stream.stationurl()
@@ -156,92 +156,96 @@ class SecureConnectionServer(SecureConnectionProtocol):
 			self.METHOD_SEND_REPORT: self.handle_send_report,
 		}
 
-	def handle(self, caller_id, method_id, input, output):
+	def handle(self, context, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](caller_id, input, output)
+			return self.methods[method_id](context, input, output)
 		else:
 			logger.warning("Unknown method called on SecureConnectionServer: %i", method_id)
 			raise common.RMCError("Core::NotImplemented")
 
-	def handle_register(self, caller_id, input, output):
+	def handle_register(self, context, input, output):
 		logger.info("SecureConnectionServer.register()")
 		#--- request ---
 		urls = input.list(input.stationurl)
-		response = common.ResponseObject()
-		self.register(caller_id, response, urls)
+		response = self.register(context, urls)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['result', 'connection_id', 'public_station']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.result(response.result)
 		output.u32(response.connection_id)
 		output.stationurl(response.public_station)
 
-	def handle_request_connection_data(self, caller_id, input, output):
+	def handle_request_connection_data(self, context, input, output):
 		logger.info("SecureConnectionServer.request_connection_data()")
 		#--- request ---
 		cid = input.u32()
 		pid = input.pid()
-		response = common.ResponseObject()
-		self.request_connection_data(caller_id, response, cid, pid)
+		response = self.request_connection_data(context, cid, pid)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['result', 'connection_data']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.bool(response.result)
 		output.list(response.connection_data, output.add)
 
-	def handle_request_urls(self, caller_id, input, output):
+	def handle_request_urls(self, context, input, output):
 		logger.info("SecureConnectionServer.request_urls()")
 		#--- request ---
 		cid = input.u32()
 		pid = input.pid()
-		response = common.ResponseObject()
-		self.request_urls(caller_id, response, cid, pid)
+		response = self.request_urls(context, cid, pid)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['result', 'urls']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.bool(response.result)
 		output.list(response.urls, output.stationurl)
 
-	def handle_register_ex(self, caller_id, input, output):
+	def handle_register_ex(self, context, input, output):
 		logger.info("SecureConnectionServer.register_ex()")
 		#--- request ---
 		urls = input.list(input.stationurl)
 		login_data = input.anydata()
-		response = common.ResponseObject()
-		self.register_ex(caller_id, response, urls, login_data)
+		response = self.register_ex(context, urls, login_data)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['result', 'connection_id', 'public_station']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.result(response.result)
 		output.u32(response.connection_id)
 		output.stationurl(response.public_station)
 
-	def handle_test_connectivity(self, caller_id, input, output):
+	def handle_test_connectivity(self, context, input, output):
 		logger.info("SecureConnectionServer.test_connectivity()")
 		#--- request ---
-		self.test_connectivity()
+		self.test_connectivity(context)
 
-	def handle_replace_url(self, caller_id, input, output):
+	def handle_replace_url(self, context, input, output):
 		logger.info("SecureConnectionServer.replace_url()")
 		#--- request ---
 		url = input.stationurl()
 		new = input.stationurl()
-		self.replace_url(url, new)
+		self.replace_url(context, url, new)
 
-	def handle_send_report(self, caller_id, input, output):
+	def handle_send_report(self, context, input, output):
 		logger.info("SecureConnectionServer.send_report()")
 		#--- request ---
 		report_id = input.u32()
 		data = input.qbuffer()
-		self.send_report(report_id, data)
+		self.send_report(context, report_id, data)
 
 	def register(self, *args):
 		logger.warning("SecureConnectionServer.register not implemented")

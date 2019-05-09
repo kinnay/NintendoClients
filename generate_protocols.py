@@ -821,7 +821,7 @@ def generate_client_method(protocol, method):
 	code += "\t\t#--- response ---\n"
 	if len(method.response.fields) > 1:
 		code += "\t\tstream = self.client.get_response(call_id)\n"
-		code += "\t\tobj = common.ResponseObject()\n"
+		code += "\t\tobj = common.RMCResponse()\n"
 		code += generate_struct_load(protocol, method.response, 2, "obj")
 		code += "\t\tlogger.info(\"%sClient.%s -> done\")\n" %(protocol.name, method.name)
 		code += "\t\treturn obj"
@@ -871,7 +871,7 @@ def get_python_type(type):
 	return type.name
 
 def generate_server_method(protocol, method):
-	code = "\tdef handle_%s(self, caller_id, input, output):\n" %method.name
+	code = "\tdef handle_%s(self, context, input, output):\n" %method.name
 	if method.response is None: #Unsupported method
 		code += "\t\tlogger.warning(\"%sSever.%s is unsupported\")\n" %(protocol.name, method.name)
 		code += "\t\treturn common.Result(\"Core::NotImplemented\")\n\n"
@@ -884,34 +884,31 @@ def generate_server_method(protocol, method):
 		
 	params = ""
 	for param in method.parameters:
-		params += param.name + ", "
-	params = params[:-2]
+		params += ", " + param.name
 	
 	fields = [f.obj for f in method.response.fields if f.type == VariableItem.FIELD]
 	if len(fields) > 1:
 		field_names = [f.name for f in fields]
-		code += "\t\tresponse = common.ResponseObject()\n"
-		code += "\t\tself.%s(caller_id, response" %method.name
-		if params:
-			code += ", " + params
-		code += ")\n\n"
+		code += "\t\tresponse = self.%s(context%s)\n\n" %(method.name, params)
 		code += "\t\t#--- response ---\n"
+		code += "\t\tif not isinstance(response, common.RMCResponse):\n"
+		code += "\t\t\traise RuntimeError(\"Expected RMCResponse, got %s\" %response.__class__.__name__)\n"
 		code += "\t\tfor field in %s:\n" %field_names
 		code += "\t\t\tif not hasattr(response, field):\n"
-		code += "\t\t\t\traise RuntimeError(\"Missing field in response object: %s\" %field)\n"
+		code += "\t\t\t\traise RuntimeError(\"Missing field in RMCResponse: %s\" %field)\n"
 		for field in fields:
 			code += "\t\t%s\n" %generate_encode(protocol, field.type, "response." + field.name, "output")
 		code += "\n"
 	elif len(fields) == 1:
 		field = fields[0]
 		expected = get_python_type(field.type)
-		code += "\t\tresponse = self.%s(%s)\n\n" %(method.name, params)
+		code += "\t\tresponse = self.%s(context%s)\n\n" %(method.name, params)
 		code += "\t\t#--- response ---\n"
 		code += "\t\tif not isinstance(response, %s):\n" %expected
 		code += "\t\t\traise RuntimeError(\"Expected %s, got %%s\" %%response.__class__.__name__)\n" %expected
 		code += "\t\t%s\n\n" %generate_encode(protocol, field.type, "response", "output")
 	else:
-		code += "\t\tself.%s(%s)\n\n" %(method.name, params)
+		code += "\t\tself.%s(context%s)\n\n" %(method.name, params)
 	return code
 	
 def generate_server_stub(protocol, method):
@@ -927,9 +924,9 @@ SERVER_TEMPLATE = """class %sServer(%sProtocol):
 		self.methods = {
 %s		}
 
-	def handle(self, caller_id, method_id, input, output):
+	def handle(self, context, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](caller_id, input, output)
+			return self.methods[method_id](context, input, output)
 		else:
 			logger.warning("Unknown method called on %sServer: %%i", method_id)
 			raise common.RMCError("Core::NotImplemented")

@@ -198,7 +198,7 @@ class AccountClient(AccountProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.result = stream.result()
 		obj.data = stream.extract(AccountData)
 		logger.info("AccountClient.get_account_data -> done")
@@ -212,7 +212,7 @@ class AccountClient(AccountProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.result = stream.bool()
 		obj.data = stream.anydata()
 		logger.info("AccountClient.get_private_data -> done")
@@ -226,7 +226,7 @@ class AccountClient(AccountProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.result = stream.bool()
 		obj.data = stream.anydata()
 		logger.info("AccountClient.get_public_data -> done")
@@ -241,7 +241,7 @@ class AccountClient(AccountProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.result = stream.bool()
 		obj.data = stream.list(stream.anydata)
 		logger.info("AccountClient.get_multiple_public_data -> done")
@@ -361,7 +361,7 @@ class AccountClient(AccountProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.last_session_login = stream.datetime()
 		obj.last_session_logout = stream.datetime()
 		obj.current_session_login = stream.datetime()
@@ -404,7 +404,7 @@ class AccountClient(AccountProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.account_data = stream.extract(AccountData)
 		obj.public_data = stream.anydata()
 		obj.private_data = stream.anydata()
@@ -483,7 +483,7 @@ class AccountClient(AccountProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.pid = stream.pid()
 		obj.pid_hmac = stream.string()
 		logger.info("AccountClient.nintendo_create_account -> done")
@@ -567,238 +567,243 @@ class AccountServer(AccountProtocol):
 			self.METHOD_DISCONNECT_ALL_PRINCIPALS: self.handle_disconnect_all_principals,
 		}
 
-	def handle(self, caller_id, method_id, input, output):
+	def handle(self, context, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](caller_id, input, output)
+			return self.methods[method_id](context, input, output)
 		else:
 			logger.warning("Unknown method called on AccountServer: %i", method_id)
 			raise common.RMCError("Core::NotImplemented")
 
-	def handle_create_account(self, caller_id, input, output):
+	def handle_create_account(self, context, input, output):
 		logger.info("AccountServer.create_account()")
 		#--- request ---
 		name = input.string()
 		key = input.string()
 		groups = input.u32()
 		email = input.string()
-		response = self.create_account(name, key, groups, email)
+		response = self.create_account(context, name, key, groups, email)
 
 		#--- response ---
 		if not isinstance(response, common.Result):
 			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 
-	def handle_delete_account(self, caller_id, input, output):
+	def handle_delete_account(self, context, input, output):
 		logger.info("AccountServer.delete_account()")
 		#--- request ---
 		pid = input.pid()
-		self.delete_account(pid)
+		self.delete_account(context, pid)
 
-	def handle_disable_account(self, caller_id, input, output):
+	def handle_disable_account(self, context, input, output):
 		logger.info("AccountServer.disable_account()")
 		#--- request ---
 		pid = input.pid()
 		until = input.datetime()
 		message = input.string()
-		response = self.disable_account(pid, until, message)
+		response = self.disable_account(context, pid, until, message)
 
 		#--- response ---
 		if not isinstance(response, common.Result):
 			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 
-	def handle_change_password(self, caller_id, input, output):
+	def handle_change_password(self, context, input, output):
 		logger.info("AccountServer.change_password()")
 		#--- request ---
 		new_key = input.string()
-		response = self.change_password(new_key)
+		response = self.change_password(context, new_key)
 
 		#--- response ---
 		if not isinstance(response, bool):
 			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
 		output.bool(response)
 
-	def handle_test_capability(self, caller_id, input, output):
+	def handle_test_capability(self, context, input, output):
 		logger.info("AccountServer.test_capability()")
 		#--- request ---
 		capability = input.u32()
-		response = self.test_capability(capability)
+		response = self.test_capability(context, capability)
 
 		#--- response ---
 		if not isinstance(response, bool):
 			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
 		output.bool(response)
 
-	def handle_get_name(self, caller_id, input, output):
+	def handle_get_name(self, context, input, output):
 		logger.info("AccountServer.get_name()")
 		#--- request ---
 		pid = input.pid()
-		response = self.get_name(pid)
+		response = self.get_name(context, pid)
 
 		#--- response ---
 		if not isinstance(response, str):
 			raise RuntimeError("Expected str, got %s" %response.__class__.__name__)
 		output.string(response)
 
-	def handle_get_account_data(self, caller_id, input, output):
+	def handle_get_account_data(self, context, input, output):
 		logger.info("AccountServer.get_account_data()")
 		#--- request ---
-		response = common.ResponseObject()
-		self.get_account_data(caller_id, response)
+		response = self.get_account_data(context)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['result', 'data']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.result(response.result)
 		output.add(response.data)
 
-	def handle_get_private_data(self, caller_id, input, output):
+	def handle_get_private_data(self, context, input, output):
 		logger.info("AccountServer.get_private_data()")
 		#--- request ---
-		response = common.ResponseObject()
-		self.get_private_data(caller_id, response)
+		response = self.get_private_data(context)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['result', 'data']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.bool(response.result)
 		output.anydata(response.data)
 
-	def handle_get_public_data(self, caller_id, input, output):
+	def handle_get_public_data(self, context, input, output):
 		logger.info("AccountServer.get_public_data()")
 		#--- request ---
-		response = common.ResponseObject()
-		self.get_public_data(caller_id, response)
+		response = self.get_public_data(context)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['result', 'data']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.bool(response.result)
 		output.anydata(response.data)
 
-	def handle_get_multiple_public_data(self, caller_id, input, output):
+	def handle_get_multiple_public_data(self, context, input, output):
 		logger.info("AccountServer.get_multiple_public_data()")
 		#--- request ---
 		pids = input.list(input.pid)
-		response = common.ResponseObject()
-		self.get_multiple_public_data(caller_id, response, pids)
+		response = self.get_multiple_public_data(context, pids)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['result', 'data']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.bool(response.result)
 		output.list(response.data, output.anydata)
 
-	def handle_update_account_name(self, caller_id, input, output):
+	def handle_update_account_name(self, context, input, output):
 		logger.info("AccountServer.update_account_name()")
 		#--- request ---
 		name = input.string()
-		response = self.update_account_name(name)
+		response = self.update_account_name(context, name)
 
 		#--- response ---
 		if not isinstance(response, common.Result):
 			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 
-	def handle_update_account_email(self, caller_id, input, output):
+	def handle_update_account_email(self, context, input, output):
 		logger.info("AccountServer.update_account_email()")
 		#--- request ---
 		email = input.string()
-		response = self.update_account_email(email)
+		response = self.update_account_email(context, email)
 
 		#--- response ---
 		if not isinstance(response, common.Result):
 			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 
-	def handle_update_custom_data(self, caller_id, input, output):
+	def handle_update_custom_data(self, context, input, output):
 		logger.info("AccountServer.update_custom_data()")
 		#--- request ---
 		public_data = input.anydata()
 		private_data = input.anydata()
-		response = self.update_custom_data(public_data, private_data)
+		response = self.update_custom_data(context, public_data, private_data)
 
 		#--- response ---
 		if not isinstance(response, common.Result):
 			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 
-	def handle_find_by_name_regex(self, caller_id, input, output):
+	def handle_find_by_name_regex(self, context, input, output):
 		logger.info("AccountServer.find_by_name_regex()")
 		#--- request ---
 		groups = input.u32()
 		regex = input.string()
 		range = input.extract(common.ResultRange)
-		response = self.find_by_name_regex(groups, regex, range)
+		response = self.find_by_name_regex(context, groups, regex, range)
 
 		#--- response ---
 		if not isinstance(response, list):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.add)
 
-	def handle_update_account_expiry_date(self, caller_id, input, output):
+	def handle_update_account_expiry_date(self, context, input, output):
 		logger.info("AccountServer.update_account_expiry_date()")
 		#--- request ---
 		pid = input.pid()
 		expiry = input.datetime()
 		message = input.string()
-		self.update_account_expiry_date(pid, expiry, message)
+		self.update_account_expiry_date(context, pid, expiry, message)
 
-	def handle_update_account_effective_date(self, caller_id, input, output):
+	def handle_update_account_effective_date(self, context, input, output):
 		logger.info("AccountServer.update_account_effective_date()")
 		#--- request ---
 		pid = input.pid()
 		effective_from = input.datetime()
 		message = input.string()
-		self.update_account_effective_date(pid, effective_from, message)
+		self.update_account_effective_date(context, pid, effective_from, message)
 
-	def handle_update_status(self, caller_id, input, output):
+	def handle_update_status(self, context, input, output):
 		logger.info("AccountServer.update_status()")
 		#--- request ---
 		status = input.string()
-		self.update_status(status)
+		self.update_status(context, status)
 
-	def handle_get_status(self, caller_id, input, output):
+	def handle_get_status(self, context, input, output):
 		logger.info("AccountServer.get_status()")
 		#--- request ---
 		pid = input.pid()
-		response = self.get_status(pid)
+		response = self.get_status(context, pid)
 
 		#--- response ---
 		if not isinstance(response, str):
 			raise RuntimeError("Expected str, got %s" %response.__class__.__name__)
 		output.string(response)
 
-	def handle_get_last_connection_stats(self, caller_id, input, output):
+	def handle_get_last_connection_stats(self, context, input, output):
 		logger.info("AccountServer.get_last_connection_stats()")
 		#--- request ---
 		pid = input.pid()
-		response = common.ResponseObject()
-		self.get_last_connection_stats(caller_id, response, pid)
+		response = self.get_last_connection_stats(context, pid)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['last_session_login', 'last_session_logout', 'current_session_login']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.datetime(response.last_session_login)
 		output.datetime(response.last_session_logout)
 		output.datetime(response.current_session_login)
 
-	def handle_reset_password(self, caller_id, input, output):
+	def handle_reset_password(self, context, input, output):
 		logger.info("AccountServer.reset_password()")
 		#--- request ---
-		response = self.reset_password()
+		response = self.reset_password(context)
 
 		#--- response ---
 		if not isinstance(response, bool):
 			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
 		output.bool(response)
 
-	def handle_create_account_with_custom_data(self, caller_id, input, output):
+	def handle_create_account_with_custom_data(self, context, input, output):
 		logger.info("AccountServer.create_account_with_custom_data()")
 		#--- request ---
 		name = input.string()
@@ -807,53 +812,54 @@ class AccountServer(AccountProtocol):
 		email = input.string()
 		public_data = input.anydata()
 		private_data = input.anydata()
-		self.create_account_with_custom_data(name, key, groups, email, public_data, private_data)
+		self.create_account_with_custom_data(context, name, key, groups, email, public_data, private_data)
 
-	def handle_retrieve_account(self, caller_id, input, output):
+	def handle_retrieve_account(self, context, input, output):
 		logger.info("AccountServer.retrieve_account()")
 		#--- request ---
-		response = common.ResponseObject()
-		self.retrieve_account(caller_id, response)
+		response = self.retrieve_account(context)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['account_data', 'public_data', 'private_data']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.add(response.account_data)
 		output.anydata(response.public_data)
 		output.anydata(response.private_data)
 
-	def handle_update_account(self, caller_id, input, output):
+	def handle_update_account(self, context, input, output):
 		logger.info("AccountServer.update_account()")
 		#--- request ---
 		key = input.string()
 		email = input.string()
 		public_data = input.anydata()
 		private_data = input.anydata()
-		self.update_account(key, email, public_data, private_data)
+		self.update_account(context, key, email, public_data, private_data)
 
-	def handle_change_password_by_guest(self, caller_id, input, output):
+	def handle_change_password_by_guest(self, context, input, output):
 		logger.info("AccountServer.change_password_by_guest()")
 		#--- request ---
 		name = input.string()
 		email = input.string()
 		key = input.string()
-		self.change_password_by_guest(name, email, key)
+		self.change_password_by_guest(context, name, email, key)
 
-	def handle_find_by_name_like(self, caller_id, input, output):
+	def handle_find_by_name_like(self, context, input, output):
 		logger.info("AccountServer.find_by_name_like()")
 		#--- request ---
 		groups = input.u32()
 		like = input.string()
 		range = input.extract(common.ResultRange)
-		response = self.find_by_name_like(groups, like, range)
+		response = self.find_by_name_like(context, groups, like, range)
 
 		#--- response ---
 		if not isinstance(response, list):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.add)
 
-	def handle_custom_create_account(self, caller_id, input, output):
+	def handle_custom_create_account(self, context, input, output):
 		logger.info("AccountServer.custom_create_account()")
 		#--- request ---
 		name = input.string()
@@ -861,14 +867,14 @@ class AccountServer(AccountProtocol):
 		groups = input.u32()
 		email = input.string()
 		auth_data = input.anydata()
-		response = self.custom_create_account(name, key, groups, email, auth_data)
+		response = self.custom_create_account(context, name, key, groups, email, auth_data)
 
 		#--- response ---
 		if not isinstance(response, int):
 			raise RuntimeError("Expected int, got %s" %response.__class__.__name__)
 		output.pid(response)
 
-	def handle_nintendo_create_account(self, caller_id, input, output):
+	def handle_nintendo_create_account(self, context, input, output):
 		logger.info("AccountServer.nintendo_create_account()")
 		#--- request ---
 		name = input.string()
@@ -876,17 +882,18 @@ class AccountServer(AccountProtocol):
 		groups = input.u32()
 		email = input.string()
 		auth_data = input.anydata()
-		response = common.ResponseObject()
-		self.nintendo_create_account(caller_id, response, name, key, groups, email, auth_data)
+		response = self.nintendo_create_account(context, name, key, groups, email, auth_data)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['pid', 'pid_hmac']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.pid(response.pid)
 		output.string(response.pid_hmac)
 
-	def handle_lookup_or_create_account(self, caller_id, input, output):
+	def handle_lookup_or_create_account(self, context, input, output):
 		logger.info("AccountServer.lookup_or_create_account()")
 		#--- request ---
 		name = input.string()
@@ -894,28 +901,28 @@ class AccountServer(AccountProtocol):
 		groups = input.u32()
 		email = input.string()
 		auth_data = input.anydata()
-		response = self.lookup_or_create_account(name, key, groups, email, auth_data)
+		response = self.lookup_or_create_account(context, name, key, groups, email, auth_data)
 
 		#--- response ---
 		if not isinstance(response, int):
 			raise RuntimeError("Expected int, got %s" %response.__class__.__name__)
 		output.pid(response)
 
-	def handle_disconnect_principal(self, caller_id, input, output):
+	def handle_disconnect_principal(self, context, input, output):
 		logger.info("AccountServer.disconnect_principal()")
 		#--- request ---
 		pid = input.pid()
-		response = self.disconnect_principal(pid)
+		response = self.disconnect_principal(context, pid)
 
 		#--- response ---
 		if not isinstance(response, bool):
 			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
 		output.bool(response)
 
-	def handle_disconnect_all_principals(self, caller_id, input, output):
+	def handle_disconnect_all_principals(self, context, input, output):
 		logger.info("AccountServer.disconnect_all_principals()")
 		#--- request ---
-		response = self.disconnect_all_principals()
+		response = self.disconnect_all_principals(context)
 
 		#--- response ---
 		if not isinstance(response, bool):

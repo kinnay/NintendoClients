@@ -416,7 +416,7 @@ class FriendsClient(FriendsProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.principal_preference = stream.extract(PrincipalPreference)
 		obj.comment = stream.extract(Comment)
 		obj.friends = stream.list(FriendInfo)
@@ -466,26 +466,27 @@ class FriendsServer(FriendsProtocol):
 			self.METHOD_GET_REQUEST_BLOCK_SETTINGS: self.handle_get_request_block_settings,
 		}
 
-	def handle(self, caller_id, method_id, input, output):
+	def handle(self, context, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](caller_id, input, output)
+			return self.methods[method_id](context, input, output)
 		else:
 			logger.warning("Unknown method called on FriendsServer: %i", method_id)
 			raise common.RMCError("Core::NotImplemented")
 
-	def handle_get_all_information(self, caller_id, input, output):
+	def handle_get_all_information(self, context, input, output):
 		logger.info("FriendsServer.get_all_information()")
 		#--- request ---
 		nna_info = input.extract(NNAInfo)
 		presence = input.extract(NintendoPresenceV2)
 		birthday = input.datetime()
-		response = common.ResponseObject()
-		self.get_all_information(caller_id, response, nna_info, presence, birthday)
+		response = self.get_all_information(context, nna_info, presence, birthday)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['principal_preference', 'comment', 'friends', 'sent_requests', 'received_requests', 'blacklist', 'unk1', 'notifications', 'unk2']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.add(response.principal_preference)
 		output.add(response.comment)
 		output.list(response.friends, output.add)
@@ -496,81 +497,81 @@ class FriendsServer(FriendsProtocol):
 		output.list(response.notifications, output.add)
 		output.bool(response.unk2)
 
-	def handle_add_friend(self, caller_id, input, output):
+	def handle_add_friend(self, context, input, output):
 		logger.warning("FriendsSever.add_friend is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_add_friend_by_name(self, caller_id, input, output):
+	def handle_add_friend_by_name(self, context, input, output):
 		logger.warning("FriendsSever.add_friend_by_name is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_remove_friend(self, caller_id, input, output):
+	def handle_remove_friend(self, context, input, output):
 		logger.warning("FriendsSever.remove_friend is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_add_friend_request(self, caller_id, input, output):
+	def handle_add_friend_request(self, context, input, output):
 		logger.warning("FriendsSever.add_friend_request is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_cancel_friend_request(self, caller_id, input, output):
+	def handle_cancel_friend_request(self, context, input, output):
 		logger.warning("FriendsSever.cancel_friend_request is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_accept_friend_request(self, caller_id, input, output):
+	def handle_accept_friend_request(self, context, input, output):
 		logger.warning("FriendsSever.accept_friend_request is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_delete_friend_request(self, caller_id, input, output):
+	def handle_delete_friend_request(self, context, input, output):
 		logger.warning("FriendsSever.delete_friend_request is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_deny_friend_request(self, caller_id, input, output):
+	def handle_deny_friend_request(self, context, input, output):
 		logger.warning("FriendsSever.deny_friend_request is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_mark_friend_requests_as_received(self, caller_id, input, output):
+	def handle_mark_friend_requests_as_received(self, context, input, output):
 		logger.warning("FriendsSever.mark_friend_requests_as_received is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_add_black_list(self, caller_id, input, output):
+	def handle_add_black_list(self, context, input, output):
 		logger.warning("FriendsSever.add_black_list is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_remove_black_list(self, caller_id, input, output):
+	def handle_remove_black_list(self, context, input, output):
 		logger.warning("FriendsSever.remove_black_list is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_update_presence(self, caller_id, input, output):
+	def handle_update_presence(self, context, input, output):
 		logger.info("FriendsServer.update_presence()")
 		#--- request ---
 		presence = input.extract(NintendoPresenceV2)
-		self.update_presence(presence)
+		self.update_presence(context, presence)
 
-	def handle_update_mii(self, caller_id, input, output):
+	def handle_update_mii(self, context, input, output):
 		logger.warning("FriendsSever.update_mii is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_update_comment(self, caller_id, input, output):
+	def handle_update_comment(self, context, input, output):
 		logger.warning("FriendsSever.update_comment is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_update_preference(self, caller_id, input, output):
+	def handle_update_preference(self, context, input, output):
 		logger.warning("FriendsSever.update_preference is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_basic_info(self, caller_id, input, output):
+	def handle_get_basic_info(self, context, input, output):
 		logger.warning("FriendsSever.get_basic_info is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_delete_friend_flags(self, caller_id, input, output):
+	def handle_delete_friend_flags(self, context, input, output):
 		logger.warning("FriendsSever.delete_friend_flags is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_check_setting_status(self, caller_id, input, output):
+	def handle_check_setting_status(self, context, input, output):
 		logger.warning("FriendsSever.check_setting_status is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_request_block_settings(self, caller_id, input, output):
+	def handle_get_request_block_settings(self, context, input, output):
 		logger.warning("FriendsSever.get_request_block_settings is unsupported")
 		return common.Result("Core::NotImplemented")
 

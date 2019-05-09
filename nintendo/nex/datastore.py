@@ -138,12 +138,12 @@ class DataStorePermission(common.Structure):
 
 	def load(self, stream):
 		self.permission = stream.u8()
-		self.recipients = stream.list(stream.u32)
+		self.recipients = stream.list(stream.pid)
 
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.u8(self.permission)
-		stream.list(self.recipients, stream.u32)
+		stream.list(self.recipients, stream.pid)
 
 
 class DataStorePrepareGetParam(common.Structure):
@@ -369,7 +369,7 @@ class DataStoreClient(DataStoreProtocol):
 
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		obj = common.ResponseObject()
+		obj = common.RMCResponse()
 		obj.infos = stream.list(DataStoreMetaInfo)
 		obj.results = stream.list(stream.result)
 		logger.info("DataStoreClient.get_metas_multiple_param -> done")
@@ -427,218 +427,219 @@ class DataStoreServer(DataStoreProtocol):
 			self.METHOD_SEARCH_OBJECT_LIGHT: self.handle_search_object_light,
 		}
 
-	def handle(self, caller_id, method_id, input, output):
+	def handle(self, context, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](caller_id, input, output)
+			return self.methods[method_id](context, input, output)
 		else:
 			logger.warning("Unknown method called on DataStoreServer: %i", method_id)
 			raise common.RMCError("Core::NotImplemented")
 
-	def handle_prepare_get_object_v1(self, caller_id, input, output):
+	def handle_prepare_get_object_v1(self, context, input, output):
 		logger.warning("DataStoreSever.prepare_get_object_v1 is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_prepare_post_object_v1(self, caller_id, input, output):
+	def handle_prepare_post_object_v1(self, context, input, output):
 		logger.warning("DataStoreSever.prepare_post_object_v1 is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_complete_post_object_v1(self, caller_id, input, output):
+	def handle_complete_post_object_v1(self, context, input, output):
 		logger.warning("DataStoreSever.complete_post_object_v1 is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_delete_object(self, caller_id, input, output):
+	def handle_delete_object(self, context, input, output):
 		logger.warning("DataStoreSever.delete_object is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_delete_objects(self, caller_id, input, output):
+	def handle_delete_objects(self, context, input, output):
 		logger.warning("DataStoreSever.delete_objects is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_change_meta_v1(self, caller_id, input, output):
+	def handle_change_meta_v1(self, context, input, output):
 		logger.warning("DataStoreSever.change_meta_v1 is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_change_metas_v1(self, caller_id, input, output):
+	def handle_change_metas_v1(self, context, input, output):
 		logger.warning("DataStoreSever.change_metas_v1 is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_meta(self, caller_id, input, output):
+	def handle_get_meta(self, context, input, output):
 		logger.info("DataStoreServer.get_meta()")
 		#--- request ---
 		param = input.extract(DataStoreGetMetaParam)
-		response = self.get_meta(param)
+		response = self.get_meta(context, param)
 
 		#--- response ---
 		if not isinstance(response, DataStoreMetaInfo):
 			raise RuntimeError("Expected DataStoreMetaInfo, got %s" %response.__class__.__name__)
 		output.add(response)
 
-	def handle_get_metas(self, caller_id, input, output):
+	def handle_get_metas(self, context, input, output):
 		logger.warning("DataStoreSever.get_metas is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_prepare_update_object(self, caller_id, input, output):
+	def handle_prepare_update_object(self, context, input, output):
 		logger.warning("DataStoreSever.prepare_update_object is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_complete_update_object(self, caller_id, input, output):
+	def handle_complete_update_object(self, context, input, output):
 		logger.warning("DataStoreSever.complete_update_object is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_search_object(self, caller_id, input, output):
+	def handle_search_object(self, context, input, output):
 		logger.warning("DataStoreSever.search_object is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_notification_url(self, caller_id, input, output):
+	def handle_get_notification_url(self, context, input, output):
 		logger.warning("DataStoreSever.get_notification_url is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_new_arrived_notifications_v1(self, caller_id, input, output):
+	def handle_get_new_arrived_notifications_v1(self, context, input, output):
 		logger.warning("DataStoreSever.get_new_arrived_notifications_v1 is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_rate_object(self, caller_id, input, output):
+	def handle_rate_object(self, context, input, output):
 		logger.warning("DataStoreSever.rate_object is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_rating(self, caller_id, input, output):
+	def handle_get_rating(self, context, input, output):
 		logger.warning("DataStoreSever.get_rating is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_ratings(self, caller_id, input, output):
+	def handle_get_ratings(self, context, input, output):
 		logger.warning("DataStoreSever.get_ratings is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_reset_rating(self, caller_id, input, output):
+	def handle_reset_rating(self, context, input, output):
 		logger.warning("DataStoreSever.reset_rating is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_reset_ratings(self, caller_id, input, output):
+	def handle_reset_ratings(self, context, input, output):
 		logger.warning("DataStoreSever.reset_ratings is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_specific_meta_v1(self, caller_id, input, output):
+	def handle_get_specific_meta_v1(self, context, input, output):
 		logger.warning("DataStoreSever.get_specific_meta_v1 is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_post_meta_binary(self, caller_id, input, output):
+	def handle_post_meta_binary(self, context, input, output):
 		logger.warning("DataStoreSever.post_meta_binary is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_touch_object(self, caller_id, input, output):
+	def handle_touch_object(self, context, input, output):
 		logger.warning("DataStoreSever.touch_object is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_rating_with_log(self, caller_id, input, output):
+	def handle_get_rating_with_log(self, context, input, output):
 		logger.warning("DataStoreSever.get_rating_with_log is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_prepare_post_object(self, caller_id, input, output):
+	def handle_prepare_post_object(self, context, input, output):
 		logger.warning("DataStoreSever.prepare_post_object is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_prepare_get_object(self, caller_id, input, output):
+	def handle_prepare_get_object(self, context, input, output):
 		logger.info("DataStoreServer.prepare_get_object()")
 		#--- request ---
 		param = input.extract(DataStorePrepareGetParam)
-		response = self.prepare_get_object(param)
+		response = self.prepare_get_object(context, param)
 
 		#--- response ---
 		if not isinstance(response, DataStoreReqGetInfo):
 			raise RuntimeError("Expected DataStoreReqGetInfo, got %s" %response.__class__.__name__)
 		output.add(response)
 
-	def handle_complete_post_object(self, caller_id, input, output):
+	def handle_complete_post_object(self, context, input, output):
 		logger.warning("DataStoreSever.complete_post_object is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_new_arrived_notifications(self, caller_id, input, output):
+	def handle_get_new_arrived_notifications(self, context, input, output):
 		logger.warning("DataStoreSever.get_new_arrived_notifications is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_specific_meta(self, caller_id, input, output):
+	def handle_get_specific_meta(self, context, input, output):
 		logger.warning("DataStoreSever.get_specific_meta is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_persistence_info(self, caller_id, input, output):
+	def handle_get_persistence_info(self, context, input, output):
 		logger.warning("DataStoreSever.get_persistence_info is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_persistence_infos(self, caller_id, input, output):
+	def handle_get_persistence_infos(self, context, input, output):
 		logger.warning("DataStoreSever.get_persistence_infos is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_perpetuate_object(self, caller_id, input, output):
+	def handle_perpetuate_object(self, context, input, output):
 		logger.warning("DataStoreSever.perpetuate_object is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_unperpetuate_object(self, caller_id, input, output):
+	def handle_unperpetuate_object(self, context, input, output):
 		logger.warning("DataStoreSever.unperpetuate_object is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_prepare_get_object_or_meta(self, caller_id, input, output):
+	def handle_prepare_get_object_or_meta(self, context, input, output):
 		logger.warning("DataStoreSever.prepare_get_object_or_meta is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_password_info(self, caller_id, input, output):
+	def handle_get_password_info(self, context, input, output):
 		logger.warning("DataStoreSever.get_password_info is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_password_infos(self, caller_id, input, output):
+	def handle_get_password_infos(self, context, input, output):
 		logger.warning("DataStoreSever.get_password_infos is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_metas_multiple_param(self, caller_id, input, output):
+	def handle_get_metas_multiple_param(self, context, input, output):
 		logger.info("DataStoreServer.get_metas_multiple_param()")
 		#--- request ---
 		params = input.list(DataStoreGetMetaParam)
-		response = common.ResponseObject()
-		self.get_metas_multiple_param(caller_id, response, params)
+		response = self.get_metas_multiple_param(context, params)
 
 		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['infos', 'results']:
 			if not hasattr(response, field):
-				raise RuntimeError("Missing field in response object: %s" %field)
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.list(response.infos, output.add)
 		output.list(response.results, output.result)
 
-	def handle_complete_post_objects(self, caller_id, input, output):
+	def handle_complete_post_objects(self, context, input, output):
 		logger.warning("DataStoreSever.complete_post_objects is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_change_meta(self, caller_id, input, output):
+	def handle_change_meta(self, context, input, output):
 		logger.warning("DataStoreSever.change_meta is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_change_metas(self, caller_id, input, output):
+	def handle_change_metas(self, context, input, output):
 		logger.warning("DataStoreSever.change_metas is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_rate_objects(self, caller_id, input, output):
+	def handle_rate_objects(self, context, input, output):
 		logger.warning("DataStoreSever.rate_objects is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_post_meta_binary_with_data_id(self, caller_id, input, output):
+	def handle_post_meta_binary_with_data_id(self, context, input, output):
 		logger.warning("DataStoreSever.post_meta_binary_with_data_id is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_post_meta_binaries_with_data_id(self, caller_id, input, output):
+	def handle_post_meta_binaries_with_data_id(self, context, input, output):
 		logger.warning("DataStoreSever.post_meta_binaries_with_data_id is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_rate_object_with_posting(self, caller_id, input, output):
+	def handle_rate_object_with_posting(self, context, input, output):
 		logger.warning("DataStoreSever.rate_object_with_posting is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_rate_objects_with_posting(self, caller_id, input, output):
+	def handle_rate_objects_with_posting(self, context, input, output):
 		logger.warning("DataStoreSever.rate_objects_with_posting is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_get_object_infos(self, caller_id, input, output):
+	def handle_get_object_infos(self, context, input, output):
 		logger.warning("DataStoreSever.get_object_infos is unsupported")
 		return common.Result("Core::NotImplemented")
 
-	def handle_search_object_light(self, caller_id, input, output):
+	def handle_search_object_light(self, context, input, output):
 		logger.warning("DataStoreSever.search_object_light is unsupported")
 		return common.Result("Core::NotImplemented")
 
