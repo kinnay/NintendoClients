@@ -139,6 +139,8 @@ class UDPWrapper:
 		
 	def send(self, data):
 		self.server.sendto(self.addr, data)
+		
+	def remote_address(self): return self.addr
 	
 	
 class SocketServer:
