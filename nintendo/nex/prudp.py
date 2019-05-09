@@ -821,7 +821,7 @@ class PRUDPClient:
 				self.fragment_buffer = b""
 				
 		elif packet.type == TYPE_DISCONNECT:
-			logger.info("(%i) Server closed connection", self.local_session_id)
+			logger.info("(%i) Endpoint disconnected", self.local_session_id)
 			self.state = self.DISCONNECTED
 			self.remove_events()
 		return True
