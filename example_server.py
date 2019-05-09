@@ -3,6 +3,7 @@ from nintendo.nex import backend, service, kerberos, \
 	authentication, secure, friends, common
 from nintendo.games import Friends
 import collections
+import itertools
 import secrets
 import time
 
@@ -40,7 +41,7 @@ class AuthenticationServer(authentication.AuthenticationServer):
 		super().__init__()
 		self.settings = settings
 	
-	def login(self, caller, response, username):
+	def login(self, context, username):
 		print("User trying to log in:", username)
 		
 		user = get_user_by_name(username)
@@ -60,18 +61,22 @@ class AuthenticationServer(authentication.AuthenticationServer):
 		conn_data.special_protocols = []
 		conn_data.special_station = common.StationURL()
 		
+		response = common.RMCResponse()
 		response.result = common.Result(0x10001) #Success
 		response.pid = user.pid
 		response.ticket = self.generate_ticket(user, server)
 		response.connection_data = conn_data
 		response.server_name = "Example server"
+		return response
 		
-	def request_ticket(self, caller, response, source, target):
+	def request_ticket(self, context, source, target):
 		source = get_user_by_pid(source)
 		target = get_user_by_pid(target)
 		
+		response = common.RMCResponse()
 		response.result = common.Result(0x10001) #Success
 		response.ticket = self.generate_ticket(source, target)
+		return response
 		
 	def generate_ticket(self, source, target):
 		settings = self.settings
@@ -94,7 +99,26 @@ class AuthenticationServer(authentication.AuthenticationServer):
 		
 		
 class SecureConnectionServer(secure.SecureConnectionServer):
-	pass #Implement secure connection methods here
+	def __init__(self):
+		super().__init__()
+		self.connection_id = itertools.count(10)
+	
+	def register(self, context, urls):
+		addr = context.client.remote_address()
+		station = urls[0].copy()
+		station["address"] = addr[0]
+		station["port"] = addr[1]
+		station["type"] = 3
+		
+		response = common.RMCResponse()
+		response.result = common.Result(0x10001) #Success
+		response.connection_id = next(self.connection_id)
+		response.public_station = station
+		return response
+	
+	def register_ex(self, context, urls, login_data):
+		return self.register(context, urls)
+
 
 class FriendsServer(friends.FriendsServer):
 	pass #Implement friend server methods here
