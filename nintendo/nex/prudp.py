@@ -264,7 +264,7 @@ class PRUDPMessageV0:
 			
 			#Verify packet signature
 			expected_signature = self.calc_packet_signature(packet, self.client.source_signature)
-			if signature != expected_signature:
+			if packet.signature != expected_signature:
 				logger.error(
 					"(V0) Invalid packet signature (expected %s, got %s)",
 					signature.hex(), expected_signature.hex()
