@@ -161,8 +161,6 @@ class PRUDPMessageV0:
 		return "<BBHB4sH"
 		
 	def encode(self, packet):
-		#packet.flags &= ~FLAG_HAS_SIZE
-
 		if self.flags_version == 0:
 			type_field = packet.type | (packet.flags << 3)
 		else:
@@ -223,7 +221,7 @@ class PRUDPMessageV0:
 
 			offset = 11
 			
-			#Extract packet signature
+			#Extract connection signature
 			if packet.type in [TYPE_SYN, TYPE_CONNECT]:
 				if len(self.buffer) < offset + 4: return packets
 				packet.signature = self.buffer[offset : offset + 4]
