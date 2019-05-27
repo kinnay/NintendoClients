@@ -2,6 +2,7 @@
 from nintendo.nex import backend, authentication, friends, matchmaking, common
 from nintendo.account import AccountAPI
 from nintendo.games import MK8, Friends
+from nintendo import settings
 import struct
 
 import logging
@@ -48,7 +49,7 @@ api.login(USERNAME, PASSWORD)
 
 #Connect to both the Mario Kart 8 server and the Wii U friends server
 friends_backend = backend_login(
-	Friends, False, True, backend.Settings("friends.cfg")
+	Friends, False, True, settings.Settings("friends.cfg")
 )
 game_backend = backend_login(MK8, True, False)
 

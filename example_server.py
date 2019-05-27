@@ -1,6 +1,7 @@
 
 from nintendo.nex import backend, service, kerberos, \
 	authentication, secure, friends, common
+from nintendo.settings import Settings
 from nintendo.games import Friends
 import collections
 import itertools
@@ -124,7 +125,7 @@ class FriendsServer(friends.FriendsServer):
 	pass #Implement friend server methods here
 
 
-settings = backend.Settings("friends.cfg")
+settings = Settings("friends.cfg")
 settings.set("server.access_key", Friends.ACCESS_KEY)
 
 auth_server = service.RMCServer(settings)

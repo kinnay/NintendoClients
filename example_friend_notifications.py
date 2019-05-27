@@ -1,7 +1,7 @@
 
 from nintendo.nex import backend, authentication, notification
 from nintendo.games import Friends
-from nintendo import account
+from nintendo import account, settings
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -63,7 +63,7 @@ nex_token = api.get_nex_token(Friends.GAME_SERVER_ID)
 backend = backend.BackEndClient(
 	Friends.ACCESS_KEY,
 	Friends.NEX_VERSION,
-	backend.Settings("friends.cfg")
+	settings.Settings("friends.cfg")
 )
 backend.connect(nex_token.host, nex_token.port)
 
