@@ -995,10 +995,10 @@ if len(sys.argv) < 2:
 else:
 	protocols = []
 	if "all" in sys.argv:
-		for filename in os.listdir("nintendo/files/nex"):
+		for filename in os.listdir("nintendo/files/proto"):
 			protocols.append(filename.split(".proto")[0])
 	else:
 		protocols = sys.argv[1:]
 		
 	for proto in protocols:
-		generate("nintendo/files/nex/%s.proto" %proto)
+		generate("nintendo/files/proto/%s.proto" %proto)

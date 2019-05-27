@@ -54,7 +54,7 @@ class Settings:
 		self.settings[field] = self.field_types[field](value)
 
 	def load(self, filename):
-		filename = pkg_resources.resource_filename("nintendo", "files/%s" %filename)
+		filename = pkg_resources.resource_filename("nintendo", "files/config/%s" %filename)
 		with open(filename) as f:
 			linenum = 1
 			for line in f:

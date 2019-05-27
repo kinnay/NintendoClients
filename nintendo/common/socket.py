@@ -7,8 +7,8 @@ import ssl
 import logging
 logger = logging.getLogger(__name__)
 
-CERT = pkg_resources.resource_filename("nintendo", "files/server.crt")
-KEY = pkg_resources.resource_filename("nintendo", "files/server.key")
+CERT = pkg_resources.resource_filename("nintendo", "files/cert/server.crt")
+KEY = pkg_resources.resource_filename("nintendo", "files/cert/server.key")
 
 
 TYPE_UDP = 0

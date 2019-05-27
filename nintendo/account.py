@@ -14,8 +14,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-CERT = pkg_resources.resource_filename("nintendo", "files/wiiu_common.crt")
-KEY = pkg_resources.resource_filename("nintendo", "files/wiiu_common.key")
+CERT = pkg_resources.resource_filename("nintendo", "files/cert/wiiu_common.crt")
+KEY = pkg_resources.resource_filename("nintendo", "files/cert/wiiu_common.key")
 
 
 def calc_password_hash(pid, password):
