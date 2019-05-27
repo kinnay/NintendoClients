@@ -29,7 +29,10 @@ class Settings:
 		"common.pid_size": int,
 		
 		"server.version": int,
-		"server.access_key": str.encode
+		"server.access_key": str.encode,
+		
+		"pia.station_extension": int,
+		"pia.crypto_enabled": int
 	}
 
 	def __init__(self, filename=None):
