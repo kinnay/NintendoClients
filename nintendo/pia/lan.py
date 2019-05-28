@@ -367,7 +367,6 @@ class LanBrowser:
 			result = self.s.recvfrom()
 			if result:
 				data, addr = result
-				print(data.hex())
 				reply = self.parse_browse_reply(data, key, challenge)
 				if reply:
 					return reply
