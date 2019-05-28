@@ -292,7 +292,7 @@ class PRUDPMessageV1:
 		return mac.digest()
 
 	def encode(self, packet):
-		# on the server side, the session_key has already been set by validate_connection_request
+		# On the server side, the session_key has already been set by validate_connection_request
 		# the client however still needs an ACK without a session key to validate the packet
 		session_key = self.client.session_key
 		if packet.type == TYPE_CONNECT and self.client.session_key:
@@ -428,7 +428,9 @@ class PRUDPLiteMessage:
 		options = b""
 		if packet.type in [TYPE_SYN, TYPE_CONNECT]:
 			options += struct.pack("<BBI", OPTION_SUPPORT, 4, self.client.support)
-		if packet.type == TYPE_CONNECT:
+		if packet.type == TYPE_SYN and packet.flags & FLAG_ACK:
+			options += struct.pack("<BB16s", OPTION_CONNECTION_SIG, 16, packet.signature)
+		if packet.type == TYPE_CONNECT and not packet.flags & FLAG_ACK:
 			options += struct.pack("<BB16s", OPTION_CONNECTION_SIG_LITE, 16, packet.signature)
 		return options
 		
@@ -467,9 +469,9 @@ class PRUDPLiteMessage:
 				self.reset()
 				return packets
 			
-			if packet.type == TYPE_SYN:
+			if packet.type == TYPE_SYN and packet.flags & FLAG_ACK:
 				if OPTION_CONNECTION_SIG not in options:
-					logger.error("(Lite) Expected connection signature in SYN packet")
+					logger.error("(Lite) Expected connection signature in SYN/ACK packet")
 					self.reset()
 					return packets
 				packet.signature = options[OPTION_CONNECTION_SIG]
