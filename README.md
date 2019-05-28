@@ -12,6 +12,9 @@ https://github.com/Kinnay/NintendoClients/wiki
 * Python 3 (tested with 3.6.4)
 * Python requests (http://docs.python-requests.org)
 * BeautifulSoup4 and lxml
+* For `nintendo.pia.lan`:
+    * PyCryptodome
+    * netifaces
 
 ### Example scripts
 * example_donkeykong.py downloads and prints DKC Tropical Freeze rankings, and downloads the replay file of the world record
@@ -23,6 +26,7 @@ https://github.com/Kinnay/NintendoClients/wiki
 * example_mariokartdeluxe.py downloads and prints Mario Kart 8 Deluxe rankings. This script logs in as guest, so you don't need to dump any keys or other information from your Switch.
 * example_server.py shows how to create a simple game server with both an authentication server and a secure server.
 * example_server_login.py logs in on a game server and disconnects immediately. This can be used to test custom servers (such as example_server.py).
+* example_lan_mode.py searches for a Splatoon 2 LAN session and prints information about it.
 
 ### More information
 Some functions of the account server are only available after authentication. Authentication requires your Nintendo Network ID and password and serial number, device id, system version, region and country of your Wii U. To access specific game servers, you also need the game server id and sandbox access key of the server.
