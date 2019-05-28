@@ -26,10 +26,6 @@ FLAG_NEED_ACK = 4
 FLAG_HAS_SIZE = 8
 FLAG_MULTI_ACK = 0x200
 
-#I ran into issues when I was missing a support
-#flag, so I'm just setting all bits to 1 here
-SUPPORT_ALL = 0xFFFFFFFF
-
 OPTION_SUPPORT = 0
 OPTION_CONNECTION_SIG = 1
 OPTION_FRAGMENT = 2
@@ -322,7 +318,7 @@ class PRUDPMessageV1:
 	def encode_options(self, packet):
 		options = b""
 		if packet.type in [TYPE_SYN, TYPE_CONNECT]:
-			options += struct.pack("<BBI", OPTION_SUPPORT, 4, SUPPORT_ALL)
+			options += struct.pack("<BBI", OPTION_SUPPORT, 4, self.client.support)
 			options += struct.pack("<BB16s", OPTION_CONNECTION_SIG, 16, packet.signature)
 			if packet.type == TYPE_CONNECT:
 				options += struct.pack("<BBH", OPTION_3, 2, random.randint(0, 0xFFFF))
@@ -431,7 +427,7 @@ class PRUDPLiteMessage:
 	def encode_options(self, packet):
 		options = b""
 		if packet.type in [TYPE_SYN, TYPE_CONNECT]:
-			options += struct.pack("<BBI", OPTION_SUPPORT, 4, SUPPORT_ALL)
+			options += struct.pack("<BBI", OPTION_SUPPORT, 4, self.client.support)
 		if packet.type == TYPE_CONNECT:
 			options += struct.pack("<BB16s", OPTION_CONNECTION_SIG_LITE, 16, packet.signature)
 		return options
@@ -546,6 +542,12 @@ class PRUDPClient:
 		self.ping_timeout = settings.get("prudp.ping_timeout")
 		self.silence_timeout = settings.get("prudp.silence_timeout")
 		self.use_compression = settings.get("prudp.compression")
+		self.support = settings.get("prudp.support")
+
+		# I ran into issues when I was missing a support
+		# flag, so I'm just setting all bits to 1 here
+		if self.support == -1:
+			self.support = 0xFFFFFFFF
 		
 		self.sock = sock
 		if not self.sock:
