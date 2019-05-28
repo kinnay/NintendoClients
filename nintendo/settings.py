@@ -33,7 +33,8 @@ class Settings:
 		"server.access_key": str.encode,
 		
 		"pia.station_extension": int,
-		"pia.crypto_enabled": int
+		"pia.crypto_enabled": int,
+		"pia.crypto_required": int
 	}
 
 	def __init__(self, filename=None):

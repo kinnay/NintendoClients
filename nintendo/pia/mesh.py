@@ -44,18 +44,20 @@ class StationList:
 		return station in self.stations
 
 		
-class StationInfo(collections.namedtuple("StationInfo", "connection_info index")):
-	@classmethod
-	def deserialize(cls, data):
-		conn_info = StationConnectionInfo.deserialize(data)
-		index = data[conn_info.sizeof()]
-		return cls(conn_info, index)
+class StationInfo:
+	def __init__(self):
+		self.connection_info = None
+		self.index = None
 		
-	def serialize(self):
-		return self.connection_info.serialize() + bytes([self.index, 0])
+	def decode(self, stream):
+		self.connection_info = stream.extract(StationConnectionInfo)
+		self.index = stream.u8()
+		stream.u8()
 		
-	@staticmethod
-	def sizeof(): return StationConnectionInfo.sizeof() + 2
+	def encode(self, stream):
+		stream.add(self.connection_info)
+		stream.u8(self.index)
+		stream.u8(0)
 
 		
 class JoinResponseDecoder:

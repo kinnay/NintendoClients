@@ -11,19 +11,38 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class StationLocation(collections.namedtuple("StationLocation", "address pid cid rvcid url_type sid stream_type natm natf type probeinit")):
-	fmt = ">IIIBBBBBBB"
+class StationLocation:
+	def __init__(self):
+		self.address = None
+		self.pid = None
+		self.cid = None
+		self.rvcid = None
+		self.url_type = None
+		self.sid = None
+		self.stream_type = None
+		self.natm = None
+		self.natf = None
+		self.type = None
+		self.probeinit = None
+		self.relay = None
 	
-	@classmethod
-	def from_station_url(cls, url):
-		inet_address = InetAddress(url["address"], url["port"])
-		station_address = StationAddress(inet_address, 0)
-		return cls(
-			station_address, url["PID"], url["CID"], url["RVCID"], url.get_type_id(), url["sid"],
-			url["stream"], url["natm"], url["natf"], url["type"], url["probeinit"]
-		)
+	def set_station_url(self, url):
+		self.address = StationAddress()
+		self.address.address = InetAddress(url["address"], url["port"])
+		self.address.extension_id = 0
 		
-	def to_station_url(self):
+		self.pid = url["PID"]
+		self.cid = url["CID"]
+		self.rvcid = url["RVCID"]
+		self.url_type = url.get_type_id()
+		self.sid = url["sid"]
+		self.stream_type = url["stream"]
+		self.natm = url["natm"]
+		self.natf = url["natf"]
+		self.type = url["type"]
+		self.probeinit = url["probeinit"]
+		
+	def get_station_url(self):
 		url = StationURL()
 		url.set_type_id(self.url_type)
 		url["address"] = self.address.address.host
@@ -39,48 +58,65 @@ class StationLocation(collections.namedtuple("StationLocation", "address pid cid
 		url["probeinit"] = self.probeinit
 		return url
 		
-	@classmethod
-	def deserialize(cls, data):
-		address = StationAddress.deserialize(data)
-		args = struct.unpack_from(cls.fmt, data, address.sizeof())
-		return cls(address, *args)
+	def encode(self, stream):
+		stream.add(self.address)
+		stream.pid(self.pid)
+		stream.u32(self.cid)
+		stream.u32(self.rvcid)
+		stream.u8(self.url_type)
+		stream.u8(self.sid)
+		stream.u8(self.stream_type)
+		stream.u8(self.natm)
+		stream.u8(self.natf)
+		stream.u8(self.type)
+		stream.u8(self.probeinit)
+		stream.add(self.relay)
 		
-	def serialize(self):
-		return self.address.serialize() + struct.pack(self.fmt, *self[1:])
-
-	@staticmethod
-	def sizeof(): return StationAddress.sizeof() + 19
-
-		
-class StationConnectionInfo(collections.namedtuple("StationConnectionInfo", "public_station local_station")):
-	@classmethod
-	def deserialize(cls, data):
-		loc1 = StationLocation.deserialize(data)
-		loc2 = StationLocation.deserialize(data[loc1.sizeof():])
-		return cls(loc1, loc2)
-		
-	def serialize(self):
-		return self.public_station.serialize() + self.local_station.serialize()
-		
-	@staticmethod
-	def sizeof(): return StationLocation.sizeof() * 2
+	def decode(self, stream):
+		self.address = stream.extract(StationAddress)
+		self.pid = stream.pid()
+		self.cid = stream.u32()
+		self.rvcid = stream.u32()
+		self.url_type = stream.u8()
+		self.sid = stream.u8()
+		self.stream_type = stream.u8()
+		self.natm = stream.u8()
+		self.natf = stream.u8()
+		self.type = stream.u8()
+		self.probeinit = stream.u8()
+		self.relay = stream.extract(InetAddress)
 		
 		
-class IdentificationInfo(collections.namedtuple("IdentificationInfo", "id name")):
-	@classmethod
-	def deserialize(cls, data):
-		identification = data[:32].rstrip(b"\0")
-		name = data[32:64].decode("utf_16_be").rstrip("\0")
-		return cls(identification, name)
+class StationConnectionInfo:
+	def __init__(self):
+		self.public_location = None
+		self.local_location = None
 		
-	def serialize(self):
-		data = self.id.ljust(32, b"\0")
-		data += self.name.encode("utf_16_be").ljust(32, b"\0")
-		data += bytes([len(self.name), 0])
-		return data
+	def encode(self, stream):
+		stream.add(self.public_location)
+		stream.add(self.local_location)
 		
-	@staticmethod
-	def sizeof(): return 66
+	def decode(self, stream):
+		self.public_location = stream.extract(StationLocation)
+		self.local_location = stream.extract(StationLocation)
+		
+		
+class IdentificationInfo:
+	def __init__(self):
+		self.id = None
+		self.name = None
+		
+	def encode(self, stream):
+		stream.chars(self.id.ljust(32, "\0"))
+		stream.wchars(self.name.ljust(16, "\0"))
+		stream.u8(len(self.name))
+		stream.u8(0)
+		
+	def decode(self, stream):
+		self.id = stream.chars(32).rstrip("\0")
+		self.name = stream.wchars(16)
+		self.name = self.name[:stream.u8()]
+		stream.u8()
 	
 	
 class Station:

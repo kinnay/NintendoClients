@@ -139,6 +139,7 @@ class StationURL:
 	}
 	
 	url_schemes = {
+		0: None,
 		1: "prudp",
 		2: "prudps",
 		3: "udp"
@@ -149,8 +150,12 @@ class StationURL:
 		self.params = kwargs
 
 	def __repr__(self):
-		params = ["%s=%s" %(key, value) for key, value in self.params.items()]
-		return self.url_type + ":/" + ";".join(params)
+		params = ";".join(
+			["%s=%s" %(key, value) for key, value in self.params.items()]
+		)
+		if self.url_type:
+			return "%s:/%s" %(self.url_type, params)
+		return params
 		
 	def __getitem__(self, field):
 		if field in self.str_params:
