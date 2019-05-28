@@ -285,10 +285,10 @@ class PRUDPMessageV1:
 		self.buffer = b""
 	def signature_size(self): return 16
 
-	def calc_packet_signature(self, header, options, signature, payload):
+	def calc_packet_signature(self, session_key, header, options, signature, payload):
 		mac = hmac.HMAC(self.client.signature_key)
 		mac.update(header[4:])
-		mac.update(self.client.session_key)
+		mac.update(session_key)
 		mac.update(struct.pack("<I", self.client.signature_base))
 		mac.update(signature)
 		mac.update(options)
@@ -296,10 +296,16 @@ class PRUDPMessageV1:
 		return mac.digest()
 
 	def encode(self, packet):
+		# on the server side, the session_key has already been set by validate_connection_request
+		# the client however still needs an ACK without a session key to validate the packet
+		session_key = self.client.session_key
+		if packet.type == TYPE_CONNECT and self.client.session_key:
+			session_key = b""
+
 		packet.flags |= FLAG_HAS_SIZE
 		options = self.encode_options(packet)
 		header = self.encode_header(packet, len(options))
-		checksum = self.calc_packet_signature(header, options, self.client.target_signature, packet.payload)
+		checksum = self.calc_packet_signature(session_key, header, options, self.client.target_signature, packet.payload)
 		return b"\xEA\xD0" + header + checksum + options + packet.payload
 		
 	def encode_header(self, packet, option_size):
@@ -385,7 +391,7 @@ class PRUDPMessageV1:
 			
 			packet.payload = self.buffer[30 + option_size : 30 + option_size + payload_size]
 			
-			if self.calc_packet_signature(header, option_data, self.client.source_signature, packet.payload) != checksum:
+			if self.calc_packet_signature(self.client.session_key, header, option_data, self.client.source_signature, packet.payload) != checksum:
 				logger.error("(V1) Invalid packet signature")
 				self.reset()
 				return packets
