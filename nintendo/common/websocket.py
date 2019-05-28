@@ -91,7 +91,7 @@ class WebSocketClient:
 		return True
 		
 	def accept(self):
-		if self.state != self.STATE_READY:
+		if self.state != STATE_READY:
 			raise RuntimeError("Socket may only be used once")
 			
 		self.state = STATE_ACCEPTING
@@ -123,7 +123,7 @@ class WebSocketClient:
 			
 	def handle_recv(self, data):
 		if not data:
-			logger.debug("Server closed the connection")
+			logger.debug("Connection was closed")
 			return self.cleanup()
 	
 		self.buffer += data
@@ -175,6 +175,7 @@ class WebSocketClient:
 				
 				accept = self.calculate_key_hash(headers["Sec-WebSocket-Key"])
 				response = self.response_template % (accept, self.protocol)
+				self.sock.send(response.encode("ascii"))
 				
 				self.state = STATE_CONNECTED
 					
