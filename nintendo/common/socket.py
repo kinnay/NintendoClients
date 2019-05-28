@@ -37,6 +37,7 @@ class Socket:
 		
 	def bind(self, host, port):
 		self.s.bind((host, port))
+		self.s.setblocking(False)
 		
 	def connect(self, host, port, timeout=3):
 		if self.type == TYPE_SSL:
@@ -59,7 +60,6 @@ class Socket:
 			self.s = ssl.wrap_socket(self.s, self.keyfile, self.certfile, True)
 		
 		self.s.listen()
-		self.s.setblocking(False)
 	
 	def accept(self):
 		try:
@@ -82,6 +82,13 @@ class Socket:
 			pass
 		except OSError:
 			return b""
+	
+	def sendto(self, addr, data): self.s.sendto(data, addr)
+	def recvfrom(self, num=4096):
+		try:
+			return self.s.recvfrom(num)
+		except (BlockingIOError, ConnectionResetError):
+			pass
 			
 	def local_address(self): return self.s.getsockname()
 	def remote_address(self): return self.remote_addr
