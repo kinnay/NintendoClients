@@ -987,8 +987,8 @@ def generate(filename):
 		name = os.path.splitext(os.path.basename(filename))[0]
 		code = parse(name, data)
 		if code:
-			with open("nintendo/nex/%s.py" %name, "w") as f:
-				f.write(code)
+			with open("nintendo/nex/%s.py" %name, "wb") as f:
+				f.write(code.encode("utf8"))
 
 if len(sys.argv) < 2:
 	print("Usage: python generate_protocols.py <protocol...>")
