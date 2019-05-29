@@ -11,6 +11,7 @@ class Settings:
 	field_types = {
 		"prudp.transport": int,
 		"prudp.version": int,
+		"prudp.minor_version": int,
 		"prudp.stream_type": int,
 		"prudp.fragment_size": int,
 		"prudp.resend_timeout": float,
@@ -18,7 +19,6 @@ class Settings:
 		"prudp.ping_timeout": float,
 		"prudp.silence_timeout": float,
 		"prudp.compression": int,
-		"prudp.support": int,
 		
 		"prudp_v0.signature_version": int,
 		"prudp_v0.flags_version": int,
