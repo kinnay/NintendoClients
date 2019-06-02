@@ -109,13 +109,13 @@ class RMCClient:
 		method_id = stream.u32()
 		logger.debug("Received RMC request: protocol=%i, call=%i, method=%i", protocol_id, call_id, method_id)
 		
+		result = common.Result(0x10001)
 		if protocol_id in self.servers:
 			context = RMCContext(self, self.pid)
 			response = self.init_response(protocol_id, call_id, method_id)
 			try:
-				result = self.servers[protocol_id].handle(context, method_id, stream, response)
+				self.servers[protocol_id].handle(context, method_id, stream, response)
 			except common.RMCError as e:
-				logger.info("RMC failed with error 0x%08X (%s)" %(e.error_code, e.error_name))
 				result = common.Result(e.error_code)
 			except Exception as e:
 				logger.error("Exception occurred while handling method call")
@@ -132,7 +132,8 @@ class RMCClient:
 			logger.warning("Received RMC request with unsupported protocol id: 0x%X", protocol_id)
 			result = common.Result("Core::NotImplemented")
 		
-		if result and result.is_error():
+		if result.is_error():
+			logger.info("RMC failed with error 0x%08X (%s)" %(e.error_code, e.error_name))
 			response = self.init_response(protocol_id, call_id, method_id, result)
 			
 		self.send_message(response)

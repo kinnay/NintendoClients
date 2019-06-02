@@ -19,12 +19,12 @@ class AccountData(common.Structure):
 		self.not_effective_message = None
 		self.expiry_date = None
 		self.expired_message = None
-
+	
 	def check_required(self, settings):
 		for field in ['pid', 'name', 'groups', 'email', 'creation_date', 'effective_date', 'not_effective_message', 'expiry_date', 'expired_message']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-
+	
 	def load(self, stream):
 		self.pid = stream.pid()
 		self.name = stream.string()
@@ -35,7 +35,7 @@ class AccountData(common.Structure):
 		self.not_effective_message = stream.string()
 		self.expiry_date = stream.datetime()
 		self.expired_message = stream.string()
-
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.pid(self.pid)
@@ -54,16 +54,16 @@ class BasicAccountInfo(common.Structure):
 		super().__init__()
 		self.pid = None
 		self.name = None
-
+	
 	def check_required(self, settings):
 		for field in ['pid', 'name']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-
+	
 	def load(self, stream):
 		self.pid = stream.pid()
 		self.name = stream.string()
-
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.pid(self.pid)
@@ -101,14 +101,14 @@ class AccountProtocol:
 	METHOD_LOOKUP_OR_CREATE_ACCOUNT = 28
 	METHOD_DISCONNECT_PRINCIPAL = 29
 	METHOD_DISCONNECT_ALL_PRINCIPALS = 30
-
+	
 	PROTOCOL_ID = 0x19
 
 
 class AccountClient(AccountProtocol):
 	def __init__(self, client):
 		self.client = client
-
+	
 	def create_account(self, name, key, groups, email):
 		logger.info("AccountClient.create_account()")
 		#--- request ---
@@ -118,24 +118,24 @@ class AccountClient(AccountProtocol):
 		stream.u32(groups)
 		stream.string(email)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		result = stream.result()
 		logger.info("AccountClient.create_account -> done")
 		return result
-
+	
 	def delete_account(self, pid):
 		logger.info("AccountClient.delete_account()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_DELETE_ACCOUNT)
 		stream.pid(pid)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		self.client.get_response(call_id)
 		logger.info("AccountClient.delete_account -> done")
-
+	
 	def disable_account(self, pid, until, message):
 		logger.info("AccountClient.disable_account()")
 		#--- request ---
@@ -144,58 +144,58 @@ class AccountClient(AccountProtocol):
 		stream.datetime(until)
 		stream.string(message)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		result = stream.result()
 		logger.info("AccountClient.disable_account -> done")
 		return result
-
+	
 	def change_password(self, new_key):
 		logger.info("AccountClient.change_password()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_CHANGE_PASSWORD)
 		stream.string(new_key)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		result = stream.bool()
 		logger.info("AccountClient.change_password -> done")
 		return result
-
+	
 	def test_capability(self, capability):
 		logger.info("AccountClient.test_capability()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_TEST_CAPABILITY)
 		stream.u32(capability)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		result = stream.bool()
 		logger.info("AccountClient.test_capability -> done")
 		return result
-
+	
 	def get_name(self, pid):
 		logger.info("AccountClient.get_name()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_NAME)
 		stream.pid(pid)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		name = stream.string()
 		logger.info("AccountClient.get_name -> done")
 		return name
-
+	
 	def get_account_data(self):
 		logger.info("AccountClient.get_account_data()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_ACCOUNT_DATA)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		obj = common.RMCResponse()
@@ -203,13 +203,13 @@ class AccountClient(AccountProtocol):
 		obj.data = stream.extract(AccountData)
 		logger.info("AccountClient.get_account_data -> done")
 		return obj
-
+	
 	def get_private_data(self):
 		logger.info("AccountClient.get_private_data()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_PRIVATE_DATA)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		obj = common.RMCResponse()
@@ -217,13 +217,13 @@ class AccountClient(AccountProtocol):
 		obj.data = stream.anydata()
 		logger.info("AccountClient.get_private_data -> done")
 		return obj
-
+	
 	def get_public_data(self):
 		logger.info("AccountClient.get_public_data()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_PUBLIC_DATA)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		obj = common.RMCResponse()
@@ -231,14 +231,14 @@ class AccountClient(AccountProtocol):
 		obj.data = stream.anydata()
 		logger.info("AccountClient.get_public_data -> done")
 		return obj
-
+	
 	def get_multiple_public_data(self, pids):
 		logger.info("AccountClient.get_multiple_public_data()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_MULTIPLE_PUBLIC_DATA)
 		stream.list(pids, stream.pid)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		obj = common.RMCResponse()
@@ -246,33 +246,33 @@ class AccountClient(AccountProtocol):
 		obj.data = stream.list(stream.anydata)
 		logger.info("AccountClient.get_multiple_public_data -> done")
 		return obj
-
+	
 	def update_account_name(self, name):
 		logger.info("AccountClient.update_account_name()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPDATE_ACCOUNT_NAME)
 		stream.string(name)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		result = stream.result()
 		logger.info("AccountClient.update_account_name -> done")
 		return result
-
+	
 	def update_account_email(self, email):
 		logger.info("AccountClient.update_account_email()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPDATE_ACCOUNT_EMAIL)
 		stream.string(email)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		result = stream.result()
 		logger.info("AccountClient.update_account_email -> done")
 		return result
-
+	
 	def update_custom_data(self, public_data, private_data):
 		logger.info("AccountClient.update_custom_data()")
 		#--- request ---
@@ -280,13 +280,13 @@ class AccountClient(AccountProtocol):
 		stream.anydata(public_data)
 		stream.anydata(private_data)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		result = stream.result()
 		logger.info("AccountClient.update_custom_data -> done")
 		return result
-
+	
 	def find_by_name_regex(self, groups, regex, range):
 		logger.info("AccountClient.find_by_name_regex()")
 		#--- request ---
@@ -295,13 +295,13 @@ class AccountClient(AccountProtocol):
 		stream.string(regex)
 		stream.add(range)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		accounts = stream.list(BasicAccountInfo)
 		logger.info("AccountClient.find_by_name_regex -> done")
 		return accounts
-
+	
 	def update_account_expiry_date(self, pid, expiry, message):
 		logger.info("AccountClient.update_account_expiry_date()")
 		#--- request ---
@@ -310,11 +310,11 @@ class AccountClient(AccountProtocol):
 		stream.datetime(expiry)
 		stream.string(message)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		self.client.get_response(call_id)
 		logger.info("AccountClient.update_account_expiry_date -> done")
-
+	
 	def update_account_effective_date(self, pid, effective_from, message):
 		logger.info("AccountClient.update_account_effective_date()")
 		#--- request ---
@@ -323,42 +323,42 @@ class AccountClient(AccountProtocol):
 		stream.datetime(effective_from)
 		stream.string(message)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		self.client.get_response(call_id)
 		logger.info("AccountClient.update_account_effective_date -> done")
-
+	
 	def update_status(self, status):
 		logger.info("AccountClient.update_status()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPDATE_STATUS)
 		stream.string(status)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		self.client.get_response(call_id)
 		logger.info("AccountClient.update_status -> done")
-
+	
 	def get_status(self, pid):
 		logger.info("AccountClient.get_status()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_STATUS)
 		stream.pid(pid)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		status = stream.string()
 		logger.info("AccountClient.get_status -> done")
 		return status
-
+	
 	def get_last_connection_stats(self, pid):
 		logger.info("AccountClient.get_last_connection_stats()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_LAST_CONNECTION_STATS)
 		stream.pid(pid)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		obj = common.RMCResponse()
@@ -367,19 +367,19 @@ class AccountClient(AccountProtocol):
 		obj.current_session_login = stream.datetime()
 		logger.info("AccountClient.get_last_connection_stats -> done")
 		return obj
-
+	
 	def reset_password(self):
 		logger.info("AccountClient.reset_password()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_RESET_PASSWORD)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		result = stream.bool()
 		logger.info("AccountClient.reset_password -> done")
 		return result
-
+	
 	def create_account_with_custom_data(self, name, key, groups, email, public_data, private_data):
 		logger.info("AccountClient.create_account_with_custom_data()")
 		#--- request ---
@@ -391,17 +391,17 @@ class AccountClient(AccountProtocol):
 		stream.anydata(public_data)
 		stream.anydata(private_data)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		self.client.get_response(call_id)
 		logger.info("AccountClient.create_account_with_custom_data -> done")
-
+	
 	def retrieve_account(self):
 		logger.info("AccountClient.retrieve_account()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_RETRIEVE_ACCOUNT)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		obj = common.RMCResponse()
@@ -410,7 +410,7 @@ class AccountClient(AccountProtocol):
 		obj.private_data = stream.anydata()
 		logger.info("AccountClient.retrieve_account -> done")
 		return obj
-
+	
 	def update_account(self, key, email, public_data, private_data):
 		logger.info("AccountClient.update_account()")
 		#--- request ---
@@ -420,11 +420,11 @@ class AccountClient(AccountProtocol):
 		stream.anydata(public_data)
 		stream.anydata(private_data)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		self.client.get_response(call_id)
 		logger.info("AccountClient.update_account -> done")
-
+	
 	def change_password_by_guest(self, name, email, key):
 		logger.info("AccountClient.change_password_by_guest()")
 		#--- request ---
@@ -433,11 +433,11 @@ class AccountClient(AccountProtocol):
 		stream.string(email)
 		stream.string(key)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		self.client.get_response(call_id)
 		logger.info("AccountClient.change_password_by_guest -> done")
-
+	
 	def find_by_name_like(self, groups, like, range):
 		logger.info("AccountClient.find_by_name_like()")
 		#--- request ---
@@ -446,13 +446,13 @@ class AccountClient(AccountProtocol):
 		stream.string(like)
 		stream.add(range)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		accounts = stream.list(BasicAccountInfo)
 		logger.info("AccountClient.find_by_name_like -> done")
 		return accounts
-
+	
 	def custom_create_account(self, name, key, groups, email, auth_data):
 		logger.info("AccountClient.custom_create_account()")
 		#--- request ---
@@ -463,13 +463,13 @@ class AccountClient(AccountProtocol):
 		stream.string(email)
 		stream.anydata(auth_data)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		pid = stream.pid()
 		logger.info("AccountClient.custom_create_account -> done")
 		return pid
-
+	
 	def nintendo_create_account(self, name, key, groups, email, auth_data):
 		logger.info("AccountClient.nintendo_create_account()")
 		#--- request ---
@@ -480,7 +480,7 @@ class AccountClient(AccountProtocol):
 		stream.string(email)
 		stream.anydata(auth_data)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		obj = common.RMCResponse()
@@ -488,7 +488,7 @@ class AccountClient(AccountProtocol):
 		obj.pid_hmac = stream.string()
 		logger.info("AccountClient.nintendo_create_account -> done")
 		return obj
-
+	
 	def lookup_or_create_account(self, name, key, groups, email, auth_data):
 		logger.info("AccountClient.lookup_or_create_account()")
 		#--- request ---
@@ -499,32 +499,32 @@ class AccountClient(AccountProtocol):
 		stream.string(email)
 		stream.anydata(auth_data)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		pid = stream.pid()
 		logger.info("AccountClient.lookup_or_create_account -> done")
 		return pid
-
+	
 	def disconnect_principal(self, pid):
 		logger.info("AccountClient.disconnect_principal()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_DISCONNECT_PRINCIPAL)
 		stream.pid(pid)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		result = stream.bool()
 		logger.info("AccountClient.disconnect_principal -> done")
 		return result
-
+	
 	def disconnect_all_principals(self):
 		logger.info("AccountClient.disconnect_all_principals()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_DISCONNECT_ALL_PRINCIPALS)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		result = stream.bool()
@@ -566,14 +566,14 @@ class AccountServer(AccountProtocol):
 			self.METHOD_DISCONNECT_PRINCIPAL: self.handle_disconnect_principal,
 			self.METHOD_DISCONNECT_ALL_PRINCIPALS: self.handle_disconnect_all_principals,
 		}
-
+	
 	def handle(self, context, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](context, input, output)
+			self.methods[method_id](context, input, output)
 		else:
 			logger.warning("Unknown method called on AccountServer: %i", method_id)
 			raise common.RMCError("Core::NotImplemented")
-
+	
 	def handle_create_account(self, context, input, output):
 		logger.info("AccountServer.create_account()")
 		#--- request ---
@@ -582,18 +582,18 @@ class AccountServer(AccountProtocol):
 		groups = input.u32()
 		email = input.string()
 		response = self.create_account(context, name, key, groups, email)
-
+		
 		#--- response ---
-		if not isinstance(response, common.Result):
-			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
+		if not isinstance(response, comon.Result):
+			raise RuntimeError("Expected comon.Result, got %s" %response.__class__.__name__)
 		output.result(response)
-
+	
 	def handle_delete_account(self, context, input, output):
 		logger.info("AccountServer.delete_account()")
 		#--- request ---
 		pid = input.pid()
 		self.delete_account(context, pid)
-
+	
 	def handle_disable_account(self, context, input, output):
 		logger.info("AccountServer.disable_account()")
 		#--- request ---
@@ -601,50 +601,50 @@ class AccountServer(AccountProtocol):
 		until = input.datetime()
 		message = input.string()
 		response = self.disable_account(context, pid, until, message)
-
+		
 		#--- response ---
-		if not isinstance(response, common.Result):
-			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
+		if not isinstance(response, comon.Result):
+			raise RuntimeError("Expected comon.Result, got %s" %response.__class__.__name__)
 		output.result(response)
-
+	
 	def handle_change_password(self, context, input, output):
 		logger.info("AccountServer.change_password()")
 		#--- request ---
 		new_key = input.string()
 		response = self.change_password(context, new_key)
-
+		
 		#--- response ---
 		if not isinstance(response, bool):
 			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
 		output.bool(response)
-
+	
 	def handle_test_capability(self, context, input, output):
 		logger.info("AccountServer.test_capability()")
 		#--- request ---
 		capability = input.u32()
 		response = self.test_capability(context, capability)
-
+		
 		#--- response ---
 		if not isinstance(response, bool):
 			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
 		output.bool(response)
-
+	
 	def handle_get_name(self, context, input, output):
 		logger.info("AccountServer.get_name()")
 		#--- request ---
 		pid = input.pid()
 		response = self.get_name(context, pid)
-
+		
 		#--- response ---
 		if not isinstance(response, str):
 			raise RuntimeError("Expected str, got %s" %response.__class__.__name__)
 		output.string(response)
-
+	
 	def handle_get_account_data(self, context, input, output):
 		logger.info("AccountServer.get_account_data()")
 		#--- request ---
 		response = self.get_account_data(context)
-
+		
 		#--- response ---
 		if not isinstance(response, common.RMCResponse):
 			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
@@ -653,12 +653,12 @@ class AccountServer(AccountProtocol):
 				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.result(response.result)
 		output.add(response.data)
-
+	
 	def handle_get_private_data(self, context, input, output):
 		logger.info("AccountServer.get_private_data()")
 		#--- request ---
 		response = self.get_private_data(context)
-
+		
 		#--- response ---
 		if not isinstance(response, common.RMCResponse):
 			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
@@ -667,12 +667,12 @@ class AccountServer(AccountProtocol):
 				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.bool(response.result)
 		output.anydata(response.data)
-
+	
 	def handle_get_public_data(self, context, input, output):
 		logger.info("AccountServer.get_public_data()")
 		#--- request ---
 		response = self.get_public_data(context)
-
+		
 		#--- response ---
 		if not isinstance(response, common.RMCResponse):
 			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
@@ -681,13 +681,13 @@ class AccountServer(AccountProtocol):
 				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.bool(response.result)
 		output.anydata(response.data)
-
+	
 	def handle_get_multiple_public_data(self, context, input, output):
 		logger.info("AccountServer.get_multiple_public_data()")
 		#--- request ---
 		pids = input.list(input.pid)
 		response = self.get_multiple_public_data(context, pids)
-
+		
 		#--- response ---
 		if not isinstance(response, common.RMCResponse):
 			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
@@ -696,41 +696,41 @@ class AccountServer(AccountProtocol):
 				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.bool(response.result)
 		output.list(response.data, output.anydata)
-
+	
 	def handle_update_account_name(self, context, input, output):
 		logger.info("AccountServer.update_account_name()")
 		#--- request ---
 		name = input.string()
 		response = self.update_account_name(context, name)
-
+		
 		#--- response ---
-		if not isinstance(response, common.Result):
-			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
+		if not isinstance(response, comon.Result):
+			raise RuntimeError("Expected comon.Result, got %s" %response.__class__.__name__)
 		output.result(response)
-
+	
 	def handle_update_account_email(self, context, input, output):
 		logger.info("AccountServer.update_account_email()")
 		#--- request ---
 		email = input.string()
 		response = self.update_account_email(context, email)
-
+		
 		#--- response ---
-		if not isinstance(response, common.Result):
-			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
+		if not isinstance(response, comon.Result):
+			raise RuntimeError("Expected comon.Result, got %s" %response.__class__.__name__)
 		output.result(response)
-
+	
 	def handle_update_custom_data(self, context, input, output):
 		logger.info("AccountServer.update_custom_data()")
 		#--- request ---
 		public_data = input.anydata()
 		private_data = input.anydata()
 		response = self.update_custom_data(context, public_data, private_data)
-
+		
 		#--- response ---
-		if not isinstance(response, common.Result):
-			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
+		if not isinstance(response, comon.Result):
+			raise RuntimeError("Expected comon.Result, got %s" %response.__class__.__name__)
 		output.result(response)
-
+	
 	def handle_find_by_name_regex(self, context, input, output):
 		logger.info("AccountServer.find_by_name_regex()")
 		#--- request ---
@@ -738,12 +738,12 @@ class AccountServer(AccountProtocol):
 		regex = input.string()
 		range = input.extract(common.ResultRange)
 		response = self.find_by_name_regex(context, groups, regex, range)
-
+		
 		#--- response ---
 		if not isinstance(response, list):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.add)
-
+	
 	def handle_update_account_expiry_date(self, context, input, output):
 		logger.info("AccountServer.update_account_expiry_date()")
 		#--- request ---
@@ -751,7 +751,7 @@ class AccountServer(AccountProtocol):
 		expiry = input.datetime()
 		message = input.string()
 		self.update_account_expiry_date(context, pid, expiry, message)
-
+	
 	def handle_update_account_effective_date(self, context, input, output):
 		logger.info("AccountServer.update_account_effective_date()")
 		#--- request ---
@@ -759,30 +759,30 @@ class AccountServer(AccountProtocol):
 		effective_from = input.datetime()
 		message = input.string()
 		self.update_account_effective_date(context, pid, effective_from, message)
-
+	
 	def handle_update_status(self, context, input, output):
 		logger.info("AccountServer.update_status()")
 		#--- request ---
 		status = input.string()
 		self.update_status(context, status)
-
+	
 	def handle_get_status(self, context, input, output):
 		logger.info("AccountServer.get_status()")
 		#--- request ---
 		pid = input.pid()
 		response = self.get_status(context, pid)
-
+		
 		#--- response ---
 		if not isinstance(response, str):
 			raise RuntimeError("Expected str, got %s" %response.__class__.__name__)
 		output.string(response)
-
+	
 	def handle_get_last_connection_stats(self, context, input, output):
 		logger.info("AccountServer.get_last_connection_stats()")
 		#--- request ---
 		pid = input.pid()
 		response = self.get_last_connection_stats(context, pid)
-
+		
 		#--- response ---
 		if not isinstance(response, common.RMCResponse):
 			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
@@ -792,17 +792,17 @@ class AccountServer(AccountProtocol):
 		output.datetime(response.last_session_login)
 		output.datetime(response.last_session_logout)
 		output.datetime(response.current_session_login)
-
+	
 	def handle_reset_password(self, context, input, output):
 		logger.info("AccountServer.reset_password()")
 		#--- request ---
 		response = self.reset_password(context)
-
+		
 		#--- response ---
 		if not isinstance(response, bool):
 			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
 		output.bool(response)
-
+	
 	def handle_create_account_with_custom_data(self, context, input, output):
 		logger.info("AccountServer.create_account_with_custom_data()")
 		#--- request ---
@@ -813,12 +813,12 @@ class AccountServer(AccountProtocol):
 		public_data = input.anydata()
 		private_data = input.anydata()
 		self.create_account_with_custom_data(context, name, key, groups, email, public_data, private_data)
-
+	
 	def handle_retrieve_account(self, context, input, output):
 		logger.info("AccountServer.retrieve_account()")
 		#--- request ---
 		response = self.retrieve_account(context)
-
+		
 		#--- response ---
 		if not isinstance(response, common.RMCResponse):
 			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
@@ -828,7 +828,7 @@ class AccountServer(AccountProtocol):
 		output.add(response.account_data)
 		output.anydata(response.public_data)
 		output.anydata(response.private_data)
-
+	
 	def handle_update_account(self, context, input, output):
 		logger.info("AccountServer.update_account()")
 		#--- request ---
@@ -837,7 +837,7 @@ class AccountServer(AccountProtocol):
 		public_data = input.anydata()
 		private_data = input.anydata()
 		self.update_account(context, key, email, public_data, private_data)
-
+	
 	def handle_change_password_by_guest(self, context, input, output):
 		logger.info("AccountServer.change_password_by_guest()")
 		#--- request ---
@@ -845,7 +845,7 @@ class AccountServer(AccountProtocol):
 		email = input.string()
 		key = input.string()
 		self.change_password_by_guest(context, name, email, key)
-
+	
 	def handle_find_by_name_like(self, context, input, output):
 		logger.info("AccountServer.find_by_name_like()")
 		#--- request ---
@@ -853,12 +853,12 @@ class AccountServer(AccountProtocol):
 		like = input.string()
 		range = input.extract(common.ResultRange)
 		response = self.find_by_name_like(context, groups, like, range)
-
+		
 		#--- response ---
 		if not isinstance(response, list):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.add)
-
+	
 	def handle_custom_create_account(self, context, input, output):
 		logger.info("AccountServer.custom_create_account()")
 		#--- request ---
@@ -868,12 +868,12 @@ class AccountServer(AccountProtocol):
 		email = input.string()
 		auth_data = input.anydata()
 		response = self.custom_create_account(context, name, key, groups, email, auth_data)
-
+		
 		#--- response ---
 		if not isinstance(response, int):
 			raise RuntimeError("Expected int, got %s" %response.__class__.__name__)
 		output.pid(response)
-
+	
 	def handle_nintendo_create_account(self, context, input, output):
 		logger.info("AccountServer.nintendo_create_account()")
 		#--- request ---
@@ -883,7 +883,7 @@ class AccountServer(AccountProtocol):
 		email = input.string()
 		auth_data = input.anydata()
 		response = self.nintendo_create_account(context, name, key, groups, email, auth_data)
-
+		
 		#--- response ---
 		if not isinstance(response, common.RMCResponse):
 			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
@@ -892,7 +892,7 @@ class AccountServer(AccountProtocol):
 				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.pid(response.pid)
 		output.string(response.pid_hmac)
-
+	
 	def handle_lookup_or_create_account(self, context, input, output):
 		logger.info("AccountServer.lookup_or_create_account()")
 		#--- request ---
@@ -902,149 +902,150 @@ class AccountServer(AccountProtocol):
 		email = input.string()
 		auth_data = input.anydata()
 		response = self.lookup_or_create_account(context, name, key, groups, email, auth_data)
-
+		
 		#--- response ---
 		if not isinstance(response, int):
 			raise RuntimeError("Expected int, got %s" %response.__class__.__name__)
 		output.pid(response)
-
+	
 	def handle_disconnect_principal(self, context, input, output):
 		logger.info("AccountServer.disconnect_principal()")
 		#--- request ---
 		pid = input.pid()
 		response = self.disconnect_principal(context, pid)
-
+		
 		#--- response ---
 		if not isinstance(response, bool):
 			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
 		output.bool(response)
-
+	
 	def handle_disconnect_all_principals(self, context, input, output):
 		logger.info("AccountServer.disconnect_all_principals()")
 		#--- request ---
 		response = self.disconnect_all_principals(context)
-
+		
 		#--- response ---
 		if not isinstance(response, bool):
 			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
 		output.bool(response)
-
+	
 	def create_account(self, *args):
 		logger.warning("AccountServer.create_account not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def delete_account(self, *args):
 		logger.warning("AccountServer.delete_account not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def disable_account(self, *args):
 		logger.warning("AccountServer.disable_account not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def change_password(self, *args):
 		logger.warning("AccountServer.change_password not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def test_capability(self, *args):
 		logger.warning("AccountServer.test_capability not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def get_name(self, *args):
 		logger.warning("AccountServer.get_name not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def get_account_data(self, *args):
 		logger.warning("AccountServer.get_account_data not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def get_private_data(self, *args):
 		logger.warning("AccountServer.get_private_data not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def get_public_data(self, *args):
 		logger.warning("AccountServer.get_public_data not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def get_multiple_public_data(self, *args):
 		logger.warning("AccountServer.get_multiple_public_data not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def update_account_name(self, *args):
 		logger.warning("AccountServer.update_account_name not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def update_account_email(self, *args):
 		logger.warning("AccountServer.update_account_email not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def update_custom_data(self, *args):
 		logger.warning("AccountServer.update_custom_data not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def find_by_name_regex(self, *args):
 		logger.warning("AccountServer.find_by_name_regex not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def update_account_expiry_date(self, *args):
 		logger.warning("AccountServer.update_account_expiry_date not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def update_account_effective_date(self, *args):
 		logger.warning("AccountServer.update_account_effective_date not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def update_status(self, *args):
 		logger.warning("AccountServer.update_status not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def get_status(self, *args):
 		logger.warning("AccountServer.get_status not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def get_last_connection_stats(self, *args):
 		logger.warning("AccountServer.get_last_connection_stats not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def reset_password(self, *args):
 		logger.warning("AccountServer.reset_password not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def create_account_with_custom_data(self, *args):
 		logger.warning("AccountServer.create_account_with_custom_data not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def retrieve_account(self, *args):
 		logger.warning("AccountServer.retrieve_account not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def update_account(self, *args):
 		logger.warning("AccountServer.update_account not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def change_password_by_guest(self, *args):
 		logger.warning("AccountServer.change_password_by_guest not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def find_by_name_like(self, *args):
 		logger.warning("AccountServer.find_by_name_like not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def custom_create_account(self, *args):
 		logger.warning("AccountServer.custom_create_account not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def nintendo_create_account(self, *args):
 		logger.warning("AccountServer.nintendo_create_account not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def lookup_or_create_account(self, *args):
 		logger.warning("AccountServer.lookup_or_create_account not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def disconnect_principal(self, *args):
 		logger.warning("AccountServer.disconnect_principal not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def disconnect_all_principals(self, *args):
 		logger.warning("AccountServer.disconnect_all_principals not implemented")
 		raise common.RMCError("Core::NotImplemented")
+

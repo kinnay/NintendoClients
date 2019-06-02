@@ -7,6 +7,91 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class PersistenceTarget(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.owner_id = 0
+		self.persistence_id = 65535
+	
+	def check_required(self, settings):
+		pass
+	
+	def load(self, stream):
+		self.owner_id = stream.pid()
+		self.persistence_id = stream.u16()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.pid(self.owner_id)
+		stream.u16(self.persistence_id)
+
+
+class DataStorePermission(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.permission = None
+		self.recipients = None
+	
+	def check_required(self, settings):
+		for field in ['permission', 'recipients']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.permission = stream.u8()
+		self.recipients = stream.list(stream.pid)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u8(self.permission)
+		stream.list(self.recipients, stream.pid)
+
+
+class DataStoreRatingInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.total_value = None
+		self.count = None
+		self.initial_value = None
+	
+	def check_required(self, settings):
+		for field in ['total_value', 'count', 'initial_value']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.total_value = stream.s64()
+		self.count = stream.u32()
+		self.initial_value = stream.s64()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.s64(self.total_value)
+		stream.u32(self.count)
+		stream.s64(self.initial_value)
+
+
+class DataStoreRatingInfoWithSlot(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.slot = None
+		self.info = DataStoreRatingInfo()
+	
+	def check_required(self, settings):
+		for field in ['slot']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.slot = stream.u8()
+		self.info = stream.extract(DataStoreRatingInfo)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u8(self.slot)
+		stream.add(self.info)
+
+
 class DataStoreGetMetaParam(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -14,43 +99,22 @@ class DataStoreGetMetaParam(common.Structure):
 		self.persistence_target = PersistenceTarget()
 		self.result_option = 0
 		self.access_password = 0
-
+	
 	def check_required(self, settings):
 		pass
-
+	
 	def load(self, stream):
 		self.data_id = stream.u64()
 		self.persistence_target = stream.extract(PersistenceTarget)
 		self.result_option = stream.u8()
 		self.access_password = stream.u64()
-
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.u64(self.data_id)
 		stream.add(self.persistence_target)
 		stream.u8(self.result_option)
 		stream.u64(self.access_password)
-
-
-class DataStoreKeyValue(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.key = None
-		self.value = None
-
-	def check_required(self, settings):
-		for field in ['key', 'value']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-
-	def load(self, stream):
-		self.key = stream.string()
-		self.value = stream.string()
-
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.string(self.key)
-		stream.string(self.value)
 
 
 class DataStoreMetaInfo(common.Structure):
@@ -75,12 +139,12 @@ class DataStoreMetaInfo(common.Structure):
 		self.expire_time = None
 		self.tags = None
 		self.ratings = None
-
+	
 	def check_required(self, settings):
 		for field in ['data_id', 'owner_id', 'size', 'name', 'data_type', 'meta_binary', 'create_time', 'update_time', 'period', 'status', 'referred_count', 'refer_data_id', 'flag', 'referred_time', 'expire_time', 'tags', 'ratings']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-
+	
 	def load(self, stream):
 		self.data_id = stream.u64()
 		self.owner_id = stream.pid()
@@ -101,7 +165,7 @@ class DataStoreMetaInfo(common.Structure):
 		self.expire_time = stream.datetime()
 		self.tags = stream.list(stream.string)
 		self.ratings = stream.list(DataStoreRatingInfoWithSlot)
-
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.u64(self.data_id)
@@ -125,27 +189,6 @@ class DataStoreMetaInfo(common.Structure):
 		stream.list(self.ratings, stream.add)
 
 
-class DataStorePermission(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.permission = None
-		self.recipients = None
-
-	def check_required(self, settings):
-		for field in ['permission', 'recipients']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-
-	def load(self, stream):
-		self.permission = stream.u8()
-		self.recipients = stream.list(stream.pid)
-
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u8(self.permission)
-		stream.list(self.recipients, stream.pid)
-
-
 class DataStorePrepareGetParam(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -154,13 +197,13 @@ class DataStorePrepareGetParam(common.Structure):
 		self.persistence_target = PersistenceTarget()
 		self.access_password = 0
 		self.extra_data = None
-
+	
 	def check_required(self, settings):
 		if settings.get("server.version") >= 30500:
 			for field in ['extra_data']:
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
-
+	
 	def load(self, stream):
 		self.data_id = stream.u64()
 		self.lock_id = stream.u32()
@@ -168,7 +211,7 @@ class DataStorePrepareGetParam(common.Structure):
 		self.access_password = stream.u64()
 		if stream.settings.get("server.version") >= 30500:
 			self.extra_data = stream.list(stream.string)
-
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.u64(self.data_id)
@@ -179,49 +222,25 @@ class DataStorePrepareGetParam(common.Structure):
 			stream.list(self.extra_data, stream.string)
 
 
-class DataStoreRatingInfo(common.Structure):
+class DataStoreKeyValue(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.total_value = None
-		self.count = None
-		self.initial_value = None
-
+		self.key = None
+		self.value = None
+	
 	def check_required(self, settings):
-		for field in ['total_value', 'count', 'initial_value']:
+		for field in ['key', 'value']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-
+	
 	def load(self, stream):
-		self.total_value = stream.s64()
-		self.count = stream.u32()
-		self.initial_value = stream.s64()
-
+		self.key = stream.string()
+		self.value = stream.string()
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
-		stream.s64(self.total_value)
-		stream.u32(self.count)
-		stream.s64(self.initial_value)
-
-
-class DataStoreRatingInfoWithSlot(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.slot = None
-		self.info = DataStoreRatingInfo()
-
-	def check_required(self, settings):
-		for field in ['slot']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-
-	def load(self, stream):
-		self.slot = stream.u8()
-		self.info = stream.extract(DataStoreRatingInfo)
-
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u8(self.slot)
-		stream.add(self.info)
+		stream.string(self.key)
+		stream.string(self.value)
 
 
 class DataStoreReqGetInfo(common.Structure):
@@ -232,7 +251,7 @@ class DataStoreReqGetInfo(common.Structure):
 		self.size = None
 		self.root_ca_cert = None
 		self.data_id = None
-
+	
 	def check_required(self, settings):
 		for field in ['url', 'headers', 'size', 'root_ca_cert']:
 			if getattr(self, field) is None:
@@ -241,7 +260,7 @@ class DataStoreReqGetInfo(common.Structure):
 			for field in ['data_id']:
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
-
+	
 	def load(self, stream):
 		self.url = stream.string()
 		self.headers = stream.list(DataStoreKeyValue)
@@ -249,7 +268,7 @@ class DataStoreReqGetInfo(common.Structure):
 		self.root_ca_cert = stream.buffer()
 		if stream.settings.get("server.version") >= 30500:
 			self.data_id = stream.u64()
-
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.string(self.url)
@@ -258,25 +277,6 @@ class DataStoreReqGetInfo(common.Structure):
 		stream.buffer(self.root_ca_cert)
 		if stream.settings.get("server.version") >= 30500:
 			stream.u64(self.data_id)
-
-
-class PersistenceTarget(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.owner_id = 0
-		self.persistence_id = 65535
-
-	def check_required(self, settings):
-		pass
-
-	def load(self, stream):
-		self.owner_id = stream.pid()
-		self.persistence_id = stream.u16()
-
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.pid(self.owner_id)
-		stream.u16(self.persistence_id)
 
 
 class DataStoreProtocol:
@@ -326,47 +326,47 @@ class DataStoreProtocol:
 	METHOD_RATE_OBJECTS_WITH_POSTING = 44
 	METHOD_GET_OBJECT_INFOS = 45
 	METHOD_SEARCH_OBJECT_LIGHT = 46
-
+	
 	PROTOCOL_ID = 0x73
 
 
 class DataStoreClient(DataStoreProtocol):
 	def __init__(self, client):
 		self.client = client
-
+	
 	def get_meta(self, param):
 		logger.info("DataStoreClient.get_meta()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_META)
 		stream.add(param)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		info = stream.extract(DataStoreMetaInfo)
 		logger.info("DataStoreClient.get_meta -> done")
 		return info
-
+	
 	def prepare_get_object(self, param):
 		logger.info("DataStoreClient.prepare_get_object()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT)
 		stream.add(param)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		info = stream.extract(DataStoreReqGetInfo)
 		logger.info("DataStoreClient.prepare_get_object -> done")
 		return info
-
+	
 	def get_metas_multiple_param(self, params):
 		logger.info("DataStoreClient.get_metas_multiple_param()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_METAS_MULTIPLE_PARAM)
 		stream.list(params, stream.add)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		obj = common.RMCResponse()
@@ -426,174 +426,174 @@ class DataStoreServer(DataStoreProtocol):
 			self.METHOD_GET_OBJECT_INFOS: self.handle_get_object_infos,
 			self.METHOD_SEARCH_OBJECT_LIGHT: self.handle_search_object_light,
 		}
-
+	
 	def handle(self, context, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](context, input, output)
+			self.methods[method_id](context, input, output)
 		else:
 			logger.warning("Unknown method called on DataStoreServer: %i", method_id)
 			raise common.RMCError("Core::NotImplemented")
-
+	
 	def handle_prepare_get_object_v1(self, context, input, output):
-		logger.warning("DataStoreSever.prepare_get_object_v1 is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.prepare_get_object_v1 is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_prepare_post_object_v1(self, context, input, output):
-		logger.warning("DataStoreSever.prepare_post_object_v1 is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.prepare_post_object_v1 is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_complete_post_object_v1(self, context, input, output):
-		logger.warning("DataStoreSever.complete_post_object_v1 is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.complete_post_object_v1 is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_delete_object(self, context, input, output):
-		logger.warning("DataStoreSever.delete_object is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.delete_object is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_delete_objects(self, context, input, output):
-		logger.warning("DataStoreSever.delete_objects is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.delete_objects is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_change_meta_v1(self, context, input, output):
-		logger.warning("DataStoreSever.change_meta_v1 is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.change_meta_v1 is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_change_metas_v1(self, context, input, output):
-		logger.warning("DataStoreSever.change_metas_v1 is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.change_metas_v1 is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_meta(self, context, input, output):
 		logger.info("DataStoreServer.get_meta()")
 		#--- request ---
 		param = input.extract(DataStoreGetMetaParam)
 		response = self.get_meta(context, param)
-
+		
 		#--- response ---
 		if not isinstance(response, DataStoreMetaInfo):
 			raise RuntimeError("Expected DataStoreMetaInfo, got %s" %response.__class__.__name__)
 		output.add(response)
-
+	
 	def handle_get_metas(self, context, input, output):
-		logger.warning("DataStoreSever.get_metas is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.get_metas is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_prepare_update_object(self, context, input, output):
-		logger.warning("DataStoreSever.prepare_update_object is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.prepare_update_object is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_complete_update_object(self, context, input, output):
-		logger.warning("DataStoreSever.complete_update_object is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.complete_update_object is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_search_object(self, context, input, output):
-		logger.warning("DataStoreSever.search_object is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.search_object is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_notification_url(self, context, input, output):
-		logger.warning("DataStoreSever.get_notification_url is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.get_notification_url is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_new_arrived_notifications_v1(self, context, input, output):
-		logger.warning("DataStoreSever.get_new_arrived_notifications_v1 is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.get_new_arrived_notifications_v1 is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_rate_object(self, context, input, output):
-		logger.warning("DataStoreSever.rate_object is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.rate_object is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_rating(self, context, input, output):
-		logger.warning("DataStoreSever.get_rating is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.get_rating is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_ratings(self, context, input, output):
-		logger.warning("DataStoreSever.get_ratings is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.get_ratings is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_reset_rating(self, context, input, output):
-		logger.warning("DataStoreSever.reset_rating is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.reset_rating is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_reset_ratings(self, context, input, output):
-		logger.warning("DataStoreSever.reset_ratings is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.reset_ratings is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_specific_meta_v1(self, context, input, output):
-		logger.warning("DataStoreSever.get_specific_meta_v1 is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.get_specific_meta_v1 is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_post_meta_binary(self, context, input, output):
-		logger.warning("DataStoreSever.post_meta_binary is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.post_meta_binary is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_touch_object(self, context, input, output):
-		logger.warning("DataStoreSever.touch_object is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.touch_object is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_rating_with_log(self, context, input, output):
-		logger.warning("DataStoreSever.get_rating_with_log is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.get_rating_with_log is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_prepare_post_object(self, context, input, output):
-		logger.warning("DataStoreSever.prepare_post_object is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.prepare_post_object is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_prepare_get_object(self, context, input, output):
 		logger.info("DataStoreServer.prepare_get_object()")
 		#--- request ---
 		param = input.extract(DataStorePrepareGetParam)
 		response = self.prepare_get_object(context, param)
-
+		
 		#--- response ---
 		if not isinstance(response, DataStoreReqGetInfo):
 			raise RuntimeError("Expected DataStoreReqGetInfo, got %s" %response.__class__.__name__)
 		output.add(response)
-
+	
 	def handle_complete_post_object(self, context, input, output):
-		logger.warning("DataStoreSever.complete_post_object is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.complete_post_object is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_new_arrived_notifications(self, context, input, output):
-		logger.warning("DataStoreSever.get_new_arrived_notifications is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.get_new_arrived_notifications is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_specific_meta(self, context, input, output):
-		logger.warning("DataStoreSever.get_specific_meta is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.get_specific_meta is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_persistence_info(self, context, input, output):
-		logger.warning("DataStoreSever.get_persistence_info is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.get_persistence_info is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_persistence_infos(self, context, input, output):
-		logger.warning("DataStoreSever.get_persistence_infos is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.get_persistence_infos is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_perpetuate_object(self, context, input, output):
-		logger.warning("DataStoreSever.perpetuate_object is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.perpetuate_object is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_unperpetuate_object(self, context, input, output):
-		logger.warning("DataStoreSever.unperpetuate_object is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.unperpetuate_object is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_prepare_get_object_or_meta(self, context, input, output):
-		logger.warning("DataStoreSever.prepare_get_object_or_meta is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.prepare_get_object_or_meta is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_password_info(self, context, input, output):
-		logger.warning("DataStoreSever.get_password_info is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.get_password_info is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_password_infos(self, context, input, output):
-		logger.warning("DataStoreSever.get_password_infos is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.get_password_infos is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_metas_multiple_param(self, context, input, output):
 		logger.info("DataStoreServer.get_metas_multiple_param()")
 		#--- request ---
 		params = input.list(DataStoreGetMetaParam)
 		response = self.get_metas_multiple_param(context, params)
-
+		
 		#--- response ---
 		if not isinstance(response, common.RMCResponse):
 			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
@@ -602,55 +602,56 @@ class DataStoreServer(DataStoreProtocol):
 				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.list(response.infos, output.add)
 		output.list(response.results, output.result)
-
+	
 	def handle_complete_post_objects(self, context, input, output):
-		logger.warning("DataStoreSever.complete_post_objects is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.complete_post_objects is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_change_meta(self, context, input, output):
-		logger.warning("DataStoreSever.change_meta is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.change_meta is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_change_metas(self, context, input, output):
-		logger.warning("DataStoreSever.change_metas is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.change_metas is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_rate_objects(self, context, input, output):
-		logger.warning("DataStoreSever.rate_objects is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.rate_objects is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_post_meta_binary_with_data_id(self, context, input, output):
-		logger.warning("DataStoreSever.post_meta_binary_with_data_id is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.post_meta_binary_with_data_id is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_post_meta_binaries_with_data_id(self, context, input, output):
-		logger.warning("DataStoreSever.post_meta_binaries_with_data_id is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.post_meta_binaries_with_data_id is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_rate_object_with_posting(self, context, input, output):
-		logger.warning("DataStoreSever.rate_object_with_posting is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.rate_object_with_posting is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_rate_objects_with_posting(self, context, input, output):
-		logger.warning("DataStoreSever.rate_objects_with_posting is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.rate_objects_with_posting is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_object_infos(self, context, input, output):
-		logger.warning("DataStoreSever.get_object_infos is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.get_object_infos is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_search_object_light(self, context, input, output):
-		logger.warning("DataStoreSever.search_object_light is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("DataStoreServer.search_object_light is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def get_meta(self, *args):
 		logger.warning("DataStoreServer.get_meta not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def prepare_get_object(self, *args):
 		logger.warning("DataStoreServer.prepare_get_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def get_metas_multiple_param(self, *args):
 		logger.warning("DataStoreServer.get_metas_multiple_param not implemented")
 		raise common.RMCError("Core::NotImplemented")
+

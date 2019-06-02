@@ -7,15 +7,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class RankingOrderCalc:
+	STANDARD = 0
+	ORDINAL = 1
+
+
 class RankingMode:
 	GLOBAL = 0
 	GLOBAL_ME = 1
 	ME = 4
-
-
-class RankingOrderCalc:
-	STANDARD = 0
-	ORDINAL = 1
 
 
 class RankingStatFlags:
@@ -36,12 +36,12 @@ class RankingOrderParam(common.Structure):
 		self.time_scope = 2
 		self.offset = None
 		self.count = None
-
+	
 	def check_required(self, settings):
 		for field in ['offset', 'count']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-
+	
 	def load(self, stream):
 		self.order_calc = stream.u8()
 		self.group_index = stream.u8()
@@ -49,7 +49,7 @@ class RankingOrderParam(common.Structure):
 		self.time_scope = stream.u8()
 		self.offset = stream.u32()
 		self.count = stream.u8()
-
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.u8(self.order_calc)
@@ -71,12 +71,12 @@ class RankingRankData(common.Structure):
 		self.groups = None
 		self.param = None
 		self.common_data = None
-
+	
 	def check_required(self, settings):
 		for field in ['pid', 'unique_id', 'rank', 'category', 'score', 'groups', 'param', 'common_data']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-
+	
 	def load(self, stream):
 		self.pid = stream.pid()
 		self.unique_id = stream.u64()
@@ -86,7 +86,7 @@ class RankingRankData(common.Structure):
 		self.groups = stream.list(stream.u8)
 		self.param = stream.u64()
 		self.common_data = stream.buffer()
-
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.pid(self.pid)
@@ -105,17 +105,17 @@ class RankingResult(common.Structure):
 		self.datas = None
 		self.total = None
 		self.since_time = None
-
+	
 	def check_required(self, settings):
 		for field in ['datas', 'total', 'since_time']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-
+	
 	def load(self, stream):
 		self.datas = stream.list(RankingRankData)
 		self.total = stream.u32()
 		self.since_time = stream.datetime()
-
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.list(self.datas, stream.add)
@@ -127,15 +127,15 @@ class RankingStats(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.stats = None
-
+	
 	def check_required(self, settings):
 		for field in ['stats']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-
+	
 	def load(self, stream):
 		self.stats = stream.list(stream.double)
-
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.list(self.stats, stream.double)
@@ -157,27 +157,27 @@ class RankingProtocol:
 	METHOD_GET_RANKING_BY_UNIQUE_ID_LIST = 13
 	METHOD_GET_CACHED_TOPX_RANKING = 14
 	METHOD_GET_CACHED_TOPX_RANKINGS = 15
-
+	
 	PROTOCOL_ID = 0x70
 
 
 class RankingClient(RankingProtocol):
 	def __init__(self, client):
 		self.client = client
-
+	
 	def get_common_data(self, unique_id):
 		logger.info("RankingClient.get_common_data()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_COMMON_DATA)
 		stream.u64(unique_id)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		data = stream.buffer()
 		logger.info("RankingClient.get_common_data -> done")
 		return data
-
+	
 	def get_ranking(self, mode, category, order, unique_id, pid):
 		logger.info("RankingClient.get_ranking()")
 		#--- request ---
@@ -188,13 +188,13 @@ class RankingClient(RankingProtocol):
 		stream.u64(unique_id)
 		stream.pid(pid)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		result = stream.extract(RankingResult)
 		logger.info("RankingClient.get_ranking -> done")
 		return result
-
+	
 	def get_stats(self, category, order, flags):
 		logger.info("RankingClient.get_stats()")
 		#--- request ---
@@ -203,13 +203,13 @@ class RankingClient(RankingProtocol):
 		stream.add(order)
 		stream.u32(flags)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		stats = stream.extract(RankingStats)
 		logger.info("RankingClient.get_stats -> done")
 		return stats
-
+	
 	def get_ranking_by_pid_list(self, pids, mode, category, order, unique_id):
 		logger.info("RankingClient.get_ranking_by_pid_list()")
 		#--- request ---
@@ -220,7 +220,7 @@ class RankingClient(RankingProtocol):
 		stream.add(order)
 		stream.u64(unique_id)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		result = stream.extract(RankingResult)
@@ -247,53 +247,53 @@ class RankingServer(RankingProtocol):
 			self.METHOD_GET_CACHED_TOPX_RANKING: self.handle_get_cached_topx_ranking,
 			self.METHOD_GET_CACHED_TOPX_RANKINGS: self.handle_get_cached_topx_rankings,
 		}
-
+	
 	def handle(self, context, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](context, input, output)
+			self.methods[method_id](context, input, output)
 		else:
 			logger.warning("Unknown method called on RankingServer: %i", method_id)
 			raise common.RMCError("Core::NotImplemented")
-
+	
 	def handle_upload_score(self, context, input, output):
-		logger.warning("RankingSever.upload_score is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("RankingServer.upload_score is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_delete_score(self, context, input, output):
-		logger.warning("RankingSever.delete_score is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("RankingServer.delete_score is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_delete_all_scores(self, context, input, output):
-		logger.warning("RankingSever.delete_all_scores is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("RankingServer.delete_all_scores is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_upload_common_data(self, context, input, output):
-		logger.warning("RankingSever.upload_common_data is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("RankingServer.upload_common_data is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_delete_common_data(self, context, input, output):
-		logger.warning("RankingSever.delete_common_data is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("RankingServer.delete_common_data is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_common_data(self, context, input, output):
 		logger.info("RankingServer.get_common_data()")
 		#--- request ---
 		unique_id = input.u64()
 		response = self.get_common_data(context, unique_id)
-
+		
 		#--- response ---
 		if not isinstance(response, bytes):
 			raise RuntimeError("Expected bytes, got %s" %response.__class__.__name__)
 		output.buffer(response)
-
+	
 	def handle_change_attributes(self, context, input, output):
-		logger.warning("RankingSever.change_attributes is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("RankingServer.change_attributes is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_change_all_attributes(self, context, input, output):
-		logger.warning("RankingSever.change_all_attributes is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("RankingServer.change_all_attributes is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_ranking(self, context, input, output):
 		logger.info("RankingServer.get_ranking()")
 		#--- request ---
@@ -303,16 +303,16 @@ class RankingServer(RankingProtocol):
 		unique_id = input.u64()
 		pid = input.pid()
 		response = self.get_ranking(context, mode, category, order, unique_id, pid)
-
+		
 		#--- response ---
 		if not isinstance(response, RankingResult):
 			raise RuntimeError("Expected RankingResult, got %s" %response.__class__.__name__)
 		output.add(response)
-
+	
 	def handle_get_approx_order(self, context, input, output):
-		logger.warning("RankingSever.get_approx_order is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("RankingServer.get_approx_order is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_stats(self, context, input, output):
 		logger.info("RankingServer.get_stats()")
 		#--- request ---
@@ -320,12 +320,12 @@ class RankingServer(RankingProtocol):
 		order = input.extract(RankingOrderParam)
 		flags = input.u32()
 		response = self.get_stats(context, category, order, flags)
-
+		
 		#--- response ---
 		if not isinstance(response, RankingStats):
 			raise RuntimeError("Expected RankingStats, got %s" %response.__class__.__name__)
 		output.add(response)
-
+	
 	def handle_get_ranking_by_pid_list(self, context, input, output):
 		logger.info("RankingServer.get_ranking_by_pid_list()")
 		#--- request ---
@@ -335,36 +335,37 @@ class RankingServer(RankingProtocol):
 		order = input.extract(RankingOrderParam)
 		unique_id = input.u64()
 		response = self.get_ranking_by_pid_list(context, pids, mode, category, order, unique_id)
-
+		
 		#--- response ---
 		if not isinstance(response, RankingResult):
 			raise RuntimeError("Expected RankingResult, got %s" %response.__class__.__name__)
 		output.add(response)
-
+	
 	def handle_get_ranking_by_unique_id_list(self, context, input, output):
-		logger.warning("RankingSever.get_ranking_by_unique_id_list is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("RankingServer.get_ranking_by_unique_id_list is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_cached_topx_ranking(self, context, input, output):
-		logger.warning("RankingSever.get_cached_topx_ranking is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("RankingServer.get_cached_topx_ranking is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_cached_topx_rankings(self, context, input, output):
-		logger.warning("RankingSever.get_cached_topx_rankings is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("RankingServer.get_cached_topx_rankings is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def get_common_data(self, *args):
 		logger.warning("RankingServer.get_common_data not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def get_ranking(self, *args):
 		logger.warning("RankingServer.get_ranking not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def get_stats(self, *args):
 		logger.warning("RankingServer.get_stats not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def get_ranking_by_pid_list(self, *args):
 		logger.warning("RankingServer.get_ranking_by_pid_list not implemented")
 		raise common.RMCError("Core::NotImplemented")
+

@@ -7,178 +7,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class BlacklistedPrincipal(common.Data):
-	def __init__(self):
-		super().__init__()
-		self.principal_info = PrincipalBasicInfo()
-		self.game_key = GameKey()
-		self.since = None
-
-	def check_required(self, settings):
-		for field in ['since']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-
-	def load(self, stream):
-		self.principal_info = stream.extract(PrincipalBasicInfo)
-		self.game_key = stream.extract(GameKey)
-		self.since = stream.datetime()
-
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.add(self.principal_info)
-		stream.add(self.game_key)
-		stream.datetime(self.since)
-common.DataHolder.register(BlacklistedPrincipal, "BlacklistedPrincipal")
-
-
-class Comment(common.Data):
-	def __init__(self):
-		super().__init__()
-		self.unk = None
-		self.text = None
-		self.changed = None
-
-	def check_required(self, settings):
-		for field in ['unk', 'text', 'changed']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-
-	def load(self, stream):
-		self.unk = stream.u8()
-		self.text = stream.string()
-		self.changed = stream.datetime()
-
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u8(self.unk)
-		stream.string(self.text)
-		stream.datetime(self.changed)
-common.DataHolder.register(Comment, "Comment")
-
-
-class FriendInfo(common.Data):
-	def __init__(self):
-		super().__init__()
-		self.nna_info = NNAInfo()
-		self.presence = NintendoPresenceV2()
-		self.comment = Comment()
-		self.befriended = None
-		self.last_online = None
-		self.unk = None
-
-	def check_required(self, settings):
-		for field in ['befriended', 'last_online', 'unk']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-
-	def load(self, stream):
-		self.nna_info = stream.extract(NNAInfo)
-		self.presence = stream.extract(NintendoPresenceV2)
-		self.comment = stream.extract(Comment)
-		self.befriended = stream.datetime()
-		self.last_online = stream.datetime()
-		self.unk = stream.u64()
-
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.add(self.nna_info)
-		stream.add(self.presence)
-		stream.add(self.comment)
-		stream.datetime(self.befriended)
-		stream.datetime(self.last_online)
-		stream.u64(self.unk)
-common.DataHolder.register(FriendInfo, "FriendInfo")
-
-
-class FriendRequest(common.Data):
-	def __init__(self):
-		super().__init__()
-		self.principal_info = PrincipalBasicInfo()
-		self.message = FriendRequestMessage()
-		self.sent = None
-
-	def check_required(self, settings):
-		for field in ['sent']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-
-	def load(self, stream):
-		self.principal_info = stream.extract(PrincipalBasicInfo)
-		self.message = stream.extract(FriendRequestMessage)
-		self.sent = stream.datetime()
-
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.add(self.principal_info)
-		stream.add(self.message)
-		stream.datetime(self.sent)
-common.DataHolder.register(FriendRequest, "FriendRequest")
-
-
-class FriendRequestMessage(common.Data):
-	def __init__(self):
-		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
-		self.unk3 = None
-		self.message = None
-		self.unk4 = None
-		self.string = None
-		self.game_key = GameKey()
-		self.datetime = None
-		self.expires = None
-
-	def check_required(self, settings):
-		for field in ['unk1', 'unk2', 'unk3', 'message', 'unk4', 'string', 'datetime', 'expires']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-
-	def load(self, stream):
-		self.unk1 = stream.u64()
-		self.unk2 = stream.u8()
-		self.unk3 = stream.u8()
-		self.message = stream.string()
-		self.unk4 = stream.u8()
-		self.string = stream.string()
-		self.game_key = stream.extract(GameKey)
-		self.datetime = stream.datetime()
-		self.expires = stream.datetime()
-
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u64(self.unk1)
-		stream.u8(self.unk2)
-		stream.u8(self.unk3)
-		stream.string(self.message)
-		stream.u8(self.unk4)
-		stream.string(self.string)
-		stream.add(self.game_key)
-		stream.datetime(self.datetime)
-		stream.datetime(self.expires)
-common.DataHolder.register(FriendRequestMessage, "FriendRequestMessage")
-
-
-class GameKey(common.Data):
-	def __init__(self):
-		super().__init__()
-		self.title_id = 0
-		self.title_version = 0
-
-	def check_required(self, settings):
-		pass
-
-	def load(self, stream):
-		self.title_id = stream.u64()
-		self.title_version = stream.u16()
-
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u64(self.title_id)
-		stream.u16(self.title_version)
-common.DataHolder.register(GameKey, "GameKey")
-
-
 class MiiV2(common.Data):
 	def __init__(self):
 		super().__init__()
@@ -187,19 +15,19 @@ class MiiV2(common.Data):
 		self.unk2 = 0
 		self.data = None
 		self.datetime = common.DateTime(0)
-
+	
 	def check_required(self, settings):
 		for field in ['name', 'data']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-
+	
 	def load(self, stream):
 		self.name = stream.string()
 		self.unk1 = stream.u8()
 		self.unk2 = stream.u8()
 		self.data = stream.buffer()
 		self.datetime = stream.datetime()
-
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.string(self.name)
@@ -210,27 +38,75 @@ class MiiV2(common.Data):
 common.DataHolder.register(MiiV2, "MiiV2")
 
 
+class PrincipalBasicInfo(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.pid = None
+		self.nnid = None
+		self.mii = MiiV2()
+		self.unk = 2
+	
+	def check_required(self, settings):
+		for field in ['pid', 'nnid']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.pid = stream.pid()
+		self.nnid = stream.string()
+		self.mii = stream.extract(MiiV2)
+		self.unk = stream.u8()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.pid(self.pid)
+		stream.string(self.nnid)
+		stream.add(self.mii)
+		stream.u8(self.unk)
+common.DataHolder.register(PrincipalBasicInfo, "PrincipalBasicInfo")
+
+
 class NNAInfo(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.principal_info = PrincipalBasicInfo()
 		self.unk1 = 94
 		self.unk2 = 11
-
+	
 	def check_required(self, settings):
 		pass
-
+	
 	def load(self, stream):
 		self.principal_info = stream.extract(PrincipalBasicInfo)
 		self.unk1 = stream.u8()
 		self.unk2 = stream.u8()
-
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.add(self.principal_info)
 		stream.u8(self.unk1)
 		stream.u8(self.unk2)
 common.DataHolder.register(NNAInfo, "NNAInfo")
+
+
+class GameKey(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.title_id = 0
+		self.title_version = 0
+	
+	def check_required(self, settings):
+		pass
+	
+	def load(self, stream):
+		self.title_id = stream.u64()
+		self.title_version = stream.u16()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.title_id)
+		stream.u16(self.title_version)
+common.DataHolder.register(GameKey, "GameKey")
 
 
 class NintendoPresenceV2(common.Data):
@@ -251,10 +127,10 @@ class NintendoPresenceV2(common.Data):
 		self.unk5 = 3
 		self.unk6 = 3
 		self.unk7 = 3
-
+	
 	def check_required(self, settings):
 		pass
-
+	
 	def load(self, stream):
 		self.flags = stream.u32()
 		self.is_online = stream.bool()
@@ -271,7 +147,7 @@ class NintendoPresenceV2(common.Data):
 		self.unk5 = stream.u8()
 		self.unk6 = stream.u8()
 		self.unk7 = stream.u8()
-
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.u32(self.flags)
@@ -292,6 +168,183 @@ class NintendoPresenceV2(common.Data):
 common.DataHolder.register(NintendoPresenceV2, "NintendoPresenceV2")
 
 
+class PrincipalPreference(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+		self.unk3 = None
+	
+	def check_required(self, settings):
+		for field in ['unk1', 'unk2', 'unk3']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk1 = stream.bool()
+		self.unk2 = stream.bool()
+		self.unk3 = stream.bool()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.bool(self.unk1)
+		stream.bool(self.unk2)
+		stream.bool(self.unk3)
+common.DataHolder.register(PrincipalPreference, "PrincipalPreference")
+
+
+class Comment(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.unk = None
+		self.text = None
+		self.changed = None
+	
+	def check_required(self, settings):
+		for field in ['unk', 'text', 'changed']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk = stream.u8()
+		self.text = stream.string()
+		self.changed = stream.datetime()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u8(self.unk)
+		stream.string(self.text)
+		stream.datetime(self.changed)
+common.DataHolder.register(Comment, "Comment")
+
+
+class FriendInfo(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.nna_info = NNAInfo()
+		self.presence = NintendoPresenceV2()
+		self.comment = Comment()
+		self.befriended = None
+		self.last_online = None
+		self.unk = None
+	
+	def check_required(self, settings):
+		for field in ['befriended', 'last_online', 'unk']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.nna_info = stream.extract(NNAInfo)
+		self.presence = stream.extract(NintendoPresenceV2)
+		self.comment = stream.extract(Comment)
+		self.befriended = stream.datetime()
+		self.last_online = stream.datetime()
+		self.unk = stream.u64()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.add(self.nna_info)
+		stream.add(self.presence)
+		stream.add(self.comment)
+		stream.datetime(self.befriended)
+		stream.datetime(self.last_online)
+		stream.u64(self.unk)
+common.DataHolder.register(FriendInfo, "FriendInfo")
+
+
+class FriendRequestMessage(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+		self.unk3 = None
+		self.message = None
+		self.unk4 = None
+		self.string = None
+		self.game_key = GameKey()
+		self.datetime = None
+		self.expires = None
+	
+	def check_required(self, settings):
+		for field in ['unk1', 'unk2', 'unk3', 'message', 'unk4', 'string', 'datetime', 'expires']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk1 = stream.u64()
+		self.unk2 = stream.u8()
+		self.unk3 = stream.u8()
+		self.message = stream.string()
+		self.unk4 = stream.u8()
+		self.string = stream.string()
+		self.game_key = stream.extract(GameKey)
+		self.datetime = stream.datetime()
+		self.expires = stream.datetime()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.unk1)
+		stream.u8(self.unk2)
+		stream.u8(self.unk3)
+		stream.string(self.message)
+		stream.u8(self.unk4)
+		stream.string(self.string)
+		stream.add(self.game_key)
+		stream.datetime(self.datetime)
+		stream.datetime(self.expires)
+common.DataHolder.register(FriendRequestMessage, "FriendRequestMessage")
+
+
+class FriendRequest(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.principal_info = PrincipalBasicInfo()
+		self.message = FriendRequestMessage()
+		self.sent = None
+	
+	def check_required(self, settings):
+		for field in ['sent']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.principal_info = stream.extract(PrincipalBasicInfo)
+		self.message = stream.extract(FriendRequestMessage)
+		self.sent = stream.datetime()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.add(self.principal_info)
+		stream.add(self.message)
+		stream.datetime(self.sent)
+common.DataHolder.register(FriendRequest, "FriendRequest")
+
+
+class BlacklistedPrincipal(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.principal_info = PrincipalBasicInfo()
+		self.game_key = GameKey()
+		self.since = None
+	
+	def check_required(self, settings):
+		for field in ['since']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.principal_info = stream.extract(PrincipalBasicInfo)
+		self.game_key = stream.extract(GameKey)
+		self.since = stream.datetime()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.add(self.principal_info)
+		stream.add(self.game_key)
+		stream.datetime(self.since)
+common.DataHolder.register(BlacklistedPrincipal, "BlacklistedPrincipal")
+
+
 class PersistentNotification(common.Data):
 	def __init__(self):
 		super().__init__()
@@ -300,19 +353,19 @@ class PersistentNotification(common.Data):
 		self.unk3 = None
 		self.unk4 = None
 		self.string = None
-
+	
 	def check_required(self, settings):
 		for field in ['unk1', 'unk2', 'unk3', 'unk4', 'string']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-
+	
 	def load(self, stream):
 		self.unk1 = stream.u64()
 		self.unk2 = stream.u32()
 		self.unk3 = stream.u32()
 		self.unk4 = stream.u32()
 		self.string = stream.string()
-
+	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.u64(self.unk1)
@@ -321,59 +374,6 @@ class PersistentNotification(common.Data):
 		stream.u32(self.unk4)
 		stream.string(self.string)
 common.DataHolder.register(PersistentNotification, "PersistentNotification")
-
-
-class PrincipalBasicInfo(common.Data):
-	def __init__(self):
-		super().__init__()
-		self.pid = None
-		self.nnid = None
-		self.mii = MiiV2()
-		self.unk = 2
-
-	def check_required(self, settings):
-		for field in ['pid', 'nnid']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-
-	def load(self, stream):
-		self.pid = stream.pid()
-		self.nnid = stream.string()
-		self.mii = stream.extract(MiiV2)
-		self.unk = stream.u8()
-
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.pid(self.pid)
-		stream.string(self.nnid)
-		stream.add(self.mii)
-		stream.u8(self.unk)
-common.DataHolder.register(PrincipalBasicInfo, "PrincipalBasicInfo")
-
-
-class PrincipalPreference(common.Data):
-	def __init__(self):
-		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
-		self.unk3 = None
-
-	def check_required(self, settings):
-		for field in ['unk1', 'unk2', 'unk3']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-
-	def load(self, stream):
-		self.unk1 = stream.bool()
-		self.unk2 = stream.bool()
-		self.unk3 = stream.bool()
-
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.bool(self.unk1)
-		stream.bool(self.unk2)
-		stream.bool(self.unk3)
-common.DataHolder.register(PrincipalPreference, "PrincipalPreference")
 
 
 class FriendsProtocol:
@@ -397,14 +397,14 @@ class FriendsProtocol:
 	METHOD_DELETE_FRIEND_FLAGS = 18
 	METHOD_CHECK_SETTING_STATUS = 19
 	METHOD_GET_REQUEST_BLOCK_SETTINGS = 20
-
+	
 	PROTOCOL_ID = 0x66
 
 
 class FriendsClient(FriendsProtocol):
 	def __init__(self, client):
 		self.client = client
-
+	
 	def get_all_information(self, nna_info, presence, birthday):
 		logger.info("FriendsClient.get_all_information()")
 		#--- request ---
@@ -413,7 +413,7 @@ class FriendsClient(FriendsProtocol):
 		stream.add(presence)
 		stream.datetime(birthday)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		stream = self.client.get_response(call_id)
 		obj = common.RMCResponse()
@@ -428,14 +428,14 @@ class FriendsClient(FriendsProtocol):
 		obj.unk2 = stream.bool()
 		logger.info("FriendsClient.get_all_information -> done")
 		return obj
-
+	
 	def update_presence(self, presence):
 		logger.info("FriendsClient.update_presence()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPDATE_PRESENCE)
 		stream.add(presence)
 		self.client.send_message(stream)
-
+		
 		#--- response ---
 		self.client.get_response(call_id)
 		logger.info("FriendsClient.update_presence -> done")
@@ -465,14 +465,14 @@ class FriendsServer(FriendsProtocol):
 			self.METHOD_CHECK_SETTING_STATUS: self.handle_check_setting_status,
 			self.METHOD_GET_REQUEST_BLOCK_SETTINGS: self.handle_get_request_block_settings,
 		}
-
+	
 	def handle(self, context, method_id, input, output):
 		if method_id in self.methods:
-			return self.methods[method_id](context, input, output)
+			self.methods[method_id](context, input, output)
 		else:
 			logger.warning("Unknown method called on FriendsServer: %i", method_id)
 			raise common.RMCError("Core::NotImplemented")
-
+	
 	def handle_get_all_information(self, context, input, output):
 		logger.info("FriendsServer.get_all_information()")
 		#--- request ---
@@ -480,7 +480,7 @@ class FriendsServer(FriendsProtocol):
 		presence = input.extract(NintendoPresenceV2)
 		birthday = input.datetime()
 		response = self.get_all_information(context, nna_info, presence, birthday)
-
+		
 		#--- response ---
 		if not isinstance(response, common.RMCResponse):
 			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
@@ -496,89 +496,90 @@ class FriendsServer(FriendsProtocol):
 		output.bool(response.unk1)
 		output.list(response.notifications, output.add)
 		output.bool(response.unk2)
-
+	
 	def handle_add_friend(self, context, input, output):
-		logger.warning("FriendsSever.add_friend is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.add_friend is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_add_friend_by_name(self, context, input, output):
-		logger.warning("FriendsSever.add_friend_by_name is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.add_friend_by_name is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_remove_friend(self, context, input, output):
-		logger.warning("FriendsSever.remove_friend is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.remove_friend is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_add_friend_request(self, context, input, output):
-		logger.warning("FriendsSever.add_friend_request is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.add_friend_request is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_cancel_friend_request(self, context, input, output):
-		logger.warning("FriendsSever.cancel_friend_request is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.cancel_friend_request is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_accept_friend_request(self, context, input, output):
-		logger.warning("FriendsSever.accept_friend_request is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.accept_friend_request is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_delete_friend_request(self, context, input, output):
-		logger.warning("FriendsSever.delete_friend_request is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.delete_friend_request is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_deny_friend_request(self, context, input, output):
-		logger.warning("FriendsSever.deny_friend_request is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.deny_friend_request is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_mark_friend_requests_as_received(self, context, input, output):
-		logger.warning("FriendsSever.mark_friend_requests_as_received is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.mark_friend_requests_as_received is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_add_black_list(self, context, input, output):
-		logger.warning("FriendsSever.add_black_list is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.add_black_list is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_remove_black_list(self, context, input, output):
-		logger.warning("FriendsSever.remove_black_list is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.remove_black_list is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_update_presence(self, context, input, output):
 		logger.info("FriendsServer.update_presence()")
 		#--- request ---
 		presence = input.extract(NintendoPresenceV2)
 		self.update_presence(context, presence)
-
+	
 	def handle_update_mii(self, context, input, output):
-		logger.warning("FriendsSever.update_mii is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.update_mii is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_update_comment(self, context, input, output):
-		logger.warning("FriendsSever.update_comment is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.update_comment is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_update_preference(self, context, input, output):
-		logger.warning("FriendsSever.update_preference is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.update_preference is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_basic_info(self, context, input, output):
-		logger.warning("FriendsSever.get_basic_info is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.get_basic_info is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_delete_friend_flags(self, context, input, output):
-		logger.warning("FriendsSever.delete_friend_flags is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.delete_friend_flags is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_check_setting_status(self, context, input, output):
-		logger.warning("FriendsSever.check_setting_status is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.check_setting_status is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def handle_get_request_block_settings(self, context, input, output):
-		logger.warning("FriendsSever.get_request_block_settings is unsupported")
-		return common.Result("Core::NotImplemented")
-
+		logger.warning("FriendsServer.get_request_block_settings is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def get_all_information(self, *args):
 		logger.warning("FriendsServer.get_all_information not implemented")
 		raise common.RMCError("Core::NotImplemented")
-
+	
 	def update_presence(self, *args):
 		logger.warning("FriendsServer.update_presence not implemented")
 		raise common.RMCError("Core::NotImplemented")
+

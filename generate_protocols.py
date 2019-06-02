@@ -4,199 +4,124 @@ import sys
 import os
 
 
-class Protocol:
-	def __init__(self):
-		self.id = None
-		self.name = None
-		self.methods = []
-		self.structs = {}
-		self.enums = {}
-		
-	def add_method(self, method):
-		self.methods.append(method)
-		method.id = len(self.methods)
-		
-	def add_struct(self, struct):
-		self.structs[struct.name] = struct
-		
-	def add_enum(self, enum):
-		self.enums[enum.name] = enum
-		
-
-class Method:
-	def __init__(self):
-		self.id = None
-		self.name = None
-		self.parameters = []
-		self.response = None
-		
-	def add_parameter(self, param):
-		self.parameters.append(param)
-		
-		
-class Struct:
-	def __init__(self):
-		self.name = None
-		self.parent = None
-		self.vars = None
-		
-		
-class VariableList:
-	def __init__(self):
-		self.fields = []
-		
-		
-class VariableItem:
-	FIELD = 0
-	CONDITIONAL = 1
-	REVISION = 2
-	
-	def __init__(self):
-		self.obj = None
-		
-		
-class Conditional:
-	COMP_EQ = 0
-	COMP_NE = 1
-	COMP_LE = 2
-	COMP_LT = 3
-	COMP_GE = 4
-	COMP_GT = 5
-
-	def __init__(self):
-		self.group = None
-		self.setting = None
-		self.comparison = None
-		self.value = None
-		self.body = None
-		
-	def get_operator(self):
-		return ["==", "!=", "<=", "<", ">=", ">"][self.comparison]
-		
-		
-class Revision:
-	def __init__(self, revision):
-		self.revision = revision
-		
-		
-class Variable:
-	def __init__(self):
-		self.type = None
-		self.name = None
-		self.default = None
-		
-		
-class Type:
-	def __init__(self):
-		self.name = None
-		self.template = []
-		
-		
-class Enum:
-	def __init__(self):
-		self.values = []
-	
-	def add(self, name, value):
-		self.values.append((name, value))
-
+TYPE_NAME = 0
+TYPE_RESERVED = 1
+TYPE_SYMBOL = 2
+TYPE_NUMBER = 3
+TYPE_STRING = 4
+TYPE_EOF = 5
 
 class Token:
-	
-	NAME = 0
-	NUMBER = 1
-	STRING = 2
-	SPECIAL = 3
-	EOF = 4
-
-	def __init__(self, type, value):
+	def __init__(self, type, value, row, col):
 		self.type = type
 		self.value = value
+		self.row = row
+		self.col = col
+		
+		
+class FileReader:
+	def process(self, config, filename):
+		with open(filename) as f:
+			return f.read()
+			
 
+NAME_HEAD_CHARS = string.ascii_letters + "_"
+NAME_CHARS = NAME_HEAD_CHARS + string.digits
+
+NUMBER_CHARS = string.digits
+
+SPECIAL_CHARS = "{}()[]<>:;,.=!#"
+
+RESERVED_WORDS = ["protocol", "method", "struct", "enum"]
+			
+CHAR_EOF = "EOF"
 
 class Tokenizer:
-	
-	NameChars = string.ascii_letters + "_"
-	NameTailChars = NameChars + string.digits
-	NumberChars = string.digits
-	SpecialChars = "{}()[]<>:;,.=!#"
-	WhiteChars = " \t\r\n"
-	
-	def parse(self, data):
+	def process(self, config, data):
 		self.tokens = []
 		self.state = self.state_next
-		for char in data:
-			if not self.state(char):
-				return False
-		if self.state == self.state_name:
-			self.add(Token.NAME, self.name)
-		elif self.state == self.state_number:
-			self.add(Token.NUMBER, int(self.number))
-		self.add(Token.EOF, None)
-		return True
 		
-	def add(self, type, name):
-		self.tokens.append(Token(type, name))
+		self.row = 1
+		self.col = 1
+		for char in data:
+			self.state(char)
 			
+			if char == "\n":
+				self.row += 1
+				self.col = 1
+			else:
+				self.col += 1
+				
+		self.state(CHAR_EOF)
+		self.add(TYPE_EOF, None)
+		return self.tokens
+		
+	def error(self, char):
+		raise ValueError("Unexpected character at %i:%i in %s: %s" %(self.row, self.col, self.state.__name__, char))
+	
+	def add(self, type, value):
+		token = Token(type, value, self.token_row, self.token_col)
+		self.tokens.append(token)
+		
 	def state_next(self, char):
-		if char in self.NameChars:
-			self.state = self.state_name
-			self.name = char
-		elif char in self.NumberChars:
-			self.state = self.state_number
-			self.number = char
-		elif char in self.SpecialChars:
-			self.add(Token.SPECIAL, char)
-		elif char == '"':
+		self.token_row = self.row
+		self.token_col = self.col
+		
+		if char == '"':
+			self.string = ""
 			self.state = self.state_string
-			self.string = '"'
-		elif char in self.WhiteChars:
+		elif char in NAME_HEAD_CHARS:
+			self.name = char
+			self.state = self.state_name
+		elif char in NUMBER_CHARS:
+			self.number = char
+			self.state = self.state_number
+		elif char in SPECIAL_CHARS:
+			self.add(TYPE_SYMBOL, char)
+		elif char in string.whitespace or char == CHAR_EOF:
 			pass
 		else:
-			print("Unexpected character:", char)
-			return False
-		return True
+			self.error(char)
 			
 	def state_name(self, char):
-		if char in self.NameTailChars:
+		if char in NAME_CHARS:
 			self.name += char
 		else:
-			self.add(Token.NAME, self.name)
+			if self.name in RESERVED_WORDS:
+				self.add(TYPE_RESERVED, self.name)
+			else:
+				self.add(TYPE_NAME, self.name)
 			self.state = self.state_next
-			return self.state(char)
-		return True
-		
-	def state_number(self, char):
-		if char in self.NumberChars:
-			self.number += char
-		else:
-			self.add(Token.NUMBER, int(self.number))
-			self.state = self.state_next
-			return self.state(char)
-		return True
-		
+			self.state(char)
+			
 	def state_string(self, char):
-		if char == '"':
-			self.string += '"'
-			self.add(Token.STRING, self.string)
+		if char == CHAR_EOF:
+			self.error(char)
+		elif char == '"':
+			self.add(TYPE_STRING, self.string)
 			self.state = self.state_next
 		else:
 			self.string += char
-		return True
+			
+	def state_number(self, char):
+		if char in NUMBER_CHARS:
+			self.number += char
+		else:
+			self.add(TYPE_NUMBER, int(self.number))
+			self.state = self.state_next
+			self.state(char)
 
-
-class Parser:
-	def parse(self, tokens):
-		self.protocols = []
-		
-		self.index = 0
+			
+class TokenStream:
+	def __init__(self, tokens):
 		self.tokens = tokens
-		return self.parse_file()
+		self.index = 0
 		
 	def read(self):
 		token = self.tokens[self.index]
 		self.index += 1
 		return token
-		
+	
 	def peek(self):
 		return self.tokens[self.index]
 		
@@ -204,396 +129,487 @@ class Parser:
 		self.index -= 1
 		
 	def error(self, token):
-		if token.type == Token.EOF:
-			print("Unexpected end of file")
+		if token.type == TYPE_EOF:
+			message = "Unexpected end of file"
 		else:
-			print("Unexpected token:", token.value)
-		return None
+			message = "Unexpected token at %i:%i: %s" %(token.row, token.col, token.value)
+		raise ValueError(message)
 		
-	def parse_file(self):
-		while True:
-			token = self.read()
-			if token.type == Token.EOF:
-				return True
-			elif token.value == "protocol":
-				protocol = self.parse_protocol()
-				if not protocol:
-					return False
-				self.protocols.append(protocol)
-			else:
-				return self.error(token)
-				
-	def parse_protocol(self):
-		protocol = Protocol()
-		
+	def read_token(self, type):
 		token = self.read()
-		if token.type != Token.NAME:
-			return self.error(token)
-		protocol.name = token.value
+		if token.type != type:
+			self.error(token)
+		return token
 		
+	def parse_token(self, type):
+		return self.read_token(type).value
+		
+	def skip_token(self, type, value):
 		token = self.read()
-		if token.value != ":":
-			return self.error(token)
+		if token.type != type or token.value != value:
+			self.error(token)
 			
-		token = self.read()
-		if token.type != Token.NUMBER:
-			return self.error(token)
-		protocol.id = token.value
+	def read_name(self): return self.read_token(TYPE_NAME)
+	def read_symbol(self): return self.read_token(TYPE_SYMBOL)
 		
-		token = self.read()
-		if token.value != "{":
-			return self.error(token)
-			
-		while True:
-			token = self.read()
-			if token.value == "}":
-				return protocol
-			elif token.value == "method":
-				method = self.parse_method()
-				if not method:
-					return None
-				protocol.add_method(method)
-			elif token.value == "struct":
-				struct = self.parse_struct()
-				if not struct:
-					return None
-				protocol.add_struct(struct)
-			elif token.value == "enum":
-				enum = self.parse_enum(protocol)
-				if not enum:
-					return False
-				protocol.add_enum(enum)
-			else:
-				return self.error(token)
-				
-	def parse_enum(self, protocol):
-		enum = Enum()
-		
-		token = self.read()
-		if token.type != Token.NAME:
-			return self.error(token)
-		enum.name = token.value
-		
-		token = self.read()
-		if token.value != "{":
-			return self.error(token)
-		
-		while True:
-			token = self.read()
-			if token.type != Token.NAME:
-				return self.error(token)
-			name = token.value
-			
-			token = self.read()
-			if token.value != "=":
-				return self.error(token)
-				
-			token = self.read()
-			if token.type != Token.NUMBER:
-				return self.error(token)
-			enum.add(name, token.value)
-			
-			token = self.read()
-			if token.value == "}":
-				return enum
-			elif token.value != ",":
-				return self.error(token)
-				
-	def parse_struct(self):
-		struct = Struct()
-		
-		token = self.read()
-		if token.type != Token.NAME:
-			return self.error(token)
-		struct.name = token.value
-		
-		token = self.read()
-		if token.value == ":":
-			token = self.read()
-			if token.type != Token.NAME:
-				return self.error(token)
-			struct.parent = token.value
-		else:
-			self.rewind()
-		
-		struct.vars = self.parse_variable_list()
-		if not struct.vars:
-			return None
+	def parse_name(self): return self.parse_token(TYPE_NAME)
+	def parse_number(self): return self.parse_token(TYPE_NUMBER)
+	def parse_string(self): return self.parse_token(TYPE_STRING)
 	
-		return struct
-		
-	def parse_type(self):
-		type = Type()
+	def skip_name(self, value): self.skip_token(TYPE_NAME, value)
+	def skip_reserved(self, value): self.skip_token(TYPE_RESERVED, value)
+	def skip_symbol(self, value): self.skip_token(TYPE_SYMBOL, value)
 
-		token = self.read()
-		if token.type != Token.NAME:
-			return self.error(token)
-		type.name = token.value
+
+class Scope:
+	def __init__(self):
+		self.names = []
 		
-		token = self.peek()
-		if token.value == "<":
-			if not self.parse_template_list(type):
-				return None
-		
-		return type
-		
-	def parse_template_list(self, type):
-		token = self.read()
-		if token.value != "<":
-			return self.error(token)
-			
-		token = self.peek()
-		if token.value == ">":
-			self.read()
+	def add(self, name):
+		if name in self.names:
 			return True
-			
-		while True:
-			subtype = self.parse_type()
-			if not subtype:
-				return False
-			type.template.append(subtype)
-			
-			token = self.read()
-			if token.value == ">":
-				return True
-			elif token.value != ",":
-				return self.error(token)
+		self.names.append(name)
+		return False
+		
+		
+class File:
+	def __init__(self):
+		self.protocols = []
+		self.structs = []
+		self.struct_names = []
+		self.enums = []
+		
+		self.scope = Scope()
+		
+	def add_protocol(self, proto):
+		if self.scope.add(proto.name):
+			raise ValueError("%s is already defined" %proto.name)
+		self.protocols.append(proto)
+		
+	def add_struct(self, struct):
+		if self.scope.add(struct.name):
+			raise ValueError("%s is already defined" %struct.name)
+		self.structs.append(struct)
+		self.struct_names.append(struct.name)
+		
+	def add_enum(self, enum):
+		if self.scope.add(enum.name):
+			raise ValueError("%s is already defined" %enum.name)
+		self.enums.append(enum)
+
+	
+class Protocol:
+	id = None
+	name = None
+	
+	def __init__(self):
+		self.methods = []
+		self.method_ids = []
+		
+		self.scope = Scope()
+		
+	def add_method(self, method):
+		if self.scope.add(method.name):
+			raise ValueError("%s is already defined in %s" %(method.name, self.name))
+		if method.id in self.method_ids:
+			raise ValueError("Method id %i is used twice in %s" %(method.id))
+		self.methods.append(method)
+		self.method_ids.append(method.id)
+		
+
+class Method:
+	id = None
+	name = None
+	request = None
+	response = None
+	supported = None
+		
+		
+class VariableList:
+	def __init__(self):
+		self.vars = []
+		self.scope = Scope()
+		
+	def add(self, var):
+		if self.scope.add(var.name):
+			raise ValueError("Duplicate variable name: %s" %var.name)
+		self.vars.append(var)
+		
+		
+class Variable:
+	type = None
+	name = None
+	default = None
+		
+		
+class Type:
+	name = None
+	template = None
+		
+		
+class Struct:
+	name = None
+	parent = None
+	body = None
+		
+		
+class StructBody:
+	def __init__(self):
+		self.fields = []
+		
+		self.scope = Scope()
+		
+	def has_revision(self):
+		for field in self.fields:
+			if isinstance(field, Revision): return True
+			if isinstance(field, Conditional):
+				if field.body.has_revision():
+					return True
+		return False
+		
+	def add(self, field):
+		if isinstance(field, Variable):
+			if self.scope.add(field.name):
+				raise ValueError("Duplicate variable name in struct: %s" %field.name)
+		self.fields.append(field)
+
+		
+OPERATOR_EQ = 0
+OPERATOR_NE = 1
+OPERATOR_LE = 2
+OPERATOR_LT = 3
+OPERATOR_GE = 4
+OPERATOR_GT = 5
+
+OPERATORS = ["==", "!=", "<=", "<", ">=", ">"]
+
+class Conditional:
+	group = None
+	setting = None
+	comparison = None
+	value = None
+	body = None
+
+		
+class Revision:
+	revision = None
+
+
+class Enum:
+	name = None
+	
+	def __init__(self):
+		self.values = []
+		
+		self.scope = Scope()
+	
+	def add(self, name, value):
+		if self.scope.add(name):
+			raise ValueError("Name %s used twice in enum %s" %(name, self.name))
+		self.values.append((name, value))
+
+
+TEMPLATE_TYPES = {
+	"list": 1
+}
+
+NUMERIC_TYPES = [
+	"u8", "u16", "u32", "u64",
+	"s8", "s16", "s32", "s64",
+	"pid", "datetime"
+]
+
+STRING_TYPES = [
+	"string", "buffer", "qbuffer"
+]
+		
+class Parser:
+	def process(self, config, tokens):
+		stream = TokenStream(tokens)
+		return self.parse_file(stream)
 				
-	def parse_method(self):
+	def parse_file(self, stream):
+		file = File()
+		while True:
+			token = stream.peek()
+			if token.type == TYPE_EOF:
+				return file
+			elif token.type == TYPE_RESERVED and token.value == "protocol":
+				file.add_protocol(self.parse_protocol(stream, file))
+			else:
+				stream.error(token)
+				
+	def parse_protocol(self, stream, file):
+		stream.skip_reserved("protocol")
+		
+		protocol = Protocol()
+		protocol.name = stream.parse_name()
+		stream.skip_symbol(":")
+		protocol.id = stream.parse_number()
+		stream.skip_symbol("{")
+		
+		self.prev_method = 0
+		
+		while True:
+			token = stream.peek()
+			if token.type == TYPE_SYMBOL and token.value == "}":
+				stream.skip_symbol("}")
+				return protocol
+			elif token.type == TYPE_RESERVED:
+				if token.value == "method": protocol.add_method(self.parse_method(stream))
+				elif token.value == "struct": file.add_struct(self.parse_struct(stream))
+				elif token.value == "enum": file.add_enum(self.parse_enum(stream))
+			else:
+				stream.error(token)
+				
+	def parse_method(self, stream):
+		stream.skip_reserved("method")
+		
 		method = Method()
 		
-		token = self.read()
-		if token.type != Token.NAME:
-			return self.error(token)
-		method.name = token.value
+		token = stream.peek()
+		if token.type == TYPE_SYMBOL and token.value == "(":
+			stream.skip_symbol("(")
+			method.id = stream.parse_number()
+			stream.skip_symbol(")")
+		else:
+			method.id = self.prev_method + 1
+		self.prev_method = method.id
 		
-		token = self.read()
+		method.name = stream.parse_name()
+		
+		token = stream.read_symbol()
 		if token.value == "(":
-			self.rewind()
-			if not self.parse_parameters(method):
-				return False
-			method.response = self.parse_variable_list()
-			if not method.response:
-				return False
-		elif token.value != ";":
-			return self.error(token)
+			method.request = self.parse_parameter_list(stream)
+			stream.skip_symbol("{")
+			method.response = self.parse_variable_list(stream)
+			method.supported = True
+		elif token.value == ";":
+			method.supported = False
+		else:
+			stream.error(token)
 		return method
 		
-	def parse_parameters(self, method):
-		token = self.read()
-		if token.value != "(":
-			return self.error(token)
-		
-		token = self.peek()
-		if token.value == ")":
-			self.read()
-			return True
-		
-		while True:
-			param = Variable()
-			
-			param.type = self.parse_type()
-			if not param.type:
-				return False
-				
-			token = self.read()
-			if token.type != Token.NAME:
-				return self.error(token)
-			param.name = token.value
-			
-			method.add_parameter(param)
-			
-			token = self.read()
-			if token.value == ")":
-				return True
-			elif token.value != ",":
-				return self.error(token)
-			
-	def parse_variable_list(self):
+	def parse_parameter_list(self, stream):
 		list = VariableList()
-	
-		token = self.read()
-		if token.value != "{":
-			return self.error(token)
+		
+		token = stream.peek()
+		if token.type == TYPE_SYMBOL and token.value == ")":
+			stream.skip_symbol(")")
+			return list
 		
 		while True:
-			value = VariableItem()
+			list.add(self.parse_variable(stream))
 			
-			token = self.read()
-			if token.value == "}":
+			token = stream.read_symbol()
+			if token.value == ")":
 				return list
-			elif token.value == "[":
-				value.type = VariableItem.CONDITIONAL
-				value.obj = self.parse_conditional()
-				if not value.obj:
-					return None
-			elif token.value == "#":
-				token = self.read()
-				if token.value != "revision":
-					return self.error(token)
-				token = self.read()
-				if token.type != Token.NUMBER:
-					return self.error(token)
-				value.type = VariableItem.REVISION
-				value.obj = Revision(token.value)
-			else:
-				self.rewind()
-				value.type = VariableItem.FIELD
-				value.obj = self.parse_variable()
-				if not value.obj:
-					return None
-					
-			list.fields.append(value)
-					
-	def parse_conditional(self):
-		cond = Conditional()
+			elif token.value != ",":
+				stream.error(token)
+		
+	def parse_variable_list(self, stream):
+		list = VariableList()
+		
+		while True:
+			token = stream.peek()
+			if token.type == TYPE_SYMBOL and token.value == "}":
+				stream.skip_symbol("}")
+				return list
 			
-		token = self.read()
-		if token.type != Token.NAME:
-			return self.error(token)
-		cond.group = token.value
+			list.add(self.parse_variable(stream))
+			stream.skip_symbol(";")
+	
+	def parse_variable(self, stream):
+		var = Variable()
+		var.type = self.parse_type(stream)
+		var.name = stream.parse_name()
 		
-		token = self.read()
-		if token.value != ".":
-			return self.error(token)
+		token = stream.peek()
+		if token.type == TYPE_SYMBOL and token.value == "=":
+			stream.skip_symbol("=")
+			var.default = self.parse_constant(stream, var.type)
+		
+		return var
+	
+	def parse_type(self, stream):
+		type = Type()
+		type.name = stream.parse_name()
+		
+		if type.name in TEMPLATE_TYPES:
+			type.template = self.parse_template(stream, TEMPLATE_TYPES[type.name])
 			
-		token = self.read()
-		if token.type != Token.NAME:
-			return self.error(token)
-		cond.setting = token.value
+		return type
+	
+	def parse_template(self, stream, num):
+		template = []
 		
-		token = self.read()
-		if token.value == ">":
-			token = self.read()
-			if token.value == "=":
-				cond.comparison = Conditional.COMP_GE
-			else:
-				cond.comparison = Conditional.COMP_GT
-				self.rewind()
-		elif token.value == "<":
-			token = self.read()
-			if token.value == "=":
-				cond.comparison = Conditional.COMP_LE
-			else:
-				cond.comparison = Conditional.COMP_LT
-				self.rewind()
-		elif token.value == "!":
-			token = self.read()
-			if token.value != "=":
-				return self.error(token)
-			cond.comparison = Conditional.COMP_NE
-		elif token.value == "=":
-			token = self.read()
-			if token.value != "=":
-				return self.error(token)
-			cond.comparison = Conditional.COMP_EQ
-		else:
-			return self.error(token)
-			
-		token = self.read()
-		if token.type != Token.NUMBER:
-			return self.error(token)
-		cond.value = token.value
+		stream.skip_symbol("<")
+		for i in range(num):
+			template.append(self.parse_type(stream))
+			if i < num - 1:
+				stream.skip_symbol(",")
+		stream.skip_symbol(">")
+		return template
 		
-		token = self.read()
-		if token.value != "]":
-			return self.error(token)
-			
-		cond.body = self.parse_variable_list()
-		if not cond.body:
-			return None
-		return cond
-		
-	def parse_variable(self):
-		value = Variable()
-		
-		value.type = self.parse_type()
-		if not value.type:
-			return None
-		
-		token = self.read()
-		if token.type != Token.NAME:
-			return self.error(token)
-		value.name = token.value
-		
-		token = self.read()
-		if token.value == "=":
-			value.default = self.parse_default(value.type)
-			if value.default is None:
-				return None
-			token = self.read()
-		
-		if token.value != ";":
-			return self.error(token)
-			
-		return value
-		
-	def parse_default(self, type):
-		if type.name in [
-			"u8", "u16", "u32", "u64",
-			"s8", "s16", "s32", "s64",
-			"pid"
-		]:
-			token = self.read()
-			if token.type != Token.NUMBER:
-				return self.error(token)
-			return token.value
-		
-		elif type.name == "datetime":
-			token = self.read()
-			if token.type != Token.NUMBER:
-				return self.error(token)
-			return "common.DateTime(%i)" %token.value
-		
-		elif type.name == "string":
-			token = self.read()
-			if token.type != Token.STRING:
-				return self.error(token)
-			return token.value
-			
-		elif type.name in ["buffer", "qbuffer"]:
-			token = self.read()
-			if token.type != Token.STRING:
-				return self.error(token)
-			return "b" + token.value
-			
+	def parse_constant(self, stream, type):
+		if type.name in NUMERIC_TYPES: return stream.parse_number()
+		elif type.name in STRING_TYPES: return stream.parse_string()
 		elif type.name == "bool":
-			token = self.read()
-			if token.type != Token.NAME:
-				return self.error(token)
+			token = stream.read_name()
 			if token.value not in ["false", "true"]:
-				return self.error(token)
+				stream.error(token)
 			return token.value == "true"
-			
 		elif type.name == "list":
-			if len(type.template) != 1:
-				print("Unexpected template argument count")
-				return None
-				
 			list = []
-			subtype = type.template[0]
 			
-			token = self.read()
-			if token.value != "[":
-				return self.error(token)
-				
-			token = self.read()
-			if token.value == "]":
+			stream.skip_symbol("[")
+			
+			token = stream.peek()
+			if token.type == TYPE_SYMBOL and token.value == "]":
+				stream.skip_symbol("]")
 				return list
-			self.rewind()
-			
-			while True:
-				list.append(self.parse_default(subtype))
 				
-				token = self.read()
+			subtype = type.template[0]
+			while True:
+				list.append(self.parse_constant(stream, subtype))
+				
+				token = stream.read_symbol()
 				if token.value == "]":
 					return list
 				elif token.value != ",":
-					return self.error(token)
+					stream.error(token)
 		else:
-			print("Don't know how to parse default value for %s" %type.name)
-
+			raise ValueError("Don't know how to parse constant for %s" %type.name)
+			
+	def parse_struct(self, stream):
+		stream.skip_reserved("struct")
+		
+		struct = Struct()
+		struct.name = stream.parse_name()
+		
+		token = stream.peek()
+		if token.type == TYPE_SYMBOL and token.value == ":":
+			stream.skip_symbol(":")
+			struct.parent = stream.parse_name()
+		
+		struct.body = self.parse_struct_body(stream)
+		return struct
+		
+	def parse_struct_body(self, stream):
+		body = StructBody()
+		
+		stream.skip_symbol("{")
+		while True:
+			token = stream.peek()
+			if token.type == TYPE_SYMBOL and token.value == "}":
+				stream.skip_symbol("}")
+				return body
+			
+			body.add(self.parse_struct_item(stream))
+			
+	def parse_struct_item(self, stream):
+		token = stream.peek()
+		if token.type == TYPE_SYMBOL:
+			if token.value == "[": return self.parse_conditional(stream)
+			elif token.value == "#": return self.parse_revision(stream)
+			else:
+				stream.error(token)
+		else:
+			var = self.parse_variable(stream)
+			stream.skip_symbol(";")
+			return var
+			
+	def parse_conditional(self, stream):
+		stream.skip_symbol("[")
+		
+		cond = Conditional()
+		cond.group = stream.parse_name()
+		stream.skip_symbol(".")
+		cond.setting = stream.parse_name()
+		cond.operator = self.parse_operator(stream)
+		cond.value = stream.parse_number()
+		
+		stream.skip_symbol("]")
+		
+		cond.body = self.parse_struct_body(stream)
+		return cond
+		
+	def parse_operator(self, stream):
+		token = stream.read_symbol()
+		if token.value == ">":
+			token = stream.peek()
+			if token.type == TYPE_SYMBOL and token.value == "=":
+				stream.skip_symbol("=")
+				return OPERATOR_GE
+			return OPERATOR_GT
+		elif token.value == "<":
+			token = stream.peek()
+			if token.type == TYPE_SYMBOL and token.value == "=":
+				stream.skip_symbol("=")
+				return OPERATOR_LE
+			return OPERATOR_LT
+		elif token.value == "!":
+			stream.skip_symbol("=")
+			return OPERATOR_NE
+		elif token.value == "=":
+			stream.skip_symbol("=")
+			return OPERATOR_EQ
+		else:
+			return self.error(token)
+		
+	def parse_revision(self, stream):
+		revision = Revision()
+		stream.skip_symbol("#")
+		stream.skip_name("revision")
+		revision.revision = stream.parse_number()
+		return revision
+		
+	def parse_enum(self, stream):
+		stream.skip_reserved("enum")
+		
+		enum = Enum()
+		enum.name = stream.parse_name()
+		stream.skip_symbol("{")
+		
+		token = stream.peek()
+		if token.type == TYPE_SYMBOL and token.value == "}":
+			stream.skip_symbol("}")
+			return enum
+		
+		while True:
+			name = stream.parse_name()
+			stream.skip_symbol("=")
+			value = stream.parse_number()
+			enum.add(name, value)
+			
+			token = stream.read_symbol()
+			if token.value == "}":
+				return enum
+			elif token.value != ",":
+				stream.error(token)
+				
+				
+class CodeStream:
+	def __init__(self):
+		self.code = ""
+		self.tabs = 0
+		
+	def get(self): return self.code
 	
+	def indent(self): self.tabs += 1
+	def unindent(self): self.tabs -= 1
+	
+	def write(self, text):
+		self.code += text
+		
+	def begin_line(self):
+		self.write("\t" * self.tabs)
+		
+	def write_line(self, line=""):
+		self.begin_line()
+		self.write(line + "\n")
+				
+				
 BASIC_TYPES = [
 	"u8", "u16", "u32", "u64",
 	"s8", "s16", "s32", "s64",
@@ -602,403 +618,411 @@ BASIC_TYPES = [
 	"string", "stationurl", "buffer",
 	"qbuffer", "anydata"
 ]
-
-COMMON_TYPES = [
-	"ResultRange"
-]
-
-def generate_extract(protocol, type, stream="stream"):
-	if type.name in BASIC_TYPES:
-		return "%s.%s()" %(stream, type.name)
-	elif type.name in protocol.structs:
-		return "%s.extract(%s)" %(stream, type.name)
-	elif type.name in COMMON_TYPES:
-		return "%s.extract(common.%s)" %(stream, type.name)
-	elif type.name == "list":
-		if len(type.template) != 1:
-			print("Unexpected template argument count")
-			return "None"
-		subtype = type.template[0]
-		code = "%s.list(" %stream
-		if subtype.name in BASIC_TYPES:
-			code += "%s.%s" %(stream, subtype.name)
-		elif subtype.name in protocol.structs:
-			code += subtype.name
-		elif subtype.name in COMMON_TYPES:
-			code += "common.%s" %subtype.name
-		else:
-			print("Unknown type: %s" %subtype.name)
-			return "None"
-		return code + ")"
-	else:
-		print("Unknown type: %s" %type.name)
-		return "None"
+				
+class CodeGenerator:
+	def process(self, config, file):
+		self.config = config
+		self.file = file
 		
-def generate_encode_func(protocol, type, stream="stream"):
-	if type.name in BASIC_TYPES:
-		return "%s.%s" %(stream, type.name)
-	elif type.name in protocol.structs or type.name in COMMON_TYPES:
-		return "%s.add" %stream
-	else:
-		print("Unknown type: %s" %type.name)
-		return ""
+		stream = CodeStream()
+		self.generate_file(stream)
+		return stream.get()
 		
-def generate_encode(protocol, type, name, stream="stream"):
-	if type.name == "list":
-		if len(type.template) != 1:
-			print("Unexpected template argument count")
-			return ""
-		subtype = type.template[0]
-		func = generate_encode_func(protocol, subtype, stream)
-		if func:
-			return "%s.list(%s, %s)" %(stream, name, func)
-	else:
-		func = generate_encode_func(protocol, type, stream)
-		if func:
-			return "%s(%s)" %(func, name)
-	return ""
+	def generate_file(self, stream):
+		self.generate_header(stream)
+		for enum in self.file.enums:
+			self.generate_enum(stream, enum)
+		for struct in self.file.structs:
+			self.generate_struct(stream, struct)
+		for proto in self.file.protocols:
+			self.generate_protocol(stream, proto)
+		for proto in self.file.protocols:
+			self.generate_client(stream, proto)
+		for proto in self.file.protocols:
+			self.generate_server(stream, proto)
+		
+	def generate_header(self, stream):
+		stream.write_line()
+		stream.write_line("# This file was generated automatically from %s.proto" %self.config.name)
+		stream.write_line()
+		stream.write_line("from nintendo.nex import common")
+		stream.write_line()
+		stream.write_line("import logging")
+		stream.write_line("logger = logging.getLogger(__name__)")
+		stream.write_line()
 			
-def generate_struct_init(protocol, vars, tabs):
-	code = ""
-	for field in vars.fields:
-		if field.type == VariableItem.FIELD:
-			value = field.obj.default
-			if field.obj.type.name in protocol.structs:
-				value = "%s()" %field.obj.type.name
-			elif field.obj.type.name in COMMON_TYPES:
-				value = "common.%s()" %field.obj.type.name
-			code += "\t" * tabs + "self.%s = %s\n" %(field.obj.name, value)
-		elif field.type == VariableItem.CONDITIONAL:
-			code += generate_struct_init(protocol, field.obj.body, tabs)
-	return code
-	
-def generate_condition(cond, prefix="stream."):
-	operator = cond.get_operator()
-	return "if %ssettings.get(\"%s.%s\") %s %s:\n" %(prefix, cond.group, cond.setting, operator, cond.value)
-	
-def generate_struct_version_body(vars, tabs):
-	code = ""
-	for field in vars.fields:
-		if field.type == VariableItem.REVISION:
-			code += "\t" * tabs + "version = %i\n" %field.obj.revision
-		elif field.type == VariableItem.CONDITIONAL:
-			subbody = generate_struct_version_body(field.obj.body, tabs + 1)
-			if subbody:
-				code += "\t" * tabs + generate_condition(field.obj, "")
-				code += subbody
-	return code
-	
-def generate_struct_version(protocol, vars):
-	body = generate_struct_version_body(vars, 2)
-	if body:
-		code = "\tdef get_version(self, settings):\n"
-		code += "\t\tversion = 0\n"
-		code += body
-		code += "\t\treturn version\n\n"
-		return code
-	return ""
-	
-def generate_struct_check(protocol, vars, tabs):
-	code = ""
-	unconditional = [
-		f.obj.name for f in vars.fields if \
-		f.type == VariableItem.FIELD and \
-		f.obj.type.name not in protocol.structs and \
-		f.obj.type.name not in COMMON_TYPES and \
-		f.obj.default is None
-	]
-	if unconditional:
-		code += "\t" * tabs + "for field in %s:\n" %unconditional
-		code += "\t" * tabs + "\tif getattr(self, field) is None:\n"
-		code += "\t" * tabs + "\t\traise ValueError(\"No value assigned to required field: %s\" %field)\n"
-	conditional = [f for f in vars.fields if f.type == VariableItem.CONDITIONAL]
-	for cond in conditional:
-		code += "\t" * tabs + generate_condition(cond.obj, "")
-		code += generate_struct_check(protocol, cond.obj.body, tabs + 1)
-	if not unconditional and not conditional:
-		code += "\t" * tabs + "pass\n"
-	return code
-	
-def generate_struct_load(protocol, vars, tabs, prefix):
-	code = ""
-	for field in vars.fields:
-		if field.type == VariableItem.FIELD:
-			code += "\t" * tabs
-			code += "%s.%s = %s\n" %(prefix, field.obj.name, generate_extract(protocol, field.obj.type))
-		elif field.type == VariableItem.CONDITIONAL:
-			code += "\t" * tabs
-			code += generate_condition(field.obj)
-			code += generate_struct_load(protocol, field.obj.body, tabs + 1, prefix)
-	return code
-	
-def generate_struct_save(protocol, vars, tabs):
-	code = ""
-	for field in vars.fields:
-		if field.type == VariableItem.FIELD:
-			code += "\t" * tabs
-			code += generate_encode(protocol, field.obj.type, "self." + field.obj.name) + "\n"
-		elif field.type == VariableItem.CONDITIONAL:
-			code += "\t" * tabs
-			code += generate_condition(field.obj)
-			code += generate_struct_save(protocol, field.obj.body, tabs + 1)
-	return code
-	
-def generate_struct(protocol, struct):
-	if not struct.parent:
-		code = "class %s(common.Structure):\n" %struct.name
-	elif struct.parent == "Data":
-		code = "class %s(common.Data):\n" %struct.name
-	else:
-		code = "class %s(%s):\n" %(struct.name, struct.parent)
-	
-	code += "\tdef __init__(self):\n"
-	code += "\t\tsuper().__init__()\n"
-	code += generate_struct_init(protocol, struct.vars, 2)
-	code += "\n"
-	code += generate_struct_version(protocol, struct.vars)
-	code += "\tdef check_required(self, settings):\n"
-	code += generate_struct_check(protocol, struct.vars, 2)
-	code += "\n"
-	code += "\tdef load(self, stream):\n"
-	code += generate_struct_load(protocol, struct.vars, 2, "self")
-	code += "\n"
-	code += "\tdef save(self, stream):\n"
-	code += "\t\tself.check_required(stream.settings)\n"
-	code += generate_struct_save(protocol, struct.vars, 2)
-	
-	if struct.parent:
-		code += "common.DataHolder.register(%s, \"%s\")\n" %(struct.name, struct.name)
-	
-	return code + "\n\n"
-		
-def generate_structs(protocol):
-	structs = []
-	for name in sorted(protocol.structs):
-		struct = protocol.structs[name]
-		structs.append(generate_struct(protocol, struct))
-	return "".join(structs)
-	
-
-def generate_enum(protocol, enum):
-	code = "class %s:\n" %enum.name
-	for name, value in enum.values:
-		code += "\t%s = %i\n" %(name, value)
-	code += "\n\n"
-	return code
-	
-def generate_enums(protocol):
-	enums = []
-	for name in sorted(protocol.enums):
-		enum = protocol.enums[name]
-		enums.append(generate_enum(protocol, enum))
-	return "".join(enums)
-	
-	
-def generate_protocol(protocol):
-	code = "class %sProtocol:\n" %protocol.name
-	for method in protocol.methods:
-		code += "\tMETHOD_%s = %i\n" %(method.name.upper(), method.id)
-	code += "\n\tPROTOCOL_ID = 0x%X\n\n\n" %protocol.id
-	return code
-
-
-def generate_client_method(protocol, method):
-	if method.response is None:
-		return ""
-
-	code = "\tdef %s(self" %method.name
-	for param in method.parameters:
-		code += ", %s" %param.name
-	code += "):\n"
-	
-	code += "\t\tlogger.info(\"%sClient.%s()\")\n" %(protocol.name, method.name)
-	code += "\t\t#--- request ---\n"
-	code += "\t\tstream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_%s)\n" %method.name.upper()
-	for param in method.parameters:
-		code += "\t\t%s\n" %generate_encode(protocol, param.type, param.name)
-	code += "\t\tself.client.send_message(stream)\n\n"
-	
-	code += "\t\t#--- response ---\n"
-	if len(method.response.fields) > 1:
-		code += "\t\tstream = self.client.get_response(call_id)\n"
-		code += "\t\tobj = common.RMCResponse()\n"
-		code += generate_struct_load(protocol, method.response, 2, "obj")
-		code += "\t\tlogger.info(\"%sClient.%s -> done\")\n" %(protocol.name, method.name)
-		code += "\t\treturn obj"
-	elif len(method.response.fields) == 1:
-		item = method.response.fields[0]
-		if item.type == VariableItem.FIELD:
-			value = item.obj
-			code += "\t\tstream = self.client.get_response(call_id)\n"
-			code += "\t\t%s = %s\n" %(value.name, generate_extract(protocol, value.type))
-			code += "\t\tlogger.info(\"%sClient.%s -> done\")\n" %(protocol.name, method.name)
-			code += "\t\treturn %s" %value.name
-	else:
-		code += "\t\tself.client.get_response(call_id)\n"
-		code += "\t\tlogger.info(\"%sClient.%s -> done\")" %(protocol.name, method.name)
-	return code
-
-def generate_client(protocol):
-	code = "class %sClient(%sProtocol):\n" %(protocol.name, protocol.name)
-	code += "\tdef __init__(self, client):\n"
-	code += "\t\tself.client = client\n\n"
-	for method in protocol.methods:
-		method_code = generate_client_method(protocol, method)
-		if method_code:
-			code += method_code + "\n\n"
-	return code + "\n"
-
-
-def get_python_type(type):
-	if type.name in [
-		"u8", "u16", "u32", "u64",
-		"s8", "s16", "s32", "s64",
-		"pid"
-	]: return "int"
-	elif type.name in ["float", "double"]:
-		return "float"
-	elif type.name == "bool": return "bool"
-	elif type.name == "string": return "str"
-	elif type.name in ["buffer", "qbuffer"]:
-		return "bytes"
-	elif type.name == "list": return "list"
-	elif type.name == "datetime": return "common.DateTime"
-	elif type.name == "stationurl": return "common.StationURL"
-	elif type.name == "result": return "common.Result"
-	elif type.name == "anydata": return "common.Data"
-	elif type.name in COMMON_TYPES:
-		return "common.%s" %type.name
-	return type.name
-
-def generate_server_method(protocol, method):
-	code = "\tdef handle_%s(self, context, input, output):\n" %method.name
-	if method.response is None: #Unsupported method
-		code += "\t\tlogger.warning(\"%sSever.%s is unsupported\")\n" %(protocol.name, method.name)
-		code += "\t\treturn common.Result(\"Core::NotImplemented\")\n\n"
-		return code
-	
-	code += "\t\tlogger.info(\"%sServer.%s()\")\n" %(protocol.name, method.name)
-	code += "\t\t#--- request ---\n"
-	for param in method.parameters:
-		code += "\t\t%s = %s\n" %(param.name, generate_extract(protocol, param.type, "input"))
-		
-	params = ""
-	for param in method.parameters:
-		params += ", " + param.name
-	
-	fields = [f.obj for f in method.response.fields if f.type == VariableItem.FIELD]
-	if len(fields) > 1:
-		field_names = [f.name for f in fields]
-		code += "\t\tresponse = self.%s(context%s)\n\n" %(method.name, params)
-		code += "\t\t#--- response ---\n"
-		code += "\t\tif not isinstance(response, common.RMCResponse):\n"
-		code += "\t\t\traise RuntimeError(\"Expected RMCResponse, got %s\" %response.__class__.__name__)\n"
-		code += "\t\tfor field in %s:\n" %field_names
-		code += "\t\t\tif not hasattr(response, field):\n"
-		code += "\t\t\t\traise RuntimeError(\"Missing field in RMCResponse: %s\" %field)\n"
-		for field in fields:
-			code += "\t\t%s\n" %generate_encode(protocol, field.type, "response." + field.name, "output")
-		code += "\n"
-	elif len(fields) == 1:
-		field = fields[0]
-		expected = get_python_type(field.type)
-		code += "\t\tresponse = self.%s(context%s)\n\n" %(method.name, params)
-		code += "\t\t#--- response ---\n"
-		code += "\t\tif not isinstance(response, %s):\n" %expected
-		code += "\t\t\traise RuntimeError(\"Expected %s, got %%s\" %%response.__class__.__name__)\n" %expected
-		code += "\t\t%s\n\n" %generate_encode(protocol, field.type, "response", "output")
-	else:
-		code += "\t\tself.%s(context%s)\n\n" %(method.name, params)
-	return code
-	
-def generate_server_stub(protocol, method):
-	if method.response is None:
-		return ""
-	code = "\tdef %s(self, *args):\n" %method.name
-	code += "\t\tlogger.warning(\"%sServer.%s not implemented\")\n" %(protocol.name, method.name)
-	code += "\t\traise common.RMCError(\"Core::NotImplemented\")\n"
-	return code + "\n"
-
-SERVER_TEMPLATE = """class %sServer(%sProtocol):
-	def __init__(self):
-		self.methods = {
-%s		}
-
-	def handle(self, context, method_id, input, output):
-		if method_id in self.methods:
-			return self.methods[method_id](context, input, output)
+	def generate_enum(self, stream, enum):
+		stream.write_line()
+		stream.write_line("class %s:" %enum.name)
+		stream.indent()
+		if enum.values:
+			for name, value in enum.values:
+				stream.write_line("%s = %i" %(name, value))
 		else:
-			logger.warning("Unknown method called on %sServer: %%i", method_id)
-			raise common.RMCError("Core::NotImplemented")
-
-"""
-def generate_server(protocol):
-	methods = ""
-	for method in protocol.methods:
-		methods += "\t\t\tself.METHOD_%s: self.handle_%s,\n" %(method.name.upper(), method.name)
-	code = SERVER_TEMPLATE %(
-		protocol.name, protocol.name,
-		methods, protocol.name
-	)
-	for method in protocol.methods:
-		code += generate_server_method(protocol, method)
-	for method in protocol.methods:
-		code += generate_server_stub(protocol, method)
-	return code + "\n"
-
-
-def generate_header(name):
-	code = "\n# This file was generated automatically from %s.proto\n\n" %name
-	code += "from nintendo.nex import common\n\n"
-	code += "import logging\n"
-	code += "logger = logging.getLogger(__name__)\n\n\n"
-	return code
-
-	
-def parse(name, data):
-	tokenizer = Tokenizer()
-	if not tokenizer.parse(data):
-		return
-	
-	parser = Parser()
-	if not parser.parse(tokenizer.tokens):
-		return
-	
-	code = generate_header(name)
-	for protocol in parser.protocols:
-		code += generate_enums(protocol)
-	for protocol in parser.protocols:
-		code += generate_structs(protocol)
-	for protocol in parser.protocols:
-		code += generate_protocol(protocol)
-	for protocol in parser.protocols:
-		code += generate_client(protocol)
-	for protocol in parser.protocols:
-		code += generate_server(protocol)
-	return code.rstrip("\n") + "\n"
-
-def generate(filename):
-	if not os.path.isfile(filename):
-		print("File not found: %s" %filename)
-	else:
-		print("Parsing %s" %filename)
-		with open(filename) as f:
-			data = f.read()
-		name = os.path.splitext(os.path.basename(filename))[0]
-		code = parse(name, data)
-		if code:
-			with open("nintendo/nex/%s.py" %name, "wb") as f:
-				f.write(code.encode("utf8"))
-
-if len(sys.argv) < 2:
-	print("Usage: python generate_protocols.py <protocol...>")
-else:
-	protocols = []
-	if "all" in sys.argv:
-		for filename in os.listdir("nintendo/files/proto"):
-			protocols.append(filename.split(".proto")[0])
-	else:
-		protocols = sys.argv[1:]
+			stream.write_line("pass")
+		stream.unindent()
+		stream.write_line()
 		
-	for proto in protocols:
-		generate("nintendo/files/proto/%s.proto" %proto)
+	def generate_struct(self, stream, struct):
+		stream.write_line()
+		
+		parent = struct.parent
+		if parent is None:
+			parent = "common.Structure"
+		elif parent == "Data":
+			parent = "common.Data"
+		stream.write_line("class %s(%s):" %(struct.name, parent))
+		stream.indent()
+		
+		self.generate_struct_init(stream, struct)
+		self.generate_struct_version(stream, struct)
+		self.generate_struct_check(stream, struct)
+		self.generate_struct_load(stream, struct)
+		self.generate_struct_save(stream, struct)
+		
+		stream.unindent()
+		if struct.parent:
+			stream.write_line('common.DataHolder.register(%s, "%s")' %(struct.name, struct.name))
+		stream.write_line()
+		
+	def generate_struct_init(self, stream, struct):
+		stream.write_line("def __init__(self):")
+		stream.indent()
+		stream.write_line("super().__init__()")
+		self.generate_struct_init_body(stream, struct.body)
+		stream.unindent()
+		stream.write_line()
+		
+	def generate_struct_init_body(self, stream, body):
+		for field in body.fields:
+			if isinstance(field, Variable):
+				stream.write_line("self.%s = %s" %(field.name, self.make_constant(field.type, field.default)))
+			elif isinstance(field, Conditional):
+				self.generate_struct_init_body(stream, field.body)
+			
+	def generate_struct_version(self, stream, struct):
+		if struct.body.has_revision():
+			stream.write_line("def get_version(self, settings):")
+			stream.indent()
+			stream.write_line("version = 0")
+			self.generate_struct_version_body(stream, struct.body)
+			stream.write_line("return version")
+			stream.unindent()
+			stream.write_line()
+			
+	def generate_struct_version_body(self, stream, body):
+		for field in body.fields:
+			if isinstance(field, Revision):
+				stream.write_line("version = %i" %field.revision)
+			elif isinstance(field, Conditional):
+				if field.body.has_revision():
+					self.generate_if_statement(stream, field)
+					stream.indent()
+					self.generate_struct_version_body(stream, field.body)
+					stream.unindent()
+					
+	def generate_struct_check(self, stream, struct):
+		stream.write_line("def check_required(self, settings):")
+		stream.indent()
+		self.generate_struct_check_body(stream, struct.body)
+		stream.unindent()
+		stream.write_line()
+		
+	def generate_struct_check_body(self, stream, body):
+		required = []
+		for field in body.fields:
+			if isinstance(field, Variable):
+				if field.type.name not in self.file.struct_names and \
+				   field.type.name != "ResultRange" and \
+				   field.default is None:
+					required.append(field.name)
+		if required:
+			stream.write_line("for field in %s:" %required)
+			stream.write_line("\tif getattr(self, field) is None:")
+			stream.write_line('\t\traise ValueError("No value assigned to required field: %s" %field)')
+			
+		conditional = [f for f in body.fields if isinstance(f, Conditional)]
+		for cond in conditional:
+			self.generate_if_statement(stream, cond)
+			stream.indent()
+			self.generate_struct_check_body(stream, cond.body)
+			stream.unindent()
+			
+		if not required and not conditional:
+			stream.write_line("pass")
+		
+	def generate_struct_load(self, stream, struct):
+		stream.write_line("def load(self, stream):")
+		stream.indent()
+		self.generate_struct_load_body(stream, struct.body)
+		stream.unindent()
+		stream.write_line()
+		
+	def generate_struct_load_body(self, stream, body):
+		for field in body.fields:
+			if isinstance(field, Variable):
+				stream.write_line("self.%s = %s" %(field.name, self.make_extract(field.type)))
+			elif isinstance(field, Conditional):
+				self.generate_if_statement(stream, field, "stream.")
+				stream.indent()
+				self.generate_struct_load_body(stream, field.body)
+				stream.unindent()
+		
+	def generate_struct_save(self, stream, struct):
+		stream.write_line("def save(self, stream):")
+		stream.indent()
+		stream.write_line("self.check_required(stream.settings)")
+		self.generate_struct_save_body(stream, struct.body)
+		stream.unindent()
+	
+	def generate_struct_save_body(self, stream, body):
+		for field in body.fields:
+			if isinstance(field, Variable):
+				stream.write_line(self.make_encode(field.type, "self.%s" %field.name))
+			elif isinstance(field, Conditional):
+				self.generate_if_statement(stream, field, "stream.")
+				stream.indent()
+				self.generate_struct_save_body(stream, field.body)
+				stream.unindent()
+	
+	def generate_if_statement(self, stream, cond, prefix=""):
+		operator = OPERATORS[cond.operator]
+		stream.write_line('if %ssettings.get("%s.%s") %s %i:' %(
+			prefix, cond.group, cond.setting, operator, cond.value
+		))
+		
+	def generate_protocol(self, stream, proto):
+		stream.write_line()
+		stream.write_line("class %sProtocol:" %proto.name)
+		stream.indent()
+		for method in proto.methods:
+			stream.write_line("METHOD_%s = %i" %(method.name.upper(), method.id))
+		stream.write_line()
+		stream.write_line("PROTOCOL_ID = 0x%X" %proto.id)
+		stream.unindent()
+		stream.write_line()
+		
+	def generate_client(self, stream, proto):
+		stream.write_line()
+		stream.write_line("class %sClient(%sProtocol):" %(proto.name, proto.name))
+		stream.indent()
+		stream.write_line("def __init__(self, client):")
+		stream.write_line("\tself.client = client")
+		for method in proto.methods:
+			if method.supported:
+				stream.write_line()
+				self.generate_client_method(stream, proto, method)
+		stream.unindent()
+		stream.write_line()
+		
+	def generate_client_method(self, stream, proto, method):
+		param = ", ".join(["self"] + [param.name for param in method.request.vars])
+		stream.write_line("def %s(%s):" %(method.name, param))
+		
+		stream.indent()
+		stream.write_line('logger.info("%sClient.%s()")' %(proto.name, method.name))
+		stream.write_line("#--- request ---")
+		stream.write_line("stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_%s)" %method.name.upper())
+		for param in method.request.vars:
+			stream.write_line(self.make_encode(param.type, param.name))
+		stream.write_line("self.client.send_message(stream)")
+		
+		stream.write_line()
+		stream.write_line("#--- response ---")
+		if len(method.response.vars) > 1:
+			stream.write_line("stream = self.client.get_response(call_id)")
+			stream.write_line("obj = common.RMCResponse()")
+			for var in method.response.vars:
+				stream.write_line("obj.%s = %s" %(var.name, self.make_extract(var.type)))
+			stream.write_line('logger.info("%sClient.%s -> done")' %(proto.name, method.name))
+			stream.write_line("return obj")
+		elif len(method.response.vars) == 1:
+			value = method.response.vars[0]
+			stream.write_line("stream = self.client.get_response(call_id)")
+			stream.write_line("%s = %s" %(value.name, self.make_extract(value.type)))
+			stream.write_line('logger.info("%sClient.%s -> done")' %(proto.name, method.name))
+			stream.write_line("return %s" %value.name)
+		else:
+			stream.write_line("self.client.get_response(call_id)")
+			stream.write_line('logger.info("%sClient.%s -> done")' %(proto.name, method.name))
+		stream.unindent()
+		
+	def generate_server(self, stream, proto):
+		stream.write_line()
+		stream.write_line("class %sServer(%sProtocol):" %(proto.name, proto.name))
+		stream.indent()
+		
+		stream.write_line("def __init__(self):")
+		stream.indent()
+		stream.write_line("self.methods = {")
+		for method in proto.methods:
+			stream.write_line("\tself.METHOD_%s: self.handle_%s," %(method.name.upper(), method.name))
+		stream.write_line("}")
+		stream.unindent()
+		
+		stream.write_line()
+		stream.write_line("def handle(self, context, method_id, input, output):")
+		stream.write_line("\tif method_id in self.methods:")
+		stream.write_line("\t\tself.methods[method_id](context, input, output)")
+		stream.write_line("\telse:")
+		stream.write_line('\t\tlogger.warning("Unknown method called on %sServer: %%i", method_id)' %proto.name)
+		stream.write_line('\t\traise common.RMCError("Core::NotImplemented")')
+		for method in proto.methods:
+			stream.write_line()
+			self.generate_server_method(stream, proto, method)
+		for method in proto.methods:
+			if method.supported:
+				stream.write_line()
+				self.generate_server_stub(stream, proto, method)
+		
+		stream.unindent()
+		stream.write_line()
+		
+	def generate_server_method(self, stream, proto, method):
+		stream.write_line("def handle_%s(self, context, input, output):" %method.name)
+		
+		if not method.supported:
+			stream.write_line('\tlogger.warning("%sServer.%s is unsupported")' %(proto.name, method.name))
+			stream.write_line('\traise common.RMCError("Core::NotImplemented")')
+			return
+			
+		stream.indent()
+		stream.write_line('logger.info("%sServer.%s()")' %(proto.name, method.name))
+		stream.write_line("#--- request ---")
+		for param in method.request.vars:
+			stream.write_line("%s = %s" %(param.name, self.make_extract(param.type, "input")))
+		
+		params = ", ".join(["context"] + [p.name for p in method.request.vars])
+		
+		if len(method.response.vars) > 1:
+			names = [var.name for var in method.response.vars]
+			stream.write_line("response = self.%s(%s)" %(method.name, params))
+			stream.write_line()
+			stream.write_line("#--- response ---")
+			stream.write_line("if not isinstance(response, common.RMCResponse):")
+			stream.write_line('\traise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)')
+			stream.write_line("for field in %s:" %names)
+			stream.write_line("\tif not hasattr(response, field):")
+			stream.write_line('\t\traise RuntimeError("Missing field in RMCResponse: %s" %field)')
+			for var in method.response.vars:
+				stream.write_line(self.make_encode(var.type, "response.%s" %var.name, "output"))
+		elif len(method.response.vars) == 1:
+			var = method.response.vars[0]
+			expected = self.make_python_type(var.type)
+			stream.write_line("response = self.%s(%s)" %(method.name, params))
+			stream.write_line()
+			stream.write_line("#--- response ---")
+			stream.write_line("if not isinstance(response, %s):" %expected)
+			stream.write_line('\traise RuntimeError("Expected %s, got %%s" %%response.__class__.__name__)' %expected)
+			stream.write_line(self.make_encode(var.type, "response", "output"))
+		else:
+			stream.write_line("self.%s(%s)" %(method.name, params))
+		stream.unindent()
+		
+	def generate_server_stub(self, stream, proto, method):
+		stream.write_line("def %s(self, *args):" %method.name)
+		stream.write_line('\tlogger.warning("%sServer.%s not implemented")' %(proto.name, method.name))
+		stream.write_line('\traise common.RMCError("Core::NotImplemented")')
+		
+	def make_python_type(self, type):
+		if type.name == "bool": return "bool"
+		if type.name == "list": return "list"
+		if type.name == "string": return "str"
+		if type.name in ["buffer", "qbuffer"]: return "bytes"
+		if type.name == "datetime": return "comon.DateTime"
+		if type.name == "stationurl": return "common.StationURL"
+		if type.name == "result": return "comon.Result"
+		if type.name == "anydata": return "common.Data"
+		if type.name == "ResultRange": return "common.ResultRange"
+		if type.name in self.file.struct_names: return type.name
+		if type.name in NUMERIC_TYPES: return "int"
+		raise ValueError("Unknown type: %s" %type.name)
+				
+	def make_constant(self, type, value):
+		if type.name in self.file.struct_names: return "%s()" %type.name
+		if type.name == "ResultRange": return "common.ResultRange()"
+		
+		if value is None:
+			return "None"
+		
+		if type.name == "datetime": return "common.DateTime(%i)" %value
+		if type.name == "string": return '"%s"' %value
+		if type.name in ["buffer", "qbuffer"]: return 'b"%s"' %value
+		if type.name in NUMERIC_TYPES + ["bool"]: return str(value)
+		if type.name == "list":
+			entries = []
+			for entry in value:
+				entries.append(self.make_constant(type.template[0], entry))
+			return "[%s]" %", ".join(entries)
+		
+		raise ValueError("Unknown type: %s" %type.name)		
+		
+	def make_extract(self, type, stream="stream"):
+		if type.name in BASIC_TYPES: return "%s.%s()" %(stream, type.name)
+		if type.name in self.file.struct_names: return "%s.extract(%s)" %(stream, type.name)
+		if type.name == "ResultRange": return "%s.extract(common.ResultRange)" %stream
+		if type.name == "list":
+			return "%s.list(%s)" %(stream, self.make_extract_list(type.template[0], stream))
+		raise ValueError("Unknown type: %s" %type.name)
+	
+	def make_extract_list(self, type, stream="stream"):
+		if type.name in BASIC_TYPES: return "%s.%s" %(stream, type.name)
+		if type.name in self.file.struct_names: return type.name
+		if type.name == "ResultRange": return "common.ResultRange"
+		raise ValueError("Unknown type in list: %s" %type.name)
+		
+	def make_encode(self, type, name, stream="stream"):
+		if type.name == "list":
+			func = self.make_encode_call(type.template[0], stream)
+			return "%s.list(%s, %s)" %(stream, name, func)
+		return "%s(%s)" %(self.make_encode_call(type, stream), name)
+		
+	def make_encode_call(self, type, stream="stream"):
+		if type.name in BASIC_TYPES: return "%s.%s" %(stream, type.name)
+		if type.name in self.file.struct_names: return "%s.add" %stream
+		if type.name == "ResultRange": return "%s.add" %stream
+		raise ValueError("Unknown type: %s" %type.name)
+
+		
+class Config:
+	def __init__(self):
+		self.name = None
+		
+
+class Pipeline:
+	def __init__(self, *stages):
+		self.stages = []
+		for stage in stages:
+			self.stages.append(stage())
+			
+	def process(self, config, param):
+		for stage in self.stages:
+			param = stage.process(config, param)
+		return param
+		
+
+pipeline = Pipeline(
+	FileReader, Tokenizer, Parser, CodeGenerator
+)
+
+def process(name):
+	if name.endswith(".proto"):
+		name = name[:-6]
+	
+	filename = "nintendo/files/proto/%s.proto" %name
+	
+	config = Config()
+	config.name = name
+	
+	print("Processing %s" %filename)
+	code = pipeline.process(config, filename)
+	with open("nintendo/nex/%s.py" %name, "w") as f:
+		f.write(code)
+
+
+names = sys.argv[1:]
+if not names:
+	names = os.listdir("nintendo/files/proto")
+
+for name in names:
+	process(name)
