@@ -88,7 +88,7 @@ class Structure:
 			else:
 				version = stream.u8()
 				if version != expected_version:
-					logger.warning("Struct version (%i) doesn't match expected version (%i)" %(version, expected_version))
+					logger.warning("Struct %s version (%i) doesn't match expected version (%i)" % (cls.__name__, version, expected_version))
 				cls.load(self, stream.substream())
 				
 	def load(self, stream): raise NotImplementedError("%s.load()" %self.__class__.__name__)
