@@ -592,6 +592,8 @@ class PRUDPClient:
 		self.ping_event = None
 		self.timeout_event = None
 		self.socket_event = None
+		self.remote_port = None
+		self.local_port = None
 		
 		self.state = self.READY
 		
