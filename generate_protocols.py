@@ -1016,8 +1016,8 @@ def process(name):
 	
 	print("Processing %s" %filename)
 	code = pipeline.process(config, filename)
-	with open("nintendo/nex/%s.py" %name, "w") as f:
-		f.write(code)
+	with open("nintendo/nex/%s.py" %name, "wb") as f:
+		f.write(code.encode("utf8"))
 
 
 names = sys.argv[1:]
