@@ -6,8 +6,8 @@ protocol DataStore : 115 {
 	}
 	
 	struct DataStorePermission {
-		u8 permission;
-		list<pid> recipients;
+		u8 permission = 3;
+		list<pid> recipients = [];
 	}
 	
 	struct DataStoreRatingInfo {
@@ -77,6 +77,59 @@ protocol DataStore : 115 {
 		}
 	}
 	
+	struct DataStorePreparePostParam {
+		u32 size;
+		string name = "";
+		u16 data_type = 0;
+		qbuffer meta_binary = "";
+		DataStorePermission permission;
+		DataStorePermission delete_permission;
+		u32 flag;
+		u16 period;
+		u32 refer_data_id = 0;
+		list<string> tags = [];
+		list<DataStoreRatingInitParamWithSlot> rating_init_param = [];
+		DataStorePersistenceInitParam persistence_init_param;
+		
+		[server.version >= 30500] {
+			list<string> extra_data;
+		}
+	}
+	
+	struct DataStoreRatingInitParamWithSlot {
+		s8 slot;
+		DataStoreRatingInitParam param;
+	}
+	
+	struct DataStoreRatingInitParam {
+		u8 flag;
+		u8 internal_flag;
+		u8 lock_type;
+		s64 initial_value;
+		s32 range_min;
+		s32 range_max;
+		s8 period_hour;
+		s16 period_duration;
+	}
+	
+	struct DataStorePersistenceInitParam {
+		u16 persistence_id = 65535;
+		bool delete_last_object = true;
+	}
+	
+	struct DataStoreReqPostInfo {
+		u64 data_id;
+		string url;
+		list<DataStoreKeyValue> headers;
+		list<DataStoreKeyValue> form;
+		buffer root_ca_cert;
+	}
+	
+	struct DataStoreCompletePostParam {
+		u64 data_id;
+		bool success;
+	}
+	
 	method prepare_get_object_v1;
 	method prepare_post_object_v1;
 	method complete_post_object_v1;
@@ -104,13 +157,17 @@ protocol DataStore : 115 {
 	method post_meta_binary;
 	method touch_object;
 	method get_rating_with_log;
-	method prepare_post_object;
+	
+	method prepare_post_object(DataStorePreparePostParam param) {
+		DataStoreReqPostInfo info;
+	}
 	
 	method prepare_get_object(DataStorePrepareGetParam param) {
 		DataStoreReqGetInfo info;
 	}
 	
-	method complete_post_object;
+	method complete_post_object(DataStoreCompletePostParam param) {}
+	
 	method get_new_arrived_notifications;
 	method get_specific_meta;
 	method get_persistence_info;

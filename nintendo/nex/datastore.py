@@ -29,13 +29,11 @@ class PersistenceTarget(common.Structure):
 class DataStorePermission(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.permission = None
-		self.recipients = None
+		self.permission = 3
+		self.recipients = []
 	
 	def check_required(self, settings):
-		for field in ['permission', 'recipients']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
+		pass
 	
 	def load(self, stream):
 		self.permission = stream.u8()
@@ -279,6 +277,196 @@ class DataStoreReqGetInfo(common.Structure):
 			stream.u64(self.data_id)
 
 
+class DataStorePreparePostParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.size = None
+		self.name = ""
+		self.data_type = 0
+		self.meta_binary = b""
+		self.permission = DataStorePermission()
+		self.delete_permission = DataStorePermission()
+		self.flag = None
+		self.period = None
+		self.refer_data_id = 0
+		self.tags = []
+		self.rating_init_param = []
+		self.persistence_init_param = DataStorePersistenceInitParam()
+		self.extra_data = None
+	
+	def check_required(self, settings):
+		for field in ['size', 'flag', 'period']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+		if settings.get("server.version") >= 30500:
+			for field in ['extra_data']:
+				if getattr(self, field) is None:
+					raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.size = stream.u32()
+		self.name = stream.string()
+		self.data_type = stream.u16()
+		self.meta_binary = stream.qbuffer()
+		self.permission = stream.extract(DataStorePermission)
+		self.delete_permission = stream.extract(DataStorePermission)
+		self.flag = stream.u32()
+		self.period = stream.u16()
+		self.refer_data_id = stream.u32()
+		self.tags = stream.list(stream.string)
+		self.rating_init_param = stream.list(DataStoreRatingInitParamWithSlot)
+		self.persistence_init_param = stream.extract(DataStorePersistenceInitParam)
+		if stream.settings.get("server.version") >= 30500:
+			self.extra_data = stream.list(stream.string)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.size)
+		stream.string(self.name)
+		stream.u16(self.data_type)
+		stream.qbuffer(self.meta_binary)
+		stream.add(self.permission)
+		stream.add(self.delete_permission)
+		stream.u32(self.flag)
+		stream.u16(self.period)
+		stream.u32(self.refer_data_id)
+		stream.list(self.tags, stream.string)
+		stream.list(self.rating_init_param, stream.add)
+		stream.add(self.persistence_init_param)
+		if stream.settings.get("server.version") >= 30500:
+			stream.list(self.extra_data, stream.string)
+
+
+class DataStoreRatingInitParamWithSlot(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.slot = None
+		self.param = DataStoreRatingInitParam()
+	
+	def check_required(self, settings):
+		for field in ['slot']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.slot = stream.s8()
+		self.param = stream.extract(DataStoreRatingInitParam)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.s8(self.slot)
+		stream.add(self.param)
+
+
+class DataStoreRatingInitParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.flag = None
+		self.internal_flag = None
+		self.lock_type = None
+		self.initial_value = None
+		self.range_min = None
+		self.range_max = None
+		self.period_hour = None
+		self.period_duration = None
+	
+	def check_required(self, settings):
+		for field in ['flag', 'internal_flag', 'lock_type', 'initial_value', 'range_min', 'range_max', 'period_hour', 'period_duration']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.flag = stream.u8()
+		self.internal_flag = stream.u8()
+		self.lock_type = stream.u8()
+		self.initial_value = stream.s64()
+		self.range_min = stream.s32()
+		self.range_max = stream.s32()
+		self.period_hour = stream.s8()
+		self.period_duration = stream.s16()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u8(self.flag)
+		stream.u8(self.internal_flag)
+		stream.u8(self.lock_type)
+		stream.s64(self.initial_value)
+		stream.s32(self.range_min)
+		stream.s32(self.range_max)
+		stream.s8(self.period_hour)
+		stream.s16(self.period_duration)
+
+
+class DataStorePersistenceInitParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.persistence_id = 65535
+		self.delete_last_object = True
+	
+	def check_required(self, settings):
+		pass
+	
+	def load(self, stream):
+		self.persistence_id = stream.u16()
+		self.delete_last_object = stream.bool()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u16(self.persistence_id)
+		stream.bool(self.delete_last_object)
+
+
+class DataStoreReqPostInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.url = None
+		self.headers = None
+		self.form = None
+		self.root_ca_cert = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'url', 'headers', 'form', 'root_ca_cert']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.url = stream.string()
+		self.headers = stream.list(DataStoreKeyValue)
+		self.form = stream.list(DataStoreKeyValue)
+		self.root_ca_cert = stream.buffer()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.string(self.url)
+		stream.list(self.headers, stream.add)
+		stream.list(self.form, stream.add)
+		stream.buffer(self.root_ca_cert)
+
+
+class DataStoreCompletePostParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.success = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'success']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.success = stream.bool()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.bool(self.success)
+
+
 class DataStoreProtocol:
 	METHOD_PREPARE_GET_OBJECT_V1 = 1
 	METHOD_PREPARE_POST_OBJECT_V1 = 2
@@ -347,6 +535,19 @@ class DataStoreClient(DataStoreProtocol):
 		logger.info("DataStoreClient.get_meta -> done")
 		return info
 	
+	def prepare_post_object(self, param):
+		logger.info("DataStoreClient.prepare_post_object()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PREPARE_POST_OBJECT)
+		stream.add(param)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		info = stream.extract(DataStoreReqPostInfo)
+		logger.info("DataStoreClient.prepare_post_object -> done")
+		return info
+	
 	def prepare_get_object(self, param):
 		logger.info("DataStoreClient.prepare_get_object()")
 		#--- request ---
@@ -359,6 +560,17 @@ class DataStoreClient(DataStoreProtocol):
 		info = stream.extract(DataStoreReqGetInfo)
 		logger.info("DataStoreClient.prepare_get_object -> done")
 		return info
+	
+	def complete_post_object(self, param):
+		logger.info("DataStoreClient.complete_post_object()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_COMPLETE_POST_OBJECT)
+		stream.add(param)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		self.client.get_response(call_id)
+		logger.info("DataStoreClient.complete_post_object -> done")
 	
 	def get_metas_multiple_param(self, params):
 		logger.info("DataStoreClient.get_metas_multiple_param()")
@@ -534,8 +746,15 @@ class DataStoreServer(DataStoreProtocol):
 		raise common.RMCError("Core::NotImplemented")
 	
 	def handle_prepare_post_object(self, context, input, output):
-		logger.warning("DataStoreServer.prepare_post_object is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("DataStoreServer.prepare_post_object()")
+		#--- request ---
+		param = input.extract(DataStorePreparePostParam)
+		response = self.prepare_post_object(context, param)
+		
+		#--- response ---
+		if not isinstance(response, DataStoreReqPostInfo):
+			raise RuntimeError("Expected DataStoreReqPostInfo, got %s" %response.__class__.__name__)
+		output.add(response)
 	
 	def handle_prepare_get_object(self, context, input, output):
 		logger.info("DataStoreServer.prepare_get_object()")
@@ -549,8 +768,10 @@ class DataStoreServer(DataStoreProtocol):
 		output.add(response)
 	
 	def handle_complete_post_object(self, context, input, output):
-		logger.warning("DataStoreServer.complete_post_object is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("DataStoreServer.complete_post_object()")
+		#--- request ---
+		param = input.extract(DataStoreCompletePostParam)
+		self.complete_post_object(context, param)
 	
 	def handle_get_new_arrived_notifications(self, context, input, output):
 		logger.warning("DataStoreServer.get_new_arrived_notifications is unsupported")
@@ -647,8 +868,16 @@ class DataStoreServer(DataStoreProtocol):
 		logger.warning("DataStoreServer.get_meta not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
+	def prepare_post_object(self, *args):
+		logger.warning("DataStoreServer.prepare_post_object not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def prepare_get_object(self, *args):
 		logger.warning("DataStoreServer.prepare_get_object not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def complete_post_object(self, *args):
+		logger.warning("DataStoreServer.complete_post_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	def get_metas_multiple_param(self, *args):

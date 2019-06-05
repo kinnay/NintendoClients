@@ -49,8 +49,18 @@ protocol Ranking : 112 {
 	struct RankingStats {
 		list<double> stats;
 	}
+	
+	struct RankingScoreData {
+		u32 category;
+		u32 score;
+		u8 order;
+		u8 update_mode;
+		list<u8> groups;
+		u64 param;
+	}
 
-	method upload_score;
+	method upload_score(RankingScoreData score_data, u64 unique_id) {}
+	
 	method delete_score;
 	method delete_all_scores;
 	method upload_common_data;

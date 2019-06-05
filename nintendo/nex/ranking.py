@@ -141,6 +141,39 @@ class RankingStats(common.Structure):
 		stream.list(self.stats, stream.double)
 
 
+class RankingScoreData(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.category = None
+		self.score = None
+		self.order = None
+		self.update_mode = None
+		self.groups = None
+		self.param = None
+	
+	def check_required(self, settings):
+		for field in ['category', 'score', 'order', 'update_mode', 'groups', 'param']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.category = stream.u32()
+		self.score = stream.u32()
+		self.order = stream.u8()
+		self.update_mode = stream.u8()
+		self.groups = stream.list(stream.u8)
+		self.param = stream.u64()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.category)
+		stream.u32(self.score)
+		stream.u8(self.order)
+		stream.u8(self.update_mode)
+		stream.list(self.groups, stream.u8)
+		stream.u64(self.param)
+
+
 class RankingProtocol:
 	METHOD_UPLOAD_SCORE = 1
 	METHOD_DELETE_SCORE = 2
@@ -164,6 +197,18 @@ class RankingProtocol:
 class RankingClient(RankingProtocol):
 	def __init__(self, client):
 		self.client = client
+	
+	def upload_score(self, score_data, unique_id):
+		logger.info("RankingClient.upload_score()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPLOAD_SCORE)
+		stream.add(score_data)
+		stream.u64(unique_id)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		self.client.get_response(call_id)
+		logger.info("RankingClient.upload_score -> done")
 	
 	def get_common_data(self, unique_id):
 		logger.info("RankingClient.get_common_data()")
@@ -256,8 +301,11 @@ class RankingServer(RankingProtocol):
 			raise common.RMCError("Core::NotImplemented")
 	
 	def handle_upload_score(self, context, input, output):
-		logger.warning("RankingServer.upload_score is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("RankingServer.upload_score()")
+		#--- request ---
+		score_data = input.extract(RankingScoreData)
+		unique_id = input.u64()
+		self.upload_score(context, score_data, unique_id)
 	
 	def handle_delete_score(self, context, input, output):
 		logger.warning("RankingServer.delete_score is unsupported")
@@ -351,6 +399,10 @@ class RankingServer(RankingProtocol):
 	
 	def handle_get_cached_topx_rankings(self, context, input, output):
 		logger.warning("RankingServer.get_cached_topx_rankings is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def upload_score(self, *args):
+		logger.warning("RankingServer.upload_score not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	def get_common_data(self, *args):
