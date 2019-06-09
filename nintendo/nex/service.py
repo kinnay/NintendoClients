@@ -133,7 +133,7 @@ class RMCClient:
 			result = common.Result("Core::NotImplemented")
 		
 		if result.is_error():
-			logger.info("RMC failed with error 0x%08X (%s)" %(e.error_code, e.error_name))
+			logger.info("RMC failed with error 0x%08X (%s)" %(result.code(), result.name()))
 			response = self.init_response(protocol_id, call_id, method_id, result)
 			
 		self.send_message(response)
