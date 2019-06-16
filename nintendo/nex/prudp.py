@@ -100,7 +100,35 @@ class PRUDPPacket:
 		self.payload = b""
 		
 	def __repr__(self):
-		return "<PRUDPPacket type=%i flags=%03X seq=%s frag=%s>" %(self.type, self.flags, self.packet_id, self.fragment_id)
+		def do_flag(f, s, mask, name):
+			if f & mask:
+				f = f & ~mask
+				if s:
+					s += "|"
+				s += name
+			return f, s
+
+		f, s = self.flags, ""
+		f, s = do_flag(f, s, FLAG_RELIABLE, "RELIABLE")
+		f, s = do_flag(f, s, FLAG_ACK, "ACK")
+		f, s = do_flag(f, s, FLAG_HAS_SIZE, "HAS_SIZE")
+		f, s = do_flag(f, s, FLAG_MULTI_ACK, "MULTI_ACK")
+		f, s = do_flag(f, s, FLAG_NEED_ACK, "NEED_ACK")
+		if f != 0:
+			if s:
+				s += "|"
+			s += "%x" % f
+		types = {
+			TYPE_SYN: "SYN",
+			TYPE_CONNECT: "CONNECT",
+			TYPE_DATA: "DATA",
+			TYPE_DISCONNECT: "DISCONNECT",
+			TYPE_PING: "PING",
+		}
+		t = "%i" % self.type
+		if self.type in types:
+			t = types[self.type]
+		return "<PRUDPPacket type=%s flags=%s seq=%s frag=%s>" % (t, s, self.packet_id, self.fragment_id)
 	
 	
 class PRUDPMessageV0:
