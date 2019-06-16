@@ -612,7 +612,9 @@ class PRUDPClient:
 		self.packet_queue = {}
 		self.fragment_buffer = b""
 		self.packet_id_out = itertools.count()
+		self.packet_id_out_ping = itertools.count(1)
 		self.packet_id_in = 0
+		self.packet_id_in_ping = 1
 		self.local_session_id = 0
 		self.remote_session_id = 0
 		
@@ -811,7 +813,16 @@ class PRUDPClient:
 				for packet_id in list(self.ack_events.keys()):
 					if packet_id <= ack_id:
 						scheduler.remove(self.ack_events.pop(packet_id))
-						
+
+			elif packet.type == TYPE_PING:
+				if packet.packet_id >= self.packet_id_in_ping:
+					logger.debug("(%i) Handling PING packet: %s" % (self.local_session_id, packet))
+					if packet.flags & FLAG_NEED_ACK:
+						self.send_ack(packet)
+					self.packet_id_in_ping = packet.packet_id + 1
+				else:
+					logger.debug("(%i) Already handled PING packet: %s" % (self.local_session_id, packet))
+
 			else:
 				if packet.packet_id >= self.packet_id_in:
 					self.packet_queue[packet.packet_id] = packet
@@ -905,7 +916,10 @@ class PRUDPClient:
 		return self.state != self.DISCONNECTED
 		
 	def send_packet(self, packet):
-		packet.packet_id = next(self.packet_id_out)
+		if packet.type == TYPE_PING:
+			packet.packet_id = next(self.packet_id_out_ping)
+		else:
+			packet.packet_id = next(self.packet_id_out)
 
 		logger.debug("(%i) Sending packet: %s", self.local_session_id, packet)
 		
@@ -914,6 +928,8 @@ class PRUDPClient:
 			self.ack_events[packet.packet_id] = event
 		
 		self.send_packet_raw(packet)
+		if packet.type == TYPE_PING:
+			self.send_packet_raw(packet)
 		
 	def send_packet_raw(self, packet):
 		packet.source_port = self.local_port
