@@ -17,7 +17,7 @@ class Settings:
 		"prudp.resend_timeout": float,
 		"prudp.resend_limit": int,
 		"prudp.ping_timeout": float,
-		"prudp.silence_timeout": float,
+		"prudp.substreams": int,
 		"prudp.compression": int,
 		
 		"prudp_v0.signature_version": int,

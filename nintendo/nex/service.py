@@ -21,10 +21,10 @@ class RMCClient:
 		self.sock = sock
 		
 		if not self.sock:
-			self.sock = prudp.RVSecureClient(settings)
+			self.sock = prudp.RVClient(settings)
 			
-		if not isinstance(self.sock, prudp.RVSecureClient):
-			raise TypeError("RMC protocol must lie on top of RVSecure client")
+		if not isinstance(self.sock, prudp.RVClient):
+			raise TypeError("RMC protocol must lie on top of RV client")
 		
 		self.servers = {}
 		self.pid = None
@@ -46,8 +46,7 @@ class RMCClient:
 		return True
 		
 	def accept(self):
-		if self.sock.server_ticket:
-			self.pid = self.sock.server_ticket.source_pid
+		self.pid = self.sock.pid
 		self.socket_event = scheduler.add_socket(self.handle_recv, self.sock)
 		return True
 		
@@ -178,10 +177,10 @@ class RMCServer:
 		self.server = server
 		
 		if not self.server:
-			self.server = prudp.RVSecureServer(settings)
+			self.server = prudp.RVServer(settings)
 			
-		if not isinstance(self.server, prudp.RVSecureServer):
-			raise TypeError("RMC server must lie on top of RVSecure server")
+		if not isinstance(self.server, prudp.RVServer):
+			raise TypeError("RMC server must lie on top of RV server")
 			
 		self.protocols = {}
 		
