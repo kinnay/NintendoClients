@@ -97,7 +97,7 @@ class HTTPState:
 		self.event = scheduler.add_socket(self.handle_recv, socket)
 		self.request = HTTPRequest(socket)
 		
-		message_event = signal.Signal()
+		self.message_event = signal.Signal()
 		
 	def handle_recv(self, data):
 		if not data:
@@ -196,6 +196,9 @@ class HTTPServer:
 		scheduler.add_server(self.handle_conn, self.server)
 		
 	def handle_conn(self, socket):
+		address = socket.remote_address()
+		logger.debug("New HTTP connection: %s:%i", address[0], address[1])
+		
 		state = HTTPState(socket)
 		state.message_event.add(self.handle_req)
 		
