@@ -145,16 +145,16 @@ class StationURL:
 		3: "udp"
 	}
 
-	def __init__(self, url_type="prudp", **kwargs):
-		self.url_type = url_type
+	def __init__(self, scheme="prudp", **kwargs):
+		self.scheme = scheme
 		self.params = kwargs
 
 	def __repr__(self):
 		params = ";".join(
 			["%s=%s" %(key, value) for key, value in self.params.items()]
 		)
-		if self.url_type:
-			return "%s:/%s" %(self.url_type, params)
+		if self.scheme:
+			return "%s:/%s" %(self.scheme, params)
 		return params
 		
 	def __getitem__(self, field):
@@ -171,26 +171,26 @@ class StationURL:
 		return self["address"], self["port"]
 		
 	def get_type_id(self):
-		return self.url_types[self.url_type]
+		return self.url_types[self.scheme]
 		
 	def set_type_id(self, id):
-		self.url_type = self.url_schemes[id]
+		self.scheme = self.url_schemes[id]
 		
 	def is_public(self): return bool(self["type"] & 2)
 	def is_behind_nat(self): return bool(self["type"] & 1)
 	def is_global(self): return self.is_public() and not self.is_behind_nat()
 		
 	def copy(self):
-		return StationURL(self.url_type, **self.params)
+		return StationURL(self.scheme, **self.params)
 		
 	@classmethod
 	def parse(cls, string):
 		if string:
-			url_type, fields = string.split(":/")
+			scheme, fields = string.split(":/")
 			params = {}
 			if fields:
 				params = dict(field.split("=") for field in fields.split(";"))
-			return cls(url_type, **params)
+			return cls(scheme, **params)
 		else:
 			return cls()
 

@@ -52,7 +52,7 @@ class AuthenticationServer(authentication.AuthenticationServer):
 		server = get_user_by_name(SECURE_SERVER)
 		
 		url = common.StationURL(
-			address="127.0.0.1", port=1224,
+			scheme="prudps", address="127.0.0.1", port=1224,
 			PID = server.pid, CID = 1, type = 2,
 			sid = 1, stream = 10
 		)
