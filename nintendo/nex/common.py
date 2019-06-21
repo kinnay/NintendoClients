@@ -1,7 +1,7 @@
 
 from nintendo.nex.errors import error_names, error_codes
 from nintendo.nex import streams
-import datetime
+import datetime, time
 
 import logging
 logger = logging.getLogger(__name__)
@@ -224,6 +224,10 @@ class DateTime:
 	def fromtimestamp(cls, timestamp):
 		dt = datetime.datetime.fromtimestamp(timestamp)
 		return cls.make(dt.day, dt.month, dt.year, dt.hour, dt.minute, dt.second)
+		
+	@classmethod
+	def now(cls):
+		return cls.fromtimestamp(time.time())
 		
 		
 class ResultRange(Structure):
