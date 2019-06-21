@@ -190,6 +190,9 @@ class HTTPServer:
 			else:
 				self.server = socket.SocketServer(socket.TYPE_TCP)
 				
+	def set_certificate(self, cert, key):
+		self.server.set_certificate(cert, key)
+				
 	def start(self, host, port):
 		logger.info("Starting HTTP server at %s:%i", host, port)
 		self.server.start(host, port)
