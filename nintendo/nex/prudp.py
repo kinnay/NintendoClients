@@ -162,7 +162,10 @@ class PRUDPMessageV0:
 	def calc_data_signature(self, packet):
 		data = packet.payload
 		if self.signature_version == 0:
-			data = self.client.session_key + struct.pack("<HB", packet.packet_id, packet.fragment_id) + data
+			session_key = b""
+			if packet.type not in [TYPE_SYN, TYPE_CONNECT]:
+				session_key = self.client.session_key
+			data = session_key + struct.pack("<HB", packet.packet_id, packet.fragment_id) + data
 
 		if data:
 			return hmac.new(self.client.signature_key, data).digest()[:4]
@@ -320,7 +323,9 @@ class PRUDPMessageV1:
 	def encode(self, packet):
 		packet.flags |= FLAG_HAS_SIZE
 		
-		session_key = self.client.session_key
+		session_key = b""
+		if packet.type not in [TYPE_SYN, TYPE_CONNECT]:
+			session_key = self.client.session_key
 		
 		options = self.encode_options(packet)
 		header = self.encode_header(packet, len(options))
@@ -656,7 +661,25 @@ class PacketEncoder:
 			encryption.set_key(temp_key)
 		
 		self.unreliable_key = self.init_unreliable_key(key)
+		
+		
+class SlidingWindow:
+	def __init__(self):
+		self.next = 1
+		self.packets = {}
 	
+	def update(self, packet):
+		packets = []
+		if packet.packet_id < self.next or packet.packet_id in self.packets:
+			logger.debug("Received duplicate packet: %s", packet)
+		else:
+			self.packets[packet.packet_id] = packet
+			while self.next in self.packets:
+				packet = self.packets.pop(self.next)
+				packets.append(packet)
+				self.next = (self.next + 1) & 0xFFFFFFFF
+		return packets
+		
 	
 class PRUDPStream:
 	def __init__(self, client, settings, sock=None):
@@ -790,6 +813,7 @@ class PRUDPStream:
 						
 			else:
 				if packet.stream_id < self.substreams:
+					
 					packet.payload = self.message_encoder.decode(packet)
 					self.packets.append(packet)
 				else:
@@ -834,6 +858,7 @@ class PRUDPClient:
 		
 		substreams = settings.get("prudp.substreams")
 		
+		self.sliding_windows = [SlidingWindow() for i in range(substreams)]
 		self.fragment_buffers = [b""] * substreams
 		
 		self.packets = []
@@ -854,6 +879,8 @@ class PRUDPClient:
 		
 		self.socket_event = None
 		self.ping_event = None
+		
+		self.connect_response = None
 		
 		self.state = STATE_READY
 		
@@ -987,29 +1014,38 @@ class PRUDPClient:
 				syn_ack = PRUDPPacket(TYPE_SYN, FLAG_ACK)
 				syn_ack.connection_signature = self.local_signature
 				self.send_packet(syn_ack)
-		elif packet.type == TYPE_CONNECT:
-			try:
-				self.remote_signature = packet.connection_signature
-				self.handle_connection_request(packet)
-				self.state = STATE_CONNECTED
-			except:
-				logger.error("An exception occurred while handling a connection request")
-				import traceback
-				traceback.print_exc()
-				self.cleanup()
-		else:
-			if packet.type == TYPE_DATA:
-				if packet.flags & FLAG_RELIABLE:
-					self.fragment_buffers[packet.stream_id] += packet.payload
-					if packet.fragment_id == 0:
-						self.packets[packet.stream_id].append(self.fragment_buffers[packet.stream_id])
-						self.fragment_buffers[packet.stream_id] = b""
-				else:
+		else:	
+			if packet.flags & FLAG_RELIABLE:
+				for packet in self.sliding_windows[packet.stream_id].update(packet):
+					if packet.type == TYPE_CONNECT:
+						if self.state != STATE_ACCEPTING:
+							logger.error("Unexpected CONNECT packet: %s", packet)
+						else:
+							try:
+								self.remote_signature = packet.connection_signature
+								self.connect_response = self.handle_connection_request(packet)
+								if self.connect_response is None:
+									self.cleanup()
+									return
+								self.state = STATE_CONNECTED
+							except:
+								logger.error("An exception occurred while handling a connection request")
+								import traceback
+								traceback.print_exc()
+								self.cleanup()
+								return
+					elif packet.type == TYPE_DATA:
+						self.fragment_buffers[packet.stream_id] += packet.payload
+						if packet.fragment_id == 0:
+							self.packets[packet.stream_id].append(self.fragment_buffers[packet.stream_id])
+							self.fragment_buffers[packet.stream_id] = b""
+					elif packet.type == TYPE_DISCONNECT:
+						logger.info("Connection closed by other end point")
+						self.cleanup()
+			else:
+				if packet.type == TYPE_DATA:
 					self.packets_unreliable.append(packet.payload)
-			elif packet.type == TYPE_DISCONNECT:
-				logger.info("Connection closed by other end point")
-				self.cleanup()
-				
+					
 			if packet.flags & FLAG_NEED_ACK:
 				self.send_ack(packet)
 				if packet.type == TYPE_DISCONNECT:
@@ -1017,15 +1053,7 @@ class PRUDPClient:
 					self.send_ack(packet)
 	
 	def handle_connection_request(self, packet):
-		self.send_connection_response(packet, b"")
-		
-	def send_connection_response(self, packet, payload):
-		response = PRUDPPacket(TYPE_CONNECT, FLAG_ACK)
-		response.packet_id = packet.packet_id
-		response.stream_id = packet.stream_id
-		response.connection_signature = bytes(self.stream.signature_size())
-		response.payload = payload
-		self.send_packet(response)
+		return b""
 		
 	def send(self, data, stream_id=0):
 		fragment_id = 1
@@ -1063,6 +1091,9 @@ class PRUDPClient:
 		ack.packet_id = packet.packet_id
 		ack.fragment_id = packet.fragment_id
 		ack.stream_id = packet.stream_id
+		if packet.type == TYPE_CONNECT:
+			ack.payload = self.connect_response
+			ack.connection_signature = bytes(self.stream.signature_size())
 		self.send_packet(ack)
 		
 	def send_packet(self, packet, block=False):
@@ -1136,7 +1167,12 @@ class RVClient(PRUDPClient):
 	def handle_connection_request(self, packet):
 		logger.debug("Received connection request: %i bytes", len(packet.payload))
 		if not self.server_key:
-			self.send_connection_response(packet, b"")
+			logger.debug("No validation needed, accepting connection")
+			return b""
+			
+		if not packet.payload:
+			logger.error("Received empty connection request for secure server")
+			self.cleanup()
 			return
 		
 		stream = streams.StreamIn(packet.payload, self.settings)
@@ -1181,11 +1217,10 @@ class RVClient(PRUDPClient):
 		
 		check_value = stream.u32()
 		
-		response = struct.pack("<II", 4, (check_value + 1) & 0xFFFFFFFF)
-		self.send_connection_response(packet, response)
-		
 		logger.debug("Connection request was validated successfully")
 		self.set_session_key(server_ticket.session_key)
+		
+		return struct.pack("<II", 4, (check_value + 1) & 0xFFFFFFFF)
 		
 		
 class PRUDPServer:
