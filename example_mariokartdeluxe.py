@@ -1,5 +1,5 @@
 
-from nintendo.nex import backend, authentication, ranking
+from nintendo.nex import backend, ranking
 from nintendo.games import MK8Deluxe
 from nintendo import settings
 
