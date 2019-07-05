@@ -51,6 +51,7 @@ class WebSocketClient:
 				self.sock = socket.Socket(socket.TYPE_TCP)
 		
 		self.state = STATE_READY
+		self.socket_event = None
 		
 		self.buffer = b""
 		self.fragments = None
