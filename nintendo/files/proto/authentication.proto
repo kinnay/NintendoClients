@@ -21,6 +21,24 @@ protocol Authentication : 10 {
 			datetime server_time;
 		}
 	}
+	
+	struct ValidateAndRequestTicketParam {
+		u32 platform = 3;
+		string username;
+		anydata data;
+		bool unk = false;
+		u32 nex_version;
+		u32 client_version = 27;
+	}
+	
+	struct ValidateAndRequestTicketResult {
+		pid pid;
+		buffer ticket;
+		stationurl server_url;
+		datetime server_time;
+		string server_name;
+		string unk;
+	}
 
 	method login(string username) {
 		result result;
@@ -49,5 +67,9 @@ protocol Authentication : 10 {
 	
 	method get_name(pid pid) {
 		string name;
+	}
+	
+	method login_with_param(ValidateAndRequestTicketParam param) {
+		ValidateAndRequestTicketResult result;
 	}
 }

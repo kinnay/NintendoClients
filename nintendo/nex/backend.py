@@ -8,6 +8,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class LoginResult:
+	def __init__(self, pid, ticket, secure_station):
+		self.pid = pid
+		self.ticket = ticket
+		self.secure_station = secure_station
+
+
 class BackEndClient:
 	def __init__(self, access_key, version, settings=None):
 		if settings:
@@ -42,32 +49,28 @@ class BackEndClient:
 		self.secure_client.close()
 		
 	def login(self, username, password, auth_info=None, login_data=None):
-		# Call login method on authentication protocol
-		if auth_info:
-			response = self.auth_proto.login_ex(username, auth_info)
+		if self.settings.get("server.version") < 40500:
+			result = self.login_normal(username, auth_info)
 		else:
-			response = self.auth_proto.login(username)
-			
-		# Check for errors
-		response.result.raise_if_error()
+			result = self.login_with_param(username, auth_info)
 		
-		self.my_pid = response.pid
+		self.pid = result.pid
 		
-		secure_station = response.connection_data.main_station
-
+		secure_station = result.secure_station
+		
 		# Derive kerberos key from password
 		kerberos_key = self.key_derivation.derive_key(
-			password.encode("ascii"), response.pid
+			password.encode("ascii"), self.pid
 		)
 		
 		# Decrypt ticket from login response
 		ticket = kerberos.ClientTicket()
-		ticket.decrypt(response.ticket, kerberos_key, self.settings)
+		ticket.decrypt(result.ticket, kerberos_key, self.settings)
 		
 		if ticket.target_pid != secure_station["PID"]:
 			# Request ticket for secure server
 			response = self.auth_proto.request_ticket(
-				self.my_pid, secure_station["PID"]
+				self.pid, secure_station["PID"]
 			)
 			
 			# Check for errors and decrypt ticket
@@ -75,7 +78,7 @@ class BackEndClient:
 			ticket = kerberos.ClientTicket()
 			ticket.decrypt(response.ticket, kerberos_key, self.settings)
 			
-		ticket.source_pid = self.my_pid
+		ticket.source_pid = self.pid
 		ticket.target_cid = secure_station["CID"]
 
 		# The secure server may reside at the same
@@ -110,8 +113,31 @@ class BackEndClient:
 		self.public_station["RVCID"] = response.connection_id
 		self.local_station["RVCID"] = response.connection_id
 		
+	def login_normal(self, username, auth_info):
+		if auth_info:
+			response = self.auth_proto.login_ex(username, auth_info)
+		else:
+			response = self.auth_proto.login(username)			
+		response.result.raise_if_error()
+		return LoginResult(
+			response.pid, response.ticket, response.connection_data.main_station
+		)
+		
+	def login_with_param(self, username, auth_info):
+		param = authentication.ValidateAndRequestTicketParam()
+		param.username = username
+		if auth_info:
+			param.data = auth_info
+		else:
+			param.data = common.NullData()
+		param.nex_version = self.settings.get("server.version")
+		response = self.auth_proto.login_with_param(param)
+		return LoginResult(
+			response.pid, response.ticket, response.server_url
+		)
+		
 	def login_guest(self):
 		self.login("guest", "MMQea3n!fsik")
 		
 	def get_pid(self):
-		return self.my_pid
+		return self.pid

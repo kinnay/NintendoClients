@@ -126,6 +126,12 @@ class DataHolder:
 		cls.object_map[name] = object
 		
 		
+class NullData(Data):
+	def save(self, stream): pass
+	def load(self, stream): pass
+DataHolder.register(NullData, "NullData")
+		
+		
 class StationURL:
 
 	str_params = ["address"]

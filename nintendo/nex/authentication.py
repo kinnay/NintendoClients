@@ -93,12 +93,79 @@ class RVConnectionData(common.Structure):
 			stream.datetime(self.server_time)
 
 
+class ValidateAndRequestTicketParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.platform = 3
+		self.username = None
+		self.data = None
+		self.unk = False
+		self.nex_version = None
+		self.client_version = 27
+	
+	def check_required(self, settings):
+		for field in ['username', 'data', 'nex_version']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.platform = stream.u32()
+		self.username = stream.string()
+		self.data = stream.anydata()
+		self.unk = stream.bool()
+		self.nex_version = stream.u32()
+		self.client_version = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.platform)
+		stream.string(self.username)
+		stream.anydata(self.data)
+		stream.bool(self.unk)
+		stream.u32(self.nex_version)
+		stream.u32(self.client_version)
+
+
+class ValidateAndRequestTicketResult(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.pid = None
+		self.ticket = None
+		self.server_url = None
+		self.server_time = None
+		self.server_name = None
+		self.unk = None
+	
+	def check_required(self, settings):
+		for field in ['pid', 'ticket', 'server_url', 'server_time', 'server_name', 'unk']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.pid = stream.pid()
+		self.ticket = stream.buffer()
+		self.server_url = stream.stationurl()
+		self.server_time = stream.datetime()
+		self.server_name = stream.string()
+		self.unk = stream.string()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.pid(self.pid)
+		stream.buffer(self.ticket)
+		stream.stationurl(self.server_url)
+		stream.datetime(self.server_time)
+		stream.string(self.server_name)
+		stream.string(self.unk)
+
+
 class AuthenticationProtocol:
 	METHOD_LOGIN = 1
 	METHOD_LOGIN_EX = 2
 	METHOD_REQUEST_TICKET = 3
 	METHOD_GET_PID = 4
 	METHOD_GET_NAME = 5
+	METHOD_LOGIN_WITH_PARAM = 6
 	
 	PROTOCOL_ID = 0xA
 
@@ -185,6 +252,19 @@ class AuthenticationClient(AuthenticationProtocol):
 		name = stream.string()
 		logger.info("AuthenticationClient.get_name -> done")
 		return name
+	
+	def login_with_param(self, param):
+		logger.info("AuthenticationClient.login_with_param()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_LOGIN_WITH_PARAM)
+		stream.add(param)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		result = stream.extract(ValidateAndRequestTicketResult)
+		logger.info("AuthenticationClient.login_with_param -> done")
+		return result
 
 
 class AuthenticationServer(AuthenticationProtocol):
@@ -195,6 +275,7 @@ class AuthenticationServer(AuthenticationProtocol):
 			self.METHOD_REQUEST_TICKET: self.handle_request_ticket,
 			self.METHOD_GET_PID: self.handle_get_pid,
 			self.METHOD_GET_NAME: self.handle_get_name,
+			self.METHOD_LOGIN_WITH_PARAM: self.handle_login_with_param,
 		}
 	
 	def handle(self, context, method_id, input, output):
@@ -279,6 +360,17 @@ class AuthenticationServer(AuthenticationProtocol):
 			raise RuntimeError("Expected str, got %s" %response.__class__.__name__)
 		output.string(response)
 	
+	def handle_login_with_param(self, context, input, output):
+		logger.info("AuthenticationServer.login_with_param()")
+		#--- request ---
+		param = input.extract(ValidateAndRequestTicketParam)
+		response = self.login_with_param(context, param)
+		
+		#--- response ---
+		if not isinstance(response, ValidateAndRequestTicketResult):
+			raise RuntimeError("Expected ValidateAndRequestTicketResult, got %s" %response.__class__.__name__)
+		output.add(response)
+	
 	def login(self, *args):
 		logger.warning("AuthenticationServer.login not implemented")
 		raise common.RMCError("Core::NotImplemented")
@@ -297,5 +389,9 @@ class AuthenticationServer(AuthenticationProtocol):
 	
 	def get_name(self, *args):
 		logger.warning("AuthenticationServer.get_name not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def login_with_param(self, *args):
+		logger.warning("AuthenticationServer.login_with_param not implemented")
 		raise common.RMCError("Core::NotImplemented")
 
