@@ -1,0 +1,18 @@
+
+module account { account }
+module authentication { authentication }
+
+module datastore {
+	datastore_core
+}
+
+module friends { friends }
+
+module matchmaking {
+	matchmaking, matchmake_extension
+}
+
+module nattraversal { nattraversal }
+module notification { notification }
+module ranking { ranking }
+module secure { secure }

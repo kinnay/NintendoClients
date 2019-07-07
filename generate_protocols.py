@@ -20,7 +20,7 @@ class Token:
 		
 		
 class FileReader:
-	def process(self, config, filename):
+	def process(self, filename):
 		with open(filename) as f:
 			return f.read()
 			
@@ -32,12 +32,12 @@ NUMBER_CHARS = string.digits
 
 SPECIAL_CHARS = "{}()[]<>:;,.=!#"
 
-RESERVED_WORDS = ["protocol", "method", "struct", "enum"]
+RESERVED_WORDS = ["module", "protocol", "method", "struct", "enum"]
 			
 CHAR_EOF = "EOF"
 
 class Tokenizer:
-	def process(self, config, data):
+	def process(self, data):
 		self.tokens = []
 		self.state = self.state_next
 		
@@ -172,7 +172,30 @@ class Scope:
 		return False
 		
 		
-class File:
+class ModuleSet:
+	def __init__(self):
+		self.modules = []
+		self.scope = Scope()
+		
+	def add(self, module):
+		if self.scope.add(module.name):
+			raise ValueError("Module %s already exists" %module.name)
+		self.modules.append(module)
+		
+		
+class Module:
+	name = None
+	
+	def __init__(self):
+		self.files = []
+		
+	def add_file(self, file):
+		if file in self.files:
+			raise ValueError("Duplicate file in module %s: %s" %(self.name, file))
+		self.files.append(file)
+		
+		
+class Database:
 	def __init__(self):
 		self.protocols = []
 		self.structs = []
@@ -196,6 +219,11 @@ class File:
 		if self.scope.add(enum.name):
 			raise ValueError("%s is already defined" %enum.name)
 		self.enums.append(enum)
+		
+	def update(self, db):
+		for proto in db.protocols: self.add_protocol(proto)
+		for struct in db.structs: self.add_struct(struct)
+		for enum in db.enums: self.add_enum(enum)
 
 	
 class Protocol:
@@ -322,24 +350,63 @@ NUMERIC_TYPES = [
 STRING_TYPES = [
 	"string", "buffer", "qbuffer"
 ]
+
+
+class MetaParser:
+	def process(self, tokens):
+		stream = TokenStream(tokens)
+		return self.parse_file(stream).modules
 		
-class Parser:
-	def process(self, config, tokens):
+	def parse_file(self, stream):
+		set = ModuleSet()
+		while True:
+			token = stream.peek()
+			if token.type == TYPE_EOF:
+				return set
+			elif token.type == TYPE_RESERVED and token.value == "module":
+				set.add(self.parse_module(stream))
+			else:
+				stream.error(token)
+				
+	def parse_module(self, stream):
+		stream.skip_reserved("module")
+		
+		module = Module()
+		module.name = stream.parse_name()
+		stream.skip_symbol("{")
+		
+		token = stream.peek()
+		if token.type == TYPE_SYMBOL and token.value == "}":
+			stream.skip_symbol("}")
+			return module
+		
+		while True:
+			module.add_file(stream.parse_name())
+			
+			token = stream.read_symbol()
+			if token.value == "}":
+				return module
+			elif token.value != ",":
+				stream.error(token)
+
+		
+class ProtoParser:
+	def process(self, tokens):
 		stream = TokenStream(tokens)
 		return self.parse_file(stream)
 				
 	def parse_file(self, stream):
-		file = File()
+		db = Database()
 		while True:
 			token = stream.peek()
 			if token.type == TYPE_EOF:
-				return file
+				return db
 			elif token.type == TYPE_RESERVED and token.value == "protocol":
-				file.add_protocol(self.parse_protocol(stream, file))
+				db.add_protocol(self.parse_protocol(stream, db))
 			else:
 				stream.error(token)
 				
-	def parse_protocol(self, stream, file):
+	def parse_protocol(self, stream, db):
 		stream.skip_reserved("protocol")
 		
 		protocol = Protocol()
@@ -357,8 +424,8 @@ class Parser:
 				return protocol
 			elif token.type == TYPE_RESERVED:
 				if token.value == "method": protocol.add_method(self.parse_method(stream))
-				elif token.value == "struct": file.add_struct(self.parse_struct(stream))
-				elif token.value == "enum": file.add_enum(self.parse_enum(stream))
+				elif token.value == "struct": db.add_struct(self.parse_struct(stream))
+				elif token.value == "enum": db.add_enum(self.parse_enum(stream))
 			else:
 				stream.error(token)
 				
@@ -630,9 +697,8 @@ MAPPED_TYPES = {
 }
 				
 class CodeGenerator:
-	def process(self, config, file):
-		self.config = config
-		self.file = file
+	def process(self, db):
+		self.db = db
 		
 		stream = CodeStream()
 		self.generate_file(stream)
@@ -640,20 +706,20 @@ class CodeGenerator:
 		
 	def generate_file(self, stream):
 		self.generate_header(stream)
-		for enum in self.file.enums:
+		for enum in self.db.enums:
 			self.generate_enum(stream, enum)
-		for struct in self.file.structs:
+		for struct in self.db.structs:
 			self.generate_struct(stream, struct)
-		for proto in self.file.protocols:
+		for proto in self.db.protocols:
 			self.generate_protocol(stream, proto)
-		for proto in self.file.protocols:
+		for proto in self.db.protocols:
 			self.generate_client(stream, proto)
-		for proto in self.file.protocols:
+		for proto in self.db.protocols:
 			self.generate_server(stream, proto)
 		
 	def generate_header(self, stream):
 		stream.write_line()
-		stream.write_line("# This file was generated automatically from %s.proto" %self.config.name)
+		stream.write_line("# This file was generated automatically by generate_protocols.py")
 		stream.write_line()
 		stream.write_line("from nintendo.nex import common")
 		stream.write_line()
@@ -742,7 +808,7 @@ class CodeGenerator:
 		required = []
 		for field in body.fields:
 			if isinstance(field, Variable):
-				if field.type.name not in self.file.struct_names and \
+				if field.type.name not in self.db.struct_names and \
 				   field.type.name != "ResultRange" and \
 				   field.default is None:
 					required.append(field.name)
@@ -944,12 +1010,12 @@ class CodeGenerator:
 		if type.name == "result": return "comon.Result"
 		if type.name == "anydata": return "common.Data"
 		if type.name == "ResultRange": return "common.ResultRange"
-		if type.name in self.file.struct_names: return type.name
+		if type.name in self.db.struct_names: return type.name
 		if type.name in NUMERIC_TYPES: return "int"
 		raise ValueError("Unknown type: %s" %type.name)
 				
 	def make_constant(self, type, value):
-		if type.name in self.file.struct_names: return "%s()" %type.name
+		if type.name in self.db.struct_names: return "%s()" %type.name
 		if type.name == "ResultRange": return "common.ResultRange()"
 		
 		if value is None:
@@ -970,7 +1036,7 @@ class CodeGenerator:
 	def make_extract(self, type, stream="stream"):
 		if type.name in BASIC_TYPES: return "%s.%s()" %(stream, type.name)
 		if type.name in MAPPED_TYPES: return "%s.%s()" %(stream, MAPPED_TYPES[type.name])
-		if type.name in self.file.struct_names: return "%s.extract(%s)" %(stream, type.name)
+		if type.name in self.db.struct_names: return "%s.extract(%s)" %(stream, type.name)
 		if type.name == "ResultRange": return "%s.extract(common.ResultRange)" %stream
 		if type.name == "list":
 			return "%s.list(%s)" %(stream, self.make_extract_list(type.template[0], stream))
@@ -979,7 +1045,7 @@ class CodeGenerator:
 	def make_extract_list(self, type, stream="stream"):
 		if type.name in BASIC_TYPES: return "%s.%s" %(stream, type.name)
 		if type.name in MAPPED_TYPES: return "%s.%s" %(stream, MAPPED_TYPES[type.name])
-		if type.name in self.file.struct_names: return type.name
+		if type.name in self.db.struct_names: return type.name
 		if type.name == "ResultRange": return "common.ResultRange"
 		raise ValueError("Unknown type in list: %s" %type.name)
 		
@@ -992,14 +1058,9 @@ class CodeGenerator:
 	def make_encode_call(self, type, stream="stream"):
 		if type.name in BASIC_TYPES: return "%s.%s" %(stream, type.name)
 		if type.name in MAPPED_TYPES: return "%s.%s" %(stream, MAPPED_TYPES[type.name])
-		if type.name in self.file.struct_names: return "%s.add" %stream
+		if type.name in self.db.struct_names: return "%s.add" %stream
 		if type.name == "ResultRange": return "%s.add" %stream
 		raise ValueError("Unknown type: %s" %type.name)
-
-		
-class Config:
-	def __init__(self):
-		self.name = None
 		
 
 class Pipeline:
@@ -1008,34 +1069,32 @@ class Pipeline:
 		for stage in stages:
 			self.stages.append(stage())
 			
-	def process(self, config, param):
+	def process(self, param):
 		for stage in self.stages:
-			param = stage.process(config, param)
+			param = stage.process(param)
 		return param
 		
 
-pipeline = Pipeline(
-	FileReader, Tokenizer, Parser, CodeGenerator
-)
+proto_pipeline = Pipeline(FileReader, Tokenizer, ProtoParser)
+meta_pipeline = Pipeline(FileReader, Tokenizer, MetaParser)
 
-def process(name):
-	if name.endswith(".proto"):
-		name = name[:-6]
+def process(module):
+	db = Database()
 	
-	filename = "nintendo/files/proto/%s.proto" %name
+	for file in module.files:
+		filename = "nintendo/files/proto/%s.proto" %file
+		
+		print("Parsing %s" %filename)
+		db.update(proto_pipeline.process(filename))
 	
-	config = Config()
-	config.name = name
+	pyname = "nintendo/nex/%s.py" %module.name
 	
-	print("Processing %s" %filename)
-	code = pipeline.process(config, filename)
-	with open("nintendo/nex/%s.py" %name, "wb") as f:
+	print("Building %s" %pyname)
+	code = CodeGenerator().process(db)
+	with open(pyname, "wb") as f:
 		f.write(code.encode("utf8"))
 
 
-names = sys.argv[1:]
-if not names:
-	names = os.listdir("nintendo/files/proto")
-
-for name in names:
-	process(name)
+modules = meta_pipeline.process("nintendo/files/proto/protocols.def")
+for module in modules:
+	process(module)

@@ -1,5 +1,5 @@
 
-# This file was generated automatically from notification.proto
+# This file was generated automatically by generate_protocols.py
 
 from nintendo.nex import common
 
