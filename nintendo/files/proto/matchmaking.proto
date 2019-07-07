@@ -1,15 +1,15 @@
 
 protocol MatchMaking : 21 {
 	struct Gathering {
-		u32 id = 0;
+		uint32 id = 0;
 		pid owner_pid = 0;
 		pid host_pid = 0;
-		u16 player_min = 0;
-		u16 player_max = 0;
-		u32 participation_policy = 1;
-		u32 policy_argument = 0;
-		u32 flags = 512;
-		u32 state = 0;
+		uint16 player_min = 0;
+		uint16 player_max = 0;
+		uint32 participation_policy = 1;
+		uint32 policy_argument = 0;
+		uint32 flags = 512;
+		uint32 state = 0;
 		string description = "";
 	}
 
@@ -62,7 +62,7 @@ protocol MatchMaking : 21 {
 	method register_local_urls;
 	method update_session_host_v1;
 	
-	method get_session_urls(u32 gid) {
+	method get_session_urls(uint32 gid) {
 		list<stationurl> urls;
 	}
 	
@@ -84,37 +84,37 @@ protocol MatchmakeExtension : 109 {
 		bool vacant_only;
 		bool exclude_locked;
 		bool exclude_non_host_pid;
-		u32 selection_method;
+		uint32 selection_method;
 		
 		[server.version >= 30500] {
-			u16 vacant_participants;
+			uint16 vacant_participants;
 		}
 	}
 	
 	struct MatchmakeSession : Gathering {
-		u32 game_mode = 0;
-		list<u32> attribs = [0, 0, 0, 0, 0, 0];
+		uint32 game_mode = 0;
+		list<uint32> attribs = [0, 0, 0, 0, 0, 0];
 		bool open_participation = true;
-		u32 matchmake_system = 0;
+		uint32 matchmake_system = 0;
 		buffer application_data = "";
-		u32 player_count = 0;
+		uint32 player_count = 0;
 		
 		[server.version >= 30500] {
-			u8 progress_score = 100;
+			uint8 progress_score = 100;
 		}
 		
 		buffer session_key = "";
 		
 		[server.version >= 30500] {
-			u32 option = 0;
+			uint32 option = 0;
 		}
 	}
 	
 	struct SimplePlayingSession {
 		pid pid;
-		u32 gid;
-		u32 game_mode;
-		u32 attribute;
+		uint32 gid;
+		uint32 game_mode;
+		uint32 attribute;
 	}
 	
 	struct PlayingSession {
@@ -132,12 +132,12 @@ protocol MatchmakeExtension : 109 {
 	method browse_matchmake_session;
 	method browse_matchmake_session_with_host_urls;
 	
-	method create_matchmake_session(anydata gathering, string description, u16 participation_count) {
-		u32 gid;
+	method create_matchmake_session(anydata gathering, string description, uint16 participation_count) {
+		uint32 gid;
 		buffer session_key;
 	}
 	
-	method join_matchmake_session(u32 gid, string message) {
+	method join_matchmake_session(uint32 gid, string message) {
 		buffer session_key;
 	}
 	
@@ -189,7 +189,7 @@ protocol MatchmakeExtension : 109 {
 	method join_matchmake_session_with_param;
 	method auto_matchmake_with_param_postpone;
 	
-	method find_matchmake_session_by_gathering_id_detail(u32 gid) {
+	method find_matchmake_session_by_gathering_id_detail(uint32 gid) {
 		MatchmakeSession session;
 	}
 	

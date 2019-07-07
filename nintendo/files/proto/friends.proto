@@ -2,8 +2,8 @@
 protocol Friends : 102 {
 	struct MiiV2 : Data {
 		string name;
-		u8 unk1 = 0;
-		u8 unk2 = 0;
+		uint8 unk1 = 0;
+		uint8 unk2 = 0;
 		buffer data;
 		datetime datetime = 0;
 	}
@@ -12,36 +12,36 @@ protocol Friends : 102 {
 		pid pid;
 		string nnid;
 		MiiV2 mii;
-		u8 unk = 2;
+		uint8 unk = 2;
 	}
 	
 	struct NNAInfo : Data {
 		PrincipalBasicInfo principal_info;
-		u8 unk1 = 94;
-		u8 unk2 = 11;
+		uint8 unk1 = 94;
+		uint8 unk2 = 11;
 	}
 	
 	struct GameKey : Data {
-		u64 title_id = 0;
-		u16 title_version = 0;
+		uint64 title_id = 0;
+		uint16 title_version = 0;
 	}
 	
 	struct NintendoPresenceV2 : Data {
-		u32 flags = 0;
+		uint32 flags = 0;
 		bool is_online = false;
 		GameKey game_key;
-		u8 unk1 = 0;
+		uint8 unk1 = 0;
 		string message = "";
-		u32 unk2 = 0;
-		u8 unk3 = 0;
-		u32 game_server_id = 0;
-		u32 unk4 = 0;
-		u32 pid = 0;
-		u32 gathering_id = 0;
+		uint32 unk2 = 0;
+		uint8 unk3 = 0;
+		uint32 game_server_id = 0;
+		uint32 unk4 = 0;
+		uint32 pid = 0;
+		uint32 gathering_id = 0;
 		buffer application_data = "";
-		u8 unk5 = 3;
-		u8 unk6 = 3;
-		u8 unk7 = 3;
+		uint8 unk5 = 3;
+		uint8 unk6 = 3;
+		uint8 unk7 = 3;
 	}
 	
 	struct PrincipalPreference : Data {
@@ -51,7 +51,7 @@ protocol Friends : 102 {
 	}
 	
 	struct Comment : Data {
-		u8 unk;
+		uint8 unk;
 		string text;
 		datetime changed;
 	}
@@ -62,15 +62,15 @@ protocol Friends : 102 {
 		Comment comment;
 		datetime befriended;
 		datetime last_online;
-		u64 unk;
+		uint64 unk;
 	}
 	
 	struct FriendRequestMessage : Data {
-		u64 unk1;
-		u8 unk2;
-		u8 unk3;
+		uint64 unk1;
+		uint8 unk2;
+		uint8 unk3;
 		string message;
-		u8 unk4;
+		uint8 unk4;
 		string string;
 		GameKey game_key;
 		datetime datetime;
@@ -90,10 +90,10 @@ protocol Friends : 102 {
 	}
 	
 	struct PersistentNotification : Data {
-		u64 unk1;
-		u32 unk2;
-		u32 unk3;
-		u32 unk4;
+		uint64 unk1;
+		uint32 unk2;
+		uint32 unk3;
+		uint32 unk4;
 		string string;
 	}
 	

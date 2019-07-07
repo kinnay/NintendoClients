@@ -314,8 +314,8 @@ TEMPLATE_TYPES = {
 }
 
 NUMERIC_TYPES = [
-	"u8", "u16", "u32", "u64",
-	"s8", "s16", "s32", "s64",
+	"uint8", "uint16", "uint32", "uint64",
+	"sint8", "sint16", "sint32", "sint64",
 	"pid", "datetime"
 ]
 
@@ -611,13 +611,23 @@ class CodeStream:
 				
 				
 BASIC_TYPES = [
-	"u8", "u16", "u32", "u64",
-	"s8", "s16", "s32", "s64",
 	"float", "double", "bool",
 	"pid", "result", "datetime",
 	"string", "stationurl", "buffer",
 	"qbuffer", "anydata"
 ]
+
+MAPPED_TYPES = {
+	"uint8": "u8",
+	"uint16": "u16",
+	"uint32": "u32",
+	"uint64": "u64",
+	
+	"sint8": "s8",
+	"sint16": "s16",
+	"sint32": "s32",
+	"sint64": "s64",
+}
 				
 class CodeGenerator:
 	def process(self, config, file):
@@ -959,6 +969,7 @@ class CodeGenerator:
 		
 	def make_extract(self, type, stream="stream"):
 		if type.name in BASIC_TYPES: return "%s.%s()" %(stream, type.name)
+		if type.name in MAPPED_TYPES: return "%s.%s()" %(stream, MAPPED_TYPES[type.name])
 		if type.name in self.file.struct_names: return "%s.extract(%s)" %(stream, type.name)
 		if type.name == "ResultRange": return "%s.extract(common.ResultRange)" %stream
 		if type.name == "list":
@@ -967,6 +978,7 @@ class CodeGenerator:
 	
 	def make_extract_list(self, type, stream="stream"):
 		if type.name in BASIC_TYPES: return "%s.%s" %(stream, type.name)
+		if type.name in MAPPED_TYPES: return "%s.%s" %(stream, MAPPED_TYPES[type.name])
 		if type.name in self.file.struct_names: return type.name
 		if type.name == "ResultRange": return "common.ResultRange"
 		raise ValueError("Unknown type in list: %s" %type.name)
@@ -979,6 +991,7 @@ class CodeGenerator:
 		
 	def make_encode_call(self, type, stream="stream"):
 		if type.name in BASIC_TYPES: return "%s.%s" %(stream, type.name)
+		if type.name in MAPPED_TYPES: return "%s.%s" %(stream, MAPPED_TYPES[type.name])
 		if type.name in self.file.struct_names: return "%s.add" %stream
 		if type.name == "ResultRange": return "%s.add" %stream
 		raise ValueError("Unknown type: %s" %type.name)

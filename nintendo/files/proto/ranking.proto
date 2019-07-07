@@ -21,28 +21,28 @@ protocol Ranking : 112 {
 	}
 
 	struct RankingOrderParam {
-		u8 order_calc = 0;
-		u8 group_index = 255;
-		u8 group_num = 0;
-		u8 time_scope = 2;
-		u32 offset;
-		u8 count;
+		uint8 order_calc = 0;
+		uint8 group_index = 255;
+		uint8 group_num = 0;
+		uint8 time_scope = 2;
+		uint32 offset;
+		uint8 count;
 	}
 	
 	struct RankingRankData {
 		pid pid;
-		u64 unique_id;
-		u32 rank;
-		u32 category;
-		u32 score;
-		list<u8> groups;
-		u64 param;
+		uint64 unique_id;
+		uint32 rank;
+		uint32 category;
+		uint32 score;
+		list<uint8> groups;
+		uint64 param;
 		buffer common_data;
 	}
 	
 	struct RankingResult {
 		list<RankingRankData> datas;
-		u32 total;
+		uint32 total;
 		datetime since_time;
 	}
 	
@@ -51,39 +51,39 @@ protocol Ranking : 112 {
 	}
 	
 	struct RankingScoreData {
-		u32 category;
-		u32 score;
-		u8 order;
-		u8 update_mode;
-		list<u8> groups;
-		u64 param;
+		uint32 category;
+		uint32 score;
+		uint8 order;
+		uint8 update_mode;
+		list<uint8> groups;
+		uint64 param;
 	}
 
-	method upload_score(RankingScoreData score_data, u64 unique_id) {}
+	method upload_score(RankingScoreData score_data, uint64 unique_id) {}
 	
 	method delete_score;
 	method delete_all_scores;
 	method upload_common_data;
 	method delete_common_data;
 	
-	method get_common_data(u64 unique_id) {
+	method get_common_data(uint64 unique_id) {
 		buffer data;
 	}
 	
 	method change_attributes;
 	method change_all_attributes;
 	
-	method get_ranking(u8 mode, u32 category, RankingOrderParam order, u64 unique_id, pid pid) {
+	method get_ranking(uint8 mode, uint32 category, RankingOrderParam order, uint64 unique_id, pid pid) {
 		RankingResult result;
 	}
 	
 	method get_approx_order;
 	
-	method get_stats(u32 category, RankingOrderParam order, u32 flags) {
+	method get_stats(uint32 category, RankingOrderParam order, uint32 flags) {
 		RankingStats stats;
 	}
 	
-	method get_ranking_by_pid_list(list<pid> pids, u8 mode, u32 category, RankingOrderParam order, u64 unique_id) {
+	method get_ranking_by_pid_list(list<pid> pids, uint8 mode, uint32 category, RankingOrderParam order, uint64 unique_id) {
 		RankingResult result;
 	}
 	

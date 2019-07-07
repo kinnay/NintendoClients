@@ -2,48 +2,48 @@
 protocol DataStore : 115 {
 	struct PersistenceTarget {
 		pid owner_id = 0;
-		u16 persistence_id = 65535;
+		uint16 persistence_id = 65535;
 	}
 	
 	struct DataStorePermission {
-		u8 permission = 3;
+		uint8 permission = 3;
 		list<pid> recipients = [];
 	}
 	
 	struct DataStoreRatingInfo {
-		s64 total_value;
-		u32 count;
-		s64 initial_value;
+		sint64 total_value;
+		uint32 count;
+		sint64 initial_value;
 	}
 	
 	struct DataStoreRatingInfoWithSlot {
-		u8 slot;
+		uint8 slot;
 		DataStoreRatingInfo info;
 	}
 	
 	struct DataStoreGetMetaParam {
-		u64 data_id = 0;
+		uint64 data_id = 0;
 		PersistenceTarget persistence_target;
-		u8 result_option = 0;
-		u64 access_password = 0;
+		uint8 result_option = 0;
+		uint64 access_password = 0;
 	}
 	
 	struct DataStoreMetaInfo {
-		u64 data_id;
+		uint64 data_id;
 		pid owner_id;
-		u32 size;
+		uint32 size;
 		string name;
-		u16 data_type;
+		uint16 data_type;
 		qbuffer meta_binary;
 		DataStorePermission permission;
 		DataStorePermission delete_permission;
 		datetime create_time;
 		datetime update_time;
-		u16 period;
-		u8 status;
-		u32 referred_count;
-		u32 refer_data_id;
-		u32 flag;
+		uint16 period;
+		uint8 status;
+		uint32 referred_count;
+		uint32 refer_data_id;
+		uint32 flag;
 		datetime referred_time;
 		datetime expire_time;
 		list<string> tags;
@@ -51,10 +51,10 @@ protocol DataStore : 115 {
 	}
 	
 	struct DataStorePrepareGetParam {
-		u64 data_id = 0;
-		u32 lock_id = 0;
+		uint64 data_id = 0;
+		uint32 lock_id = 0;
 		PersistenceTarget persistence_target;
-		u64 access_password = 0;
+		uint64 access_password = 0;
 		
 		[server.version >= 30500] {
 			list<string> extra_data;
@@ -69,24 +69,24 @@ protocol DataStore : 115 {
 	struct DataStoreReqGetInfo {
 		string url;
 		list<DataStoreKeyValue> headers;
-		u32 size;
+		uint32 size;
 		buffer root_ca_cert;
 		
 		[server.version >= 30500] {
-			u64 data_id;
+			uint64 data_id;
 		}
 	}
 	
 	struct DataStorePreparePostParam {
-		u32 size;
+		uint32 size;
 		string name = "";
-		u16 data_type = 0;
+		uint16 data_type = 0;
 		qbuffer meta_binary = "";
 		DataStorePermission permission;
 		DataStorePermission delete_permission;
-		u32 flag;
-		u16 period;
-		u32 refer_data_id = 0;
+		uint32 flag;
+		uint16 period;
+		uint32 refer_data_id = 0;
 		list<string> tags = [];
 		list<DataStoreRatingInitParamWithSlot> rating_init_param = [];
 		DataStorePersistenceInitParam persistence_init_param;
@@ -97,28 +97,28 @@ protocol DataStore : 115 {
 	}
 	
 	struct DataStoreRatingInitParamWithSlot {
-		s8 slot;
+		sint8 slot;
 		DataStoreRatingInitParam param;
 	}
 	
 	struct DataStoreRatingInitParam {
-		u8 flag;
-		u8 internal_flag;
-		u8 lock_type;
-		s64 initial_value;
-		s32 range_min;
-		s32 range_max;
-		s8 period_hour;
-		s16 period_duration;
+		uint8 flag;
+		uint8 internal_flag;
+		uint8 lock_type;
+		sint64 initial_value;
+		sint32 range_min;
+		sint32 range_max;
+		sint8 period_hour;
+		sint16 period_duration;
 	}
 	
 	struct DataStorePersistenceInitParam {
-		u16 persistence_id = 65535;
+		uint16 persistence_id = 65535;
 		bool delete_last_object = true;
 	}
 	
 	struct DataStoreReqPostInfo {
-		u64 data_id;
+		uint64 data_id;
 		string url;
 		list<DataStoreKeyValue> headers;
 		list<DataStoreKeyValue> form;
@@ -126,7 +126,7 @@ protocol DataStore : 115 {
 	}
 	
 	struct DataStoreCompletePostParam {
-		u64 data_id;
+		uint64 data_id;
 		bool success;
 	}
 	

@@ -8,7 +8,7 @@ protocol NATTraversal : 3 {
 	
 	method report_nat_traversal_result;
 	
-	method report_nat_properties(u32 natm, u32 natf, u32 rtt) {}
+	method report_nat_properties(uint32 natm, uint32 natf, uint32 rtt) {}
 	
 	method get_relay_signature_key;
 	method report_nat_traversal_result_detail;

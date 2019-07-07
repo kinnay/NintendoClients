@@ -2,7 +2,7 @@
 protocol Notification : 14 {
 	struct NotificationEvent {
 		pid pid;
-		u32 type;
+		uint32 type;
 		pid param1;
 		pid param2;
 		string text;
@@ -24,14 +24,14 @@ protocol NintendoNotification : 100 {
 	}
 	
 	struct NintendoNotificationEventGeneral : Data {
-		u32 param1;
-		u64 param2;
-		u64 param3;
+		uint32 param1;
+		uint64 param2;
+		uint64 param3;
 		string text;
 	}
 	
 	struct NintendoNotificationEvent {
-		u32 type;
+		uint32 type;
 		pid pid;
 		anydata data;
 	}

@@ -2,9 +2,9 @@
 protocol Authentication : 10 {
 	struct AuthenticationInfo : Data {
 		string token;
-		u32 ngs_version = 3;
-		u8 token_type = 1;
-		u32 server_version;
+		uint32 ngs_version = 3;
+		uint8 token_type = 1;
+		uint32 server_version;
 	}
 	
 	struct NintendoLoginData : Data {
@@ -13,7 +13,7 @@ protocol Authentication : 10 {
 
 	struct RVConnectionData {
 		stationurl main_station;
-		list<u8> special_protocols;
+		list<uint8> special_protocols;
 		stationurl special_station;
 		
 		[server.version >= 30500] {
@@ -23,12 +23,12 @@ protocol Authentication : 10 {
 	}
 	
 	struct ValidateAndRequestTicketParam {
-		u32 platform = 3;
+		uint32 platform = 3;
 		string username;
 		anydata data;
 		bool unk = false;
-		u32 nex_version;
-		u32 client_version = 27;
+		uint32 nex_version;
+		uint32 client_version = 27;
 	}
 	
 	struct ValidateAndRequestTicketResult {
