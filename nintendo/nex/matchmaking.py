@@ -502,7 +502,7 @@ class MatchMakingServer(MatchMakingProtocol):
 		if method_id in self.methods:
 			self.methods[method_id](context, input, output)
 		else:
-			logger.warning("Unknown method called on MatchMakingServer: %i", method_id)
+			logger.warning("Unknown method called on %s: %i", self.__class__.__name__, method_id)
 			raise common.RMCError("Core::NotImplemented")
 	
 	def handle_register_gathering(self, context, input, output):
@@ -764,7 +764,7 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 		if method_id in self.methods:
 			self.methods[method_id](context, input, output)
 		else:
-			logger.warning("Unknown method called on MatchmakeExtensionServer: %i", method_id)
+			logger.warning("Unknown method called on %s: %i", self.__class__.__name__, method_id)
 			raise common.RMCError("Core::NotImplemented")
 	
 	def handle_close_participation(self, context, input, output):

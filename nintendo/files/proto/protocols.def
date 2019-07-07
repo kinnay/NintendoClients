@@ -3,7 +3,7 @@ module account { account }
 module authentication { authentication }
 
 module datastore {
-	datastore_core
+	datastore_core, datastore_smm2
 }
 
 module friends { friends }

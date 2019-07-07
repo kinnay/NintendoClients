@@ -2,6 +2,7 @@
 from nintendo.nex import common
 from nintendo.common import streams
 
+
 class StreamOut(streams.StreamOut):
 	def __init__(self, settings):
 		super().__init__()
@@ -19,6 +20,12 @@ class StreamOut(streams.StreamOut):
 	def list(self, list, func):
 		self.u32(len(list))
 		self.repeat(list, func)
+		
+	def map(self, map, keyfunc, valuefunc):
+		self.u32(len(map))
+		for key, value in map.items():
+			keyfunc(key)
+			valuefunc(value)
 		
 	def string(self, string):
 		if string is None:
@@ -67,10 +74,21 @@ class StreamIn(streams.StreamIn):
 	def list(self, func):
 		return self.repeat(func, self.u32())
 		
+	def map(self, keyfunc, valuefunc):
+		map = {}
+		for i in range(self.u32()):
+			key = self.callback(keyfunc)
+			value = self.callback(valuefunc)
+			map[key] = value
+		return map
+		
 	def repeat(self, func, count):
+		return [self.callback(func) for i in range(count)]
+		
+	def callback(self, func):
 		if isinstance(func, type) and issubclass(func, common.Structure):
-			return [self.extract(func) for i in range(count)]
-		return super().repeat(func, count)
+			return self.extract(func)
+		return func()
 		
 	def string(self):
 		length = self.u16()

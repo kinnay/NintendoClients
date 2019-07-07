@@ -297,7 +297,7 @@ class RankingServer(RankingProtocol):
 		if method_id in self.methods:
 			self.methods[method_id](context, input, output)
 		else:
-			logger.warning("Unknown method called on RankingServer: %i", method_id)
+			logger.warning("Unknown method called on %s: %i", self.__class__.__name__, method_id)
 			raise common.RMCError("Core::NotImplemented")
 	
 	def handle_upload_score(self, context, input, output):

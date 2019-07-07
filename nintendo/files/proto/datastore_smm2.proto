@@ -1,0 +1,110 @@
+
+protocol DataStore_SMM2 : DataStore {
+	struct GetUsersParam {
+		list<pid> pids;
+		uint32 option;
+	}
+
+	struct SearchCoursesLatestParam {
+		uint32 option;
+		ResultRange range;
+	}
+
+	struct GetUserOrCourseParam {
+		string code;
+		uint32 user_option;
+		uint32 course_option;
+	}
+	
+	struct BadgeInfo {
+		uint16 unk1;
+		uint8 unk2;
+	}
+	
+	struct UserInfo {
+		uint64 data_id;
+		string unk1;
+		string unk2;
+		UnknownStruct1 unk3;
+		qbuffer unk4;
+		string unk5;
+		uint8 unk6;
+		datetime unk7;
+		bool unk8;
+		bool unk9;
+		bool unk10;
+		map<uint8, uint32> unk11;
+		map<uint8, uint32> unk12;
+		map<uint8, uint32> unk13;
+		map<uint8, uint32> unk14;
+		map<uint8, uint32> unk15;
+		list<BadgeInfo> badges;
+		map<uint8, uint32> unk16;
+		map<uint8, uint32> unk17;
+	}
+	
+	struct CourseInfo {
+		uint64 data_id;
+		string code;
+		pid owner_id;
+		string name;
+		string unk1;
+		uint8 unk2;
+		uint8 unk3;
+		datetime upload_time;
+		uint8 unk4;
+		uint8 unk5;
+		uint8 unk6;
+		uint8 unk7;
+		uint32 unk8;
+		uint16 unk9;
+		uint16 unk10;
+		qbuffer unk11;
+		map<uint8, uint32> unk12;
+		map<uint8, uint32> unk13;
+		map<uint8, uint32> unk14;
+		UnknownStruct2 unk15;
+		map<uint8, uint32> unk16;
+		uint8 unk17;
+		uint8 unk18;
+		uint8 unk19;
+		uint8 unk20;
+		UnknownStruct3 unk21;
+		UnknownStruct3 unk22;
+	}
+	
+	struct UnknownStruct1 {
+		uint16 unk1;
+		uint16 unk2;
+		uint16 unk3;
+		uint16 unk4;
+	}
+	
+	struct UnknownStruct2 {
+		uint64 unk1;
+		uint32 unk2;
+	}
+	
+	struct UnknownStruct3 {
+		string unk1;
+		uint8 unk2;
+		uint32 unk3;
+		buffer unk4;
+		string unk5;
+	}
+	
+	method(48) get_users(GetUsersParam param) {
+		list<UserInfo> users;
+		list<result> results;
+	}
+	
+	method(73) search_courses_latest(SearchCoursesLatestParam param) {
+		list<CourseInfo> courses;
+		bool result;
+	}
+	
+	method(131) get_user_or_course(GetUserOrCourseParam param) {
+		UserInfo user;
+		CourseInfo course;
+	}
+}

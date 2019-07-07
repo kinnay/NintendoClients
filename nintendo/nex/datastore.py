@@ -467,6 +467,339 @@ class DataStoreCompletePostParam(common.Structure):
 		stream.bool(self.success)
 
 
+class GetUsersParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.pids = None
+		self.option = None
+	
+	def check_required(self, settings):
+		for field in ['pids', 'option']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.pids = stream.list(stream.pid)
+		self.option = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.list(self.pids, stream.pid)
+		stream.u32(self.option)
+
+
+class SearchCoursesLatestParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.option = None
+		self.range = common.ResultRange(0, 10)
+	
+	def check_required(self, settings):
+		for field in ['option']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.option = stream.u32()
+		self.range = stream.extract(common.ResultRange)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.option)
+		stream.add(self.range)
+
+
+class GetUserOrCourseParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.code = None
+		self.user_option = None
+		self.course_option = None
+	
+	def check_required(self, settings):
+		for field in ['code', 'user_option', 'course_option']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.code = stream.string()
+		self.user_option = stream.u32()
+		self.course_option = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.code)
+		stream.u32(self.user_option)
+		stream.u32(self.course_option)
+
+
+class BadgeInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+	
+	def check_required(self, settings):
+		for field in ['unk1', 'unk2']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk1 = stream.u16()
+		self.unk2 = stream.u8()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u16(self.unk1)
+		stream.u8(self.unk2)
+
+
+class UserInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.unk1 = None
+		self.unk2 = None
+		self.unk3 = UnknownStruct1()
+		self.unk4 = None
+		self.unk5 = None
+		self.unk6 = None
+		self.unk7 = None
+		self.unk8 = None
+		self.unk9 = None
+		self.unk10 = None
+		self.unk11 = None
+		self.unk12 = None
+		self.unk13 = None
+		self.unk14 = None
+		self.unk15 = None
+		self.badges = None
+		self.unk16 = None
+		self.unk17 = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'unk1', 'unk2', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9', 'unk10', 'unk11', 'unk12', 'unk13', 'unk14', 'unk15', 'badges', 'unk16', 'unk17']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.unk1 = stream.string()
+		self.unk2 = stream.string()
+		self.unk3 = stream.extract(UnknownStruct1)
+		self.unk4 = stream.qbuffer()
+		self.unk5 = stream.string()
+		self.unk6 = stream.u8()
+		self.unk7 = stream.datetime()
+		self.unk8 = stream.bool()
+		self.unk9 = stream.bool()
+		self.unk10 = stream.bool()
+		self.unk11 = stream.map(stream.u8, stream.u32)
+		self.unk12 = stream.map(stream.u8, stream.u32)
+		self.unk13 = stream.map(stream.u8, stream.u32)
+		self.unk14 = stream.map(stream.u8, stream.u32)
+		self.unk15 = stream.map(stream.u8, stream.u32)
+		self.badges = stream.list(BadgeInfo)
+		self.unk16 = stream.map(stream.u8, stream.u32)
+		self.unk17 = stream.map(stream.u8, stream.u32)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.string(self.unk1)
+		stream.string(self.unk2)
+		stream.add(self.unk3)
+		stream.qbuffer(self.unk4)
+		stream.string(self.unk5)
+		stream.u8(self.unk6)
+		stream.datetime(self.unk7)
+		stream.bool(self.unk8)
+		stream.bool(self.unk9)
+		stream.bool(self.unk10)
+		stream.map(self.unk11, stream.u8, stream.u32)
+		stream.map(self.unk12, stream.u8, stream.u32)
+		stream.map(self.unk13, stream.u8, stream.u32)
+		stream.map(self.unk14, stream.u8, stream.u32)
+		stream.map(self.unk15, stream.u8, stream.u32)
+		stream.list(self.badges, stream.add)
+		stream.map(self.unk16, stream.u8, stream.u32)
+		stream.map(self.unk17, stream.u8, stream.u32)
+
+
+class CourseInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.code = None
+		self.owner_id = None
+		self.name = None
+		self.unk1 = None
+		self.unk2 = None
+		self.unk3 = None
+		self.upload_time = None
+		self.unk4 = None
+		self.unk5 = None
+		self.unk6 = None
+		self.unk7 = None
+		self.unk8 = None
+		self.unk9 = None
+		self.unk10 = None
+		self.unk11 = None
+		self.unk12 = None
+		self.unk13 = None
+		self.unk14 = None
+		self.unk15 = UnknownStruct2()
+		self.unk16 = None
+		self.unk17 = None
+		self.unk18 = None
+		self.unk19 = None
+		self.unk20 = None
+		self.unk21 = UnknownStruct3()
+		self.unk22 = UnknownStruct3()
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'code', 'owner_id', 'name', 'unk1', 'unk2', 'unk3', 'upload_time', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9', 'unk10', 'unk11', 'unk12', 'unk13', 'unk14', 'unk16', 'unk17', 'unk18', 'unk19', 'unk20']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.code = stream.string()
+		self.owner_id = stream.pid()
+		self.name = stream.string()
+		self.unk1 = stream.string()
+		self.unk2 = stream.u8()
+		self.unk3 = stream.u8()
+		self.upload_time = stream.datetime()
+		self.unk4 = stream.u8()
+		self.unk5 = stream.u8()
+		self.unk6 = stream.u8()
+		self.unk7 = stream.u8()
+		self.unk8 = stream.u32()
+		self.unk9 = stream.u16()
+		self.unk10 = stream.u16()
+		self.unk11 = stream.qbuffer()
+		self.unk12 = stream.map(stream.u8, stream.u32)
+		self.unk13 = stream.map(stream.u8, stream.u32)
+		self.unk14 = stream.map(stream.u8, stream.u32)
+		self.unk15 = stream.extract(UnknownStruct2)
+		self.unk16 = stream.map(stream.u8, stream.u32)
+		self.unk17 = stream.u8()
+		self.unk18 = stream.u8()
+		self.unk19 = stream.u8()
+		self.unk20 = stream.u8()
+		self.unk21 = stream.extract(UnknownStruct3)
+		self.unk22 = stream.extract(UnknownStruct3)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.string(self.code)
+		stream.pid(self.owner_id)
+		stream.string(self.name)
+		stream.string(self.unk1)
+		stream.u8(self.unk2)
+		stream.u8(self.unk3)
+		stream.datetime(self.upload_time)
+		stream.u8(self.unk4)
+		stream.u8(self.unk5)
+		stream.u8(self.unk6)
+		stream.u8(self.unk7)
+		stream.u32(self.unk8)
+		stream.u16(self.unk9)
+		stream.u16(self.unk10)
+		stream.qbuffer(self.unk11)
+		stream.map(self.unk12, stream.u8, stream.u32)
+		stream.map(self.unk13, stream.u8, stream.u32)
+		stream.map(self.unk14, stream.u8, stream.u32)
+		stream.add(self.unk15)
+		stream.map(self.unk16, stream.u8, stream.u32)
+		stream.u8(self.unk17)
+		stream.u8(self.unk18)
+		stream.u8(self.unk19)
+		stream.u8(self.unk20)
+		stream.add(self.unk21)
+		stream.add(self.unk22)
+
+
+class UnknownStruct1(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+		self.unk3 = None
+		self.unk4 = None
+	
+	def check_required(self, settings):
+		for field in ['unk1', 'unk2', 'unk3', 'unk4']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk1 = stream.u16()
+		self.unk2 = stream.u16()
+		self.unk3 = stream.u16()
+		self.unk4 = stream.u16()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u16(self.unk1)
+		stream.u16(self.unk2)
+		stream.u16(self.unk3)
+		stream.u16(self.unk4)
+
+
+class UnknownStruct2(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+	
+	def check_required(self, settings):
+		for field in ['unk1', 'unk2']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk1 = stream.u64()
+		self.unk2 = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.unk1)
+		stream.u32(self.unk2)
+
+
+class UnknownStruct3(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+		self.unk3 = None
+		self.unk4 = None
+		self.unk5 = None
+	
+	def check_required(self, settings):
+		for field in ['unk1', 'unk2', 'unk3', 'unk4', 'unk5']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk1 = stream.string()
+		self.unk2 = stream.u8()
+		self.unk3 = stream.u32()
+		self.unk4 = stream.buffer()
+		self.unk5 = stream.string()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.unk1)
+		stream.u8(self.unk2)
+		stream.u32(self.unk3)
+		stream.buffer(self.unk4)
+		stream.string(self.unk5)
+
+
 class DataStoreProtocol:
 	METHOD_PREPARE_GET_OBJECT_V1 = 1
 	METHOD_PREPARE_POST_OBJECT_V1 = 2
@@ -516,6 +849,12 @@ class DataStoreProtocol:
 	METHOD_SEARCH_OBJECT_LIGHT = 46
 	
 	PROTOCOL_ID = 0x73
+
+
+class DataStoreProtocolSMM2(DataStoreProtocol):
+	METHOD_GET_USERS = 48
+	METHOD_SEARCH_COURSES_LATEST = 73
+	METHOD_GET_USER_OR_COURSE = 131
 
 
 class DataStoreClient(DataStoreProtocol):
@@ -588,6 +927,53 @@ class DataStoreClient(DataStoreProtocol):
 		return obj
 
 
+class DataStoreClientSMM2(DataStoreClient, DataStoreProtocolSMM2):
+	def get_users(self, param):
+		logger.info("DataStoreClientSMM2.get_users()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_USERS)
+		stream.add(param)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		obj = common.RMCResponse()
+		obj.users = stream.list(UserInfo)
+		obj.results = stream.list(stream.result)
+		logger.info("DataStoreClientSMM2.get_users -> done")
+		return obj
+	
+	def search_courses_latest(self, param):
+		logger.info("DataStoreClientSMM2.search_courses_latest()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_LATEST)
+		stream.add(param)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		obj = common.RMCResponse()
+		obj.courses = stream.list(CourseInfo)
+		obj.result = stream.bool()
+		logger.info("DataStoreClientSMM2.search_courses_latest -> done")
+		return obj
+	
+	def get_user_or_course(self, param):
+		logger.info("DataStoreClientSMM2.get_user_or_course()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_USER_OR_COURSE)
+		stream.add(param)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		obj = common.RMCResponse()
+		obj.user = stream.extract(UserInfo)
+		obj.course = stream.extract(CourseInfo)
+		logger.info("DataStoreClientSMM2.get_user_or_course -> done")
+		return obj
+
+
 class DataStoreServer(DataStoreProtocol):
 	def __init__(self):
 		self.methods = {
@@ -643,7 +1029,7 @@ class DataStoreServer(DataStoreProtocol):
 		if method_id in self.methods:
 			self.methods[method_id](context, input, output)
 		else:
-			logger.warning("Unknown method called on DataStoreServer: %i", method_id)
+			logger.warning("Unknown method called on %s: %i", self.__class__.__name__, method_id)
 			raise common.RMCError("Core::NotImplemented")
 	
 	def handle_prepare_get_object_v1(self, context, input, output):
@@ -882,5 +1268,70 @@ class DataStoreServer(DataStoreProtocol):
 	
 	def get_metas_multiple_param(self, *args):
 		logger.warning("DataStoreServer.get_metas_multiple_param not implemented")
+		raise common.RMCError("Core::NotImplemented")
+
+
+class DataStoreServerSMM2(DataStoreServer, DataStoreProtocolSMM2):
+	def __init__(self):
+		super().__init__()
+		self.methods[self.METHOD_GET_USERS] = self.handle_get_users
+		self.methods[self.METHOD_SEARCH_COURSES_LATEST] = self.handle_search_courses_latest
+		self.methods[self.METHOD_GET_USER_OR_COURSE] = self.handle_get_user_or_course
+	
+	def handle_get_users(self, context, input, output):
+		logger.info("DataStoreServerSMM2.get_users()")
+		#--- request ---
+		param = input.extract(GetUsersParam)
+		response = self.get_users(context, param)
+		
+		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['users', 'results']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.users, output.add)
+		output.list(response.results, output.result)
+	
+	def handle_search_courses_latest(self, context, input, output):
+		logger.info("DataStoreServerSMM2.search_courses_latest()")
+		#--- request ---
+		param = input.extract(SearchCoursesLatestParam)
+		response = self.search_courses_latest(context, param)
+		
+		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['courses', 'result']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.courses, output.add)
+		output.bool(response.result)
+	
+	def handle_get_user_or_course(self, context, input, output):
+		logger.info("DataStoreServerSMM2.get_user_or_course()")
+		#--- request ---
+		param = input.extract(GetUserOrCourseParam)
+		response = self.get_user_or_course(context, param)
+		
+		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['user', 'course']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.add(response.user)
+		output.add(response.course)
+	
+	def get_users(self, *args):
+		logger.warning("DataStoreServerSMM2.get_users not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def search_courses_latest(self, *args):
+		logger.warning("DataStoreServerSMM2.search_courses_latest not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def get_user_or_course(self, *args):
+		logger.warning("DataStoreServerSMM2.get_user_or_course not implemented")
 		raise common.RMCError("Core::NotImplemented")
 

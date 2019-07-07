@@ -229,6 +229,7 @@ class Database:
 class Protocol:
 	id = None
 	name = None
+	parent = None
 	
 	def __init__(self):
 		self.methods = []
@@ -338,7 +339,8 @@ class Enum:
 
 
 TEMPLATE_TYPES = {
-	"list": 1
+	"list": 1,
+	"map": 2
 }
 
 NUMERIC_TYPES = [
@@ -412,7 +414,14 @@ class ProtoParser:
 		protocol = Protocol()
 		protocol.name = stream.parse_name()
 		stream.skip_symbol(":")
-		protocol.id = stream.parse_number()
+		
+		token = stream.read()
+		if token.type == TYPE_NUMBER:
+			protocol.id = token.value
+		elif token.type == TYPE_NAME:
+			protocol.parent = token.value
+		else:
+			stream.error(token)
 		stream.skip_symbol("{")
 		
 		self.prev_method = 0
@@ -543,6 +552,29 @@ class ProtoParser:
 				token = stream.read_symbol()
 				if token.value == "]":
 					return list
+				elif token.value != ",":
+					stream.error(token)
+		elif type.name == "map":
+			map = {}
+			
+			stream.skip_symbol("{")
+			
+			token = stream.peek()
+			if token.type == TYPE_SYMBOL and token.value == "}":
+				stream.skip_symbol("}")
+				return map
+				
+			keytype = type.template[0]
+			valuetype = type.template[1]
+			while True:
+				key = self.parse_constant(stream, keytype)
+				stream.skip_symbol(":")
+				value = self.parse_constant(stream, valuetype)
+				map[key] = value
+				
+				token = stream.read_symbol()
+				if token.value == "}":
+					return map
 				elif token.value != ",":
 					stream.error(token)
 		else:
@@ -868,35 +900,62 @@ class CodeGenerator:
 		))
 		
 	def generate_protocol(self, stream, proto):
+		name = self.make_class_name(proto.name, "Protocol")
+		
 		stream.write_line()
-		stream.write_line("class %sProtocol:" %proto.name)
+		if proto.parent:
+			parent = self.make_class_name(proto.parent, "Protocol")
+			stream.write_line("class %s(%s):" %(name, parent))
+		else:
+			stream.write_line("class %s:" %name)
 		stream.indent()
+		
 		for method in proto.methods:
 			stream.write_line("METHOD_%s = %i" %(method.name.upper(), method.id))
-		stream.write_line()
-		stream.write_line("PROTOCOL_ID = 0x%X" %proto.id)
+		if not proto.parent:
+			stream.write_line()
+			stream.write_line("PROTOCOL_ID = 0x%X" %proto.id)
+		
 		stream.unindent()
 		stream.write_line()
 		
 	def generate_client(self, stream, proto):
+		proto_name = self.make_class_name(proto.name, "Protocol")
+		client_name = self.make_class_name(proto.name, "Client")
+		
 		stream.write_line()
-		stream.write_line("class %sClient(%sProtocol):" %(proto.name, proto.name))
+		if proto.parent:
+			parent_name = self.make_class_name(proto.parent, "Client")
+			stream.write_line("class %s(%s, %s):" %(client_name, parent_name, proto_name))
+		else:
+			stream.write_line("class %s(%s):" %(client_name, proto_name))
 		stream.indent()
-		stream.write_line("def __init__(self, client):")
-		stream.write_line("\tself.client = client")
+		
+		if not proto.parent:
+			stream.write_line("def __init__(self, client):")
+			stream.write_line("\tself.client = client")
+			stream.write_line()
+			
+		first = True
 		for method in proto.methods:
 			if method.supported:
-				stream.write_line()
+				if not first:
+					stream.write_line()
+				else:
+					first = False
 				self.generate_client_method(stream, proto, method)
+		
 		stream.unindent()
 		stream.write_line()
 		
 	def generate_client_method(self, stream, proto, method):
+		class_name = self.make_class_name(proto.name, "Client")
+	
 		param = ", ".join(["self"] + [param.name for param in method.request.vars])
 		stream.write_line("def %s(%s):" %(method.name, param))
 		
 		stream.indent()
-		stream.write_line('logger.info("%sClient.%s()")' %(proto.name, method.name))
+		stream.write_line('logger.info("%s.%s()")' %(class_name, method.name))
 		stream.write_line("#--- request ---")
 		stream.write_line("stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_%s)" %method.name.upper())
 		for param in method.request.vars:
@@ -910,39 +969,53 @@ class CodeGenerator:
 			stream.write_line("obj = common.RMCResponse()")
 			for var in method.response.vars:
 				stream.write_line("obj.%s = %s" %(var.name, self.make_extract(var.type)))
-			stream.write_line('logger.info("%sClient.%s -> done")' %(proto.name, method.name))
+			stream.write_line('logger.info("%s.%s -> done")' %(class_name, method.name))
 			stream.write_line("return obj")
 		elif len(method.response.vars) == 1:
 			value = method.response.vars[0]
 			stream.write_line("stream = self.client.get_response(call_id)")
 			stream.write_line("%s = %s" %(value.name, self.make_extract(value.type)))
-			stream.write_line('logger.info("%sClient.%s -> done")' %(proto.name, method.name))
+			stream.write_line('logger.info("%s.%s -> done")' %(class_name, method.name))
 			stream.write_line("return %s" %value.name)
 		else:
 			stream.write_line("self.client.get_response(call_id)")
-			stream.write_line('logger.info("%sClient.%s -> done")' %(proto.name, method.name))
+			stream.write_line('logger.info("%s.%s -> done")' %(class_name, method.name))
 		stream.unindent()
 		
 	def generate_server(self, stream, proto):
+		server_name = self.make_class_name(proto.name, "Server")
+		proto_name = self.make_class_name(proto.name, "Protocol")
+	
 		stream.write_line()
-		stream.write_line("class %sServer(%sProtocol):" %(proto.name, proto.name))
+		if proto.parent:
+			parent_name = self.make_class_name(proto.parent, "Server")
+			stream.write_line("class %s(%s, %s):" %(server_name, parent_name, proto_name))
+		else:
+			stream.write_line("class %s(%s):" %(server_name, proto_name))
 		stream.indent()
 		
 		stream.write_line("def __init__(self):")
 		stream.indent()
-		stream.write_line("self.methods = {")
-		for method in proto.methods:
-			stream.write_line("\tself.METHOD_%s: self.handle_%s," %(method.name.upper(), method.name))
-		stream.write_line("}")
+		if not proto.parent:
+			stream.write_line("self.methods = {")
+			for method in proto.methods:
+				stream.write_line("\tself.METHOD_%s: self.handle_%s," %(method.name.upper(), method.name))
+			stream.write_line("}")
+		else:
+			stream.write_line("super().__init__()")
+			for method in proto.methods:
+				stream.write_line("self.methods[self.METHOD_%s] = self.handle_%s" %(method.name.upper(), method.name))
 		stream.unindent()
 		
-		stream.write_line()
-		stream.write_line("def handle(self, context, method_id, input, output):")
-		stream.write_line("\tif method_id in self.methods:")
-		stream.write_line("\t\tself.methods[method_id](context, input, output)")
-		stream.write_line("\telse:")
-		stream.write_line('\t\tlogger.warning("Unknown method called on %sServer: %%i", method_id)' %proto.name)
-		stream.write_line('\t\traise common.RMCError("Core::NotImplemented")')
+		if not proto.parent:
+			stream.write_line()
+			stream.write_line("def handle(self, context, method_id, input, output):")
+			stream.write_line("\tif method_id in self.methods:")
+			stream.write_line("\t\tself.methods[method_id](context, input, output)")
+			stream.write_line("\telse:")
+			stream.write_line('\t\tlogger.warning("Unknown method called on %s: %i", self.__class__.__name__, method_id)')
+			stream.write_line('\t\traise common.RMCError("Core::NotImplemented")')
+		
 		for method in proto.methods:
 			stream.write_line()
 			self.generate_server_method(stream, proto, method)
@@ -955,15 +1028,17 @@ class CodeGenerator:
 		stream.write_line()
 		
 	def generate_server_method(self, stream, proto, method):
+		class_name = self.make_class_name(proto.name, "Server")
+	
 		stream.write_line("def handle_%s(self, context, input, output):" %method.name)
 		
 		if not method.supported:
-			stream.write_line('\tlogger.warning("%sServer.%s is unsupported")' %(proto.name, method.name))
+			stream.write_line('\tlogger.warning("%s.%s is unsupported")' %(class_name, method.name))
 			stream.write_line('\traise common.RMCError("Core::NotImplemented")')
 			return
 			
 		stream.indent()
-		stream.write_line('logger.info("%sServer.%s()")' %(proto.name, method.name))
+		stream.write_line('logger.info("%s.%s()")' %(class_name, method.name))
 		stream.write_line("#--- request ---")
 		for param in method.request.vars:
 			stream.write_line("%s = %s" %(param.name, self.make_extract(param.type, "input")))
@@ -996,13 +1071,21 @@ class CodeGenerator:
 		stream.unindent()
 		
 	def generate_server_stub(self, stream, proto, method):
+		class_name = self.make_class_name(proto.name, "Server")
 		stream.write_line("def %s(self, *args):" %method.name)
-		stream.write_line('\tlogger.warning("%sServer.%s not implemented")' %(proto.name, method.name))
+		stream.write_line('\tlogger.warning("%s.%s not implemented")' %(class_name, method.name))
 		stream.write_line('\traise common.RMCError("Core::NotImplemented")')
+		
+	def make_class_name(self, name, type):
+		if "_" in name:
+			name, ext = name.rsplit("_", 1)
+			return "%s%s%s" %(name, type, ext)
+		return "%s%s" %(name, type)
 		
 	def make_python_type(self, type):
 		if type.name == "bool": return "bool"
 		if type.name == "list": return "list"
+		if type.name == "map": return "dict"
 		if type.name == "string": return "str"
 		if type.name in ["buffer", "qbuffer"]: return "bytes"
 		if type.name == "datetime": return "comon.DateTime"
@@ -1016,7 +1099,7 @@ class CodeGenerator:
 				
 	def make_constant(self, type, value):
 		if type.name in self.db.struct_names: return "%s()" %type.name
-		if type.name == "ResultRange": return "common.ResultRange()"
+		if type.name == "ResultRange": return "common.ResultRange(0, 10)"
 		
 		if value is None:
 			return "None"
@@ -1030,6 +1113,13 @@ class CodeGenerator:
 			for entry in value:
 				entries.append(self.make_constant(type.template[0], entry))
 			return "[%s]" %", ".join(entries)
+		if type.name == "map":
+			items = []
+			for key, value in value.items():
+				key = self.make_constant(type.template[0], key)
+				value = self.make_constant(type.template[1], value)
+				items.append("%s: %s" %(key, value))
+			return "{%s}" %", ".join(items)
 		
 		raise ValueError("Unknown type: %s" %type.name)		
 		
@@ -1039,10 +1129,15 @@ class CodeGenerator:
 		if type.name in self.db.struct_names: return "%s.extract(%s)" %(stream, type.name)
 		if type.name == "ResultRange": return "%s.extract(common.ResultRange)" %stream
 		if type.name == "list":
-			return "%s.list(%s)" %(stream, self.make_extract_list(type.template[0], stream))
+			func = self.make_extract_func(type.template[0], stream)
+			return "%s.list(%s)" %(stream, func)
+		if type.name == "map":
+			keyfunc = self.make_extract_func(type.template[0], stream)
+			valuefunc = self.make_extract_func(type.template[1], stream)
+			return "%s.map(%s, %s)" %(stream, keyfunc, valuefunc)
 		raise ValueError("Unknown type: %s" %type.name)
 	
-	def make_extract_list(self, type, stream="stream"):
+	def make_extract_func(self, type, stream="stream"):
 		if type.name in BASIC_TYPES: return "%s.%s" %(stream, type.name)
 		if type.name in MAPPED_TYPES: return "%s.%s" %(stream, MAPPED_TYPES[type.name])
 		if type.name in self.db.struct_names: return type.name
@@ -1051,11 +1146,15 @@ class CodeGenerator:
 		
 	def make_encode(self, type, name, stream="stream"):
 		if type.name == "list":
-			func = self.make_encode_call(type.template[0], stream)
+			func = self.make_encode_func(type.template[0], stream)
 			return "%s.list(%s, %s)" %(stream, name, func)
-		return "%s(%s)" %(self.make_encode_call(type, stream), name)
+		if type.name == "map":
+			keyfunc = self.make_encode_func(type.template[0], stream)
+			valuefunc = self.make_encode_func(type.template[1], stream)
+			return "%s.map(%s, %s, %s)" %(stream, name, keyfunc, valuefunc)
+		return "%s(%s)" %(self.make_encode_func(type, stream), name)
 		
-	def make_encode_call(self, type, stream="stream"):
+	def make_encode_func(self, type, stream="stream"):
 		if type.name in BASIC_TYPES: return "%s.%s" %(stream, type.name)
 		if type.name in MAPPED_TYPES: return "%s.%s" %(stream, MAPPED_TYPES[type.name])
 		if type.name in self.db.struct_names: return "%s.add" %stream

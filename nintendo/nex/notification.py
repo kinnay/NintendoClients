@@ -171,7 +171,7 @@ class NotificationServer(NotificationProtocol):
 		if method_id in self.methods:
 			self.methods[method_id](context, input, output)
 		else:
-			logger.warning("Unknown method called on NotificationServer: %i", method_id)
+			logger.warning("Unknown method called on %s: %i", self.__class__.__name__, method_id)
 			raise common.RMCError("Core::NotImplemented")
 	
 	def handle_process_notification_event(self, context, input, output):
@@ -196,7 +196,7 @@ class NintendoNotificationServer(NintendoNotificationProtocol):
 		if method_id in self.methods:
 			self.methods[method_id](context, input, output)
 		else:
-			logger.warning("Unknown method called on NintendoNotificationServer: %i", method_id)
+			logger.warning("Unknown method called on %s: %i", self.__class__.__name__, method_id)
 			raise common.RMCError("Core::NotImplemented")
 	
 	def handle_process_nintendo_notification_event(self, context, input, output):
