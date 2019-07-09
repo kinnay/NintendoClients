@@ -1,4 +1,5 @@
 
+from nintendo.sead import random
 from nintendo.enl import crypto
 from nintendo.pia import lan
 from nintendo import settings
@@ -24,7 +25,7 @@ def print_session_info(info):
 	print("\tHost: %s" %info.host_location.get_station_url())
 
 
-seed = 0xCEB9D8D9
+rand = random.Random(0xCEB9D8D9)
 table = [
 	0x56CB956F, 0x7B50EEC6, 0x234D1A63, 0x1C691A6B,
 	0xD2D9C482, 0xCFE21965, 0x0B32DF99, 0xB32AFE44,
@@ -43,7 +44,7 @@ table = [
 	0x78516ECD, 0x53445C15, 0xC86E9942, 0x5501D2C9,
 	0xD0D4ECB3, 0x38F5C341, 0xC4A16155, 0x42F1F406
 ]
-key = crypto.create_key(seed, table, 16)
+key = crypto.create_key(rand, table, 16)
 
 settings = settings.Settings("switch.cfg")
 browser = lan.LanBrowser(settings, key)

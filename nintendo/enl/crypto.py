@@ -11,9 +11,7 @@ def create_key_value(rand, table):
 		value = (value << 8) | byte
 	return value
 
-def create_key(seed, table, size):
-	rand = Random(seed)
-	
+def create_key(rand, table, size):
 	if size % 4:
 		raise ValueError("Key size must be multiple of 4")
 	
