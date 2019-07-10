@@ -28,9 +28,9 @@ protocol DataStore_SMM2 : DataStore {
 	}
 	
 	struct UserInfo {
-		uint64 data_id;
-		string user_code;
-		string maker_name;
+		pid pid;
+		string code;
+		string name;
 		UnknownStruct1 unk1;
 		qbuffer unk2;
 		string country;
@@ -88,7 +88,9 @@ protocol DataStore_SMM2 : DataStore {
 	
 	struct UnknownStruct2 {
 		uint64 unk1;
-		uint32 unk2;
+		uint64 unk2;
+		uint32 unk3;
+		uint32 unk4;
 	}
 	
 	struct UnknownStruct3 {
@@ -100,7 +102,7 @@ protocol DataStore_SMM2 : DataStore {
 	}
 
 	struct SyncUserProfileParam {
-		string	maker_name;
+		string	username;
 		UnknownStruct1 unk2;
 		qbuffer	unk3;
 		uint8	unk4;
@@ -113,7 +115,7 @@ protocol DataStore_SMM2 : DataStore {
 
 	struct SyncUserProfileResult {
 		uint64 pid;
-		string maker_name;
+		string username;
 		UnknownStruct1 unk3;
 		qbuffer unk4;
 		uint8 unk5;

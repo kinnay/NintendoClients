@@ -581,9 +581,9 @@ class BadgeInfo(common.Structure):
 class UserInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.data_id = None
-		self.user_code = None
-		self.maker_name = None
+		self.pid = None
+		self.code = None
+		self.name = None
 		self.unk1 = UnknownStruct1()
 		self.unk2 = None
 		self.country = None
@@ -602,14 +602,14 @@ class UserInfo(common.Structure):
 		self.unk13 = None
 	
 	def check_required(self, settings):
-		for field in ['data_id', 'user_code', 'maker_name', 'unk2', 'country', 'region', 'last_active', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9', 'unk10', 'unk11', 'badges', 'unk12', 'unk13']:
+		for field in ['pid', 'code', 'name', 'unk2', 'country', 'region', 'last_active', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9', 'unk10', 'unk11', 'badges', 'unk12', 'unk13']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
-		self.data_id = stream.u64()
-		self.user_code = stream.string()
-		self.maker_name = stream.string()
+		self.pid = stream.pid()
+		self.code = stream.string()
+		self.name = stream.string()
 		self.unk1 = stream.extract(UnknownStruct1)
 		self.unk2 = stream.qbuffer()
 		self.country = stream.string()
@@ -629,9 +629,9 @@ class UserInfo(common.Structure):
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
-		stream.u64(self.data_id)
-		stream.string(self.user_code)
-		stream.string(self.maker_name)
+		stream.pid(self.pid)
+		stream.string(self.code)
+		stream.string(self.name)
 		stream.add(self.unk1)
 		stream.qbuffer(self.unk2)
 		stream.string(self.country)
@@ -778,20 +778,26 @@ class UnknownStruct2(common.Structure):
 		super().__init__()
 		self.unk1 = None
 		self.unk2 = None
+		self.unk3 = None
+		self.unk4 = None
 	
 	def check_required(self, settings):
-		for field in ['unk1', 'unk2']:
+		for field in ['unk1', 'unk2', 'unk3', 'unk4']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
 		self.unk1 = stream.u64()
-		self.unk2 = stream.u32()
+		self.unk2 = stream.u64()
+		self.unk3 = stream.u32()
+		self.unk4 = stream.u32()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.u64(self.unk1)
-		stream.u32(self.unk2)
+		stream.u64(self.unk2)
+		stream.u32(self.unk3)
+		stream.u32(self.unk4)
 
 
 class UnknownStruct3(common.Structure):
@@ -827,7 +833,7 @@ class UnknownStruct3(common.Structure):
 class SyncUserProfileParam(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.maker_name = None
+		self.username = None
 		self.unk2 = UnknownStruct1()
 		self.unk3 = None
 		self.unk4 = None
@@ -838,12 +844,12 @@ class SyncUserProfileParam(common.Structure):
 		self.unk9 = None
 	
 	def check_required(self, settings):
-		for field in ['maker_name', 'unk3', 'unk4', 'country', 'unk6', 'unk7', 'unk_guid', 'unk9']:
+		for field in ['username', 'unk3', 'unk4', 'country', 'unk6', 'unk7', 'unk_guid', 'unk9']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
-		self.maker_name = stream.string()
+		self.username = stream.string()
 		self.unk2 = stream.extract(UnknownStruct1)
 		self.unk3 = stream.qbuffer()
 		self.unk4 = stream.u8()
@@ -855,7 +861,7 @@ class SyncUserProfileParam(common.Structure):
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
-		stream.string(self.maker_name)
+		stream.string(self.username)
 		stream.add(self.unk2)
 		stream.qbuffer(self.unk3)
 		stream.u8(self.unk4)
@@ -870,7 +876,7 @@ class SyncUserProfileResult(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.pid = None
-		self.maker_name = None
+		self.username = None
 		self.unk3 = UnknownStruct1()
 		self.unk4 = None
 		self.unk5 = None
@@ -880,13 +886,13 @@ class SyncUserProfileResult(common.Structure):
 		self.unk9 = None
 	
 	def check_required(self, settings):
-		for field in ['pid', 'maker_name', 'unk4', 'unk5', 'country', 'unk7', 'unk8', 'unk9']:
+		for field in ['pid', 'username', 'unk4', 'unk5', 'country', 'unk7', 'unk8', 'unk9']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
 		self.pid = stream.u64()
-		self.maker_name = stream.string()
+		self.username = stream.string()
 		self.unk3 = stream.extract(UnknownStruct1)
 		self.unk4 = stream.qbuffer()
 		self.unk5 = stream.u8()
@@ -898,7 +904,7 @@ class SyncUserProfileResult(common.Structure):
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.u64(self.pid)
-		stream.string(self.maker_name)
+		stream.string(self.username)
 		stream.add(self.unk3)
 		stream.qbuffer(self.unk4)
 		stream.u8(self.unk5)
