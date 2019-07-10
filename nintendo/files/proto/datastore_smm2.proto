@@ -10,6 +10,12 @@ protocol DataStore_SMM2 : DataStore {
 		ResultRange range;
 	}
 
+	struct SearchCoursesEndlessModeParam {
+		uint32 option;
+		uint32 count;
+		uint8 difficulty;
+	}
+
 	struct GetUserOrCourseParam {
 		string code;
 		uint32 user_option;
@@ -23,24 +29,24 @@ protocol DataStore_SMM2 : DataStore {
 	
 	struct UserInfo {
 		uint64 data_id;
-		string unk1;
-		string unk2;
-		UnknownStruct1 unk3;
-		qbuffer unk4;
-		string unk5;
-		uint8 unk6;
-		datetime unk7;
-		bool unk8;
-		bool unk9;
-		bool unk10;
+		string user_code;
+		string maker_name;
+		UnknownStruct1 unk1;
+		qbuffer unk2;
+		string country;
+		uint8 region;
+		datetime last_active;
+		bool unk4;
+		bool unk5;
+		bool unk6;
+		map<uint8, uint32> unk7;
+		map<uint8, uint32> unk8;
+		map<uint8, uint32> unk9;
+		map<uint8, uint32> unk10;
 		map<uint8, uint32> unk11;
+		list<BadgeInfo> badges;
 		map<uint8, uint32> unk12;
 		map<uint8, uint32> unk13;
-		map<uint8, uint32> unk14;
-		map<uint8, uint32> unk15;
-		list<BadgeInfo> badges;
-		map<uint8, uint32> unk16;
-		map<uint8, uint32> unk17;
 	}
 	
 	struct CourseInfo {
@@ -48,7 +54,7 @@ protocol DataStore_SMM2 : DataStore {
 		string code;
 		pid owner_id;
 		string name;
-		string unk1;
+		string description;
 		uint8 unk2;
 		uint8 unk3;
 		datetime upload_time;
@@ -92,15 +98,54 @@ protocol DataStore_SMM2 : DataStore {
 		buffer unk4;
 		string unk5;
 	}
-	
+
+	struct SyncUserProfileParam {
+		string	maker_name;
+		UnknownStruct1 unk2;
+		qbuffer	unk3;
+		uint8	unk4;
+		string	country;
+		bool	unk6;
+		bool	unk7;
+		string	unk_guid;
+		uint32	unk9;
+	}
+
+	struct SyncUserProfileResult {
+		uint64 pid;
+		string maker_name;
+		UnknownStruct1 unk3;
+		qbuffer unk4;
+		uint8 unk5;
+		string country;
+		uint8 unk7;
+		bool unk8;
+		bool unk9;
+	}
+
 	method(48) get_users(GetUsersParam param) {
 		list<UserInfo> users;
 		list<result> results;
+	}
+
+	method(49) sync_user_profile(SyncUserProfileParam param) {
+		SyncUserProfileResult result;
+	}
+
+	method(59) update_last_login_time() {
+	}
+
+	method(65) get_username_ng_type() {
+		uint8 unk;
 	}
 	
 	method(73) search_courses_latest(SearchCoursesLatestParam param) {
 		list<CourseInfo> courses;
 		bool result;
+	}
+
+	method(79) search_courses_endless_mode(SearchCoursesEndlessModeParam param) {
+		list<CourseInfo> courses;
 	}
 	
 	method(131) get_user_or_course(GetUserOrCourseParam param) {
