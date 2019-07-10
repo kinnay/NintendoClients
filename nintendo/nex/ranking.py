@@ -71,11 +71,16 @@ class RankingRankData(common.Structure):
 		self.groups = None
 		self.param = None
 		self.common_data = None
+		self.update_time = None
 	
 	def check_required(self, settings):
 		for field in ['pid', 'unique_id', 'rank', 'category', 'score', 'groups', 'param', 'common_data']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
+		if settings.get("server.version") >= 40000:
+			for field in ['update_time']:
+				if getattr(self, field) is None:
+					raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
 		self.pid = stream.pid()
@@ -86,6 +91,8 @@ class RankingRankData(common.Structure):
 		self.groups = stream.list(stream.u8)
 		self.param = stream.u64()
 		self.common_data = stream.buffer()
+		if stream.settings.get("server.version") >= 40000:
+			self.update_time = stream.datetime()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -97,6 +104,8 @@ class RankingRankData(common.Structure):
 		stream.list(self.groups, stream.u8)
 		stream.u64(self.param)
 		stream.buffer(self.common_data)
+		if stream.settings.get("server.version") >= 40000:
+			stream.datetime(self.update_time)
 
 
 class RankingResult(common.Structure):

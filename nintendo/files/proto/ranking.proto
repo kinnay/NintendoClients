@@ -38,6 +38,10 @@ protocol Ranking : 112 {
 		list<uint8> groups;
 		uint64 param;
 		buffer common_data;
+		
+		[server.version >= 40000] {
+			datetime update_time;
+		}
 	}
 	
 	struct RankingResult {
