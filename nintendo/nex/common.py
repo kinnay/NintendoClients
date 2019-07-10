@@ -88,8 +88,21 @@ class Structure:
 			else:
 				version = stream.u8()
 				if version != expected_version:
-					logger.warning("Struct %s version (%i) doesn't match expected version (%i)" % (cls.__name__, version, expected_version))
-				cls.load(self, stream.substream())
+					raise ValueError(
+						"Struct %s version (%i) doesn't match expected version (%i)" %(
+							cls.__name__, version, expected_version
+						)
+					)
+					
+				substream = stream.substream()
+				cls.load(self, substream)
+				
+				if not substream.eof():
+					raise TypeError(
+						"Struct %s has unexpected size (got %i bytes, but only %i were read)" %(
+							cls.__name__, substream.size(), substream.tell()
+						)
+					)
 				
 	def load(self, stream): raise NotImplementedError("%s.load()" %self.__class__.__name__)
 	def save(self, stream): raise NotImplementedError("%s.save()" %self.__class__.__name__)
