@@ -60,11 +60,8 @@ api.set_title(Friends.TITLE_ID_EUR, Friends.LATEST_VERSION)
 api.login(USERNAME, PASSWORD)
 
 nex_token = api.get_nex_token(Friends.GAME_SERVER_ID)
-backend = backend.BackEndClient(
-	Friends.ACCESS_KEY,
-	Friends.NEX_VERSION,
-	settings.Settings("friends.cfg")
-)
+backend = backend.BackEndClient("friends.cfg")
+backend.configure(Friends.ACCESS_KEY, Friends.NEX_VERSION)
 backend.connect(nex_token.host, nex_token.port)
 
 login_data = authentication.NintendoLoginData()

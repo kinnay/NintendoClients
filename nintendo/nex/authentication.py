@@ -64,7 +64,7 @@ class RVConnectionData(common.Structure):
 	
 	def get_version(self, settings):
 		version = 0
-		if settings.get("server.version") >= 30500:
+		if settings.get("nex.version") >= 30500:
 			version = 1
 		return version
 	
@@ -72,7 +72,7 @@ class RVConnectionData(common.Structure):
 		for field in ['main_station', 'special_protocols', 'special_station']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-		if settings.get("server.version") >= 30500:
+		if settings.get("nex.version") >= 30500:
 			for field in ['server_time']:
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
@@ -81,7 +81,7 @@ class RVConnectionData(common.Structure):
 		self.main_station = stream.stationurl()
 		self.special_protocols = stream.list(stream.u8)
 		self.special_station = stream.stationurl()
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			self.server_time = stream.datetime()
 	
 	def save(self, stream):
@@ -89,7 +89,7 @@ class RVConnectionData(common.Structure):
 		stream.stationurl(self.main_station)
 		stream.list(self.special_protocols, stream.u8)
 		stream.stationurl(self.special_station)
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			stream.datetime(self.server_time)
 
 
@@ -101,10 +101,10 @@ class ValidateAndRequestTicketParam(common.Structure):
 		self.data = None
 		self.unk = False
 		self.nex_version = None
-		self.client_version = 27
+		self.client_version = None
 	
 	def check_required(self, settings):
-		for field in ['username', 'data', 'nex_version']:
+		for field in ['username', 'data', 'nex_version', 'client_version']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	

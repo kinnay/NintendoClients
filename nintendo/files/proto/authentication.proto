@@ -16,7 +16,7 @@ protocol Authentication : 10 {
 		list<uint8> special_protocols;
 		stationurl special_station;
 		
-		[server.version >= 30500] {
+		[nex.version >= 30500] {
 			#revision 1
 			datetime server_time;
 		}
@@ -28,7 +28,7 @@ protocol Authentication : 10 {
 		anydata data;
 		bool unk = false;
 		uint32 nex_version;
-		uint32 client_version = 27;
+		uint32 client_version;
 	}
 	
 	struct ValidateAndRequestTicketResult {

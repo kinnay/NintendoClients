@@ -39,7 +39,7 @@ protocol Ranking : 112 {
 		uint64 param;
 		buffer common_data;
 		
-		[server.version >= 40000] {
+		[nex.version >= 40000] {
 			datetime update_time;
 		}
 	}

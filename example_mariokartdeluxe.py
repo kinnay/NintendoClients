@@ -1,16 +1,14 @@
 
 from nintendo.nex import backend, ranking
 from nintendo.games import MK8Deluxe
-from nintendo import settings
 
 TRACK_ID = 10 #Sunshine airport
 
 HOST = "g%08x-lp1.s.n.srv.nintendo.net" %MK8Deluxe.GAME_SERVER_ID
 PORT = 443
 
-backend = backend.BackEndClient(
-	MK8Deluxe.ACCESS_KEY, MK8Deluxe.NEX_VERSION, settings.Settings("switch.cfg")
-)
+backend = backend.BackEndClient("switch.cfg")
+backend.configure(MK8Deluxe.ACCESS_KEY, MK8Deluxe.NEX_VERSION)
 backend.connect(HOST, PORT)
 backend.login_guest()
 

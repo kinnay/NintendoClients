@@ -69,9 +69,9 @@ class MatchmakeSession(Gathering):
 		self.option = 0
 	
 	def check_required(self, settings):
-		if settings.get("server.version") >= 30500:
+		if settings.get("nex.version") >= 30500:
 			pass
-		if settings.get("server.version") >= 30500:
+		if settings.get("nex.version") >= 30500:
 			pass
 	
 	def load(self, stream):
@@ -81,10 +81,10 @@ class MatchmakeSession(Gathering):
 		self.matchmake_system = stream.u32()
 		self.application_data = stream.buffer()
 		self.player_count = stream.u32()
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			self.progress_score = stream.u8()
 		self.session_key = stream.buffer()
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			self.option = stream.u32()
 	
 	def save(self, stream):
@@ -95,10 +95,10 @@ class MatchmakeSession(Gathering):
 		stream.u32(self.matchmake_system)
 		stream.buffer(self.application_data)
 		stream.u32(self.player_count)
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			stream.u8(self.progress_score)
 		stream.buffer(self.session_key)
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			stream.u32(self.option)
 common.DataHolder.register(MatchmakeSession, "MatchmakeSession")
 
@@ -121,7 +121,7 @@ class MatchmakeSessionSearchCriteria(common.Structure):
 		for field in ['attribs', 'game_mode', 'min_players', 'max_players', 'matchmake_system', 'vacant_only', 'exclude_locked', 'exclude_non_host_pid', 'selection_method']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-		if settings.get("server.version") >= 30500:
+		if settings.get("nex.version") >= 30500:
 			for field in ['vacant_participants']:
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
@@ -136,7 +136,7 @@ class MatchmakeSessionSearchCriteria(common.Structure):
 		self.exclude_locked = stream.bool()
 		self.exclude_non_host_pid = stream.bool()
 		self.selection_method = stream.u32()
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			self.vacant_participants = stream.u16()
 	
 	def save(self, stream):
@@ -150,7 +150,7 @@ class MatchmakeSessionSearchCriteria(common.Structure):
 		stream.bool(self.exclude_locked)
 		stream.bool(self.exclude_non_host_pid)
 		stream.u32(self.selection_method)
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			stream.u16(self.vacant_participants)
 
 

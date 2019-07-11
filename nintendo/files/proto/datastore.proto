@@ -56,7 +56,7 @@ protocol DataStore : 115 {
 		PersistenceTarget persistence_target;
 		uint64 access_password = 0;
 		
-		[server.version >= 30500] {
+		[nex.version >= 30500] {
 			list<string> extra_data;
 		}
 	}
@@ -72,7 +72,7 @@ protocol DataStore : 115 {
 		uint32 size;
 		buffer root_ca_cert;
 		
-		[server.version >= 30500] {
+		[nex.version >= 30500] {
 			uint64 data_id;
 		}
 	}
@@ -91,7 +91,7 @@ protocol DataStore : 115 {
 		list<DataStoreRatingInitParamWithSlot> rating_init_param = [];
 		DataStorePersistenceInitParam persistence_init_param;
 		
-		[server.version >= 30500] {
+		[nex.version >= 30500] {
 			list<string> extra_data;
 		}
 	}

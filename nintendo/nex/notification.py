@@ -28,7 +28,7 @@ class NotificationEvent(common.Structure):
 		for field in ['pid', 'type', 'param1', 'param2', 'text']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-		if settings.get("server.version") >= 30500:
+		if settings.get("nex.version") >= 30500:
 			for field in ['param3']:
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
@@ -39,7 +39,7 @@ class NotificationEvent(common.Structure):
 		self.param1 = stream.pid()
 		self.param2 = stream.pid()
 		self.text = stream.string()
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			self.param3 = stream.pid()
 	
 	def save(self, stream):
@@ -49,7 +49,7 @@ class NotificationEvent(common.Structure):
 		stream.pid(self.param1)
 		stream.pid(self.param2)
 		stream.string(self.text)
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			stream.pid(self.param3)
 
 

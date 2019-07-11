@@ -86,7 +86,7 @@ protocol MatchmakeExtension : 109 {
 		bool exclude_non_host_pid;
 		uint32 selection_method;
 		
-		[server.version >= 30500] {
+		[nex.version >= 30500] {
 			uint16 vacant_participants;
 		}
 	}
@@ -99,13 +99,13 @@ protocol MatchmakeExtension : 109 {
 		buffer application_data = "";
 		uint32 player_count = 0;
 		
-		[server.version >= 30500] {
+		[nex.version >= 30500] {
 			uint8 progress_score = 100;
 		}
 		
 		buffer session_key = "";
 		
-		[server.version >= 30500] {
+		[nex.version >= 30500] {
 			uint32 option = 0;
 		}
 	}

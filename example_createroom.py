@@ -2,7 +2,6 @@
 from nintendo.nex import backend, authentication, friends, matchmaking, common
 from nintendo.account import AccountAPI
 from nintendo.games import MK8, Friends
-from nintendo import settings
 import struct
 
 import logging
@@ -35,7 +34,8 @@ def backend_login(title, use_auth_info, use_login_data, settings=None):
 		login_data = authentication.NintendoLoginData()
 		login_data.token = nex_token.token
 	
-	client = backend.BackEndClient(title.ACCESS_KEY, title.NEX_VERSION, settings)
+	client = backend.BackEndClient(settings)
+	clietn.configure(title.ACCESS_KEY, title.NEX_VERSION)
 	client.connect(nex_token.host, nex_token.port)
 	client.login(
 		nex_token.username, nex_token.password, auth_info, login_data
@@ -49,7 +49,7 @@ api.login(USERNAME, PASSWORD)
 
 #Connect to both the Mario Kart 8 server and the Wii U friends server
 friends_backend = backend_login(
-	Friends, False, True, settings.Settings("friends.cfg")
+	Friends, False, True, "friends.cfg"
 )
 game_backend = backend_login(MK8, True, False)
 

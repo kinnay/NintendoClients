@@ -16,13 +16,11 @@ class LoginResult:
 
 
 class BackEndClient:
-	def __init__(self, access_key, version, settings=None):
-		if settings:
+	def __init__(self, settings=None):
+		if isinstance(settings, Settings):
 			self.settings = settings.copy()
 		else:
-			self.settings = Settings()
-		self.settings.set("server.access_key", access_key)
-		self.settings.set("server.version", version)
+			self.settings = Settings(settings)
 		
 		self.auth_client = service.RMCClient(self.settings)
 		self.secure_client = service.RMCClient(self.settings)
@@ -38,6 +36,16 @@ class BackEndClient:
 		self.my_pid = None
 		self.local_station = None
 		self.public_station = None
+	
+	def configure(self, access_key, nex_version, client_version=None):
+		self.settings.set("nex.access_key", access_key)
+		self.settings.set("nex.version", nex_version)
+		if nex_version >= 40500:
+			if client_version is None:
+				raise ValueError("Must specify client version for NEX 4.5.0 or later")
+			self.settings.set("nex.client_version", client_version)
+		self.auth_client.set_access_key(access_key)
+		self.secure_client.set_access_key(access_key)
 		
 	def connect(self, host, port):
 		# Connect to authentication server
@@ -49,7 +57,7 @@ class BackEndClient:
 		self.secure_client.close()
 		
 	def login(self, username, password, auth_info=None, login_data=None):
-		if self.settings.get("server.version") < 40500:
+		if self.settings.get("nex.version") < 40500:
 			result = self.login_normal(username, auth_info)
 		else:
 			result = self.login_with_param(username, auth_info)
@@ -130,7 +138,8 @@ class BackEndClient:
 			param.data = auth_info
 		else:
 			param.data = common.NullData()
-		param.nex_version = self.settings.get("server.version")
+		param.nex_version = self.settings.get("nex.version")
+		param.client_version = self.settings.get("nex.client_version")
 		response = self.auth_proto.login_with_param(param)
 		return LoginResult(
 			response.pid, response.ticket, response.server_url

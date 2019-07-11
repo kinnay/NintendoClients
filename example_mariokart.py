@@ -29,7 +29,9 @@ api.set_title(MK8.TITLE_ID_EUR, MK8.LATEST_VERSION)
 api.login(USERNAME, PASSWORD)
 
 nex_token = api.get_nex_token(MK8.GAME_SERVER_ID)
-backend = backend.BackEndClient(MK8.ACCESS_KEY, MK8.NEX_VERSION)
+
+backend = backend.BackEndClient()
+backend.configure(MK8.ACCESS_KEY, MK8.NEX_VERSION)
 backend.connect(nex_token.host, nex_token.port)
 backend.login(nex_token.username, nex_token.password)
 

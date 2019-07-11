@@ -194,7 +194,7 @@ class DataStorePrepareGetParam(common.Structure):
 		self.extra_data = None
 	
 	def check_required(self, settings):
-		if settings.get("server.version") >= 30500:
+		if settings.get("nex.version") >= 30500:
 			for field in ['extra_data']:
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
@@ -204,7 +204,7 @@ class DataStorePrepareGetParam(common.Structure):
 		self.lock_id = stream.u32()
 		self.persistence_target = stream.extract(PersistenceTarget)
 		self.access_password = stream.u64()
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			self.extra_data = stream.list(stream.string)
 	
 	def save(self, stream):
@@ -213,7 +213,7 @@ class DataStorePrepareGetParam(common.Structure):
 		stream.u32(self.lock_id)
 		stream.add(self.persistence_target)
 		stream.u64(self.access_password)
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			stream.list(self.extra_data, stream.string)
 
 
@@ -238,7 +238,7 @@ class DataStorePreparePostParam(common.Structure):
 		for field in ['size', 'flag', 'period']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-		if settings.get("server.version") >= 30500:
+		if settings.get("nex.version") >= 30500:
 			for field in ['extra_data']:
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
@@ -256,7 +256,7 @@ class DataStorePreparePostParam(common.Structure):
 		self.tags = stream.list(stream.string)
 		self.rating_init_param = stream.list(DataStoreRatingInitParamWithSlot)
 		self.persistence_init_param = stream.extract(DataStorePersistenceInitParam)
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			self.extra_data = stream.list(stream.string)
 	
 	def save(self, stream):
@@ -273,7 +273,7 @@ class DataStorePreparePostParam(common.Structure):
 		stream.list(self.tags, stream.string)
 		stream.list(self.rating_init_param, stream.add)
 		stream.add(self.persistence_init_param)
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			stream.list(self.extra_data, stream.string)
 
 
@@ -395,7 +395,7 @@ class DataStoreReqGetInfo(common.Structure):
 		for field in ['url', 'headers', 'size', 'root_ca_cert']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-		if settings.get("server.version") >= 30500:
+		if settings.get("nex.version") >= 30500:
 			for field in ['data_id']:
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
@@ -405,7 +405,7 @@ class DataStoreReqGetInfo(common.Structure):
 		self.headers = stream.list(DataStoreKeyValue)
 		self.size = stream.u32()
 		self.root_ca_cert = stream.buffer()
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			self.data_id = stream.u64()
 	
 	def save(self, stream):
@@ -414,7 +414,7 @@ class DataStoreReqGetInfo(common.Structure):
 		stream.list(self.headers, stream.add)
 		stream.u32(self.size)
 		stream.buffer(self.root_ca_cert)
-		if stream.settings.get("server.version") >= 30500:
+		if stream.settings.get("nex.version") >= 30500:
 			stream.u64(self.data_id)
 
 

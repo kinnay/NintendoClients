@@ -34,6 +34,8 @@ class RMCClient:
 		
 		self.socket_event = None
 		
+	def set_access_key(self, key): self.sock.set_access_key(key)
+		
 	def register_server(self, server):
 		if server.PROTOCOL_ID in self.servers:
 			raise ValueError("Server with protocol id 0x%X already exists" %server.PROTOCOL_ID)

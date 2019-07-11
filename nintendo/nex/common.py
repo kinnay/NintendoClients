@@ -50,7 +50,7 @@ class Result:
 # Black magic going on here
 class Structure:
 	def init_version(self, cls, settings):
-		nex_version = settings.get("server.version")
+		nex_version = settings.get("nex.version")
 		if nex_version < 30500:
 			return -1
 		else:

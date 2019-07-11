@@ -126,7 +126,7 @@ class FriendsServer(friends.FriendsServer):
 
 
 settings = Settings("friends.cfg")
-settings.set("server.access_key", Friends.ACCESS_KEY)
+settings.set("nex.access_key", Friends.ACCESS_KEY)
 
 auth_server = service.RMCServer(settings)
 auth_server.register_protocol(AuthenticationServer(settings))

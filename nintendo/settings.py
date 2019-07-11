@@ -29,8 +29,9 @@ class Settings:
 		
 		"common.pid_size": int,
 		
-		"server.version": int,
-		"server.access_key": str.encode,
+		"nex.version": int,
+		"nex.client_version": int,
+		"nex.access_key": str,
 		
 		"pia.station_extension": int,
 		"pia.crypto_enabled": int,

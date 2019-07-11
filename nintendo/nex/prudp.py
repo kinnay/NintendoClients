@@ -852,9 +852,7 @@ class PRUDPClient:
 		self.stream = PRUDPStream(self, settings, sock)
 		self.stream.failure.add(self.cleanup)
 		
-		access_key = settings.get("server.access_key")
-		self.signature_key = hashlib.md5(access_key).digest()
-		self.signature_base = sum(access_key)
+		self.set_access_key(settings.get("nex.access_key"))
 		
 		substreams = settings.get("prudp.substreams")
 		
@@ -895,6 +893,11 @@ class PRUDPClient:
 		if self.socket_event:
 			scheduler.remove(self.socket_event)
 		self.stream.cleanup()
+		
+	def set_access_key(self, access_key):
+		key = access_key.encode()
+		self.signature_key = hashlib.md5(key).digest()
+		self.signature_base = sum(key)
 		
 	def set_session_key(self, key):
 		self.session_key = key
@@ -998,7 +1001,7 @@ class PRUDPClient:
 			self.state = STATE_DISCONNECTING
 			
 			packet = PRUDPPacket(TYPE_DISCONNECT, FLAG_RELIABLE | FLAG_NEED_ACK)
-			self.send_packet(packet)
+			self.send_packet(packet, block=True)
 		
 		self.stream.close()
 		self.cleanup()

@@ -1,7 +1,7 @@
 
 from nintendo.nex import backend, authentication, friends, common
 from nintendo.games import Friends
-from nintendo import account, settings
+from nintendo import account
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -28,10 +28,8 @@ mii = api.get_mii(pid)
 
 nex_token = api.get_nex_token(Friends.GAME_SERVER_ID)
 
-backend = backend.BackEndClient(
-	Friends.ACCESS_KEY, Friends.NEX_VERSION,
-	settings.Settings("friends.cfg")
-)
+backend = backend.BackEndClient("friends.cfg")
+backend.configure(Friends.ACCESS_KEY, Friends.NEX_VERSION)
 backend.connect(nex_token.host, nex_token.port)
 
 login_data = authentication.NintendoLoginData()

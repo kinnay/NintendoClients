@@ -7,7 +7,7 @@ protocol Notification : 14 {
 		pid param2;
 		string text;
 		
-		[server.version >= 30500] {
+		[nex.version >= 30500] {
 			pid param3;
 		}
 	}
