@@ -250,9 +250,13 @@ class DateTime:
 		
 		
 class ResultRange(Structure):
-	def __init__(self, offset, size):
+	def __init__(self, offset=0, size=0):
 		self.offset = offset
 		self.size = size
+
+	def load(self, stream):
+		self.offset = stream.u32()
+		self.size = stream.u32()
 	
 	def save(self, stream):
 		stream.u32(self.offset)
