@@ -53,6 +53,30 @@ class NotificationEvent(common.Structure):
 			stream.pid(self.param3)
 
 
+class NintendoNotificationEvent(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.type = None
+		self.pid = None
+		self.data = None
+	
+	def check_required(self, settings):
+		for field in ['type', 'pid', 'data']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.type = stream.u32()
+		self.pid = stream.pid()
+		self.data = stream.anydata()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.type)
+		stream.pid(self.pid)
+		stream.anydata(self.data)
+
+
 class NintendoNotificationEventGeneral(common.Data):
 	def __init__(self):
 		super().__init__()
@@ -79,30 +103,6 @@ class NintendoNotificationEventGeneral(common.Data):
 		stream.u64(self.param3)
 		stream.string(self.text)
 common.DataHolder.register(NintendoNotificationEventGeneral, "NintendoNotificationEventGeneral")
-
-
-class NintendoNotificationEvent(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.type = None
-		self.pid = None
-		self.data = None
-	
-	def check_required(self, settings):
-		for field in ['type', 'pid', 'data']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.type = stream.u32()
-		self.pid = stream.pid()
-		self.data = stream.anydata()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u32(self.type)
-		stream.pid(self.pid)
-		stream.anydata(self.data)
 
 
 class NotificationProtocol:

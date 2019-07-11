@@ -55,6 +55,54 @@ class Gathering(common.Structure):
 		stream.string(self.description)
 
 
+class MatchmakeSession(Gathering):
+	def __init__(self):
+		super().__init__()
+		self.game_mode = 0
+		self.attribs = [0, 0, 0, 0, 0, 0]
+		self.open_participation = True
+		self.matchmake_system = 0
+		self.application_data = b""
+		self.player_count = 0
+		self.progress_score = 100
+		self.session_key = b""
+		self.option = 0
+	
+	def check_required(self, settings):
+		if settings.get("server.version") >= 30500:
+			pass
+		if settings.get("server.version") >= 30500:
+			pass
+	
+	def load(self, stream):
+		self.game_mode = stream.u32()
+		self.attribs = stream.list(stream.u32)
+		self.open_participation = stream.bool()
+		self.matchmake_system = stream.u32()
+		self.application_data = stream.buffer()
+		self.player_count = stream.u32()
+		if stream.settings.get("server.version") >= 30500:
+			self.progress_score = stream.u8()
+		self.session_key = stream.buffer()
+		if stream.settings.get("server.version") >= 30500:
+			self.option = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.game_mode)
+		stream.list(self.attribs, stream.u32)
+		stream.bool(self.open_participation)
+		stream.u32(self.matchmake_system)
+		stream.buffer(self.application_data)
+		stream.u32(self.player_count)
+		if stream.settings.get("server.version") >= 30500:
+			stream.u8(self.progress_score)
+		stream.buffer(self.session_key)
+		if stream.settings.get("server.version") >= 30500:
+			stream.u32(self.option)
+common.DataHolder.register(MatchmakeSession, "MatchmakeSession")
+
+
 class MatchmakeSessionSearchCriteria(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -106,52 +154,25 @@ class MatchmakeSessionSearchCriteria(common.Structure):
 			stream.u16(self.vacant_participants)
 
 
-class MatchmakeSession(Gathering):
+class PlayingSession(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.game_mode = 0
-		self.attribs = [0, 0, 0, 0, 0, 0]
-		self.open_participation = True
-		self.matchmake_system = 0
-		self.application_data = b""
-		self.player_count = 0
-		self.progress_score = 100
-		self.session_key = b""
-		self.option = 0
+		self.pid = None
+		self.gathering = None
 	
 	def check_required(self, settings):
-		if settings.get("server.version") >= 30500:
-			pass
-		if settings.get("server.version") >= 30500:
-			pass
+		for field in ['pid', 'gathering']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
-		self.game_mode = stream.u32()
-		self.attribs = stream.list(stream.u32)
-		self.open_participation = stream.bool()
-		self.matchmake_system = stream.u32()
-		self.application_data = stream.buffer()
-		self.player_count = stream.u32()
-		if stream.settings.get("server.version") >= 30500:
-			self.progress_score = stream.u8()
-		self.session_key = stream.buffer()
-		if stream.settings.get("server.version") >= 30500:
-			self.option = stream.u32()
+		self.pid = stream.pid()
+		self.gathering = stream.anydata()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
-		stream.u32(self.game_mode)
-		stream.list(self.attribs, stream.u32)
-		stream.bool(self.open_participation)
-		stream.u32(self.matchmake_system)
-		stream.buffer(self.application_data)
-		stream.u32(self.player_count)
-		if stream.settings.get("server.version") >= 30500:
-			stream.u8(self.progress_score)
-		stream.buffer(self.session_key)
-		if stream.settings.get("server.version") >= 30500:
-			stream.u32(self.option)
-common.DataHolder.register(MatchmakeSession, "MatchmakeSession")
+		stream.pid(self.pid)
+		stream.anydata(self.gathering)
 
 
 class SimplePlayingSession(common.Structure):
@@ -179,27 +200,6 @@ class SimplePlayingSession(common.Structure):
 		stream.u32(self.gid)
 		stream.u32(self.game_mode)
 		stream.u32(self.attribute)
-
-
-class PlayingSession(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.pid = None
-		self.gathering = None
-	
-	def check_required(self, settings):
-		for field in ['pid', 'gathering']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.pid = stream.pid()
-		self.gathering = stream.anydata()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.pid(self.pid)
-		stream.anydata(self.gathering)
 
 
 class MatchMakingProtocol:

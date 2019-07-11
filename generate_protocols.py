@@ -32,7 +32,7 @@ NUMBER_CHARS = string.digits
 
 SPECIAL_CHARS = "{}()[]<>:;,.=!#"
 
-RESERVED_WORDS = ["module", "protocol", "method", "struct", "enum"]
+RESERVED_WORDS = ["import", "protocol", "method", "struct", "enum"]
 			
 CHAR_EOF = "EOF"
 
@@ -165,6 +165,9 @@ class Scope:
 	def __init__(self):
 		self.names = []
 		
+	def __contains__(self, name):
+		return name in self.names
+		
 	def add(self, name):
 		if name in self.names:
 			return True
@@ -172,30 +175,7 @@ class Scope:
 		return False
 		
 		
-class ModuleSet:
-	def __init__(self):
-		self.modules = []
-		self.scope = Scope()
-		
-	def add(self, module):
-		if self.scope.add(module.name):
-			raise ValueError("Module %s already exists" %module.name)
-		self.modules.append(module)
-		
-		
-class Module:
-	name = None
-	
-	def __init__(self):
-		self.files = []
-		
-	def add_file(self, file):
-		if file in self.files:
-			raise ValueError("Duplicate file in module %s: %s" %(self.name, file))
-		self.files.append(file)
-		
-		
-class Database:
+class File:
 	def __init__(self):
 		self.protocols = []
 		self.structs = []
@@ -209,33 +189,35 @@ class Database:
 			raise ValueError("%s is already defined" %proto.name)
 		self.protocols.append(proto)
 		
-	def add_struct(self, struct):
-		if self.scope.add(struct.name):
-			raise ValueError("%s is already defined" %struct.name)
-		self.structs.append(struct)
-		self.struct_names.append(struct.name)
+		for struct in proto.structs:
+			if self.scope.add(struct.name):
+				raise ValueError("%s is already defined" %struct.name)
+			self.structs.append(struct)
+			self.struct_names.append(struct.name)
 		
-	def add_enum(self, enum):
-		if self.scope.add(enum.name):
-			raise ValueError("%s is already defined" %enum.name)
-		self.enums.append(enum)
-		
-	def update(self, db):
-		for proto in db.protocols: self.add_protocol(proto)
-		for struct in db.structs: self.add_struct(struct)
-		for enum in db.enums: self.add_enum(enum)
+		for enum in proto.enums:
+			if self.scope.add(enum.name):
+				raise ValueError("%s is already defined" %enum.name)
+			self.enums.append(enum)
 
 	
 class Protocol:
 	id = None
 	name = None
-	parent = None
 	
 	def __init__(self):
 		self.methods = []
 		self.method_ids = []
+		self.structs = []
+		self.enums = []
 		
 		self.scope = Scope()
+		
+	def sort(self):
+		self.methods = sorted(self.methods, key=lambda m: m.id)
+		self.method_ids = sorted(self.method_ids)
+		self.structs = sorted(self.structs, key=lambda s: s.name)
+		self.enums = sorted(self.enums, key=lambda e: e.name)
 		
 	def add_method(self, method):
 		if self.scope.add(method.name):
@@ -244,6 +226,28 @@ class Protocol:
 			raise ValueError("Method id %i is used twice in %s" %(method.id))
 		self.methods.append(method)
 		self.method_ids.append(method.id)
+		
+	def add_struct(self, struct):
+		if self.scope.add(struct.name):
+			raise ValueError("%s is already defined in %s" %(struct.name, self.name))
+		self.structs.append(struct)
+		
+	def add_enum(self, enum):
+		if self.scope.add(enum.name):
+			raise ValueError("%s is already defined in %s" %(enum.name, self.name))
+		self.enums.append(enum)
+		
+	def set_parent(self, parent):
+		self.id = parent.id
+		for method in parent.methods:
+			if method.id not in self.method_ids:
+				self.add_method(method)
+		for struct in parent.structs:
+			if struct.name not in self.scope:
+				self.add_struct(struct)
+		for enum in parent.enums:
+			if enum.name not in self.scope:
+				self.add_enum(enum)
 		
 
 class Method:
@@ -353,73 +357,54 @@ STRING_TYPES = [
 	"string", "buffer", "qbuffer"
 ]
 
-
-class MetaParser:
+		
+class Parser:
 	def process(self, tokens):
-		stream = TokenStream(tokens)
-		return self.parse_file(stream).modules
+		self.imports = {}
 		
-	def parse_file(self, stream):
-		set = ModuleSet()
-		while True:
-			token = stream.peek()
-			if token.type == TYPE_EOF:
-				return set
-			elif token.type == TYPE_RESERVED and token.value == "module":
-				set.add(self.parse_module(stream))
-			else:
-				stream.error(token)
-				
-	def parse_module(self, stream):
-		stream.skip_reserved("module")
-		
-		module = Module()
-		module.name = stream.parse_name()
-		stream.skip_symbol("{")
-		
-		token = stream.peek()
-		if token.type == TYPE_SYMBOL and token.value == "}":
-			stream.skip_symbol("}")
-			return module
-		
-		while True:
-			module.add_file(stream.parse_name())
-			
-			token = stream.read_symbol()
-			if token.value == "}":
-				return module
-			elif token.value != ",":
-				stream.error(token)
-
-		
-class ProtoParser:
-	def process(self, tokens):
 		stream = TokenStream(tokens)
 		return self.parse_file(stream)
-				
+	
 	def parse_file(self, stream):
-		db = Database()
+		file = File()
 		while True:
 			token = stream.peek()
 			if token.type == TYPE_EOF:
-				return db
+				return file
+			elif token.type == TYPE_RESERVED and token.value == "import":
+				self.parse_import(stream)
 			elif token.type == TYPE_RESERVED and token.value == "protocol":
-				db.add_protocol(self.parse_protocol(stream, db))
+				file.add_protocol(self.parse_protocol(stream))
 			else:
 				stream.error(token)
 				
-	def parse_protocol(self, stream, db):
+	def parse_import(self, stream):
+		stream.skip_reserved("import")
+		name = stream.parse_name()
+		stream.skip_symbol(";")
+		
+		print("Importing %s.proto" %name)
+		
+		path = "nintendo/files/proto/%s.proto" %name
+		pipeline = Pipeline(FileReader, Tokenizer, Parser)
+		file = pipeline.process(path)
+		
+		for proto in file.protocols:
+			self.imports[proto.name] = proto
+				
+	def parse_protocol(self, stream):
 		stream.skip_reserved("protocol")
 		
 		protocol = Protocol()
 		protocol.name = stream.parse_name()
 		stream.skip_symbol(":")
 		
+		parent = None
 		token = stream.read()
 		if token.type == TYPE_NUMBER:
 			protocol.id = token.value
 		elif token.type == TYPE_NAME:
-			protocol.parent = token.value
+			parent = token.value
 		else:
 			stream.error(token)
 		stream.skip_symbol("{")
@@ -430,13 +415,19 @@ class ProtoParser:
 			token = stream.peek()
 			if token.type == TYPE_SYMBOL and token.value == "}":
 				stream.skip_symbol("}")
-				return protocol
+				break
 			elif token.type == TYPE_RESERVED:
 				if token.value == "method": protocol.add_method(self.parse_method(stream))
-				elif token.value == "struct": db.add_struct(self.parse_struct(stream))
-				elif token.value == "enum": db.add_enum(self.parse_enum(stream))
+				elif token.value == "struct": protocol.add_struct(self.parse_struct(stream))
+				elif token.value == "enum": protocol.add_enum(self.parse_enum(stream))
 			else:
 				stream.error(token)
+				
+		if parent:
+			protocol.set_parent(self.imports[parent])
+		protocol.sort()
+		
+		return protocol
 				
 	def parse_method(self, stream):
 		stream.skip_reserved("method")
@@ -729,8 +720,8 @@ MAPPED_TYPES = {
 }
 				
 class CodeGenerator:
-	def process(self, db):
-		self.db = db
+	def process(self, file):
+		self.file = file
 		
 		stream = CodeStream()
 		self.generate_file(stream)
@@ -738,15 +729,15 @@ class CodeGenerator:
 		
 	def generate_file(self, stream):
 		self.generate_header(stream)
-		for enum in self.db.enums:
+		for enum in self.file.enums:
 			self.generate_enum(stream, enum)
-		for struct in self.db.structs:
+		for struct in self.file.structs:
 			self.generate_struct(stream, struct)
-		for proto in self.db.protocols:
+		for proto in self.file.protocols:
 			self.generate_protocol(stream, proto)
-		for proto in self.db.protocols:
+		for proto in self.file.protocols:
 			self.generate_client(stream, proto)
-		for proto in self.db.protocols:
+		for proto in self.file.protocols:
 			self.generate_server(stream, proto)
 		
 	def generate_header(self, stream):
@@ -840,7 +831,7 @@ class CodeGenerator:
 		required = []
 		for field in body.fields:
 			if isinstance(field, Variable):
-				if field.type.name not in self.db.struct_names and \
+				if field.type.name not in self.file.struct_names and \
 				   field.type.name != "ResultRange" and \
 				   field.default is None:
 					required.append(field.name)
@@ -903,18 +894,13 @@ class CodeGenerator:
 		name = self.make_class_name(proto.name, "Protocol")
 		
 		stream.write_line()
-		if proto.parent:
-			parent = self.make_class_name(proto.parent, "Protocol")
-			stream.write_line("class %s(%s):" %(name, parent))
-		else:
-			stream.write_line("class %s:" %name)
+		stream.write_line("class %s:" %name)
 		stream.indent()
 		
 		for method in proto.methods:
 			stream.write_line("METHOD_%s = %i" %(method.name.upper(), method.id))
-		if not proto.parent:
-			stream.write_line()
-			stream.write_line("PROTOCOL_ID = 0x%X" %proto.id)
+		stream.write_line()
+		stream.write_line("PROTOCOL_ID = 0x%X" %proto.id)
 		
 		stream.unindent()
 		stream.write_line()
@@ -924,17 +910,12 @@ class CodeGenerator:
 		client_name = self.make_class_name(proto.name, "Client")
 		
 		stream.write_line()
-		if proto.parent:
-			parent_name = self.make_class_name(proto.parent, "Client")
-			stream.write_line("class %s(%s, %s):" %(client_name, parent_name, proto_name))
-		else:
-			stream.write_line("class %s(%s):" %(client_name, proto_name))
+		stream.write_line("class %s(%s):" %(client_name, proto_name))
 		stream.indent()
 		
-		if not proto.parent:
-			stream.write_line("def __init__(self, client):")
-			stream.write_line("\tself.client = client")
-			stream.write_line()
+		stream.write_line("def __init__(self, client):")
+		stream.write_line("\tself.client = client")
+		stream.write_line()
 			
 		first = True
 		for method in proto.methods:
@@ -987,34 +968,24 @@ class CodeGenerator:
 		proto_name = self.make_class_name(proto.name, "Protocol")
 	
 		stream.write_line()
-		if proto.parent:
-			parent_name = self.make_class_name(proto.parent, "Server")
-			stream.write_line("class %s(%s, %s):" %(server_name, parent_name, proto_name))
-		else:
-			stream.write_line("class %s(%s):" %(server_name, proto_name))
+		stream.write_line("class %s(%s):" %(server_name, proto_name))
 		stream.indent()
 		
 		stream.write_line("def __init__(self):")
 		stream.indent()
-		if not proto.parent:
-			stream.write_line("self.methods = {")
-			for method in proto.methods:
-				stream.write_line("\tself.METHOD_%s: self.handle_%s," %(method.name.upper(), method.name))
-			stream.write_line("}")
-		else:
-			stream.write_line("super().__init__()")
-			for method in proto.methods:
-				stream.write_line("self.methods[self.METHOD_%s] = self.handle_%s" %(method.name.upper(), method.name))
+		stream.write_line("self.methods = {")
+		for method in proto.methods:
+			stream.write_line("\tself.METHOD_%s: self.handle_%s," %(method.name.upper(), method.name))
+		stream.write_line("}")
 		stream.unindent()
 		
-		if not proto.parent:
-			stream.write_line()
-			stream.write_line("def handle(self, context, method_id, input, output):")
-			stream.write_line("\tif method_id in self.methods:")
-			stream.write_line("\t\tself.methods[method_id](context, input, output)")
-			stream.write_line("\telse:")
-			stream.write_line('\t\tlogger.warning("Unknown method called on %s: %i", self.__class__.__name__, method_id)')
-			stream.write_line('\t\traise common.RMCError("Core::NotImplemented")')
+		stream.write_line()
+		stream.write_line("def handle(self, context, method_id, input, output):")
+		stream.write_line("\tif method_id in self.methods:")
+		stream.write_line("\t\tself.methods[method_id](context, input, output)")
+		stream.write_line("\telse:")
+		stream.write_line('\t\tlogger.warning("Unknown method called on %s: %i", self.__class__.__name__, method_id)')
+		stream.write_line('\t\traise common.RMCError("Core::NotImplemented")')
 		
 		for method in proto.methods:
 			stream.write_line()
@@ -1093,12 +1064,12 @@ class CodeGenerator:
 		if type.name == "result": return "comon.Result"
 		if type.name == "anydata": return "common.Data"
 		if type.name == "ResultRange": return "common.ResultRange"
-		if type.name in self.db.struct_names: return type.name
+		if type.name in self.file.struct_names: return type.name
 		if type.name in NUMERIC_TYPES: return "int"
 		raise ValueError("Unknown type: %s" %type.name)
 				
 	def make_constant(self, type, value):
-		if type.name in self.db.struct_names: return "%s()" %type.name
+		if type.name in self.file.struct_names: return "%s()" %type.name
 		if type.name == "ResultRange": return "common.ResultRange(0, 10)"
 		
 		if value is None:
@@ -1126,7 +1097,7 @@ class CodeGenerator:
 	def make_extract(self, type, stream="stream"):
 		if type.name in BASIC_TYPES: return "%s.%s()" %(stream, type.name)
 		if type.name in MAPPED_TYPES: return "%s.%s()" %(stream, MAPPED_TYPES[type.name])
-		if type.name in self.db.struct_names: return "%s.extract(%s)" %(stream, type.name)
+		if type.name in self.file.struct_names: return "%s.extract(%s)" %(stream, type.name)
 		if type.name == "ResultRange": return "%s.extract(common.ResultRange)" %stream
 		if type.name == "list":
 			func = self.make_extract_func(type.template[0], stream)
@@ -1140,7 +1111,7 @@ class CodeGenerator:
 	def make_extract_func(self, type, stream="stream"):
 		if type.name in BASIC_TYPES: return "%s.%s" %(stream, type.name)
 		if type.name in MAPPED_TYPES: return "%s.%s" %(stream, MAPPED_TYPES[type.name])
-		if type.name in self.db.struct_names: return type.name
+		if type.name in self.file.struct_names: return type.name
 		if type.name == "ResultRange": return "common.ResultRange"
 		raise ValueError("Unknown type in list: %s" %type.name)
 		
@@ -1157,7 +1128,7 @@ class CodeGenerator:
 	def make_encode_func(self, type, stream="stream"):
 		if type.name in BASIC_TYPES: return "%s.%s" %(stream, type.name)
 		if type.name in MAPPED_TYPES: return "%s.%s" %(stream, MAPPED_TYPES[type.name])
-		if type.name in self.db.struct_names: return "%s.add" %stream
+		if type.name in self.file.struct_names: return "%s.add" %stream
 		if type.name == "ResultRange": return "%s.add" %stream
 		raise ValueError("Unknown type: %s" %type.name)
 		
@@ -1174,26 +1145,17 @@ class Pipeline:
 		return param
 		
 
-proto_pipeline = Pipeline(FileReader, Tokenizer, ProtoParser)
-meta_pipeline = Pipeline(FileReader, Tokenizer, MetaParser)
+pipeline = Pipeline(FileReader, Tokenizer, Parser, CodeGenerator)
 
-def process(module):
-	db = Database()
-	
-	for file in module.files:
-		filename = "nintendo/files/proto/%s.proto" %file
+def process(filename):
+	filepath = os.path.join("nintendo/files/proto", filename)
+	name = os.path.splitext(filename)[0]
 		
-		print("Parsing %s" %filename)
-		db.update(proto_pipeline.process(filename))
+	print("Parsing %s" %filename)
+	code = pipeline.process(filepath)
 	
-	pyname = "nintendo/nex/%s.py" %module.name
-	
-	print("Building %s" %pyname)
-	code = CodeGenerator().process(db)
-	with open(pyname, "wb") as f:
+	with open("nintendo/nex/%s.py" %name, "wb") as f:
 		f.write(code.encode("utf8"))
 
-
-modules = meta_pipeline.process("nintendo/files/proto/protocols.def")
-for module in modules:
-	process(module)
+for name in os.listdir("nintendo/files/proto"):
+	process(name)

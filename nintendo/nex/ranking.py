@@ -7,15 +7,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class RankingOrderCalc:
-	STANDARD = 0
-	ORDINAL = 1
-
-
 class RankingMode:
 	GLOBAL = 0
 	GLOBAL_ME = 1
 	ME = 4
+
+
+class RankingOrderCalc:
+	STANDARD = 0
+	ORDINAL = 1
 
 
 class RankingStatFlags:
@@ -132,24 +132,6 @@ class RankingResult(common.Structure):
 		stream.datetime(self.since_time)
 
 
-class RankingStats(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.stats = None
-	
-	def check_required(self, settings):
-		for field in ['stats']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.stats = stream.list(stream.double)
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.list(self.stats, stream.double)
-
-
 class RankingScoreData(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -181,6 +163,24 @@ class RankingScoreData(common.Structure):
 		stream.u8(self.update_mode)
 		stream.list(self.groups, stream.u8)
 		stream.u64(self.param)
+
+
+class RankingStats(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.stats = None
+	
+	def check_required(self, settings):
+		for field in ['stats']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.stats = stream.list(stream.double)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.list(self.stats, stream.double)
 
 
 class RankingProtocol:

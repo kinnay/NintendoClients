@@ -7,190 +7,29 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class MiiV2(common.Data):
-	def __init__(self):
-		super().__init__()
-		self.name = None
-		self.unk1 = 0
-		self.unk2 = 0
-		self.data = None
-		self.datetime = common.DateTime(0)
-	
-	def check_required(self, settings):
-		for field in ['name', 'data']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.name = stream.string()
-		self.unk1 = stream.u8()
-		self.unk2 = stream.u8()
-		self.data = stream.buffer()
-		self.datetime = stream.datetime()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.string(self.name)
-		stream.u8(self.unk1)
-		stream.u8(self.unk2)
-		stream.buffer(self.data)
-		stream.datetime(self.datetime)
-common.DataHolder.register(MiiV2, "MiiV2")
-
-
-class PrincipalBasicInfo(common.Data):
-	def __init__(self):
-		super().__init__()
-		self.pid = None
-		self.nnid = None
-		self.mii = MiiV2()
-		self.unk = 2
-	
-	def check_required(self, settings):
-		for field in ['pid', 'nnid']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.pid = stream.pid()
-		self.nnid = stream.string()
-		self.mii = stream.extract(MiiV2)
-		self.unk = stream.u8()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.pid(self.pid)
-		stream.string(self.nnid)
-		stream.add(self.mii)
-		stream.u8(self.unk)
-common.DataHolder.register(PrincipalBasicInfo, "PrincipalBasicInfo")
-
-
-class NNAInfo(common.Data):
+class BlacklistedPrincipal(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.principal_info = PrincipalBasicInfo()
-		self.unk1 = 94
-		self.unk2 = 11
+		self.game_key = GameKey()
+		self.since = None
 	
 	def check_required(self, settings):
-		pass
+		for field in ['since']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
 		self.principal_info = stream.extract(PrincipalBasicInfo)
-		self.unk1 = stream.u8()
-		self.unk2 = stream.u8()
+		self.game_key = stream.extract(GameKey)
+		self.since = stream.datetime()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.add(self.principal_info)
-		stream.u8(self.unk1)
-		stream.u8(self.unk2)
-common.DataHolder.register(NNAInfo, "NNAInfo")
-
-
-class GameKey(common.Data):
-	def __init__(self):
-		super().__init__()
-		self.title_id = 0
-		self.title_version = 0
-	
-	def check_required(self, settings):
-		pass
-	
-	def load(self, stream):
-		self.title_id = stream.u64()
-		self.title_version = stream.u16()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u64(self.title_id)
-		stream.u16(self.title_version)
-common.DataHolder.register(GameKey, "GameKey")
-
-
-class NintendoPresenceV2(common.Data):
-	def __init__(self):
-		super().__init__()
-		self.flags = 0
-		self.is_online = False
-		self.game_key = GameKey()
-		self.unk1 = 0
-		self.message = ""
-		self.unk2 = 0
-		self.unk3 = 0
-		self.game_server_id = 0
-		self.unk4 = 0
-		self.pid = 0
-		self.gathering_id = 0
-		self.application_data = b""
-		self.unk5 = 3
-		self.unk6 = 3
-		self.unk7 = 3
-	
-	def check_required(self, settings):
-		pass
-	
-	def load(self, stream):
-		self.flags = stream.u32()
-		self.is_online = stream.bool()
-		self.game_key = stream.extract(GameKey)
-		self.unk1 = stream.u8()
-		self.message = stream.string()
-		self.unk2 = stream.u32()
-		self.unk3 = stream.u8()
-		self.game_server_id = stream.u32()
-		self.unk4 = stream.u32()
-		self.pid = stream.u32()
-		self.gathering_id = stream.u32()
-		self.application_data = stream.buffer()
-		self.unk5 = stream.u8()
-		self.unk6 = stream.u8()
-		self.unk7 = stream.u8()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u32(self.flags)
-		stream.bool(self.is_online)
 		stream.add(self.game_key)
-		stream.u8(self.unk1)
-		stream.string(self.message)
-		stream.u32(self.unk2)
-		stream.u8(self.unk3)
-		stream.u32(self.game_server_id)
-		stream.u32(self.unk4)
-		stream.u32(self.pid)
-		stream.u32(self.gathering_id)
-		stream.buffer(self.application_data)
-		stream.u8(self.unk5)
-		stream.u8(self.unk6)
-		stream.u8(self.unk7)
-common.DataHolder.register(NintendoPresenceV2, "NintendoPresenceV2")
-
-
-class PrincipalPreference(common.Data):
-	def __init__(self):
-		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
-		self.unk3 = None
-	
-	def check_required(self, settings):
-		for field in ['unk1', 'unk2', 'unk3']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.unk1 = stream.bool()
-		self.unk2 = stream.bool()
-		self.unk3 = stream.bool()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.bool(self.unk1)
-		stream.bool(self.unk2)
-		stream.bool(self.unk3)
-common.DataHolder.register(PrincipalPreference, "PrincipalPreference")
+		stream.datetime(self.since)
+common.DataHolder.register(BlacklistedPrincipal, "BlacklistedPrincipal")
 
 
 class Comment(common.Data):
@@ -252,6 +91,31 @@ class FriendInfo(common.Data):
 common.DataHolder.register(FriendInfo, "FriendInfo")
 
 
+class FriendRequest(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.principal_info = PrincipalBasicInfo()
+		self.message = FriendRequestMessage()
+		self.sent = None
+	
+	def check_required(self, settings):
+		for field in ['sent']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.principal_info = stream.extract(PrincipalBasicInfo)
+		self.message = stream.extract(FriendRequestMessage)
+		self.sent = stream.datetime()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.add(self.principal_info)
+		stream.add(self.message)
+		stream.datetime(self.sent)
+common.DataHolder.register(FriendRequest, "FriendRequest")
+
+
 class FriendRequestMessage(common.Data):
 	def __init__(self):
 		super().__init__()
@@ -295,54 +159,137 @@ class FriendRequestMessage(common.Data):
 common.DataHolder.register(FriendRequestMessage, "FriendRequestMessage")
 
 
-class FriendRequest(common.Data):
+class GameKey(common.Data):
 	def __init__(self):
 		super().__init__()
-		self.principal_info = PrincipalBasicInfo()
-		self.message = FriendRequestMessage()
-		self.sent = None
+		self.title_id = 0
+		self.title_version = 0
 	
 	def check_required(self, settings):
-		for field in ['sent']:
+		pass
+	
+	def load(self, stream):
+		self.title_id = stream.u64()
+		self.title_version = stream.u16()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.title_id)
+		stream.u16(self.title_version)
+common.DataHolder.register(GameKey, "GameKey")
+
+
+class MiiV2(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.name = None
+		self.unk1 = 0
+		self.unk2 = 0
+		self.data = None
+		self.datetime = common.DateTime(0)
+	
+	def check_required(self, settings):
+		for field in ['name', 'data']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
+		self.name = stream.string()
+		self.unk1 = stream.u8()
+		self.unk2 = stream.u8()
+		self.data = stream.buffer()
+		self.datetime = stream.datetime()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.name)
+		stream.u8(self.unk1)
+		stream.u8(self.unk2)
+		stream.buffer(self.data)
+		stream.datetime(self.datetime)
+common.DataHolder.register(MiiV2, "MiiV2")
+
+
+class NNAInfo(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.principal_info = PrincipalBasicInfo()
+		self.unk1 = 94
+		self.unk2 = 11
+	
+	def check_required(self, settings):
+		pass
+	
+	def load(self, stream):
 		self.principal_info = stream.extract(PrincipalBasicInfo)
-		self.message = stream.extract(FriendRequestMessage)
-		self.sent = stream.datetime()
+		self.unk1 = stream.u8()
+		self.unk2 = stream.u8()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.add(self.principal_info)
-		stream.add(self.message)
-		stream.datetime(self.sent)
-common.DataHolder.register(FriendRequest, "FriendRequest")
+		stream.u8(self.unk1)
+		stream.u8(self.unk2)
+common.DataHolder.register(NNAInfo, "NNAInfo")
 
 
-class BlacklistedPrincipal(common.Data):
+class NintendoPresenceV2(common.Data):
 	def __init__(self):
 		super().__init__()
-		self.principal_info = PrincipalBasicInfo()
+		self.flags = 0
+		self.is_online = False
 		self.game_key = GameKey()
-		self.since = None
+		self.unk1 = 0
+		self.message = ""
+		self.unk2 = 0
+		self.unk3 = 0
+		self.game_server_id = 0
+		self.unk4 = 0
+		self.pid = 0
+		self.gathering_id = 0
+		self.application_data = b""
+		self.unk5 = 3
+		self.unk6 = 3
+		self.unk7 = 3
 	
 	def check_required(self, settings):
-		for field in ['since']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
+		pass
 	
 	def load(self, stream):
-		self.principal_info = stream.extract(PrincipalBasicInfo)
+		self.flags = stream.u32()
+		self.is_online = stream.bool()
 		self.game_key = stream.extract(GameKey)
-		self.since = stream.datetime()
+		self.unk1 = stream.u8()
+		self.message = stream.string()
+		self.unk2 = stream.u32()
+		self.unk3 = stream.u8()
+		self.game_server_id = stream.u32()
+		self.unk4 = stream.u32()
+		self.pid = stream.u32()
+		self.gathering_id = stream.u32()
+		self.application_data = stream.buffer()
+		self.unk5 = stream.u8()
+		self.unk6 = stream.u8()
+		self.unk7 = stream.u8()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
-		stream.add(self.principal_info)
+		stream.u32(self.flags)
+		stream.bool(self.is_online)
 		stream.add(self.game_key)
-		stream.datetime(self.since)
-common.DataHolder.register(BlacklistedPrincipal, "BlacklistedPrincipal")
+		stream.u8(self.unk1)
+		stream.string(self.message)
+		stream.u32(self.unk2)
+		stream.u8(self.unk3)
+		stream.u32(self.game_server_id)
+		stream.u32(self.unk4)
+		stream.u32(self.pid)
+		stream.u32(self.gathering_id)
+		stream.buffer(self.application_data)
+		stream.u8(self.unk5)
+		stream.u8(self.unk6)
+		stream.u8(self.unk7)
+common.DataHolder.register(NintendoPresenceV2, "NintendoPresenceV2")
 
 
 class PersistentNotification(common.Data):
@@ -374,6 +321,59 @@ class PersistentNotification(common.Data):
 		stream.u32(self.unk4)
 		stream.string(self.string)
 common.DataHolder.register(PersistentNotification, "PersistentNotification")
+
+
+class PrincipalBasicInfo(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.pid = None
+		self.nnid = None
+		self.mii = MiiV2()
+		self.unk = 2
+	
+	def check_required(self, settings):
+		for field in ['pid', 'nnid']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.pid = stream.pid()
+		self.nnid = stream.string()
+		self.mii = stream.extract(MiiV2)
+		self.unk = stream.u8()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.pid(self.pid)
+		stream.string(self.nnid)
+		stream.add(self.mii)
+		stream.u8(self.unk)
+common.DataHolder.register(PrincipalBasicInfo, "PrincipalBasicInfo")
+
+
+class PrincipalPreference(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+		self.unk3 = None
+	
+	def check_required(self, settings):
+		for field in ['unk1', 'unk2', 'unk3']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk1 = stream.bool()
+		self.unk2 = stream.bool()
+		self.unk3 = stream.bool()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.bool(self.unk1)
+		stream.bool(self.unk2)
+		stream.bool(self.unk3)
+common.DataHolder.register(PrincipalPreference, "PrincipalPreference")
 
 
 class FriendsProtocol:

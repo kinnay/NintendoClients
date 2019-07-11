@@ -1,4 +1,6 @@
 
+import datastore;
+
 protocol DataStore_SMM2 : DataStore {
 	struct GetUsersParam {
 		list<pid> pids;
