@@ -1,7 +1,7 @@
 
 from nintendo.nex import backend, authentication, notification
 from nintendo.games import Friends
-from nintendo import account, settings
+from nintendo import account
 
 import logging
 logging.basicConfig(level=logging.INFO)
