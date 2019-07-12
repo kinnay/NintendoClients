@@ -36,9 +36,10 @@ class CourseInfo(common.Structure):
 		self.owner_id = None
 		self.name = None
 		self.description = None
+		self.unk1 = None
 		self.unk2 = None
-		self.unk3 = None
 		self.upload_time = None
+		self.unk3 = None
 		self.unk4 = None
 		self.unk5 = None
 		self.unk6 = None
@@ -49,18 +50,17 @@ class CourseInfo(common.Structure):
 		self.unk11 = None
 		self.unk12 = None
 		self.unk13 = None
-		self.unk14 = None
-		self.unk15 = UnknownStruct2()
+		self.unk14 = UnknownStruct2()
+		self.unk15 = None
 		self.unk16 = None
 		self.unk17 = None
 		self.unk18 = None
 		self.unk19 = None
-		self.unk20 = None
+		self.unk20 = UnknownStruct3()
 		self.unk21 = UnknownStruct3()
-		self.unk22 = UnknownStruct3()
 	
 	def check_required(self, settings):
-		for field in ['data_id', 'code', 'owner_id', 'name', 'description', 'unk2', 'unk3', 'upload_time', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9', 'unk10', 'unk11', 'unk12', 'unk13', 'unk14', 'unk16', 'unk17', 'unk18', 'unk19', 'unk20']:
+		for field in ['data_id', 'code', 'owner_id', 'name', 'description', 'unk1', 'unk2', 'upload_time', 'unk3', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9', 'unk10', 'unk11', 'unk12', 'unk13', 'unk15', 'unk16', 'unk17', 'unk18', 'unk19']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -70,28 +70,28 @@ class CourseInfo(common.Structure):
 		self.owner_id = stream.pid()
 		self.name = stream.string()
 		self.description = stream.string()
+		self.unk1 = stream.u8()
 		self.unk2 = stream.u8()
-		self.unk3 = stream.u8()
 		self.upload_time = stream.datetime()
+		self.unk3 = stream.u8()
 		self.unk4 = stream.u8()
 		self.unk5 = stream.u8()
 		self.unk6 = stream.u8()
-		self.unk7 = stream.u8()
-		self.unk8 = stream.u32()
+		self.unk7 = stream.u32()
+		self.unk8 = stream.u16()
 		self.unk9 = stream.u16()
-		self.unk10 = stream.u16()
-		self.unk11 = stream.qbuffer()
+		self.unk10 = stream.qbuffer()
+		self.unk11 = stream.map(stream.u8, stream.u32)
 		self.unk12 = stream.map(stream.u8, stream.u32)
 		self.unk13 = stream.map(stream.u8, stream.u32)
-		self.unk14 = stream.map(stream.u8, stream.u32)
-		self.unk15 = stream.extract(UnknownStruct2)
-		self.unk16 = stream.map(stream.u8, stream.u32)
+		self.unk14 = stream.extract(UnknownStruct2)
+		self.unk15 = stream.map(stream.u8, stream.u32)
+		self.unk16 = stream.u8()
 		self.unk17 = stream.u8()
 		self.unk18 = stream.u8()
 		self.unk19 = stream.u8()
-		self.unk20 = stream.u8()
+		self.unk20 = stream.extract(UnknownStruct3)
 		self.unk21 = stream.extract(UnknownStruct3)
-		self.unk22 = stream.extract(UnknownStruct3)
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -100,28 +100,28 @@ class CourseInfo(common.Structure):
 		stream.pid(self.owner_id)
 		stream.string(self.name)
 		stream.string(self.description)
+		stream.u8(self.unk1)
 		stream.u8(self.unk2)
-		stream.u8(self.unk3)
 		stream.datetime(self.upload_time)
+		stream.u8(self.unk3)
 		stream.u8(self.unk4)
 		stream.u8(self.unk5)
 		stream.u8(self.unk6)
-		stream.u8(self.unk7)
-		stream.u32(self.unk8)
+		stream.u32(self.unk7)
+		stream.u16(self.unk8)
 		stream.u16(self.unk9)
-		stream.u16(self.unk10)
-		stream.qbuffer(self.unk11)
+		stream.qbuffer(self.unk10)
+		stream.map(self.unk11, stream.u8, stream.u32)
 		stream.map(self.unk12, stream.u8, stream.u32)
 		stream.map(self.unk13, stream.u8, stream.u32)
-		stream.map(self.unk14, stream.u8, stream.u32)
-		stream.add(self.unk15)
-		stream.map(self.unk16, stream.u8, stream.u32)
+		stream.add(self.unk14)
+		stream.map(self.unk15, stream.u8, stream.u32)
+		stream.u8(self.unk16)
 		stream.u8(self.unk17)
 		stream.u8(self.unk18)
 		stream.u8(self.unk19)
-		stream.u8(self.unk20)
+		stream.add(self.unk20)
 		stream.add(self.unk21)
-		stream.add(self.unk22)
 
 
 class DataStoreCompletePostParam(common.Structure):
@@ -565,6 +565,27 @@ class DataStoreReqPostInfo(common.Structure):
 		stream.buffer(self.root_ca_cert)
 
 
+class GetCourseInfoParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_ids = None
+		self.option = None
+	
+	def check_required(self, settings):
+		for field in ['data_ids', 'option']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_ids = stream.list(stream.u64)
+		self.option = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.list(self.data_ids, stream.u64)
+		stream.u32(self.option)
+
+
 class GetUserOrCourseParam(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -678,42 +699,42 @@ class SyncUserProfileParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.username = None
-		self.unk2 = UnknownStruct1()
+		self.unk1 = UnknownStruct1()
+		self.unk2 = None
 		self.unk3 = None
-		self.unk4 = None
 		self.country = None
-		self.unk6 = None
-		self.unk7 = None
+		self.unk4 = None
+		self.unk5 = None
 		self.unk_guid = None
-		self.unk9 = None
+		self.unk6 = None
 	
 	def check_required(self, settings):
-		for field in ['username', 'unk3', 'unk4', 'country', 'unk6', 'unk7', 'unk_guid', 'unk9']:
+		for field in ['username', 'unk2', 'unk3', 'country', 'unk4', 'unk5', 'unk_guid', 'unk6']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
 		self.username = stream.string()
-		self.unk2 = stream.extract(UnknownStruct1)
-		self.unk3 = stream.qbuffer()
-		self.unk4 = stream.u8()
+		self.unk1 = stream.extract(UnknownStruct1)
+		self.unk2 = stream.qbuffer()
+		self.unk3 = stream.u8()
 		self.country = stream.string()
-		self.unk6 = stream.bool()
-		self.unk7 = stream.bool()
+		self.unk4 = stream.bool()
+		self.unk5 = stream.bool()
 		self.unk_guid = stream.string()
-		self.unk9 = stream.u32()
+		self.unk6 = stream.u32()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.string(self.username)
-		stream.add(self.unk2)
-		stream.qbuffer(self.unk3)
-		stream.u8(self.unk4)
+		stream.add(self.unk1)
+		stream.qbuffer(self.unk2)
+		stream.u8(self.unk3)
 		stream.string(self.country)
-		stream.bool(self.unk6)
-		stream.bool(self.unk7)
+		stream.bool(self.unk4)
+		stream.bool(self.unk5)
 		stream.string(self.unk_guid)
-		stream.u32(self.unk9)
+		stream.u32(self.unk6)
 
 
 class SyncUserProfileResult(common.Structure):
@@ -721,41 +742,41 @@ class SyncUserProfileResult(common.Structure):
 		super().__init__()
 		self.pid = None
 		self.username = None
-		self.unk3 = UnknownStruct1()
+		self.unk1 = UnknownStruct1()
+		self.unk2 = None
+		self.unk3 = None
+		self.country = None
 		self.unk4 = None
 		self.unk5 = None
-		self.country = None
-		self.unk7 = None
-		self.unk8 = None
-		self.unk9 = None
+		self.unk6 = None
 	
 	def check_required(self, settings):
-		for field in ['pid', 'username', 'unk4', 'unk5', 'country', 'unk7', 'unk8', 'unk9']:
+		for field in ['pid', 'username', 'unk2', 'unk3', 'country', 'unk4', 'unk5', 'unk6']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
 		self.pid = stream.u64()
 		self.username = stream.string()
-		self.unk3 = stream.extract(UnknownStruct1)
-		self.unk4 = stream.qbuffer()
-		self.unk5 = stream.u8()
+		self.unk1 = stream.extract(UnknownStruct1)
+		self.unk2 = stream.qbuffer()
+		self.unk3 = stream.u8()
 		self.country = stream.string()
-		self.unk7 = stream.u8()
-		self.unk8 = stream.bool()
-		self.unk9 = stream.bool()
+		self.unk4 = stream.u8()
+		self.unk5 = stream.bool()
+		self.unk6 = stream.bool()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.u64(self.pid)
 		stream.string(self.username)
-		stream.add(self.unk3)
-		stream.qbuffer(self.unk4)
-		stream.u8(self.unk5)
+		stream.add(self.unk1)
+		stream.qbuffer(self.unk2)
+		stream.u8(self.unk3)
 		stream.string(self.country)
-		stream.u8(self.unk7)
-		stream.bool(self.unk8)
-		stream.bool(self.unk9)
+		stream.u8(self.unk4)
+		stream.bool(self.unk5)
+		stream.bool(self.unk6)
 
 
 class UnknownStruct1(common.Structure):
@@ -853,6 +874,7 @@ class UserInfo(common.Structure):
 		self.country = None
 		self.region = None
 		self.last_active = None
+		self.unk3 = None
 		self.unk4 = None
 		self.unk5 = None
 		self.unk6 = None
@@ -860,13 +882,12 @@ class UserInfo(common.Structure):
 		self.unk8 = None
 		self.unk9 = None
 		self.unk10 = None
-		self.unk11 = None
 		self.badges = None
+		self.unk11 = None
 		self.unk12 = None
-		self.unk13 = None
 	
 	def check_required(self, settings):
-		for field in ['pid', 'code', 'name', 'unk2', 'country', 'region', 'last_active', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9', 'unk10', 'unk11', 'badges', 'unk12', 'unk13']:
+		for field in ['pid', 'code', 'name', 'unk2', 'country', 'region', 'last_active', 'unk3', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9', 'unk10', 'badges', 'unk11', 'unk12']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -879,17 +900,17 @@ class UserInfo(common.Structure):
 		self.country = stream.string()
 		self.region = stream.u8()
 		self.last_active = stream.datetime()
+		self.unk3 = stream.bool()
 		self.unk4 = stream.bool()
 		self.unk5 = stream.bool()
-		self.unk6 = stream.bool()
+		self.unk6 = stream.map(stream.u8, stream.u32)
 		self.unk7 = stream.map(stream.u8, stream.u32)
 		self.unk8 = stream.map(stream.u8, stream.u32)
 		self.unk9 = stream.map(stream.u8, stream.u32)
 		self.unk10 = stream.map(stream.u8, stream.u32)
-		self.unk11 = stream.map(stream.u8, stream.u32)
 		self.badges = stream.list(BadgeInfo)
+		self.unk11 = stream.map(stream.u8, stream.u32)
 		self.unk12 = stream.map(stream.u8, stream.u32)
-		self.unk13 = stream.map(stream.u8, stream.u32)
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -901,17 +922,17 @@ class UserInfo(common.Structure):
 		stream.string(self.country)
 		stream.u8(self.region)
 		stream.datetime(self.last_active)
+		stream.bool(self.unk3)
 		stream.bool(self.unk4)
 		stream.bool(self.unk5)
-		stream.bool(self.unk6)
+		stream.map(self.unk6, stream.u8, stream.u32)
 		stream.map(self.unk7, stream.u8, stream.u32)
 		stream.map(self.unk8, stream.u8, stream.u32)
 		stream.map(self.unk9, stream.u8, stream.u32)
 		stream.map(self.unk10, stream.u8, stream.u32)
-		stream.map(self.unk11, stream.u8, stream.u32)
 		stream.list(self.badges, stream.add)
+		stream.map(self.unk11, stream.u8, stream.u32)
 		stream.map(self.unk12, stream.u8, stream.u32)
-		stream.map(self.unk13, stream.u8, stream.u32)
 
 
 class DataStoreProtocolSMM2:
@@ -965,6 +986,7 @@ class DataStoreProtocolSMM2:
 	METHOD_SYNC_USER_PROFILE = 49
 	METHOD_UPDATE_LAST_LOGIN_TIME = 59
 	METHOD_GET_USERNAME_NG_TYPE = 65
+	METHOD_GET_COURSE_INFO = 70
 	METHOD_SEARCH_COURSES_LATEST = 73
 	METHOD_SEARCH_COURSES_ENDLESS_MODE = 79
 	METHOD_GET_USER_OR_COURSE = 131
@@ -1091,6 +1113,21 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		logger.info("DataStoreClientSMM2.get_username_ng_type -> done")
 		return unk
 	
+	def get_course_info(self, param):
+		logger.info("DataStoreClientSMM2.get_course_info()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_COURSE_INFO)
+		stream.add(param)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		obj = common.RMCResponse()
+		obj.courses = stream.list(CourseInfo)
+		obj.results = stream.list(stream.result)
+		logger.info("DataStoreClientSMM2.get_course_info -> done")
+		return obj
+	
 	def search_courses_latest(self, param):
 		logger.info("DataStoreClientSMM2.search_courses_latest()")
 		#--- request ---
@@ -1188,6 +1225,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_SYNC_USER_PROFILE: self.handle_sync_user_profile,
 			self.METHOD_UPDATE_LAST_LOGIN_TIME: self.handle_update_last_login_time,
 			self.METHOD_GET_USERNAME_NG_TYPE: self.handle_get_username_ng_type,
+			self.METHOD_GET_COURSE_INFO: self.handle_get_course_info,
 			self.METHOD_SEARCH_COURSES_LATEST: self.handle_search_courses_latest,
 			self.METHOD_SEARCH_COURSES_ENDLESS_MODE: self.handle_search_courses_endless_mode,
 			self.METHOD_GET_USER_OR_COURSE: self.handle_get_user_or_course,
@@ -1459,6 +1497,21 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			raise RuntimeError("Expected int, got %s" %response.__class__.__name__)
 		output.u8(response)
 	
+	def handle_get_course_info(self, context, input, output):
+		logger.info("DataStoreServerSMM2.get_course_info()")
+		#--- request ---
+		param = input.extract(GetCourseInfoParam)
+		response = self.get_course_info(context, param)
+		
+		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['courses', 'results']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.courses, output.add)
+		output.list(response.results, output.result)
+	
 	def handle_search_courses_latest(self, context, input, output):
 		logger.info("DataStoreServerSMM2.search_courses_latest()")
 		#--- request ---
@@ -1534,6 +1587,10 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	
 	def get_username_ng_type(self, *args):
 		logger.warning("DataStoreServerSMM2.get_username_ng_type not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def get_course_info(self, *args):
+		logger.warning("DataStoreServerSMM2.get_course_info not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	def search_courses_latest(self, *args):
