@@ -55,6 +55,53 @@ protocol DataStore_SMM2 : DataStore {
 		map<uint8, uint32> unk11;
 		map<uint8, uint32> unk12;
 	}
+
+	enum GameStyle {
+		SMB1 = 0,
+		SMB3 = 1,
+		SMW = 2,
+		NSMBU = 3,
+		SM3DW = 4
+	}
+
+	enum CourseTheme {
+		GROUND = 0,
+		UNDERGROUND = 1,
+		CASTLE = 2,
+		AIRSHIP = 3,
+		UNDERWATER = 4,
+		GHOST_HOUSE = 5,
+		SNOW = 6,
+		DESERT = 7,
+		SKY = 8,
+		FOREST = 9
+	}
+
+	enum CourseTag {
+		NONE = 0,
+		STANDARD = 1,
+		PUZZLE_SOLVING = 2,
+		SPEEDRUN = 3,
+		AUTOSCROLL = 4,
+		AUTO_MARIO = 5,
+		SHORT_AND_SWEET = 6,
+		MULTIPLAYER_VS = 7,
+		THEMED = 8,
+		MUSIC = 9
+	}
+
+	enum CourseDifficulty {
+		EASY = 0,
+		STANDARD = 1,
+		EXPERT = 2,
+		SUPER_EXPERT = 3
+	}
+
+	enum ClearCondition {
+		NORMAL = 0,
+		COLLECT_COINS = 4116396131,
+		KILL_SKIPSQUEAKS = 4042480826
+	}
 	
 	struct CourseInfo {
 		uint64 data_id;
@@ -62,28 +109,28 @@ protocol DataStore_SMM2 : DataStore {
 		pid owner_id;
 		string name;
 		string description;
-		uint8 unk1;
-		uint8 unk2;
+		uint8 game_style;
+		uint8 course_theme;
 		datetime upload_time;
-		uint8 unk3;
-		uint8 unk4;
-		uint8 unk5;
-		uint8 unk6;
-		uint32 unk7;
-		uint16 unk8;
-		uint16 unk9;
-		qbuffer unk10;
-		map<uint8, uint32> unk11;
-		map<uint8, uint32> unk12;
-		map<uint8, uint32> unk13;
-		UnknownStruct2 unk14;
-		map<uint8, uint32> unk15;
-		uint8 unk16;
-		uint8 unk17;
-		uint8 unk18;
-		uint8 unk19;
-		UnknownStruct3 unk20;
-		UnknownStruct3 unk21;
+		uint8 difficulty;
+		uint8 tag1;
+		uint8 tag2;
+		uint8 unk1;
+		uint32 clear_condition;
+		uint16 clear_condition_magnitude;
+		uint16 unk2;
+		qbuffer unk3;
+		map<uint8, uint32> unk4;
+		map<uint8, uint32> unk5;
+		map<uint8, uint32> unk6;
+		UnknownStruct2 unk7;
+		map<uint8, uint32> unk8;
+		uint8 unk9;
+		uint8 unk10;
+		uint8 unk11;
+		uint8 unk12;
+		UnknownStruct3 unk13;
+		UnknownStruct3 unk14;
 	}
 	
 	struct UnknownStruct1 {
