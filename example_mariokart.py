@@ -57,7 +57,7 @@ def format_time(score):
 	minutes = score // 1000 // 60
 	return "%i:%02i.%03i" %(minutes, seconds, millisec)
 	
-names = api.get_nnids([data.pid for data in rankings.datas])
+names = api.get_nnids([data.pid for data in rankings.data])
 
 #Print some interesting stats
 print("Total:", int(stats[0]))
@@ -67,14 +67,14 @@ print("Lowest time:", format_time(stats[3]))
 print("Highest time:", format_time(stats[4]))
 
 print("Rankings:")
-for rankdata in rankings.datas:
+for rankdata in rankings.data:
 	time = format_time(rankdata.score)
 	print("\t%5i   %20s   %s" %(rankdata.rank, names[rankdata.pid], time))
 	
 #Let's download the replay file of whoever is in 500th place
 store = datastore.DataStoreClient(backend.secure_client)
 
-rankdata = rankings.datas[0]
+rankdata = rankings.data[0]
 get_param = datastore.DataStorePrepareGetParam()
 get_param.persistence_target.owner_id = rankdata.pid
 get_param.persistence_target.persistence_id = TRACK_ID - 16

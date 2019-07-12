@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 
 class RankingMode:
 	GLOBAL = 0
-	GLOBAL_ME = 1
-	ME = 4
+	GLOBAL_AROUND_SELF = 1
+	SELF = 4
 
 
 class RankingOrderCalc:
@@ -111,23 +111,23 @@ class RankingRankData(common.Structure):
 class RankingResult(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.datas = None
+		self.data = None
 		self.total = None
 		self.since_time = None
 	
 	def check_required(self, settings):
-		for field in ['datas', 'total', 'since_time']:
+		for field in ['data', 'total', 'since_time']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
-		self.datas = stream.list(RankingRankData)
+		self.data = stream.list(RankingRankData)
 		self.total = stream.u32()
 		self.since_time = stream.datetime()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
-		stream.list(self.datas, stream.add)
+		stream.list(self.data, stream.add)
 		stream.u32(self.total)
 		stream.datetime(self.since_time)
 

@@ -7,8 +7,8 @@ protocol Ranking : 112 {
 	
 	enum RankingMode {
 		GLOBAL = 0,
-		GLOBAL_ME = 1,
-		ME = 4
+		GLOBAL_AROUND_SELF = 1,
+		SELF = 4
 	}
 	
 	enum RankingStatFlags {
@@ -45,7 +45,7 @@ protocol Ranking : 112 {
 	}
 	
 	struct RankingResult {
-		list<RankingRankData> datas;
+		list<RankingRankData> data;
 		uint32 total;
 		datetime since_time;
 	}

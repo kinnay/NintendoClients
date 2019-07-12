@@ -46,7 +46,7 @@ rankings = ranking_client.get_ranking(
 
 print("Total:", rankings.total)
 print("Rankings:")
-for rankdata in rankings.datas:
+for rankdata in rankings.data:
 	seconds = (rankdata.score >> 1) / 60
 	time = "%i:%02i.%02i" %(seconds / 60, seconds % 60, (seconds * 100) % 100)
 	damage = " Damaged " if rankdata.score & 1 else "No damage"
@@ -57,7 +57,7 @@ for rankdata in rankings.datas:
 	
 	
 #Now download the world record replay file if available
-world_record = rankings.datas[0]
+world_record = rankings.data[0]
 if world_record.param: #If world record has a replay file	
 	store = datastore.DataStoreClient(backend.secure_client)
 	

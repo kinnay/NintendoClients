@@ -41,7 +41,7 @@ print("Lowest time:", format_time(stats[3]))
 print("Highest time:", format_time(stats[4]))
 
 print("Rankings:")
-for rankdata in rankings.datas:
+for rankdata in rankings.data:
 	time = format_time(rankdata.score)
 	print("\t%5i   %016X   %s" %(rankdata.rank, rankdata.pid, time))
 
