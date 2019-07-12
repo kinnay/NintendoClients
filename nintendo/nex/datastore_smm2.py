@@ -7,6 +7,53 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class ClearCondition:
+	NORMAL = 0
+	COLLECT_COINS = 4116396131
+	KILL_SKIPSQUEAKS = 4042480826
+
+
+class CourseDifficulty:
+	EASY = 0
+	STANDARD = 1
+	EXPERT = 2
+	SUPER_EXPERT = 3
+
+
+class CourseTag:
+	NONE = 0
+	STANDARD = 1
+	PUZZLE_SOLVING = 2
+	SPEEDRUN = 3
+	AUTOSCROLL = 4
+	AUTO_MARIO = 5
+	SHORT_AND_SWEET = 6
+	MULTIPLAYER_VS = 7
+	THEMED = 8
+	MUSIC = 9
+
+
+class CourseTheme:
+	GROUND = 0
+	UNDERGROUND = 1
+	CASTLE = 2
+	AIRSHIP = 3
+	UNDERWATER = 4
+	GHOST_HOUSE = 5
+	SNOW = 6
+	DESERT = 7
+	SKY = 8
+	FOREST = 9
+
+
+class GameStyle:
+	SMB1 = 0
+	SMB3 = 1
+	SMW = 2
+	NSMBU = 3
+	SM3DW = 4
+
+
 class BadgeInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -36,31 +83,31 @@ class CourseInfo(common.Structure):
 		self.owner_id = None
 		self.name = None
 		self.description = None
-		self.unk1 = None
-		self.unk2 = None
+		self.game_style = None
+		self.course_theme = None
 		self.upload_time = None
+		self.difficulty = None
+		self.tag1 = None
+		self.tag2 = None
+		self.unk1 = None
+		self.clear_condition = None
+		self.clear_condition_magnitude = None
+		self.unk2 = None
 		self.unk3 = None
 		self.unk4 = None
 		self.unk5 = None
 		self.unk6 = None
-		self.unk7 = None
+		self.unk7 = UnknownStruct2()
 		self.unk8 = None
 		self.unk9 = None
 		self.unk10 = None
 		self.unk11 = None
 		self.unk12 = None
-		self.unk13 = None
-		self.unk14 = UnknownStruct2()
-		self.unk15 = None
-		self.unk16 = None
-		self.unk17 = None
-		self.unk18 = None
-		self.unk19 = None
-		self.unk20 = UnknownStruct3()
-		self.unk21 = UnknownStruct3()
+		self.unk13 = UnknownStruct3()
+		self.unk14 = UnknownStruct3()
 	
 	def check_required(self, settings):
-		for field in ['data_id', 'code', 'owner_id', 'name', 'description', 'unk1', 'unk2', 'upload_time', 'unk3', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9', 'unk10', 'unk11', 'unk12', 'unk13', 'unk15', 'unk16', 'unk17', 'unk18', 'unk19']:
+		for field in ['data_id', 'code', 'owner_id', 'name', 'description', 'game_style', 'course_theme', 'upload_time', 'difficulty', 'tag1', 'tag2', 'unk1', 'clear_condition', 'clear_condition_magnitude', 'unk2', 'unk3', 'unk4', 'unk5', 'unk6', 'unk8', 'unk9', 'unk10', 'unk11', 'unk12']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -70,28 +117,28 @@ class CourseInfo(common.Structure):
 		self.owner_id = stream.pid()
 		self.name = stream.string()
 		self.description = stream.string()
-		self.unk1 = stream.u8()
-		self.unk2 = stream.u8()
+		self.game_style = stream.u8()
+		self.course_theme = stream.u8()
 		self.upload_time = stream.datetime()
-		self.unk3 = stream.u8()
-		self.unk4 = stream.u8()
-		self.unk5 = stream.u8()
-		self.unk6 = stream.u8()
-		self.unk7 = stream.u32()
-		self.unk8 = stream.u16()
-		self.unk9 = stream.u16()
-		self.unk10 = stream.qbuffer()
-		self.unk11 = stream.map(stream.u8, stream.u32)
-		self.unk12 = stream.map(stream.u8, stream.u32)
-		self.unk13 = stream.map(stream.u8, stream.u32)
-		self.unk14 = stream.extract(UnknownStruct2)
-		self.unk15 = stream.map(stream.u8, stream.u32)
-		self.unk16 = stream.u8()
-		self.unk17 = stream.u8()
-		self.unk18 = stream.u8()
-		self.unk19 = stream.u8()
-		self.unk20 = stream.extract(UnknownStruct3)
-		self.unk21 = stream.extract(UnknownStruct3)
+		self.difficulty = stream.u8()
+		self.tag1 = stream.u8()
+		self.tag2 = stream.u8()
+		self.unk1 = stream.u8()
+		self.clear_condition = stream.u32()
+		self.clear_condition_magnitude = stream.u16()
+		self.unk2 = stream.u16()
+		self.unk3 = stream.qbuffer()
+		self.unk4 = stream.map(stream.u8, stream.u32)
+		self.unk5 = stream.map(stream.u8, stream.u32)
+		self.unk6 = stream.map(stream.u8, stream.u32)
+		self.unk7 = stream.extract(UnknownStruct2)
+		self.unk8 = stream.map(stream.u8, stream.u32)
+		self.unk9 = stream.u8()
+		self.unk10 = stream.u8()
+		self.unk11 = stream.u8()
+		self.unk12 = stream.u8()
+		self.unk13 = stream.extract(UnknownStruct3)
+		self.unk14 = stream.extract(UnknownStruct3)
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -100,28 +147,28 @@ class CourseInfo(common.Structure):
 		stream.pid(self.owner_id)
 		stream.string(self.name)
 		stream.string(self.description)
-		stream.u8(self.unk1)
-		stream.u8(self.unk2)
+		stream.u8(self.game_style)
+		stream.u8(self.course_theme)
 		stream.datetime(self.upload_time)
-		stream.u8(self.unk3)
-		stream.u8(self.unk4)
-		stream.u8(self.unk5)
-		stream.u8(self.unk6)
-		stream.u32(self.unk7)
-		stream.u16(self.unk8)
-		stream.u16(self.unk9)
-		stream.qbuffer(self.unk10)
-		stream.map(self.unk11, stream.u8, stream.u32)
-		stream.map(self.unk12, stream.u8, stream.u32)
-		stream.map(self.unk13, stream.u8, stream.u32)
+		stream.u8(self.difficulty)
+		stream.u8(self.tag1)
+		stream.u8(self.tag2)
+		stream.u8(self.unk1)
+		stream.u32(self.clear_condition)
+		stream.u16(self.clear_condition_magnitude)
+		stream.u16(self.unk2)
+		stream.qbuffer(self.unk3)
+		stream.map(self.unk4, stream.u8, stream.u32)
+		stream.map(self.unk5, stream.u8, stream.u32)
+		stream.map(self.unk6, stream.u8, stream.u32)
+		stream.add(self.unk7)
+		stream.map(self.unk8, stream.u8, stream.u32)
+		stream.u8(self.unk9)
+		stream.u8(self.unk10)
+		stream.u8(self.unk11)
+		stream.u8(self.unk12)
+		stream.add(self.unk13)
 		stream.add(self.unk14)
-		stream.map(self.unk15, stream.u8, stream.u32)
-		stream.u8(self.unk16)
-		stream.u8(self.unk17)
-		stream.u8(self.unk18)
-		stream.u8(self.unk19)
-		stream.add(self.unk20)
-		stream.add(self.unk21)
 
 
 class DataStoreCompletePostParam(common.Structure):
