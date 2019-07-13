@@ -616,10 +616,10 @@ class GetCourseInfoParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.data_ids = None
-		self.option = None
+		self.option = 0
 	
 	def check_required(self, settings):
-		for field in ['data_ids', 'option']:
+		for field in ['data_ids']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -637,11 +637,11 @@ class GetUserOrCourseParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.code = None
-		self.user_option = None
-		self.course_option = None
+		self.user_option = 0
+		self.course_option = 0
 	
 	def check_required(self, settings):
-		for field in ['code', 'user_option', 'course_option']:
+		for field in ['code']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -661,10 +661,10 @@ class GetUsersParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.pids = None
-		self.option = None
+		self.option = 0
 	
 	def check_required(self, settings):
-		for field in ['pids', 'option']:
+		for field in ['pids']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -700,12 +700,12 @@ class PersistenceTarget(common.Structure):
 class SearchCoursesEndlessModeParam(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.option = None
+		self.option = 0
 		self.count = None
 		self.difficulty = None
 	
 	def check_required(self, settings):
-		for field in ['option', 'count', 'difficulty']:
+		for field in ['count', 'difficulty']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -724,13 +724,11 @@ class SearchCoursesEndlessModeParam(common.Structure):
 class SearchCoursesLatestParam(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.option = None
+		self.option = 0
 		self.range = common.ResultRange(0, 10)
 	
 	def check_required(self, settings):
-		for field in ['option']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
+		pass
 	
 	def load(self, stream):
 		self.option = stream.u32()
@@ -740,6 +738,33 @@ class SearchCoursesLatestParam(common.Structure):
 		self.check_required(stream.settings)
 		stream.u32(self.option)
 		stream.add(self.range)
+
+
+class SearchCoursesPointRankingParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.option = 0
+		self.range = common.ResultRange(0, 10)
+		self.difficulty = None
+		self.reject_regions = []
+	
+	def check_required(self, settings):
+		for field in ['difficulty']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.option = stream.u32()
+		self.range = stream.extract(common.ResultRange)
+		self.difficulty = stream.u8()
+		self.reject_regions = stream.list(stream.u8)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.option)
+		stream.add(self.range)
+		stream.u8(self.difficulty)
+		stream.list(self.reject_regions, stream.u8)
 
 
 class SyncUserProfileParam(common.Structure):
@@ -1034,6 +1059,7 @@ class DataStoreProtocolSMM2:
 	METHOD_UPDATE_LAST_LOGIN_TIME = 59
 	METHOD_GET_USERNAME_NG_TYPE = 65
 	METHOD_GET_COURSE_INFO = 70
+	METHOD_SEARCH_COURSES_POINT_RANKING = 71
 	METHOD_SEARCH_COURSES_LATEST = 73
 	METHOD_SEARCH_COURSES_ENDLESS_MODE = 79
 	METHOD_GET_USER_OR_COURSE = 131
@@ -1175,6 +1201,22 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		logger.info("DataStoreClientSMM2.get_course_info -> done")
 		return obj
 	
+	def search_courses_point_ranking(self, param):
+		logger.info("DataStoreClientSMM2.search_courses_point_ranking()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_POINT_RANKING)
+		stream.add(param)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		obj = common.RMCResponse()
+		obj.courses = stream.list(CourseInfo)
+		obj.unk = stream.list(stream.u32)
+		obj.result = stream.bool()
+		logger.info("DataStoreClientSMM2.search_courses_point_ranking -> done")
+		return obj
+	
 	def search_courses_latest(self, param):
 		logger.info("DataStoreClientSMM2.search_courses_latest()")
 		#--- request ---
@@ -1273,6 +1315,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_UPDATE_LAST_LOGIN_TIME: self.handle_update_last_login_time,
 			self.METHOD_GET_USERNAME_NG_TYPE: self.handle_get_username_ng_type,
 			self.METHOD_GET_COURSE_INFO: self.handle_get_course_info,
+			self.METHOD_SEARCH_COURSES_POINT_RANKING: self.handle_search_courses_point_ranking,
 			self.METHOD_SEARCH_COURSES_LATEST: self.handle_search_courses_latest,
 			self.METHOD_SEARCH_COURSES_ENDLESS_MODE: self.handle_search_courses_endless_mode,
 			self.METHOD_GET_USER_OR_COURSE: self.handle_get_user_or_course,
@@ -1559,6 +1602,22 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		output.list(response.courses, output.add)
 		output.list(response.results, output.result)
 	
+	def handle_search_courses_point_ranking(self, context, input, output):
+		logger.info("DataStoreServerSMM2.search_courses_point_ranking()")
+		#--- request ---
+		param = input.extract(SearchCoursesPointRankingParam)
+		response = self.search_courses_point_ranking(context, param)
+		
+		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['courses', 'unk', 'result']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.courses, output.add)
+		output.list(response.unk, output.u32)
+		output.bool(response.result)
+	
 	def handle_search_courses_latest(self, context, input, output):
 		logger.info("DataStoreServerSMM2.search_courses_latest()")
 		#--- request ---
@@ -1638,6 +1697,10 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	
 	def get_course_info(self, *args):
 		logger.warning("DataStoreServerSMM2.get_course_info not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def search_courses_point_ranking(self, *args):
+		logger.warning("DataStoreServerSMM2.search_courses_point_ranking not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	def search_courses_latest(self, *args):

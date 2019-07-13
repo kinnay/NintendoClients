@@ -4,29 +4,36 @@ import datastore;
 protocol DataStore_SMM2 : DataStore {
 	struct GetUsersParam {
 		list<pid> pids;
-		uint32 option;
+		uint32 option = 0;
 	}
 	
 	struct GetCourseInfoParam {
 		list<uint64> data_ids;
-		uint32 option;
+		uint32 option = 0;
 	}
 
+	struct SearchCoursesPointRankingParam {
+		uint32 option = 0;
+		ResultRange range;
+		uint8 difficulty;
+		list<uint8> reject_regions = [];
+	}
+	
 	struct SearchCoursesLatestParam {
-		uint32 option;
+		uint32 option = 0;
 		ResultRange range;
 	}
 
 	struct SearchCoursesEndlessModeParam {
-		uint32 option;
+		uint32 option = 0;
 		uint32 count;
 		uint8 difficulty;
 	}
 
 	struct GetUserOrCourseParam {
 		string code;
-		uint32 user_option;
-		uint32 course_option;
+		uint32 user_option = 0;
+		uint32 course_option = 0;
 	}
 	
 	struct BadgeInfo {
@@ -197,6 +204,12 @@ protocol DataStore_SMM2 : DataStore {
 	method(70) get_course_info(GetCourseInfoParam param) {
 		list<CourseInfo> courses;
 		list<result> results;
+	}
+	
+	method(71) search_courses_point_ranking(SearchCoursesPointRankingParam param) {
+		list<CourseInfo> courses;
+		list<uint32> unk;
+		bool result;
 	}
 	
 	method(73) search_courses_latest(SearchCoursesLatestParam param) {
