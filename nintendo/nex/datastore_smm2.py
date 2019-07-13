@@ -725,7 +725,7 @@ class SearchCoursesLatestParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.option = 0
-		self.range = common.ResultRange(0, 10)
+		self.range = common.ResultRange()
 	
 	def check_required(self, settings):
 		pass
@@ -744,7 +744,7 @@ class SearchCoursesPointRankingParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.option = 0
-		self.range = common.ResultRange(0, 10)
+		self.range = common.ResultRange()
 		self.difficulty = None
 		self.reject_regions = []
 	

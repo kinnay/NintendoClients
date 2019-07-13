@@ -250,7 +250,7 @@ class DateTime:
 		
 		
 class ResultRange(Structure):
-	def __init__(self, offset=0, size=0):
+	def __init__(self, offset=0, size=10):
 		self.offset = offset
 		self.size = size
 

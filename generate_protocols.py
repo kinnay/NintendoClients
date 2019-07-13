@@ -1070,7 +1070,7 @@ class CodeGenerator:
 				
 	def make_constant(self, type, value):
 		if type.name in self.file.struct_names: return "%s()" %type.name
-		if type.name == "ResultRange": return "common.ResultRange(0, 10)"
+		if type.name == "ResultRange": return "common.ResultRange()"
 		
 		if value is None:
 			return "None"
