@@ -9,9 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 class LoginResult:
-	def __init__(self, pid, ticket, secure_station):
+	def __init__(self, pid, ticket, ticket_key, secure_station):
 		self.pid = pid
 		self.ticket = ticket
+		self.ticket_key = ticket_key
 		self.secure_station = secure_station
 
 
@@ -56,7 +57,7 @@ class BackEndClient:
 		self.auth_client.close()
 		self.secure_client.close()
 		
-	def login(self, username, password, auth_info=None, login_data=None):
+	def login(self, username, password=None, auth_info=None, login_data=None):
 		if self.settings.get("nex.version") < 40500:
 			result = self.login_normal(username, auth_info)
 		else:
@@ -66,10 +67,15 @@ class BackEndClient:
 		
 		secure_station = result.secure_station
 		
-		# Derive kerberos key from password
-		kerberos_key = self.key_derivation.derive_key(
-			password.encode("ascii"), self.pid
-		)
+		kerberos_key = result.ticket_key
+		if not kerberos_key:
+			if not password:
+				raise ValueError("A password is required for this account")
+			
+			# Derive kerberos key from password
+			kerberos_key = self.key_derivation.derive_key(
+				password.encode(), self.pid
+			)
 		
 		# Decrypt ticket from login response
 		ticket = kerberos.ClientTicket()
@@ -128,7 +134,8 @@ class BackEndClient:
 			response = self.auth_proto.login(username)			
 		response.result.raise_if_error()
 		return LoginResult(
-			response.pid, response.ticket, response.connection_data.main_station
+			response.pid, response.ticket, None,
+			response.connection_data.main_station
 		)
 		
 	def login_with_param(self, username, auth_info):
@@ -140,9 +147,13 @@ class BackEndClient:
 			param.data = common.NullData()
 		param.nex_version = self.settings.get("nex.version")
 		param.client_version = self.settings.get("nex.client_version")
+		
 		response = self.auth_proto.login_with_param(param)
+		
 		return LoginResult(
-			response.pid, response.ticket, response.server_url
+			response.pid, response.ticket,
+			bytes.fromhex(response.ticket_key),
+			response.server_url
 		)
 		
 	def login_guest(self):

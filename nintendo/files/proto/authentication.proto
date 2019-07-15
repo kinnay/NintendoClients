@@ -37,7 +37,7 @@ protocol Authentication : 10 {
 		stationurl server_url;
 		datetime server_time;
 		string server_name;
-		string unk;
+		string ticket_key;
 	}
 
 	method login(string username) {

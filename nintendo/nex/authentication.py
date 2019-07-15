@@ -134,10 +134,10 @@ class ValidateAndRequestTicketResult(common.Structure):
 		self.server_url = None
 		self.server_time = None
 		self.server_name = None
-		self.unk = None
+		self.ticket_key = None
 	
 	def check_required(self, settings):
-		for field in ['pid', 'ticket', 'server_url', 'server_time', 'server_name', 'unk']:
+		for field in ['pid', 'ticket', 'server_url', 'server_time', 'server_name', 'ticket_key']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -147,7 +147,7 @@ class ValidateAndRequestTicketResult(common.Structure):
 		self.server_url = stream.stationurl()
 		self.server_time = stream.datetime()
 		self.server_name = stream.string()
-		self.unk = stream.string()
+		self.ticket_key = stream.string()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -156,7 +156,7 @@ class ValidateAndRequestTicketResult(common.Structure):
 		stream.stationurl(self.server_url)
 		stream.datetime(self.server_time)
 		stream.string(self.server_name)
-		stream.string(self.unk)
+		stream.string(self.ticket_key)
 
 
 class AuthenticationProtocol:
