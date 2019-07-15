@@ -697,6 +697,48 @@ class PersistenceTarget(common.Structure):
 		stream.u16(self.persistence_id)
 
 
+class RelationDataHeader(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.key = None
+		self.value = None
+	
+	def check_required(self, settings):
+		for field in ['key', 'value']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.key = stream.string()
+		self.value = stream.string()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.key)
+		stream.string(self.value)
+
+
+class RelationDataHeaders(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.headers = None
+		self.expiration = None
+	
+	def check_required(self, settings):
+		for field in ['headers', 'expiration']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.headers = stream.list(RelationDataHeader)
+		self.expiration = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.list(self.headers, stream.add)
+		stream.u32(self.expiration)
+
+
 class SearchCoursesEndlessModeParam(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -1063,6 +1105,7 @@ class DataStoreProtocolSMM2:
 	METHOD_SEARCH_COURSES_LATEST = 73
 	METHOD_SEARCH_COURSES_ENDLESS_MODE = 79
 	METHOD_GET_USER_OR_COURSE = 131
+	METHOD_PREPARE_GET_RELATION_OBJECT = 134
 	
 	PROTOCOL_ID = 0x73
 
@@ -1259,6 +1302,19 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		obj.course = stream.extract(CourseInfo)
 		logger.info("DataStoreClientSMM2.get_user_or_course -> done")
 		return obj
+	
+	def prepare_get_relation_object(self, type):
+		logger.info("DataStoreClientSMM2.prepare_get_relation_object()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_RELATION_OBJECT)
+		stream.u8(type)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		result = stream.extract(RelationDataHeaders)
+		logger.info("DataStoreClientSMM2.prepare_get_relation_object -> done")
+		return result
 
 
 class DataStoreServerSMM2(DataStoreProtocolSMM2):
@@ -1319,6 +1375,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_SEARCH_COURSES_LATEST: self.handle_search_courses_latest,
 			self.METHOD_SEARCH_COURSES_ENDLESS_MODE: self.handle_search_courses_endless_mode,
 			self.METHOD_GET_USER_OR_COURSE: self.handle_get_user_or_course,
+			self.METHOD_PREPARE_GET_RELATION_OBJECT: self.handle_prepare_get_relation_object,
 		}
 	
 	def handle(self, context, method_id, input, output):
@@ -1659,6 +1716,17 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		output.add(response.user)
 		output.add(response.course)
 	
+	def handle_prepare_get_relation_object(self, context, input, output):
+		logger.info("DataStoreServerSMM2.prepare_get_relation_object()")
+		#--- request ---
+		type = input.u8()
+		response = self.prepare_get_relation_object(context, type)
+		
+		#--- response ---
+		if not isinstance(response, RelationDataHeaders):
+			raise RuntimeError("Expected RelationDataHeaders, got %s" %response.__class__.__name__)
+		output.add(response)
+	
 	def get_meta(self, *args):
 		logger.warning("DataStoreServerSMM2.get_meta not implemented")
 		raise common.RMCError("Core::NotImplemented")
@@ -1713,5 +1781,9 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	
 	def get_user_or_course(self, *args):
 		logger.warning("DataStoreServerSMM2.get_user_or_course not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def prepare_get_relation_object(self, *args):
+		logger.warning("DataStoreServerSMM2.prepare_get_relation_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 

@@ -185,6 +185,16 @@ protocol DataStore_SMM2 : DataStore {
 		bool unk5;
 		bool unk6;
 	}
+	
+	struct RelationDataHeader {
+		string key;
+		string value;
+	}
+	
+	struct RelationDataHeaders {
+		list<RelationDataHeader> headers;
+		uint32 expiration;
+	}
 
 	method(48) get_users(GetUsersParam param) {
 		list<UserInfo> users;
@@ -224,5 +234,9 @@ protocol DataStore_SMM2 : DataStore {
 	method(131) get_user_or_course(GetUserOrCourseParam param) {
 		UserInfo user;
 		CourseInfo course;
+	}
+	
+	method(134) prepare_get_relation_object(uint8 type) {
+		RelationDataHeaders result;
 	}
 }
