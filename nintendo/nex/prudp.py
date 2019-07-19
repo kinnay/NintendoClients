@@ -558,7 +558,7 @@ class SequenceCounter:
 		self.current = 0
 		
 	def next(self):
-		self.current = (self.current + 1) & 0xFFFFFFFF
+		self.current = (self.current + 1) & 0xFFFF
 		return self.current
 		
 		
@@ -677,7 +677,7 @@ class SlidingWindow:
 			while self.next in self.packets:
 				packet = self.packets.pop(self.next)
 				packets.append(packet)
-				self.next = (self.next + 1) & 0xFFFFFFFF
+				self.next = (self.next + 1) & 0xFFFF
 		return packets
 		
 	
