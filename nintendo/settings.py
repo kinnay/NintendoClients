@@ -29,6 +29,9 @@ class Settings:
 		
 		"common.pid_size": int,
 		
+		"debug.check_struct_version": int,
+		"debug.check_struct_size": int,
+		
 		"nex.version": int,
 		"nex.client_version": int,
 		"nex.access_key": str,
