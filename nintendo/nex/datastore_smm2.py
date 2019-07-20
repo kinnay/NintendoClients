@@ -103,8 +103,8 @@ class CourseInfo(common.Structure):
 		self.unk10 = None
 		self.unk11 = None
 		self.unk12 = None
-		self.unk13 = UnknownStruct3()
-		self.unk14 = UnknownStruct3()
+		self.one_screen_thumbnail = ThumbnailInfo()
+		self.entire_thumbnail = ThumbnailInfo()
 	
 	def check_required(self, settings):
 		for field in ['data_id', 'code', 'owner_id', 'name', 'description', 'game_style', 'course_theme', 'upload_time', 'difficulty', 'tag1', 'tag2', 'unk1', 'clear_condition', 'clear_condition_magnitude', 'unk2', 'unk3', 'unk4', 'unk5', 'unk6', 'unk8', 'unk9', 'unk10', 'unk11', 'unk12']:
@@ -137,8 +137,8 @@ class CourseInfo(common.Structure):
 		self.unk10 = stream.u8()
 		self.unk11 = stream.u8()
 		self.unk12 = stream.u8()
-		self.unk13 = stream.extract(UnknownStruct3)
-		self.unk14 = stream.extract(UnknownStruct3)
+		self.one_screen_thumbnail = stream.extract(ThumbnailInfo)
+		self.entire_thumbnail = stream.extract(ThumbnailInfo)
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -167,8 +167,8 @@ class CourseInfo(common.Structure):
 		stream.u8(self.unk10)
 		stream.u8(self.unk11)
 		stream.u8(self.unk12)
-		stream.add(self.unk13)
-		stream.add(self.unk14)
+		stream.add(self.one_screen_thumbnail)
+		stream.add(self.entire_thumbnail)
 
 
 class DataStoreCompletePostParam(common.Structure):
@@ -616,7 +616,7 @@ class GetCourseInfoParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.data_ids = None
-		self.option = 0
+		self.option = 463
 	
 	def check_required(self, settings):
 		for field in ['data_ids']:
@@ -638,7 +638,7 @@ class GetUserOrCourseParam(common.Structure):
 		super().__init__()
 		self.code = None
 		self.user_option = 0
-		self.course_option = 0
+		self.course_option = 463
 	
 	def check_required(self, settings):
 		for field in ['code']:
@@ -742,7 +742,7 @@ class RelationDataHeaders(common.Structure):
 class SearchCoursesEndlessModeParam(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.option = 0
+		self.option = 463
 		self.count = None
 		self.difficulty = None
 	
@@ -766,7 +766,7 @@ class SearchCoursesEndlessModeParam(common.Structure):
 class SearchCoursesLatestParam(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.option = 0
+		self.option = 463
 		self.range = common.ResultRange()
 	
 	def check_required(self, settings):
@@ -785,7 +785,7 @@ class SearchCoursesLatestParam(common.Structure):
 class SearchCoursesPointRankingParam(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.option = 0
+		self.option = 463
 		self.range = common.ResultRange()
 		self.difficulty = None
 		self.reject_regions = []
@@ -893,6 +893,36 @@ class SyncUserProfileResult(common.Structure):
 		stream.bool(self.unk6)
 
 
+class ThumbnailInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.url = None
+		self.data_type = None
+		self.unk1 = None
+		self.unk2 = None
+		self.filename = None
+	
+	def check_required(self, settings):
+		for field in ['url', 'data_type', 'unk1', 'unk2', 'filename']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.url = stream.string()
+		self.data_type = stream.u8()
+		self.unk1 = stream.u32()
+		self.unk2 = stream.buffer()
+		self.filename = stream.string()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.url)
+		stream.u8(self.data_type)
+		stream.u32(self.unk1)
+		stream.buffer(self.unk2)
+		stream.string(self.filename)
+
+
 class UnknownStruct1(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -945,36 +975,6 @@ class UnknownStruct2(common.Structure):
 		stream.u64(self.unk2)
 		stream.u32(self.unk3)
 		stream.u32(self.unk4)
-
-
-class UnknownStruct3(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
-		self.unk3 = None
-		self.unk4 = None
-		self.unk5 = None
-	
-	def check_required(self, settings):
-		for field in ['unk1', 'unk2', 'unk3', 'unk4', 'unk5']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.unk1 = stream.string()
-		self.unk2 = stream.u8()
-		self.unk3 = stream.u32()
-		self.unk4 = stream.buffer()
-		self.unk5 = stream.string()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.string(self.unk1)
-		stream.u8(self.unk2)
-		stream.u32(self.unk3)
-		stream.buffer(self.unk4)
-		stream.string(self.unk5)
 
 
 class UserInfo(common.Structure):

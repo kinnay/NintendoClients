@@ -9,23 +9,23 @@ protocol DataStore_SMM2 : DataStore {
 	
 	struct GetCourseInfoParam {
 		list<uint64> data_ids;
-		uint32 option = 0;
+		uint32 option = 0x1CF;
 	}
 
 	struct SearchCoursesPointRankingParam {
-		uint32 option = 0;
+		uint32 option = 0x1CF;
 		ResultRange range;
 		uint8 difficulty;
 		list<uint8> reject_regions = [];
 	}
 	
 	struct SearchCoursesLatestParam {
-		uint32 option = 0;
+		uint32 option = 0x1CF;
 		ResultRange range;
 	}
 
 	struct SearchCoursesEndlessModeParam {
-		uint32 option = 0;
+		uint32 option = 0x1CF;
 		uint32 count;
 		uint8 difficulty;
 	}
@@ -33,7 +33,7 @@ protocol DataStore_SMM2 : DataStore {
 	struct GetUserOrCourseParam {
 		string code;
 		uint32 user_option = 0;
-		uint32 course_option = 0;
+		uint32 course_option = 0x1CF;
 	}
 	
 	struct BadgeInfo {
@@ -110,6 +110,14 @@ protocol DataStore_SMM2 : DataStore {
 		KILL_SKIPSQUEAKS = 4042480826
 	}
 	
+	struct ThumbnailInfo {
+		string url;
+		uint8 data_type;
+		uint32 unk1;
+		buffer unk2;
+		string filename;
+	}
+	
 	struct CourseInfo {
 		uint64 data_id;
 		string code;
@@ -136,8 +144,8 @@ protocol DataStore_SMM2 : DataStore {
 		uint8 unk10;
 		uint8 unk11;
 		uint8 unk12;
-		UnknownStruct3 unk13;
-		UnknownStruct3 unk14;
+		ThumbnailInfo one_screen_thumbnail;
+		ThumbnailInfo entire_thumbnail;
 	}
 	
 	struct UnknownStruct1 {
@@ -152,14 +160,6 @@ protocol DataStore_SMM2 : DataStore {
 		uint64 unk2;
 		uint32 unk3;
 		uint32 unk4;
-	}
-	
-	struct UnknownStruct3 {
-		string unk1;
-		uint8 unk2;
-		uint32 unk3;
-		buffer unk4;
-		string unk5;
 	}
 
 	struct SyncUserProfileParam {
