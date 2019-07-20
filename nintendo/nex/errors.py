@@ -18,6 +18,7 @@ error_names = {
 	0x80010010: "Core::InvalidLockState",
 	0x80010011: "Core::InvalidSequence",
 	0x80010012: "Core::SystemError",
+	0x80010013: "Core::Cancelled",
 	
 	0x80020001: "DDL::InvalidSignature",
 	0x80020002: "DDL::IncorrectVersion",
@@ -69,6 +70,8 @@ error_names = {
 	0x800300DE: "RendezVous::MatchmakingWithdrawn",
 	0x800300DF: "RendezVous::LimitExceeded",
 	0x800300E0: "RendezVous::AccountTemporarilyDisabled",
+	0x800300E1: "RendezVous::PartiallyServiceClosed",
+	0x800300E2: "RendezVous::ConnectionDisconnectedForConcurrentLogin",
 	
 	0x80040001: "PythonCore::Exception",
 	0x80040002: "PythonCore::TypeError",
@@ -210,6 +213,11 @@ error_names = {
 	0x80680011: "Authentication::ServiceNoLongerAvailable",
 	0x80680012: "Authentication::UnknownApplication",
 	0x80680013: "Authentication::ApplicationVersionIsOld",
+	0x80680014: "Authentication::OutOfService",
+	0x80680015: "Authentication::NetworkServiceLicenseRequired",
+	0x80680016: "Authentication::NetworkServiceLicenseSystemError",
+	0x80680017: "Authentication::NetworkServiceLicenseError3",
+	0x80680018: "Authentication::NetworkServiceLicenseError4",
 	
 	0x80690001: "DataStore::Unknown",
 	0x80690002: "DataStore::InvalidArgument",
@@ -241,6 +249,7 @@ error_names = {
 	0x806F0006: "MatchmakeReferee::StatsNotFound",
 	0x806F0007: "MatchmakeReferee::RoundNotFound",
 	0x806F0008: "MatchmakeReferee::RoundArbitrated",
+	0x806F0009: "MatchmakeReferee::RoundNotArbitrated",
 	
 	0x80700001: "Subscriber::Unknown",
 	0x80700002: "Subscriber::InvalidArgument",
@@ -249,7 +258,38 @@ error_names = {
 	
 	0x80710001: "Ranking2::Unknown",
 	0x80710002: "Ranking2::InvalidArgument",
-	0x80710003: "Ranking2::InvalidScore"
+	0x80710003: "Ranking2::InvalidScore",
+	
+	0x80720001: "SmartDeviceVoiceChat::Unknown",
+	0x80720002: "SmartDeviceVoiceChat::InvalidArgument",
+	0x80720003: "SmartDeviceVoiceChat::InvalidResponse",
+	0x80720004: "SmartDeviceVoiceChat::InvalidAccessToken",
+	0x80720005: "SmartDeviceVoiceChat::Unauthorized",
+	0x80720006: "SmartDeviceVoiceChat::AccessError",
+	0x80720007: "SmartDeviceVoiceChat::UserNotFound",
+	0x80720008: "SmartDeviceVoiceChat::RoomNotFound",
+	0x80720009: "SmartDeviceVoiceChat::RoomNotActivated",
+	0x8072000A: "SmartDeviceVoiceChat::ApplicationNotSupported",
+	0x8072000B: "SmartDeviceVoiceChat::InternalServerError",
+	0x8072000C: "SmartDeviceVoiceChat::ServiceUnavailable",
+	0x8072000D: "SmartDeviceVoiceChat::UnexpectedError",
+	0x8072000E: "SmartDeviceVoiceChat::UnderMaintenance",
+	0x8072000F: "SmartDeviceVoiceChat::ServiceNoLongerAvailable",
+	0x80720010: "SmartDeviceVoiceChat::AccountTemporarilyDisabled",
+	0x80720011: "SmartDeviceVoiceChat::PermissionDenied",
+	0x80720012: "SmartDeviceVoiceChat::NetworkServiceLicenseRequired",
+	0x80720013: "SmartDeviceVoiceChat::AccountLibraryError",
+	0x80720014: "SmartDeviceVoiceChat::GameModeNotFound",
+	
+	0x80730001: "Screening::Unknown",
+	0x80730002: "Screening::InvalidArgument",
+	0x80730003: "Screening::NotFound",
+	
+	0x80740001: "Custom::Unknown",
+
+	0x80750001: "Ess::Unknown",
+	0x80750002: "Ess::GameSessionError",
+	0x80750003: "Ess::GameSessionMaintenance"
 }
 
 error_codes = {name: code for code, name in error_names.items()}
