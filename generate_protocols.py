@@ -28,7 +28,7 @@ class FileReader:
 NAME_HEAD_CHARS = string.ascii_letters + "_"
 NAME_CHARS = NAME_HEAD_CHARS + string.digits
 
-NUMBER_CHARS = string.digits
+NUMBER_CHARS = string.digits + string.ascii_lowercase
 
 SPECIAL_CHARS = "{}()[]<>:;,.=!#"
 
@@ -70,12 +70,16 @@ class Tokenizer:
 		if char == '"':
 			self.string = ""
 			self.state = self.state_string
+		elif char == "0":
+			self.number = ""
+			self.state = self.state_number_prefix
+		elif char in NUMBER_CHARS[:10]:
+			self.base = 10
+			self.number = char
+			self.state = self.state_number
 		elif char in NAME_HEAD_CHARS:
 			self.name = char
 			self.state = self.state_name
-		elif char in NUMBER_CHARS:
-			self.number = char
-			self.state = self.state_number
 		elif char in SPECIAL_CHARS:
 			self.add(TYPE_SYMBOL, char)
 		elif char in string.whitespace or char == CHAR_EOF:
@@ -104,11 +108,21 @@ class Tokenizer:
 			self.string += char
 			
 	def state_number(self, char):
-		if char in NUMBER_CHARS:
+		if char.lower() in NUMBER_CHARS[:self.base]:
 			self.number += char
 		else:
-			self.add(TYPE_NUMBER, int(self.number))
+			self.add(TYPE_NUMBER, int(self.number, self.base))
 			self.state = self.state_next
+			self.state(char)
+			
+	def state_number_prefix(self, char):
+		if char == "x":
+			self.base = 16
+			self.state = self.state_number
+		else:
+			self.base = 10
+			self.number = "0"
+			self.state = self.state_number
 			self.state(char)
 
 			
