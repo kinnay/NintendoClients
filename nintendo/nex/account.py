@@ -218,10 +218,11 @@ class AccountClient(AccountProtocol):
 		logger.info("AccountClient.get_private_data -> done")
 		return obj
 	
-	def get_public_data(self):
+	def get_public_data(self, pid):
 		logger.info("AccountClient.get_public_data()")
 		#--- request ---
 		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_PUBLIC_DATA)
+		stream.pid(pid)
 		self.client.send_message(stream)
 		
 		#--- response ---
@@ -671,7 +672,8 @@ class AccountServer(AccountProtocol):
 	def handle_get_public_data(self, context, input, output):
 		logger.info("AccountServer.get_public_data()")
 		#--- request ---
-		response = self.get_public_data(context)
+		pid = input.pid()
+		response = self.get_public_data(context, pid)
 		
 		#--- response ---
 		if not isinstance(response, common.RMCResponse):

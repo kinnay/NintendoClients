@@ -35,7 +35,7 @@ protocol Account : 25 {
 		bool result;
 		anydata data;
 	}
-	method get_public_data() {
+	method get_public_data(pid pid) {
 		bool result;
 		anydata data;
 	}
