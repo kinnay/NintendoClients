@@ -34,7 +34,7 @@ class BackEndClient:
 		else:
 			self.key_derivation = kerberos.KeyDerivationNew(1, 1)
 			
-		self.my_pid = None
+		self.pid = None
 		self.local_station = None
 		self.public_station = None
 	
