@@ -1,0 +1,34 @@
+
+protocol Utility : 110 {
+	struct UniqueIdInfo {
+		uint64 unique_id;
+		uint64 password;
+	}
+
+	method acquire_nex_unique_id() {
+		uint64 unique_id;
+	}
+	
+	method acquire_nex_unique_id_with_password() {
+		UniqueIdInfo info;
+	}
+	
+	method associate_nex_unique_id_with_my_principal_id(UniqueIdInfo info) {}
+	method associate_nex_unique_ids_with_my_principal_id(list<UniqueIdInfo> infos) {}
+	
+	method get_associated_nex_unique_id_with_my_principal_id() {
+		UniqueIdInfo info;
+	}
+	
+	method get_associated_nex_unique_ids_with_my_principal_id() {
+		list<UniqueIdInfo> infos;
+	}
+	
+	method get_integer_settings(uint32 index) {
+		map<uint16, sint32> settings;
+	}
+	
+	method get_string_settings(uint32 index) {
+		map<uint16, string> settings;
+	}
+}
