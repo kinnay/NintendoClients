@@ -796,20 +796,7 @@ class PRUDPStream:
 					logger.debug("Received unexpected ack packet")
 			
 			elif packet.flags & FLAG_MULTI_ACK:
-				if packet.stream_id == 0:
-					stream_id = 0
-					ack_id = packet.packet_id
-				elif packet.stream_id == 1:
-					stream_id = packet.payload[0]
-					ack_id = struct.unpack_from("<H", packet.payload, 2)[0]
-				else:
-					logger.error("Received aggregate ack with unknown aggregate ack version")
-					continue
-				
-				logger.debug("Received aggregate ack for stream %i up to packet %i", stream_id, ack_id)
-				for key in list(self.ack_events):
-					if key[0] == TYPE_DATA and key[1] == stream_id and key[2] <= ack_id:
-						self.acknowledge(key, packet)
+				self.handle_aggregate_ack(packet)
 						
 			else:
 				if packet.stream_id < self.substreams:
@@ -818,7 +805,45 @@ class PRUDPStream:
 					self.packets.append(packet)
 				else:
 					logger.error("Received packet with invalid substream id: %i", packet.stream_id)
-		
+					
+	def verify_aggregate_ack(self, packet):
+		if len(packet.payload) % 2:
+			logger.error("Aggregate ack payload size must be a multiple of 2")
+			return False
+
+		if packet.stream_id not in [0, 1]:
+			logger.error("Aggregate ack packet has invalid stream id: %i", packet.stream_id)
+			return False
+			
+		if packet.stream_id == 1: #New version
+			if len(packet.payload) < 4:
+				logger.error("Aggregate ack payload is too small")
+				return False
+			if len(packet) != 4 + packet.payload[1] * 2:
+				logger.error("Aggregate ack payload has incorrect size")
+				return False
+		return True
+					
+	def handle_aggregate_ack(self, packet):
+		if self.verify_aggregate_ack(packet):
+			if packet.stream_id == 0:
+				stream_id = 0
+				base_id = packet.packet_id
+				extra_ids = struct.unpack("<%iH" %(len(packet.payload) // 2), packet.payload)
+			else:
+				stream_id = packet.payload[0]
+				base_id = struct.unpack_from("<H", packet.payload, 2)
+				extra_ids = struct.unpack_from("<%iH" %packet.payload[2], packet.payload, 4)
+			
+			for key in list(self.ack_events):
+				if key[0] == TYPE_DATA and key[1] == stream_id and key[2] <= base_id:
+					self.acknowledge(key, packet)
+			
+			for packet_id in extra_ids:
+				key = (TYPE_DATA, stream_id, packet_id)
+				if key in self.ack_events:
+					self.acknowledge(key, packet)
+	
 	def handle_timeout(self, param):
 		packet, counter = param
 		
