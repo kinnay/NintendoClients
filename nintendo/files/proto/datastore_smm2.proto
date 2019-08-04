@@ -40,6 +40,21 @@ protocol DataStore_SMM2 : DataStore {
 		uint16 unk1;
 		uint8 unk2;
 	}
+
+	enum PlayStatsKeys {
+		PLAYS = 0,
+		CLEARS = 1,
+		ATTEMPTS = 2,
+		DEATHS = 3
+	}
+
+	enum MultiplayerStatsKeys {
+		MULTIPLAYER_SCORE = 0,
+		VERSUS_PLAYS = 2,
+		VERSUS_WINS = 3,
+		COOP_PLAYS = 10,
+		COOP_WINS = 11
+	}
 	
 	struct UserInfo {
 		pid pid;
@@ -53,14 +68,14 @@ protocol DataStore_SMM2 : DataStore {
 		bool unk3;
 		bool unk4;
 		bool unk5;
+		map<uint8, uint32> play_stats;
 		map<uint8, uint32> unk6;
+		map<uint8, uint32> endless_challenge_high_scores;
+		map<uint8, uint32> multiplayer_stats;
 		map<uint8, uint32> unk7;
+		list<BadgeInfo> badges;
 		map<uint8, uint32> unk8;
 		map<uint8, uint32> unk9;
-		map<uint8, uint32> unk10;
-		list<BadgeInfo> badges;
-		map<uint8, uint32> unk11;
-		map<uint8, uint32> unk12;
 	}
 
 	enum GameStyle {
