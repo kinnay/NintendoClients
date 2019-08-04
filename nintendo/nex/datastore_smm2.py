@@ -54,6 +54,21 @@ class GameStyle:
 	SM3DW = 4
 
 
+class MultiplayerStatsKeys:
+	MULTIPLAYER_SCORE = 0
+	VERSUS_PLAYS = 2
+	VERSUS_WINS = 3
+	COOP_PLAYS = 10
+	COOP_WINS = 11
+
+
+class PlayStatsKeys:
+	PLAYS = 0
+	CLEARS = 1
+	ATTEMPTS = 2
+	DEATHS = 3
+
+
 class BadgeInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -991,17 +1006,17 @@ class UserInfo(common.Structure):
 		self.unk3 = None
 		self.unk4 = None
 		self.unk5 = None
+		self.play_stats = None
 		self.unk6 = None
+		self.endless_challenge_high_scores = None
+		self.multiplayer_stats = None
 		self.unk7 = None
+		self.badges = None
 		self.unk8 = None
 		self.unk9 = None
-		self.unk10 = None
-		self.badges = None
-		self.unk11 = None
-		self.unk12 = None
 	
 	def check_required(self, settings):
-		for field in ['pid', 'code', 'name', 'unk2', 'country', 'region', 'last_active', 'unk3', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9', 'unk10', 'badges', 'unk11', 'unk12']:
+		for field in ['pid', 'code', 'name', 'unk2', 'country', 'region', 'last_active', 'unk3', 'unk4', 'unk5', 'play_stats', 'unk6', 'endless_challenge_high_scores', 'multiplayer_stats', 'unk7', 'badges', 'unk8', 'unk9']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -1017,14 +1032,14 @@ class UserInfo(common.Structure):
 		self.unk3 = stream.bool()
 		self.unk4 = stream.bool()
 		self.unk5 = stream.bool()
+		self.play_stats = stream.map(stream.u8, stream.u32)
 		self.unk6 = stream.map(stream.u8, stream.u32)
+		self.endless_challenge_high_scores = stream.map(stream.u8, stream.u32)
+		self.multiplayer_stats = stream.map(stream.u8, stream.u32)
 		self.unk7 = stream.map(stream.u8, stream.u32)
+		self.badges = stream.list(BadgeInfo)
 		self.unk8 = stream.map(stream.u8, stream.u32)
 		self.unk9 = stream.map(stream.u8, stream.u32)
-		self.unk10 = stream.map(stream.u8, stream.u32)
-		self.badges = stream.list(BadgeInfo)
-		self.unk11 = stream.map(stream.u8, stream.u32)
-		self.unk12 = stream.map(stream.u8, stream.u32)
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -1039,14 +1054,14 @@ class UserInfo(common.Structure):
 		stream.bool(self.unk3)
 		stream.bool(self.unk4)
 		stream.bool(self.unk5)
+		stream.map(self.play_stats, stream.u8, stream.u32)
 		stream.map(self.unk6, stream.u8, stream.u32)
+		stream.map(self.endless_challenge_high_scores, stream.u8, stream.u32)
+		stream.map(self.multiplayer_stats, stream.u8, stream.u32)
 		stream.map(self.unk7, stream.u8, stream.u32)
+		stream.list(self.badges, stream.add)
 		stream.map(self.unk8, stream.u8, stream.u32)
 		stream.map(self.unk9, stream.u8, stream.u32)
-		stream.map(self.unk10, stream.u8, stream.u32)
-		stream.list(self.badges, stream.add)
-		stream.map(self.unk11, stream.u8, stream.u32)
-		stream.map(self.unk12, stream.u8, stream.u32)
 
 
 class DataStoreProtocolSMM2:
