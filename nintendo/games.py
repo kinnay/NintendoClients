@@ -47,6 +47,11 @@ class SMM:
 
 #===== Switch Games =====#
 
+class CaveStory:
+	GAME_SERVER_ID = 0x2BA73000
+	ACCESS_KEY = "c2a631ad"
+	NEX_VERSION = 40003 #4.0.3
+
 class MK8Deluxe:
 	GAME_SERVER_ID = 0x2B309E01
 	ACCESS_KEY = "09c1c475"
