@@ -819,7 +819,7 @@ class PRUDPStream:
 			if len(packet.payload) < 4:
 				logger.error("Aggregate ack payload is too small")
 				return False
-			if len(packet) != 4 + packet.payload[1] * 2:
+			if len(packet.payload) != 4 + packet.payload[1] * 2:
 				logger.error("Aggregate ack payload has incorrect size")
 				return False
 		return True
@@ -832,8 +832,8 @@ class PRUDPStream:
 				extra_ids = struct.unpack("<%iH" %(len(packet.payload) // 2), packet.payload)
 			else:
 				stream_id = packet.payload[0]
-				base_id = struct.unpack_from("<H", packet.payload, 2)
-				extra_ids = struct.unpack_from("<%iH" %packet.payload[2], packet.payload, 4)
+				base_id = struct.unpack_from("<H", packet.payload, 2)[0]
+				extra_ids = struct.unpack_from("<%iH" %packet.payload[1], packet.payload, 4)
 			
 			for key in list(self.ack_events):
 				if key[0] == TYPE_DATA and key[1] == stream_id and key[2] <= base_id:
