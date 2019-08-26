@@ -133,6 +133,14 @@ protocol DataStore_SMM2 : DataStore {
 		string filename;
 	}
 	
+	struct CommentPictureReqGetInfoWithoutHeaders {
+		string url;
+		uint8 data_type;
+		uint32 unk1;
+		buffer unk2;
+		string filename;
+	}
+	
 	struct CourseInfo {
 		uint64 data_id;
 		string code;
@@ -161,6 +169,27 @@ protocol DataStore_SMM2 : DataStore {
 		uint8 unk12;
 		ThumbnailInfo one_screen_thumbnail;
 		ThumbnailInfo entire_thumbnail;
+	}
+	
+	struct CommentInfo {
+		uint64 unk1;
+		string unk2;
+		uint8 unk3;
+		uint8 unk4;
+		uint64 unk5;
+		uint16 unk6;
+		uint16 unk7;
+		uint8 unk8;
+		uint8 unk9;
+		uint8 unk10;
+		bool unk11;
+		bool unk12;
+		datetime unk13;
+		qbuffer unk14;
+		string unk15;
+		CommentPictureReqGetInfoWithoutHeaders picture;
+		uint16 unk16;
+		uint8 unk17;
 	}
 	
 	struct UnknownStruct1 {
@@ -201,13 +230,13 @@ protocol DataStore_SMM2 : DataStore {
 		bool unk6;
 	}
 	
-	struct RelationDataHeader {
+	struct RelationObjectParam {
 		string key;
 		string value;
 	}
 	
-	struct RelationDataHeaders {
-		list<RelationDataHeader> headers;
+	struct RelationObjectReqGetInfo {
+		list<RelationObjectParam> headers;
 		uint32 expiration;
 	}
 
@@ -246,12 +275,16 @@ protocol DataStore_SMM2 : DataStore {
 		list<CourseInfo> courses;
 	}
 	
+	method(95) get_course_comments(uint64 data_id) {
+		list<CommentInfo> comments;
+	}
+	
 	method(131) get_user_or_course(GetUserOrCourseParam param) {
 		UserInfo user;
 		CourseInfo course;
 	}
 	
 	method(134) prepare_get_relation_object(uint8 type) {
-		RelationDataHeaders result;
+		RelationObjectReqGetInfo result;
 	}
 }

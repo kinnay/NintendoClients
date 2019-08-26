@@ -90,6 +90,105 @@ class BadgeInfo(common.Structure):
 		stream.u8(self.unk2)
 
 
+class CommentInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+		self.unk3 = None
+		self.unk4 = None
+		self.unk5 = None
+		self.unk6 = None
+		self.unk7 = None
+		self.unk8 = None
+		self.unk9 = None
+		self.unk10 = None
+		self.unk11 = None
+		self.unk12 = None
+		self.unk13 = None
+		self.unk14 = None
+		self.unk15 = None
+		self.picture = CommentPictureReqGetInfoWithoutHeaders()
+		self.unk16 = None
+		self.unk17 = None
+	
+	def check_required(self, settings):
+		for field in ['unk1', 'unk2', 'unk3', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9', 'unk10', 'unk11', 'unk12', 'unk13', 'unk14', 'unk15', 'unk16', 'unk17']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk1 = stream.u64()
+		self.unk2 = stream.string()
+		self.unk3 = stream.u8()
+		self.unk4 = stream.u8()
+		self.unk5 = stream.u64()
+		self.unk6 = stream.u16()
+		self.unk7 = stream.u16()
+		self.unk8 = stream.u8()
+		self.unk9 = stream.u8()
+		self.unk10 = stream.u8()
+		self.unk11 = stream.bool()
+		self.unk12 = stream.bool()
+		self.unk13 = stream.datetime()
+		self.unk14 = stream.qbuffer()
+		self.unk15 = stream.string()
+		self.picture = stream.extract(CommentPictureReqGetInfoWithoutHeaders)
+		self.unk16 = stream.u16()
+		self.unk17 = stream.u8()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.unk1)
+		stream.string(self.unk2)
+		stream.u8(self.unk3)
+		stream.u8(self.unk4)
+		stream.u64(self.unk5)
+		stream.u16(self.unk6)
+		stream.u16(self.unk7)
+		stream.u8(self.unk8)
+		stream.u8(self.unk9)
+		stream.u8(self.unk10)
+		stream.bool(self.unk11)
+		stream.bool(self.unk12)
+		stream.datetime(self.unk13)
+		stream.qbuffer(self.unk14)
+		stream.string(self.unk15)
+		stream.add(self.picture)
+		stream.u16(self.unk16)
+		stream.u8(self.unk17)
+
+
+class CommentPictureReqGetInfoWithoutHeaders(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.url = None
+		self.data_type = None
+		self.unk1 = None
+		self.unk2 = None
+		self.filename = None
+	
+	def check_required(self, settings):
+		for field in ['url', 'data_type', 'unk1', 'unk2', 'filename']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.url = stream.string()
+		self.data_type = stream.u8()
+		self.unk1 = stream.u32()
+		self.unk2 = stream.buffer()
+		self.filename = stream.string()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.url)
+		stream.u8(self.data_type)
+		stream.u32(self.unk1)
+		stream.buffer(self.unk2)
+		stream.string(self.filename)
+
+
 class CourseInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -712,7 +811,7 @@ class PersistenceTarget(common.Structure):
 		stream.u16(self.persistence_id)
 
 
-class RelationDataHeader(common.Structure):
+class RelationObjectParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.key = None
@@ -733,7 +832,7 @@ class RelationDataHeader(common.Structure):
 		stream.string(self.value)
 
 
-class RelationDataHeaders(common.Structure):
+class RelationObjectReqGetInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.headers = None
@@ -745,7 +844,7 @@ class RelationDataHeaders(common.Structure):
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
-		self.headers = stream.list(RelationDataHeader)
+		self.headers = stream.list(RelationObjectParam)
 		self.expiration = stream.u32()
 	
 	def save(self, stream):
@@ -1119,6 +1218,7 @@ class DataStoreProtocolSMM2:
 	METHOD_SEARCH_COURSES_POINT_RANKING = 71
 	METHOD_SEARCH_COURSES_LATEST = 73
 	METHOD_SEARCH_COURSES_ENDLESS_MODE = 79
+	METHOD_GET_COURSE_COMMENTS = 95
 	METHOD_GET_USER_OR_COURSE = 131
 	METHOD_PREPARE_GET_RELATION_OBJECT = 134
 	
@@ -1303,6 +1403,19 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		logger.info("DataStoreClientSMM2.search_courses_endless_mode -> done")
 		return courses
 	
+	def get_course_comments(self, data_id):
+		logger.info("DataStoreClientSMM2.get_course_comments()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_COURSE_COMMENTS)
+		stream.u64(data_id)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		comments = stream.list(CommentInfo)
+		logger.info("DataStoreClientSMM2.get_course_comments -> done")
+		return comments
+	
 	def get_user_or_course(self, param):
 		logger.info("DataStoreClientSMM2.get_user_or_course()")
 		#--- request ---
@@ -1327,7 +1440,7 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		result = stream.extract(RelationDataHeaders)
+		result = stream.extract(RelationObjectReqGetInfo)
 		logger.info("DataStoreClientSMM2.prepare_get_relation_object -> done")
 		return result
 
@@ -1389,6 +1502,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_SEARCH_COURSES_POINT_RANKING: self.handle_search_courses_point_ranking,
 			self.METHOD_SEARCH_COURSES_LATEST: self.handle_search_courses_latest,
 			self.METHOD_SEARCH_COURSES_ENDLESS_MODE: self.handle_search_courses_endless_mode,
+			self.METHOD_GET_COURSE_COMMENTS: self.handle_get_course_comments,
 			self.METHOD_GET_USER_OR_COURSE: self.handle_get_user_or_course,
 			self.METHOD_PREPARE_GET_RELATION_OBJECT: self.handle_prepare_get_relation_object,
 		}
@@ -1716,6 +1830,17 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.add)
 	
+	def handle_get_course_comments(self, context, input, output):
+		logger.info("DataStoreServerSMM2.get_course_comments()")
+		#--- request ---
+		data_id = input.u64()
+		response = self.get_course_comments(context, data_id)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
+	
 	def handle_get_user_or_course(self, context, input, output):
 		logger.info("DataStoreServerSMM2.get_user_or_course()")
 		#--- request ---
@@ -1738,8 +1863,8 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		response = self.prepare_get_relation_object(context, type)
 		
 		#--- response ---
-		if not isinstance(response, RelationDataHeaders):
-			raise RuntimeError("Expected RelationDataHeaders, got %s" %response.__class__.__name__)
+		if not isinstance(response, RelationObjectReqGetInfo):
+			raise RuntimeError("Expected RelationObjectReqGetInfo, got %s" %response.__class__.__name__)
 		output.add(response)
 	
 	def get_meta(self, *args):
@@ -1792,6 +1917,10 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	
 	def search_courses_endless_mode(self, *args):
 		logger.warning("DataStoreServerSMM2.search_courses_endless_mode not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def get_course_comments(self, *args):
+		logger.warning("DataStoreServerSMM2.get_course_comments not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	def get_user_or_course(self, *args):
