@@ -13,6 +13,48 @@ class RankingMode:
 	FRIENDS = 3
 
 
+class Ranking2CategorySetting(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+		self.unk3 = None
+		self.unk4 = None
+		self.unk5 = None
+		self.unk6 = None
+		self.unk7 = None
+		self.unk8 = None
+		self.unk9 = None
+	
+	def check_required(self, settings):
+		for field in ['unk1', 'unk2', 'unk3', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk1 = stream.u32()
+		self.unk2 = stream.u32()
+		self.unk3 = stream.u32()
+		self.unk4 = stream.u16()
+		self.unk5 = stream.u8()
+		self.unk6 = stream.u8()
+		self.unk7 = stream.u8()
+		self.unk8 = stream.u8()
+		self.unk9 = stream.bool()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.unk1)
+		stream.u32(self.unk2)
+		stream.u32(self.unk3)
+		stream.u16(self.unk4)
+		stream.u8(self.unk5)
+		stream.u8(self.unk6)
+		stream.u8(self.unk7)
+		stream.u8(self.unk8)
+		stream.bool(self.unk9)
+
+
 class Ranking2CommonData(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -167,6 +209,19 @@ class Ranking2Client(Ranking2Protocol):
 		info = stream.extract(Ranking2Info)
 		logger.info("Ranking2Client.get_ranking -> done")
 		return info
+	
+	def get_category_setting(self, category):
+		logger.info("Ranking2Client.get_category_setting()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_CATEGORY_SETTING)
+		stream.u32(category)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		setting = stream.extract(Ranking2CategorySetting)
+		logger.info("Ranking2Client.get_category_setting -> done")
+		return setting
 
 
 class Ranking2Server(Ranking2Protocol):
@@ -220,10 +275,21 @@ class Ranking2Server(Ranking2Protocol):
 		raise common.RMCError("Core::NotImplemented")
 	
 	def handle_get_category_setting(self, context, input, output):
-		logger.warning("Ranking2Server.get_category_setting is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("Ranking2Server.get_category_setting()")
+		#--- request ---
+		category = input.u32()
+		response = self.get_category_setting(context, category)
+		
+		#--- response ---
+		if not isinstance(response, Ranking2CategorySetting):
+			raise RuntimeError("Expected Ranking2CategorySetting, got %s" %response.__class__.__name__)
+		output.add(response)
 	
 	def get_ranking(self, *args):
 		logger.warning("Ranking2Server.get_ranking not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def get_category_setting(self, *args):
+		logger.warning("Ranking2Server.get_category_setting not implemented")
 		raise common.RMCError("Core::NotImplemented")
 

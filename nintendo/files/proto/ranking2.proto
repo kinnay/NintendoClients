@@ -40,6 +40,18 @@ protocol Ranking2 : 122 {
 		qbuffer unk2;
 	}
 
+	struct Ranking2CategorySetting {
+		uint32 unk1;
+		uint32 unk2;
+		uint32 unk3;
+		uint16 unk4;
+		uint8 unk5;
+		uint8 unk6;
+		uint8 unk7;
+		uint8 unk8;
+		bool unk9;
+	}
+	
 	method put_score;
 	method get_common_data;
 	method put_common_data;
@@ -50,5 +62,8 @@ protocol Ranking2 : 122 {
 	}
 	
 	method get_ranking_by_principal_id;
-	method get_category_setting;
+	
+	method get_category_setting(uint32 category) {
+		Ranking2CategorySetting setting;
+	}
 }
