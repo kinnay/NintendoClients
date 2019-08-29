@@ -1,0 +1,7 @@
+
+protocol Monitoring : 19 {
+	method ping_daemon() { bool result; }
+	method get_cluster_members() {
+		list<string> members;
+	}
+}
