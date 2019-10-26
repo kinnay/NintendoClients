@@ -1,3 +1,4 @@
+import hashlib
 
 from nintendo.common.streams import StreamIn, StreamOut
 import hmac
@@ -89,7 +90,7 @@ class PIAPacket:
 			self.messages.append(message)
 		
 		signature = stream.read(0x10)
-		if hmac.new(session_key, data[:-0x10]).digest() != signature:
+		if hmac.new(session_key, data[:-0x10], digestmod=hashlib.md5).digest() != signature:
 			logger.error("Incorrect packet signature")
 			return False
 		return True
@@ -107,5 +108,5 @@ class PIAPacket:
 			message.encode(stream)
 		
 		#Checksum
-		stream.write(hmac.new(session_key, stream.get()).digest())
+		stream.write(hmac.new(session_key, stream.get(), digestmod=hashlib.md5).digest())
 		return stream.get()
