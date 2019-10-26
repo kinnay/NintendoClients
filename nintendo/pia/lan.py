@@ -277,8 +277,8 @@ class LanBrowser:
 		return tag + ciphertext
 		
 	def generate_challenge_reply(self, nonce, key, challenge):
-		key = hmac.new(self.key, key, hashlib.sha256).digest()[:16]
-		data = hmac.new(self.key, challenge, hashlib.sha256).digest()[:16]
+		key = hmac.new(self.key, key, digestmod=hashlib.sha256).digest()[:16]
+		data = hmac.new(self.key, challenge, digestmod=hashlib.sha256).digest()[:16]
 		
 		aes = AES.new(key, AES.MODE_GCM, nonce=nonce)
 		ciphertext, tag = aes.encrypt_and_digest(data)

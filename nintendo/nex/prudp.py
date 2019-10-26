@@ -168,7 +168,7 @@ class PRUDPMessageV0:
 			data = session_key + struct.pack("<HB", packet.packet_id, packet.fragment_id) + data
 
 		if data:
-			return hmac.new(self.client.signature_key, data).digest()[:4]
+			return hmac.new(self.client.signature_key, data, digestmod=hashlib.md5).digest()[:4]
 		return struct.pack("<I", 0x12345678)
 		
 	def calc_packet_signature(self, packet, signature):
@@ -311,7 +311,7 @@ class PRUDPMessageV1:
 	def signature_size(self): return 16
 
 	def calc_packet_signature(self, session_key, header, options, signature, payload):
-		mac = hmac.new(self.client.signature_key)
+		mac = hmac.new(self.client.signature_key, digestmod=hashlib.md5)
 		mac.update(header[4:])
 		mac.update(session_key)
 		mac.update(struct.pack("<I", self.client.signature_base))
@@ -960,7 +960,7 @@ class PRUDPClient:
 		if self.transport_type == self.settings.TRANSPORT_UDP:
 			self.local_signature = secrets.token_bytes(self.stream.signature_size())
 		else:
-			self.local_signature = hmac.new(self.signature_key, self.signature_key + self.remote_signature).digest()
+			self.local_signature = hmac.new(self.signature_key, self.signature_key + self.remote_signature, digestmod=hashlib.md5).digest()
 			
 		connect_packet = PRUDPPacket(TYPE_CONNECT, FLAG_RELIABLE | FLAG_NEED_ACK)
 		connect_packet.connection_signature = self.local_signature
