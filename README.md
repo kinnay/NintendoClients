@@ -9,7 +9,7 @@ You might need to adjust your scripts if you pull new commits from this package 
 https://github.com/Kinnay/NintendoClients/wiki
 
 ### Requirements
-* Python 3 (tested with 3.6.4)
+* Python 3.6 or higher
 * Python requests (http://docs.python-requests.org)
 * BeautifulSoup4 and lxml
 * For `nintendo.pia.lan`:
