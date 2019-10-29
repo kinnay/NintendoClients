@@ -69,7 +69,7 @@ class BackEndClient:
 		
 		kerberos_key = result.ticket_key
 		if not kerberos_key:
-			if not password:
+			if password is None:
 				raise ValueError("A password is required for this account")
 			
 			# Derive kerberos key from password
