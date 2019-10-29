@@ -3,7 +3,7 @@ from Crypto.Cipher import AES
 from nintendo.pia.streams import StreamOut, StreamIn
 from nintendo.pia.common import ResultRange, Range
 from nintendo.pia.station import StationLocation
-from nintendo.common.socket import Socket, TYPE_UDP
+from nintendo.common.socket import Socket, TYPE_UDP, FLAG_BROADCAST
 from nintendo.common import scheduler
 import netifaces
 import socket
@@ -247,7 +247,7 @@ class LanBrowser:
 		
 		self.nonce_counter = 0
 		
-		self.s = Socket(TYPE_UDP)
+		self.s = Socket(TYPE_UDP, FLAG_BROADCAST)
 		self.s.bind("", 30000)
 		
 		interface = netifaces.gateways()["default"][netifaces.AF_INET][1]

@@ -15,8 +15,10 @@ TYPE_UDP = 0
 TYPE_TCP = 1
 TYPE_SSL = 2
 
+FLAG_BROADCAST = 1
+
 class Socket:
-	def __init__(self, type, sock=None):
+	def __init__(self, type, flags=0, sock=None):
 		self.type = type
 		
 		self.s = sock
@@ -25,6 +27,9 @@ class Socket:
 				self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 			elif type == TYPE_TCP or type == TYPE_SSL:
 				self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+				
+		if flags & FLAG_BROADCAST:
+			self.s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, True)
 			
 		self.remote_addr = None
 		
@@ -65,7 +70,7 @@ class Socket:
 		try:
 			sock, addr = self.s.accept()
 			sock.setblocking(False)
-			wrapper = Socket(self.type, sock)
+			wrapper = Socket(self.type, sock=sock)
 			wrapper.remote_addr = addr
 			return wrapper
 		except ssl.SSLError:
