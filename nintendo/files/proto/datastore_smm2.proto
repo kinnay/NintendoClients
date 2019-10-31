@@ -2,6 +2,15 @@
 import datastore;
 
 protocol DataStore_SMM2 : DataStore {
+	struct RegisterUserParam {
+		string name;
+		UnknownStruct1 unk1;
+		qbuffer unk2;
+		uint8 language;
+		string country;
+		string device_id;
+	}
+
 	struct GetUsersParam {
 		list<pid> pids;
 		uint32 option = 0;
@@ -239,6 +248,8 @@ protocol DataStore_SMM2 : DataStore {
 		list<RelationObjectParam> headers;
 		uint32 expiration;
 	}
+	
+	method(47) register_user(RegisterUserParam param) {}
 
 	method(48) get_users(GetUsersParam param) {
 		list<UserInfo> users;

@@ -811,6 +811,39 @@ class PersistenceTarget(common.Structure):
 		stream.u16(self.persistence_id)
 
 
+class RegisterUserParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.name = None
+		self.unk1 = UnknownStruct1()
+		self.unk2 = None
+		self.language = None
+		self.country = None
+		self.device_id = None
+	
+	def check_required(self, settings):
+		for field in ['name', 'unk2', 'language', 'country', 'device_id']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.name = stream.string()
+		self.unk1 = stream.extract(UnknownStruct1)
+		self.unk2 = stream.qbuffer()
+		self.language = stream.u8()
+		self.country = stream.string()
+		self.device_id = stream.string()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.name)
+		stream.add(self.unk1)
+		stream.qbuffer(self.unk2)
+		stream.u8(self.language)
+		stream.string(self.country)
+		stream.string(self.device_id)
+
+
 class RelationObjectParam(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -1210,6 +1243,7 @@ class DataStoreProtocolSMM2:
 	METHOD_RATE_OBJECTS_WITH_POSTING = 44
 	METHOD_GET_OBJECT_INFOS = 45
 	METHOD_SEARCH_OBJECT_LIGHT = 46
+	METHOD_REGISTER_USER = 47
 	METHOD_GET_USERS = 48
 	METHOD_SYNC_USER_PROFILE = 49
 	METHOD_UPDATE_LAST_LOGIN_TIME = 59
@@ -1293,6 +1327,17 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		obj.results = stream.list(stream.result)
 		logger.info("DataStoreClientSMM2.get_metas_multiple_param -> done")
 		return obj
+	
+	def register_user(self, param):
+		logger.info("DataStoreClientSMM2.register_user()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_REGISTER_USER)
+		stream.add(param)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		self.client.get_response(call_id)
+		logger.info("DataStoreClientSMM2.register_user -> done")
 	
 	def get_users(self, param):
 		logger.info("DataStoreClientSMM2.get_users()")
@@ -1494,6 +1539,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_RATE_OBJECTS_WITH_POSTING: self.handle_rate_objects_with_posting,
 			self.METHOD_GET_OBJECT_INFOS: self.handle_get_object_infos,
 			self.METHOD_SEARCH_OBJECT_LIGHT: self.handle_search_object_light,
+			self.METHOD_REGISTER_USER: self.handle_register_user,
 			self.METHOD_GET_USERS: self.handle_get_users,
 			self.METHOD_SYNC_USER_PROFILE: self.handle_sync_user_profile,
 			self.METHOD_UPDATE_LAST_LOGIN_TIME: self.handle_update_last_login_time,
@@ -1732,6 +1778,12 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		logger.warning("DataStoreServerSMM2.search_object_light is unsupported")
 		raise common.RMCError("Core::NotImplemented")
 	
+	def handle_register_user(self, context, input, output):
+		logger.info("DataStoreServerSMM2.register_user()")
+		#--- request ---
+		param = input.extract(RegisterUserParam)
+		self.register_user(context, param)
+	
 	def handle_get_users(self, context, input, output):
 		logger.info("DataStoreServerSMM2.get_users()")
 		#--- request ---
@@ -1885,6 +1937,10 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	
 	def get_metas_multiple_param(self, *args):
 		logger.warning("DataStoreServerSMM2.get_metas_multiple_param not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def register_user(self, *args):
+		logger.warning("DataStoreServerSMM2.register_user not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	def get_users(self, *args):
