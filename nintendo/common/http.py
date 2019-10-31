@@ -153,6 +153,7 @@ class HTTPState:
 				return self.RESULT_ERROR
 			
 			self.state = self.state_body
+			self.state()
 		
 		else:
 			return self.finish()
