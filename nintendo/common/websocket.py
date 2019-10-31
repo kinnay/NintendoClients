@@ -20,7 +20,8 @@ STATE_READY = 0
 STATE_ACCEPTING = 1
 STATE_CONNECTING = 2
 STATE_CONNECTED = 3
-STATE_DISCONNECTED = 4
+STATE_DISCONNECTING = 4
+STATE_DISCONNECTED = 5
 
 
 class WebSocketClient:
@@ -180,7 +181,7 @@ class WebSocketClient:
 				
 				self.state = STATE_CONNECTED
 					
-			elif self.state == STATE_CONNECTED:
+			elif self.state == STATE_CONNECTED or self.state == STATE_DISCONNECTING:
 				if len(self.buffer) < 2: return
 
 				fin = self.buffer[0] >> 7
@@ -226,6 +227,11 @@ class WebSocketClient:
 	def process_packet(self, opcode, payload):
 		if opcode == OPCODE_BINARY:
 			self.packets.append(payload)
+		elif opcode == OPCODE_DISCONNECT:
+			if self.state == STATE_CONNECTED:
+				self.send_packet(OPCODE_DISCONNECT)
+			self.sock.close()
+			self.cleanup()
 		else:
 			logger.error("Unknown opcode received: %i" %opcode)
 			self.cleanup()
@@ -250,9 +256,12 @@ class WebSocketClient:
 		
 	def close(self):
 		if self.state == STATE_CONNECTED:
+			logger.debug("Closing websocket connection")
+			self.state = STATE_DISCONNECTING
 			self.send_packet(OPCODE_DISCONNECT)
-		self.sock.close()
-		self.cleanup()
+		else:
+			self.sock.close()
+			self.cleanup()
 
 	def send(self, data):
 		if self.state != STATE_CONNECTED:
