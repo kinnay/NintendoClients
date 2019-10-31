@@ -60,7 +60,8 @@ class HTTPResponse:
 		401: "Unauthorized",
 		403: "Forbidden",
 		404: "Not Found",
-		405: "Method Not Allowed"
+		405: "Method Not Allowed",
+		500: "Internal Server Error"
 	}
 	
 	def __init__(self, status):
@@ -208,7 +209,12 @@ class HTTPServer:
 		
 	def handle_req(self, request):
 		logger.debug("Received HTTP request: %s %s", request.method, request.path)
+		
 		response = self.handle(request)
+		if not isinstance(response, HTTPResponse):
+			logger.error("HTTP handler must return HTTPResponse")
+			response = HTTPResponse(500)
+		
 		logger.debug("Sending HTTP response (%i)", response.status)
 		request.client.send(response.encode())
 		
