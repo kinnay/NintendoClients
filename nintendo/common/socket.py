@@ -36,7 +36,7 @@ class Socket:
 		self.certfile = None
 		self.keyfile = None
 		
-	def set_certificate(self, certfile, keyfile):
+	def set_certificate(self, certfile, keyfile=None):
 		self.certfile = certfile
 		self.keyfile = keyfile
 		
@@ -169,7 +169,7 @@ class SocketServer:
 		
 		self.incoming = []
 		
-	def set_certificate(self, certfile, keyfile):
+	def set_certificate(self, certfile, keyfile=None):
 		self.certfile = certfile
 		self.keyfile = keyfile
 		
