@@ -23,10 +23,11 @@ https://github.com/Kinnay/NintendoClients/wiki
     * **example_miis.py:** Requests all kinds of information about the primary mii associated with a NNID.
     * **example_friend_list.py:** Requests your friend list, incoming and outgoing friend requests, and blacklist.
     * **example_friend_notifications.py:** Listens for friend notifications (a friend starting a game for example).
-    * **example_createroom.py:** Shows how to create a friend room in Mario Kart 8. You'll get an error if you try to join it on a real Wii U though, because this package doesn't support P2P connections yet.<br><br>
+    * **example_createroom.py:** Shows how to create a friend room in Mario Kart 8. You'll get an error if you try to join it on a real Wii U though, because this script does not implement the P2P protocol.<br><br>
 * **Switch**
     * **example_mariokartdeluxe.py:** Downloads Mario Kart 8 Deluxe rankings. This script does not work anymore. Nintendo deleted the guest account around 22 July 2019.
-    * **example_lan_mode.py:** Searches for a Splatoon 2 LAN session and prints information about it.<br><br>
+    * **example_lan_splatoon2.py:** Searches for Splatoon 2 LAN sessions and prints information about them.
+    * **example_lan_smm2.py:** Searches for Super Mario Maker 2 LAN sessions and prints information about them.<br><br>
 * **Custom**
     * **example_server.py:** Shows how to create a simple game server with both an authentication server and a secure server.
     * **example_server_login.py:** Logs in on a game server and disconnects immediately. This can be used to test custom servers (such as example_server.py).
