@@ -13,23 +13,22 @@ logger = logging.getLogger(__name__)
 
 class StationLocation:
 	def __init__(self):
-		self.address = None
-		self.pid = None
-		self.cid = None
-		self.rvcid = None
-		self.url_type = None
-		self.sid = None
-		self.stream_type = None
-		self.natm = None
-		self.natf = None
-		self.type = None
-		self.probeinit = None
-		self.relay = None
+		self.address = StationAddress()
+		self.pid = 0
+		self.cid = 0
+		self.rvcid = 0
+		self.url_type = 0
+		self.sid = 0
+		self.stream_type = 0
+		self.natm = 0
+		self.natf = 0
+		self.type = 3
+		self.probeinit = 0
+		self.relay = InetAddress()
 	
 	def set_station_url(self, url):
 		self.address = StationAddress()
 		self.address.address = InetAddress(url["address"], url["port"])
-		self.address.extension_id = 0
 		
 		self.pid = url["PID"]
 		self.cid = url["CID"]
@@ -63,28 +62,30 @@ class StationLocation:
 		stream.pid(self.pid)
 		stream.u32(self.cid)
 		stream.u32(self.rvcid)
-		stream.u8(self.url_type)
-		stream.u8(self.sid)
-		stream.u8(self.stream_type)
-		stream.u8(self.natm)
-		stream.u8(self.natf)
-		stream.u8(self.type)
-		stream.u8(self.probeinit)
-		stream.add(self.relay)
+		if stream.settings.get("pia.version") < 51800:
+			stream.u8(self.url_type)
+			stream.u8(self.sid)
+			stream.u8(self.stream_type)
+			stream.u8(self.natm)
+			stream.u8(self.natf)
+			stream.u8(self.type)
+			stream.u8(self.probeinit)
+			stream.add(self.relay)
 		
 	def decode(self, stream):
 		self.address = stream.extract(StationAddress)
 		self.pid = stream.pid()
 		self.cid = stream.u32()
 		self.rvcid = stream.u32()
-		self.url_type = stream.u8()
-		self.sid = stream.u8()
-		self.stream_type = stream.u8()
-		self.natm = stream.u8()
-		self.natf = stream.u8()
-		self.type = stream.u8()
-		self.probeinit = stream.u8()
-		self.relay = stream.extract(InetAddress)
+		if stream.settings.get("pia.version") < 51800:
+			self.url_type = stream.u8()
+			self.sid = stream.u8()
+			self.stream_type = stream.u8()
+			self.natm = stream.u8()
+			self.natf = stream.u8()
+			self.type = stream.u8()
+			self.probeinit = stream.u8()
+			self.relay = stream.extract(InetAddress)
 		
 		
 class StationConnectionInfo:

@@ -36,6 +36,10 @@ class Settings:
 		"nex.client_version": int,
 		"nex.access_key": str,
 		
+		"pia.version": int,
+		"pia.lan_version": int,
+		"pia.system_version": int,
+		"pia.application_version": int,
 		"pia.station_extension": int,
 		"pia.crypto_enabled": int,
 		"pia.crypto_required": int

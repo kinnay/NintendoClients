@@ -27,8 +27,8 @@ class LanSessionSearchCriteria:
 		self.clear()
 		
 	def clear(self):
-		self.min_participants = Range()
-		self.max_participants = Range()
+		self.min_participants = None
+		self.max_participants = None
 		self.opened_only = None
 		self.vacant_only = None
 		self.result_range = ResultRange()
@@ -38,12 +38,8 @@ class LanSessionSearchCriteria:
 		
 	def calc_flags(self):
 		flags = 0
-		if self.min_participants.min is not None and \
-		   self.min_participants.max is not None:
-			flags |= 1
-		if self.max_participants.min is not None and \
-		   self.max_participants.max is not None:
-			flags |= 2
+		if self.min_participants is not None: flags |= 1
+		if self.max_participants is not None: flags |= 2
 		if self.opened_only is not None: flags |= 4
 		if self.vacant_only is not None: flags |= 8
 		if self.game_mode is not None: flags |= 16
@@ -54,14 +50,21 @@ class LanSessionSearchCriteria:
 		return flags
 	
 	def encode(self, stream):
-		stream.u16(default(self.min_participants.min, 0))
-		stream.u16(default(self.min_participants.max, 0))
-		stream.u16(default(self.max_participants.min, 0))
-		stream.u16(default(self.max_participants.max, 0))
+		if self.min_participants:
+			stream.u16(self.min_participants.min)
+			stream.u16(self.min_participants.max)
+		else:
+			stream.u32(0)
+			
+		if self.max_participants:
+			stream.u16(self.max_participants)
+			stream.u16(self.max_participants)
+		else:
+			stream.u32(0)
+		
 		stream.bool(default(self.opened_only, False))
 		stream.bool(default(self.vacant_only, False))
-		stream.u32(default(self.result_range.offset, 0))
-		stream.u32(default(self.result_range.size, 0))
+		stream.add(self.result_range)
 		stream.u32(default(self.game_mode, 0))
 		stream.u32(default(self.session_type, 0))
 		
@@ -104,7 +107,6 @@ class LanSessionSearchCriteria:
 		
 		min_participants = Range()
 		max_participants = Range()
-		result_range = ResultRange()
 		
 		min_participants.min = stream.u16()
 		min_participants.max = stream.u16()
@@ -112,8 +114,7 @@ class LanSessionSearchCriteria:
 		max_participants.max = stream.u16()
 		opened_only = stream.bool()
 		vacant_only = stream.bool()
-		result_range.offset = stream.u32()
-		result_range.size = stream.u32()
+		result_range = stream.extract(ResultRange)
 		game_mode = stream.u32()
 		session_type = stream.u32()
 		
@@ -183,9 +184,8 @@ class LanStationInfo:
 		stream.write(username)
 		
 		stream.u64(self.id)
-		
-					
-					
+
+
 class LanSessionInfo:
 	def __init__(self):
 		self.game_mode = None
@@ -254,11 +254,11 @@ class LanBrowser:
 		addresses = netifaces.ifaddresses(interface)[netifaces.AF_INET][0]
 		self.broadcast = (addresses["broadcast"], 30000)
 	
-	def browse(self, search_criteria, timeout=1):
+	def browse(self, search_criteria, timeout=1, max=0):
 		key = secrets.token_bytes(16)
 		challenge = secrets.token_bytes(256)
 		self.send_browse_request(search_criteria, key, challenge)
-		return self.receive_browse_reply(timeout, key, challenge)
+		return self.receive_browse_reply(timeout, max, key, challenge)
 		
 	def generate_nonce(self, counter):
 		broadcast = socket.inet_aton(self.broadcast[0])
@@ -285,8 +285,10 @@ class LanBrowser:
 		return tag + ciphertext
 		
 	def verify_challenge_reply(self, stream, key, challenge):
-		if stream.u8() != 1:
-			logger.warning("Invalid challenge reply header")
+		version = stream.u8()
+		expected = self.settings.get("pia.lan_version")
+		if version != expected:
+			logger.warning("Unexpected version in challenge reply header (%i != %i)", version, expected)
 			return False
 			
 		enabled = stream.bool()
@@ -320,7 +322,7 @@ class LanBrowser:
 		
 		self.nonce_counter += 1
 		
-		stream.u8(1)
+		stream.u8(self.settings.get("pia.lan_version"))
 		stream.bool(self.settings.get("pia.crypto_enabled"))
 		stream.u64(self.nonce_counter)
 		stream.write(key)
@@ -338,36 +340,36 @@ class LanBrowser:
 		if stream.u8() != 1:
 			return None
 		
-		if stream.size() != 0x551:
-			logger.warning("Browse reply has unexpected size (expected 1361 bytes, got %i)" %stream.size())
-			return None
-		
 		size = stream.u32()
-		if size != 0x512:
-			logger.warning("LanSessionInfo has unexpected size (expected 1298 bytes, got %i)" %size)
-			return None
-			
+		session_end = stream.tell() + size
+		
 		try:
 			session_info = stream.extract(LanSessionInfo)
 		except Exception as e:
-			import traceback
-			traceback.print_exc()
 			logger.warning("Failed to parse LanSessionInfo: %s", e)
+			return None
+			
+		if stream.tell() != session_end:
+			logger.warning("LanSessionInfo has unexpected size")
 			return None
 		
 		if not self.verify_challenge_reply(stream, key, challenge):
 			return None
 		return session_info
 		
-	def receive_browse_reply(self, timeout, key, challenge):
+	def receive_browse_reply(self, timeout, max, key, challenge):
+		sessions = []
+		ids = []
+		
 		start = time.monotonic()
-		while True:
-			if time.monotonic() - start >= timeout:
-				return None
+		while time.monotonic() - start < timeout:
 			result = self.s.recvfrom()
 			if result:
 				data, addr = result
-				reply = self.parse_browse_reply(data, key, challenge)
-				if reply:
-					return reply
+				session = self.parse_browse_reply(data, key, challenge)
+				if session and session.session_id not in ids:
+					ids.append(session.session_id)
+					sessions.append(session)
 			scheduler.update()
+		
+		return sessions
