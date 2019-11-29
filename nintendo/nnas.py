@@ -125,7 +125,7 @@ class TimeZone(collections.namedtuple("TimeZone", "area language name utc_offset
 		)
 		
 
-class AccountRequestError(Exception): pass
+class NNASError(Exception): pass
 
 
 class Request:
@@ -156,12 +156,12 @@ class Request:
 		
 		if response.status_code != 200:
 			logger.error("HTTP request returned status code %i\n%s", response.status_code, response.text)
-			raise AccountRequestError("Account request failed: %s" %content.error.message.text)
+			raise NNASError("Account request failed: %s" %content.error.message.text)
 		
 		return content
 		
 		
-class AccountAPI:
+class NNASClient:
 	def __init__(self):
 		self.headers = {
 			"Accept-Language": "en",

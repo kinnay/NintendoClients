@@ -1,7 +1,7 @@
 
 from nintendo.nex import backend, authentication, ranking, datastore
 from nintendo.games import DKCTF
-from nintendo import account
+from nintendo import nnas
 import requests
 
 import logging
@@ -19,13 +19,13 @@ USERNAME = "..." #Nintendo network id
 PASSWORD = "..." #Nintendo network password
 
 
-api = account.AccountAPI()
-api.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY) #Can't login without this
-api.set_title(DKCTF.TITLE_ID_EUR, DKCTF.LATEST_VERSION) #This is necessary to request a token for the game server
-api.login(USERNAME, PASSWORD)
+nnas = nnas.NNASClient()
+nnas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY) #Can't login without this
+nnas.set_title(DKCTF.TITLE_ID_EUR, DKCTF.LATEST_VERSION) #This is necessary to request a token for the game server
+nnas.login(USERNAME, PASSWORD)
 
 #Each game server has its own game server id and access token
-nex_token = api.get_nex_token(DKCTF.GAME_SERVER_ID)
+nex_token = nnas.get_nex_token(DKCTF.GAME_SERVER_ID)
 
 backend = backend.BackEndClient()
 backend.configure(DKCTF.ACCESS_KEY, DKCTF.NEX_VERSION)

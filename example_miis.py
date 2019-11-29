@@ -1,9 +1,9 @@
 
-from nintendo import account
+from nintendo import nnas
 
-api = account.AccountAPI()
-pid = api.get_pid("Kinnay-WiiU")
-mii = api.get_mii(pid)
+nnas = nnas.NNASClient()
+pid = nnas.get_pid("Kinnay-WiiU")
+mii = nnas.get_mii(pid)
 print("NNID:", mii.nnid)
 print("PID:", pid) #Same as mii.pid
 print("Name:", mii.name)

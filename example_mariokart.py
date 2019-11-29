@@ -1,7 +1,7 @@
 
 from nintendo.nex import backend, authentication, ranking, datastore
 from nintendo.games import MK8
-from nintendo import account
+from nintendo import nnas
 import requests
 
 import logging
@@ -23,12 +23,12 @@ PASSWORD = "..." #Nintendo network password
 TRACK_ID = 27 #Mario Kart Stadium
 
 
-api = account.AccountAPI()
-api.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION_ID, COUNTRY_NAME)
-api.set_title(MK8.TITLE_ID_EUR, MK8.LATEST_VERSION)
-api.login(USERNAME, PASSWORD)
+nnas = nnas.NNASClient()
+nnas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION_ID, COUNTRY_NAME)
+nnas.set_title(MK8.TITLE_ID_EUR, MK8.LATEST_VERSION)
+nnas.login(USERNAME, PASSWORD)
 
-nex_token = api.get_nex_token(MK8.GAME_SERVER_ID)
+nex_token = nnas.get_nex_token(MK8.GAME_SERVER_ID)
 
 backend = backend.BackEndClient()
 backend.configure(MK8.ACCESS_KEY, MK8.NEX_VERSION)
@@ -57,7 +57,7 @@ def format_time(score):
 	minutes = score // 1000 // 60
 	return "%i:%02i.%03i" %(minutes, seconds, millisec)
 	
-names = api.get_nnids([data.pid for data in rankings.data])
+names = nnas.get_nnids([data.pid for data in rankings.data])
 
 #Print some interesting stats
 print("Total:", int(stats[0]))

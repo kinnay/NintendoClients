@@ -1,6 +1,6 @@
 
 from nintendo.nex import backend, authentication, friends, matchmaking, common
-from nintendo.account import AccountAPI
+from nintendo.nnas import NNASClient
 from nintendo.games import MK8, Friends
 import struct
 
@@ -21,8 +21,8 @@ PASSWORD = "..." #Nintendo network password
 
 #This function logs in on a game server
 def backend_login(title, use_auth_info, use_login_data, settings=None):
-	api.set_title(title.TITLE_ID_EUR, title.LATEST_VERSION)
-	nex_token = api.get_nex_token(title.GAME_SERVER_ID)
+	nnas.set_title(title.TITLE_ID_EUR, title.LATEST_VERSION)
+	nex_token = nnas.get_nex_token(title.GAME_SERVER_ID)
 
 	auth_info = None
 	login_data = None
@@ -43,9 +43,9 @@ def backend_login(title, use_auth_info, use_login_data, settings=None):
 	return client
 
 
-api = AccountAPI()
-api.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY)
-api.login(USERNAME, PASSWORD)
+nnas = NNASClient()
+nnas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY)
+nnas.login(USERNAME, PASSWORD)
 
 #Connect to both the Mario Kart 8 server and the Wii U friends server
 friends_backend = backend_login(

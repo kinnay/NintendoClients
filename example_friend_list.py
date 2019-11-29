@@ -1,7 +1,7 @@
 
 from nintendo.nex import backend, authentication, friends, common
 from nintendo.games import Friends
-from nintendo import account
+from nintendo import nnas
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -18,15 +18,15 @@ USERNAME = "..." #Nintendo network id
 PASSWORD = "..." #Nintendo network password
 
 
-api = account.AccountAPI()
-api.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY)
-api.set_title(Friends.TITLE_ID_EUR, Friends.LATEST_VERSION)
-api.login(USERNAME, PASSWORD)
+nnas = nnas.NNASClient()
+nnas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY)
+nnas.set_title(Friends.TITLE_ID_EUR, Friends.LATEST_VERSION)
+nnas.login(USERNAME, PASSWORD)
 
-pid = api.get_pid(USERNAME)
-mii = api.get_mii(pid)
+pid = nnas.get_pid(USERNAME)
+mii = nnas.get_mii(pid)
 
-nex_token = api.get_nex_token(Friends.GAME_SERVER_ID)
+nex_token = nnas.get_nex_token(Friends.GAME_SERVER_ID)
 
 backend = backend.BackEndClient("friends.cfg")
 backend.configure(Friends.ACCESS_KEY, Friends.NEX_VERSION)
