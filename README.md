@@ -12,9 +12,9 @@ https://github.com/Kinnay/NintendoClients/wiki
 * Python 3.6 or higher
 * Python requests (http://docs.python-requests.org)
 * BeautifulSoup4 and lxml
-* For `nintendo.pia.lan`:
-    * PyCryptodome
-    * netifaces
+* PyCryptodome
+* PyOpenSSL
+* netifaces
 
 ### Example scripts
 * **Wii U**
@@ -25,7 +25,6 @@ https://github.com/Kinnay/NintendoClients/wiki
     * **example_friend_notifications.py:** Listens for friend notifications (a friend starting a game for example).
     * **example_createroom.py:** Shows how to create a friend room in Mario Kart 8. You'll get an error if you try to join it on a real Wii U though, because this script does not implement the P2P protocol.<br><br>
 * **Switch**
-    * **example_mariokartdeluxe.py:** Downloads Mario Kart 8 Deluxe rankings. This script does not work anymore. Nintendo deleted the guest account around 22 July 2019.
     * **example_lan_splatoon2.py:** Searches for Splatoon 2 LAN sessions and prints information about them.
     * **example_lan_smm2.py:** Searches for Super Mario Maker 2 LAN sessions and prints information about them.<br><br>
 * **Custom**
