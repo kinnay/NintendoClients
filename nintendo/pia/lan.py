@@ -3,7 +3,7 @@ from Crypto.Cipher import AES
 from nintendo.pia.streams import StreamOut, StreamIn
 from nintendo.pia.common import ResultRange, Range
 from nintendo.pia.station import StationLocation
-from nintendo.common.socket import Socket, TYPE_UDP, FLAG_BROADCAST
+from nintendo.common.socket import UDPSocket
 from nintendo.common import scheduler
 import netifaces
 import socket
@@ -247,7 +247,7 @@ class LanBrowser:
 		
 		self.nonce_counter = 0
 		
-		self.s = Socket(TYPE_UDP, FLAG_BROADCAST)
+		self.s = UDPSocket()
 		self.s.bind("", 30000)
 		
 		interface = netifaces.gateways()["default"][netifaces.AF_INET][1]
@@ -333,7 +333,7 @@ class LanBrowser:
 			challenge = secrets.token_bytes(16 + 256)
 		stream.write(challenge)
 		
-		self.s.sendto(self.broadcast, stream.get())
+		self.s.send(stream.get(), self.broadcast)
 		
 	def parse_browse_reply(self, data, key, challenge):
 		stream = StreamIn(data, self.settings)
@@ -363,7 +363,7 @@ class LanBrowser:
 		
 		start = time.monotonic()
 		while time.monotonic() - start < timeout:
-			result = self.s.recvfrom()
+			result = self.s.recv()
 			if result:
 				data, addr = result
 				session = self.parse_browse_reply(data, key, challenge)

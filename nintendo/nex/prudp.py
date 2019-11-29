@@ -695,9 +695,9 @@ class PRUDPStream:
 		self.sock = sock
 		if not self.sock:
 			if self.transport_type == settings.TRANSPORT_UDP:
-				self.sock = socket.Socket(socket.TYPE_UDP)
+				self.sock = socket.UDPClient()
 			elif self.transport_type == settings.TRANSPORT_TCP:
-				self.sock = socket.Socket(socket.TYPE_TCP)
+				self.sock = socket.TCPClient()
 			else:
 				self.sock = websocket.WebSocketClient(True)
 				
@@ -1259,9 +1259,9 @@ class PRUDPServer:
 		if not self.server:
 			transport_type = settings.get("prudp.transport")
 			if transport_type == settings.TRANSPORT_UDP:
-				self.server = socket.SocketServer(socket.TYPE_UDP)
+				self.server = socket.UDPServer()
 			elif transport_type == settings.TRANSPORT_TCP:
-				self.server = socket.SocketServer(socket.TYPE_TCP)
+				self.server = socket.TCPServer()
 			else:
 				self.server = websocket.WebSocketServer(True)
 				

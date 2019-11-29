@@ -1,5 +1,5 @@
 
-from . import socket, scheduler
+from . import socket, ssl, scheduler
 import hashlib
 import secrets
 import struct
@@ -41,15 +41,15 @@ class WebSocketClient:
 		"Sec-WebSocket-Protocol: %s\r\n" \
 		"\r\n"
 		
-	def __init__(self, ssl, protocol="NEX", sock=None):
+	def __init__(self, use_ssl, protocol="NEX", sock=None):
 		self.protocol = protocol
 		self.sock = sock
 		
 		if not self.sock:
-			if ssl:
-				self.sock = socket.Socket(socket.TYPE_SSL)
+			if use_ssl:
+				self.sock = ssl.SSLClient()
 			else:
-				self.sock = socket.Socket(socket.TYPE_TCP)
+				self.sock = socket.TCPClient()
 		
 		self.state = STATE_READY
 		self.socket_event = None
@@ -272,21 +272,22 @@ class WebSocketClient:
 		if self.state != STATE_CONNECTED: return b""
 		if self.packets:
 			return self.packets.pop(0)
-			
+	
+	def fd(self): return self.sock.fd()
 	def local_address(self): return self.sock.local_address()
 	def remote_address(self): return self.sock.remote_address()
 
 	
 class WebSocketServer:
-	def __init__(self, ssl, server=None):
-		self.ssl = ssl
+	def __init__(self, use_ssl, server=None):
+		self.ssl = use_ssl
 		self.server = server
 		
 		if not self.server:
-			if ssl:
-				self.server = socket.SocketServer(socket.TYPE_SSL)
+			if use_ssl:
+				self.server = ssl.SSLServer()
 			else:
-				self.server = socket.SocketServer(socket.TYPE_TCP)
+				self.server = socket.TCPServer()
 				
 		self.sockets = []
 		

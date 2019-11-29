@@ -1,5 +1,5 @@
 
-from . import socket, signal, util, scheduler, types
+from . import socket, ssl, signal, util, scheduler, types
 
 import logging
 logger = logging.getLogger(__name__)
@@ -376,19 +376,17 @@ class HTTPPool:
 			self.timeouts[key].reset()
 		return self.clients[key]
 		
-	def connect(self, req, ssl, cert):
+	def connect(self, req, tls, cert):
 		host = req.headers["Host"]
 		
 		logger.debug("Establishing HTTP connection for %s", host)
 		
-		if ssl:
-			sock = socket.Socket(socket.TYPE_SSL)
-			if isinstance(cert, str):
-				sock.set_certificate(cert)
-			elif isinstance(cert, tuple):
+		if tls:
+			sock = ssl.SSLClient()
+			if cert:
 				sock.set_certificate(cert[0], cert[1])
 		else:
-			sock = socket.Socket(socket.TYPE_TCP)
+			sock = socket.TCPSocket()
 		
 		port = 443 if ssl else 80
 		if not sock.connect(host, port):
@@ -417,17 +415,17 @@ class HTTPClient:
 		
 	
 class HTTPServer:
-	def __init__(self, ssl, server=None):
-		self.ssl = ssl
+	def __init__(self, use_ssl, server=None):
+		self.ssl = use_ssl
 		self.server = server
 		
 		if not self.server:
-			if ssl:
-				self.server = socket.SocketServer(socket.TYPE_SSL)
+			if use_ssl:
+				self.server = ssl.SSLServer()
 			else:
-				self.server = socket.SocketServer(socket.TYPE_TCP)
+				self.server = socket.TCPServer()
 				
-	def set_certificate(self, cert, key=None):
+	def set_certificate(self, cert, key):
 		self.server.set_certificate(cert, key)
 				
 	def start(self, host, port):

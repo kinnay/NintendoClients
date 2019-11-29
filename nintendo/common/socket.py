@@ -1,53 +1,24 @@
 
 from nintendo.common import scheduler
-import pkg_resources
 import socket
-import ssl
 
 import logging
 logger = logging.getLogger(__name__)
 
-CERT = pkg_resources.resource_filename("nintendo", "files/cert/server_default.crt")
-KEY = pkg_resources.resource_filename("nintendo", "files/cert/server_default.key")
 
-
-TYPE_UDP = 0
-TYPE_TCP = 1
-TYPE_SSL = 2
-
-FLAG_BROADCAST = 1
-
-class Socket:
-	def __init__(self, type, flags=0, sock=None):
-		self.type = type
-		
+class SocketWrapper:
+	def __init__(self, sock):
 		self.s = sock
-		if not self.s:
-			if type == TYPE_UDP:
-				self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-			elif type == TYPE_TCP or type == TYPE_SSL:
-				self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-				
-		if flags & FLAG_BROADCAST:
-			self.s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, True)
-			
+		
 		self.remote_addr = None
 		
-		self.certfile = None
-		self.keyfile = None
-		
-	def set_certificate(self, certfile, keyfile=None):
-		self.certfile = certfile
-		self.keyfile = keyfile
+	def fd(self): return self.s
 		
 	def bind(self, host, port):
 		self.s.bind((host, port))
 		self.s.setblocking(False)
-		
+	
 	def connect(self, host, port, timeout=3):
-		if self.type == TYPE_SSL:
-			self.s = ssl.wrap_socket(self.s, self.keyfile, self.certfile)
-		
 		self.s.settimeout(timeout)
 		try:
 			self.s.connect((host, port))
@@ -58,37 +29,30 @@ class Socket:
 		return True
 	
 	def listen(self):
-		if self.type == TYPE_SSL:
-			if not self.certfile or not self.keyfile:
-				self.certfile = CERT
-				self.keyfile = KEY
-			self.s = ssl.wrap_socket(self.s, self.keyfile, self.certfile, True)
-		
 		self.s.listen()
 	
 	def accept(self):
 		try:
 			sock, addr = self.s.accept()
 			sock.setblocking(False)
-			wrapper = Socket(self.type, sock=sock)
+			wrapper = SocketWrapper(sock)
 			wrapper.remote_addr = addr
 			return wrapper
-		except ssl.SSLError:
-			logger.warning("SSL handshake failed")
 		except BlockingIOError:
 			pass
 
 	def close(self): self.s.close()
+	
 	def send(self, data): self.s.sendall(data)
 	def recv(self, num=4096):
 		try:
 			return self.s.recv(num)
-		except (BlockingIOError, ssl.SSLWantReadError):
+		except BlockingIOError:
 			pass
 		except OSError:
 			return b""
 	
-	def sendto(self, addr, data): self.s.sendto(data, addr)
+	def sendto(self, data, addr): self.s.sendto(data, addr)
 	def recvfrom(self, num=4096):
 		try:
 			return self.s.recvfrom(num)
@@ -97,89 +61,146 @@ class Socket:
 			
 	def local_address(self): return self.s.getsockname()
 	def remote_address(self): return self.remote_addr
-	
-	
-class UDPServer:
-	def __init__(self):
-		self.s = self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-		self.incoming = []
-		self.packets = {}
-		
-	def bind(self, host, port):
-		self.s.bind((host, port))
-	
-	def listen(self):
-		self.s.setblocking(False)
-		scheduler.add_callback(self.update)
-		
-	def remove(self, addr):
-		del self.packets[addr]
-		
-	def recvfrom(self, addr):
-		if self.packets[addr]:
-			return self.packets[addr].pop(0)
-	
-	def sendto(self, addr, data):
-		self.s.sendto(data, addr)
-		
-	def update(self):
-		try:
-			data, addr = self.s.recvfrom(4096)
-			if addr not in self.packets:
-				sock = UDPWrapper(self, addr)
-				self.packets[addr] = []
-				self.incoming.append(sock)
-			self.packets[addr].append(data)
-		except (BlockingIOError, ConnectionResetError):
-			pass
+
+
+class UDPSocket:
+	def __init__(self, sock=None):
+		self.s = sock
+		if not self.s:
+			sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+			sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, True)
+			self.s = SocketWrapper(sock)
 			
+	def bind(self, host, port): self.s.bind(host, port)
+	
+	def send(self, data, addr): self.s.sendto(data, addr)
+	def recv(self, num=4096): return self.s.recvfrom(num)
+	
+	def close(self): self.s.close()
+	
+	def fd(self): return self.s.fd()
+	def local_address(self): return self.s.local_address()
+	def remote_address(self): return self.s.remote_address()
+	
+	
+class UDPClient:
+	def __init__(self, sock=None):
+		self.s = sock
+		if not self.s:
+			sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+			self.s = SocketWrapper(sock)
+			
+	def connect(self, host, port, timeout=3):
+		return self.s.connect(host, port, timeout)
+		
+	def send(self, data): self.s.send(data)
+	def recv(self, num=4096):
+		return self.s.recv(num)
+	
+	def close(self): self.s.close()
+			
+	def fd(self): return self.s.fd()
+	def local_address(self): return self.s.local_address()
+	def remote_address(self): return self.s.remote_address()
+
+
+class TCPClient:
+	def __init__(self, sock=None):
+		self.s = sock
+		if not self.s:
+			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+			self.s = SocketWrapper(sock)
+			
+	def connect(self, host, port, timeout=3):
+		return self.s.connect(host, port, timeout)
+		
+	def send(self, data): self.s.send(data)
+	def recv(self, num=4096):
+		return self.s.recv(num)
+	
+	def close(self): self.s.close()
+			
+	def fd(self): return self.s.fd()
+	def local_address(self): return self.s.local_address()
+	def remote_address(self): return self.s.remote_address()
+
+
+class TCPServer:
+	def __init__(self, sock=None):
+		self.s = sock
+		if not self.s:
+			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+			self.s = SocketWrapper(sock)
+		
+		self.incoming = []
+	
+	def fd(self): return self.s.fd()
+	
+	def start(self, host, port):
+		self.s.bind(host, port)
+		self.s.listen()
+		scheduler.add_server(self.incoming.append, self.s)
+		
 	def accept(self):
 		if self.incoming:
 			return self.incoming.pop(0)
 			
 			
-class UDPWrapper:
+class UDPServerClient:
 	def __init__(self, server, addr):
 		self.server = server
 		self.addr = addr
 		
-	def close(self):
-		self.server.remove(self.addr)
+		self.packets = []
 		
-	def recv(self):
-		return self.server.recvfrom(self.addr)
-		
-	def send(self, data):
-		self.server.sendto(self.addr, data)
-		
+	def handle(self, data):
+		self.packets.append(data)
+	
+	def send(self, data): self.server.send(data, self.addr)
+	def recv(self, num=4096):
+		if self.packets:
+			return self.packets.pop(0)
+	
+	def close(self): self.server.close(self.addr)
+			
+	def fd(self): return self.server.fd()
+	def local_address(self): return self.server.local_address()
 	def remote_address(self): return self.addr
-	
-	
-class SocketServer:
-	def __init__(self, type):
-		self.type = type
-		if type == TYPE_UDP:
-			self.socket = UDPServer()
-		else:
-			self.socket = Socket(type)
-		self.event = None
-		
-		self.certfile = None
-		self.keyfile = None
+			
+			
+class UDPServer:
+	def __init__(self, sock=None):
+		self.s = sock
+		if not self.s:
+			sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+			self.s = SocketWrapper(sock)
 		
 		self.incoming = []
-		
-	def set_certificate(self, certfile, keyfile=None):
-		self.certfile = certfile
-		self.keyfile = keyfile
-		
+		self.clients = {}
+	
+	def fd(self): return self.s.fd()
+	
 	def start(self, host, port):
-		if self.type == TYPE_SSL:
-			self.socket.set_certificate(self.certfile, self.keyfile)
-		self.socket.bind(host, port)
-		self.socket.listen()
-		scheduler.add_server(self.incoming.append, self.socket)
+		self.s.bind((host, port))
+		scheduler.add_callback(self.update)
 		
 	def accept(self):
 		if self.incoming:
 			return self.incoming.pop(0)
+			
+	def close(self, addr):
+		del self.clients[addr]
+		
+	def send(self, data, addr):
+		self.s.sendto(data, addr)
+			
+	def update(self):
+		try:
+			data, addr = self.s.recvfrom(4096)
+			if addr not in self.clients:
+				client = UDPServerClient(self, addr)
+				self.clients[addr] = client
+				self.incoming.append(client)
+			self.clients[addr].handle(data)
+		except (BlockingIOError, ConnectionResetError):
+			pass
