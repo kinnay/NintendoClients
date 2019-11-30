@@ -2,6 +2,9 @@
 from nintendo.common import socket, scheduler
 from OpenSSL import SSL, crypto
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 TYPE_DER = 0
 TYPE_PEM = 1
@@ -76,22 +79,34 @@ class SSLClient:
 	def connect(self, host, port):
 		sock = SSL.Connection(self.context, self.s.fd())
 		sock.connect((host, port))
-		sock.do_handshake()
 		sock.setblocking(False)
 		
 		wrapper = socket.SocketWrapper(sock)
 		self.s = socket.TCPClient(wrapper)
 		return True
 		
-	def send(self, data): self.s.send(data)
+	def send(self, data):
+		while True:
+			try:
+				self.s.send(data)
+				return
+			except SSL.WantReadError:
+				pass
 	
 	def recv(self, num=4096):
 		try:
 			return self.s.recv(num)
-		except (SSL.ZeroReturnError, SSL.SysCallError):
-			return b""
 		except SSL.WantReadError:
 			pass
+		except SSL.ZeroReturnError:
+			logger.debug("Socket was closed")
+			return b""
+		except SSL.SysCallError as e:
+			if e.args[0] == -1:
+				logger.debug("Socket was closed unexpectedly")
+				return b""
+			else:
+				raise e
 	
 	def close(self): self.s.close()
 			

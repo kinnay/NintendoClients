@@ -8,6 +8,9 @@ def ip_to_hex(ip):
 	
 def is_numeric(s):
 	return all(c in string.digits for c in s)
+	
+def is_hexadecimal(s):
+	return all(c in string.hexdigits for c in s)
 
 def crc16(data):
 	hash = 0
