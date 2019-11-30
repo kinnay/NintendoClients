@@ -1,5 +1,6 @@
 
 from . import socket, ssl, signal, util, scheduler, types
+import json
 
 import logging
 logger = logging.getLogger(__name__)
@@ -19,6 +20,12 @@ STATUS_NAMES = {
 	405: "Method Not Allowed",
 	500: "Internal Server Error"
 }
+
+
+TEXT_TYPES = [
+	"application/x-www-form-urlencoded",
+	"application/json"
+]
 
 
 class HTTPHeaders(types.CaseInsensitiveDict):
@@ -46,19 +53,50 @@ class HTTPFormData(types.OrderedDict):
 class HTTPMessage:
 	def __init__(self):
 		self.headers = HTTPHeaders()
-		self.body = ""
+		self.body = b""
+		
+		self.text = None
 		
 		self.form = HTTPFormData()
+		self.json = None
 		
-	def prepare(self, *, headers=None, body=None, form=None):
+	def prepare(self, *, headers=None, body=None, form=None, json=None):
 		if headers: self.headers = headers
 		if body: self.body = body
 		if form: self.form = form
 		
 	def finish(self):
-		if self.headers.get("Content-Type") == "application/x-www-form-urlencoded":
-			if not self.form.parse(self.body):
+		content_type = self.headers.get("Content-Type", "")
+		fields = content_type.split("; ")
+		type = fields[0]
+		
+		param = {}
+		for field in fields[1:]:
+			if not "=" in field:
+				logger.warning("Malformed directive Content-Type header")
 				return False
+			
+			key, value = field.split("=", 1)
+			param[key] = value
+		
+		if type in TEXT_TYPES:
+			try:
+				self.text = self.body.decode(param.get("charset", "UTF-8"))
+			except UnicodeDecodeError:
+				logger.warning("Failed to decode HTTP body")
+				return False
+		
+		if type == "application/x-www-form-urlencoded":
+			if not self.form.parse(self.text):
+				return False
+		
+		if type == "application/json":
+			try:
+				self.json = json.loads(self.text)
+			except json.JSONDecodeError:
+				logger.warning("Failed to decode JSON body")
+				return False
+		
 		return True
 		
 	def encode(self):
@@ -70,14 +108,23 @@ class HTTPMessage:
 		for key, value in self.headers.items():
 			lines.append("%s: %s" %(key, value))
 		
-		text = "\r\n".join(lines) + "\r\n\r\n" + self.body
-		return text.encode("ascii")
+		text = "\r\n".join(lines) + "\r\n\r\n"
+		return text.encode() + self.body
 		
 	def encode_body(self):
+		if self.text is not None:
+			self.body = self.text.encode()
+	
 		if self.form:
 			if "Content-Type" not in self.headers:
 				self.headers["Content-Type"] = "application/x-www-form-urlencoded"
 			self.body = self.form.encode()
+		elif self.json is not None:
+			if "Content-Type" not in self.headers:
+				self.headers["Content-Type"] = "application/json"
+			self.body = json.dumps(self.json)
+			
+		self.body = self.body.encode()
 		
 	def encode_header(self): return ""
 
@@ -180,7 +227,7 @@ class HTTPParser:
 		header, self.buffer = self.buffer.split(b"\r\n\r\n", 1)
 		
 		try:
-			lines = header.decode("ascii").splitlines()
+			lines = header.decode().splitlines()
 		except UnicodeDecodeError:
 			logger.warning("Failed to decode HTTP message")
 			return RESULT_ERROR
@@ -220,7 +267,14 @@ class HTTPParser:
 			key, value = header.split(": ", 1)
 			self.message.headers[key] = value
 		
-		if "Content-Length" in self.message.headers:
+		encoding = self.message.headers.get("Transfer-Encoding", "identity")
+		encodings = [enc.strip() for enc in encoding.split(",")]
+		
+		if "chunked" in encodings:
+			self.state = self.state_chunk_header
+			return self.state()
+		
+		elif "Content-Length" in self.message.headers:
 			if not util.is_numeric(self.message.headers["Content-Length"]):
 				logger.warning("Invalid Content-Length header")
 				return RESULT_ERROR
@@ -230,16 +284,51 @@ class HTTPParser:
 		
 		return self.finish()
 		
+	def state_chunk_header(self):
+		if not b"\r\n" in self.buffer:
+			return RESULT_INCOMPLETE
+		
+		line, self.buffer = self.buffer.split(b"\r\n", 1)
+		try:
+			line = line.decode()
+		except UnicodeDecodeError:
+			logger.warning("Failed to decode chunk length")
+			return RESULT_ERROR
+			
+		if not util.is_hexadecimal(line):
+			logger.warning("Invalid HTTP chunk length")
+			return RESULT_ERROR
+		
+		self.chunk_length = int(line, 16)
+			
+		self.state = self.state_chunk_body
+		return self.state()
+		
+	def state_chunk_body(self):
+		if len(self.buffer) < self.chunk_length + 2:
+			return RESULT_INCOMPLETE
+			
+		if self.buffer[self.chunk_length : self.chunk_length + 2] != b"\r\n":
+			logger.warning("HTTP chunk should be terminated with \\r\\n")
+			return RESULT_ERROR
+		
+		self.message.body += self.buffer[:self.chunk_length]
+		
+		self.buffer = self.buffer[self.chunk_length + 2:]
+		
+		if self.chunk_length == 0:
+			return self.finish()
+		
+		self.state = self.state_chunk_header
+		return self.state()
+		
 	def state_body(self):
 		length = int(self.message.headers["Content-Length"])
 		if len(self.buffer) < length:
 			return RESULT_INCOMPLETE
 			
-		try:
-			self.message.body = self.buffer[:length].decode("ascii")
-		except UnicodeDecodeError:
-			logger.warning("Failed to decode HTTP request body")
-			return RESULT_ERROR
+		self.message.body = self.buffer[:length]
+		
 		self.buffer = self.buffer[length:]
 		
 		return self.finish()
@@ -412,8 +501,8 @@ class HTTPClient:
 	def request(self, req, ssl, cert=None, timeout=5):
 		client = self.pool.get(req, ssl, cert)
 		return client.request(req, timeout)
-		
-	
+
+
 class HTTPServer:
 	def __init__(self, use_ssl, server=None):
 		self.ssl = use_ssl
