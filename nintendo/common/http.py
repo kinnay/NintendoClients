@@ -1,5 +1,6 @@
 
 from . import socket, ssl, signal, util, scheduler, types
+import datetime
 import json
 
 import logging
@@ -26,6 +27,11 @@ TEXT_TYPES = [
 	"application/x-www-form-urlencoded",
 	"application/json"
 ]
+
+
+def format_date():
+	now = datetime.datetime.now(datetime.timezone.utc)
+	return now.strftime("%a, %d %b %Y %H:%M:%S GMT")
 
 
 class HTTPHeaders(types.CaseInsensitiveDict):
@@ -102,7 +108,13 @@ class HTTPMessage:
 	def encode(self):
 		self.encode_body()
 		
-		self.headers["Content-Length"] = len(self.body)
+		encoding = self.headers.get("Transfer-Encoding", "identity")
+		encodings = [enc.strip() for enc in encoding.split(",")]
+		
+		if "chunked" in encodings:
+			self.body = b"%x\r\n" %len(self.body) + self.body + b"\r\n0\r\n\r\n"
+		else:
+			self.headers["Content-Length"] = len(self.body)
 		
 		lines = [self.encode_header()]
 		for key, value in self.headers.items():
@@ -365,7 +377,9 @@ class HTTPSocket:
 			self.closed()
 			self.active = False
 		else:
-			self.parser.update(data)
+			if self.parser.update(data) == RESULT_ERROR:
+				logger.warning("HTTP message parsing failed")
+				self.close()
 		
 	def process_message(self, message):
 		if isinstance(message, HTTPRequest):
@@ -536,7 +550,7 @@ class HTTPServer:
 		if not isinstance(response, HTTPResponse):
 			logger.error("HTTP handler must return HTTPResponse")
 			response = HTTPResponse.build(500)
-		
+			
 		logger.debug("Sending HTTP response (%i)", response.status)
 		sock.send(response)
 		
