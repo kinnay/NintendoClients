@@ -112,19 +112,18 @@ class HTTPMessage:
 		return text.encode() + self.body
 		
 	def encode_body(self):
-		if self.text is not None:
-			self.body = self.text.encode()
-	
 		if self.form:
 			if "Content-Type" not in self.headers:
 				self.headers["Content-Type"] = "application/x-www-form-urlencoded"
-			self.body = self.form.encode()
+			self.text = self.form.encode()
+		
 		elif self.json is not None:
 			if "Content-Type" not in self.headers:
 				self.headers["Content-Type"] = "application/json"
-			self.body = json.dumps(self.json)
+			self.text = json.dumps(self.json)
 			
-		self.body = self.body.encode()
+		if self.text is not None:
+			self.body = self.text.encode()
 		
 	def encode_header(self): return ""
 
