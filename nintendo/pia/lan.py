@@ -253,6 +253,11 @@ class LanBrowser:
 		interface = netifaces.gateways()["default"][netifaces.AF_INET][1]
 		addresses = netifaces.ifaddresses(interface)[netifaces.AF_INET][0]
 		self.broadcast = (addresses["broadcast"], 30000)
+		
+	def lan_version(self):
+		if self.settings.get("pia.version") >= 51800:
+			return 2
+		return 1
 	
 	def browse(self, search_criteria, timeout=1, max=0):
 		key = secrets.token_bytes(16)
@@ -286,7 +291,7 @@ class LanBrowser:
 		
 	def verify_challenge_reply(self, stream, key, challenge):
 		version = stream.u8()
-		expected = self.settings.get("pia.lan_version")
+		expected = self.lan_version()
 		if version != expected:
 			logger.warning("Unexpected version in challenge reply header (%i != %i)", version, expected)
 			return False
@@ -322,7 +327,7 @@ class LanBrowser:
 		
 		self.nonce_counter += 1
 		
-		stream.u8(self.settings.get("pia.lan_version"))
+		stream.u8(self.lan_version())
 		stream.bool(self.settings.get("pia.crypto_enabled"))
 		stream.u64(self.nonce_counter)
 		stream.write(key)

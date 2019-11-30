@@ -37,7 +37,6 @@ class Settings:
 		"nex.access_key": str,
 		
 		"pia.version": int,
-		"pia.lan_version": int,
 		"pia.system_version": int,
 		"pia.application_version": int,
 		"pia.station_extension": int,

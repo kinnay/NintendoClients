@@ -46,7 +46,6 @@ key = crypto.create_key(rand, table, 16)
 
 settings = settings.Settings("switch.cfg")
 settings.set("pia.version", 51800)
-settings.set("pia.lan_version", 2)
 
 browser = lan.LanBrowser(settings, key)
 
