@@ -46,6 +46,18 @@ class SSLCertificate:
 	def parse(data, format):
 		cert = crypto.load_certificate(TypeMap[format], data)
 		return SSLCertificate(cert)
+		
+	@staticmethod
+	def generate(key):
+		cert = crypto.X509()
+		cert.set_pubkey(key.obj)
+		
+		cert.set_notBefore(b"20000101000000Z")
+		cert.set_notAfter(b"29990101000000Z")
+		
+		cert.sign(key.obj, "sha1")
+		
+		return SSLCertificate(cert)
 	
 	
 class SSLPrivateKey:
@@ -61,6 +73,12 @@ class SSLPrivateKey:
 	@staticmethod
 	def parse(data, format):
 		pkey = crypto.load_privatekey(TypeMap[format], data)
+		return SSLPrivateKey(pkey)
+		
+	@staticmethod
+	def generate():
+		pkey = crypto.PKey()
+		pkey.generate_key(crypto.TYPE_RSA, 1024)
 		return SSLPrivateKey(pkey)
 
 
@@ -107,6 +125,11 @@ class SSLClient:
 				return b""
 			else:
 				raise e
+		except SSL.Error as e:
+			for error in e.args[0]:
+				logger.error("An SSL error occurred: %s" %error[2])
+			self.s.close()
+			return b""
 	
 	def close(self): self.s.close()
 			
@@ -121,7 +144,13 @@ class SSLServer:
 		if not self.server:
 			self.server = socket.TCPServer()
 		
-		self.context = SSL.Context(VersionMap[version])
+		self.version = VersionMap[version]
+		
+		key = SSLPrivateKey.generate()
+		cert = SSLCertificate.generate(key)
+		self.context = SSL.Context(self.version)
+		self.context.use_certificate(cert.obj)
+		self.context.use_privatekey(key.obj)
 		
 	def set_certificate(self, cert, key):
 		self.context.use_certificate(cert.obj)
