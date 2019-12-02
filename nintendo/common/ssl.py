@@ -96,6 +96,7 @@ class SSLClient:
 	
 	def connect(self, host, port):
 		sock = SSL.Connection(self.context, self.s.fd())
+		sock.set_tlsext_host_name(host.encode())
 		sock.connect((host, port))
 		sock.setblocking(False)
 		
