@@ -23,9 +23,14 @@ STATUS_NAMES = {
 }
 
 
+JSON_TYPES = [
+	"application/json",
+	"application/problem+json"
+]
+
 TEXT_TYPES = [
 	"application/x-www-form-urlencoded",
-	"application/json"
+	*JSON_TYPES
 ]
 
 
@@ -96,7 +101,7 @@ class HTTPMessage:
 			if not self.form.parse(self.text):
 				return False
 		
-		if type == "application/json":
+		if type in JSON_TYPES:
 			try:
 				self.json = json.loads(self.text)
 			except json.JSONDecodeError:
@@ -484,7 +489,7 @@ class HTTPPool:
 		logger.debug("Establishing HTTP connection for %s", host)
 		
 		if tls:
-			sock = ssl.SSLClient()
+			sock = ssl.SSLClient(ssl.VERSION_TLS)
 			if cert:
 				sock.set_certificate(cert[0], cert[1])
 		else:
