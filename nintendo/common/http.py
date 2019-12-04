@@ -460,13 +460,18 @@ class HTTPReqMgr:
 		
 		
 class HTTPPool:
-	def __init__(self):
+	def __init__(self, reuse):
+		self.reuse = reuse
+		
 		self.clients = {}
 		self.timeouts = {}
 		
 	def get(self, req, ssl, cert=None):
 		if "Host" not in req.headers:
 			raise ValueError("HTTP request requires Host header")
+			
+		if not self.reuse:
+			return self.connect(req, ssl, cert)
 			
 		host = req.headers["Host"]
 		key = (host, ssl, cert if ssl else None)
@@ -482,6 +487,10 @@ class HTTPPool:
 			logger.debug("Reusing HTTP connection for %s", host)
 			self.timeouts[key].reset()
 		return self.clients[key]
+		
+	def close(self):
+		for client in self.clients.values():
+			client.close()
 		
 	def connect(self, req, tls, cert):
 		host = req.headers["Host"]
@@ -513,11 +522,14 @@ class HTTPPool:
 		
 		
 class HTTPClient:
-	def __init__(self):
-		self.pool = HTTPPool()
+	def __init__(self, reuse=False):
+		self.pool = HTTPPool(reuse)
+		
+	def close(self):
+		self.pool.close()
 	
-	def request(self, req, ssl, cert=None, timeout=5):
-		client = self.pool.get(req, ssl, cert)
+	def request(self, req, tls, cert=None, timeout=5):
+		client = self.pool.get(req, tls, cert)
 		return client.request(req, timeout)
 
 
