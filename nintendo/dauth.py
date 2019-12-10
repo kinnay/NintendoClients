@@ -25,11 +25,11 @@ class DAuthClient:
 		
 		self.url = "dauth-lp1.ndas.srv.nintendo.net"
 		self.user_agent = "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 9.3.0.0)"
-		self.system_digest = "CusHY#00090001#qVDSOCehwMDCHyDnkXiTSJ1wEJZHtpRV_CLMKgD-fSw="
+		self.system_digest = "CusHY#00090100#vIPNrRbf30SoU8ZJ6uGklMqKAkyjHfdE9m6yLFeChkE="
 		
 		self.power_state = "FA"
 		
-		self.key_generation = 10
+		self.key_generation = 11
 		
 	def set_certificate(self, cert, key): self.cert = cert, key
 	
@@ -54,8 +54,14 @@ class DAuthClient:
 		
 		response = self.client.request(req, True, self.cert)
 		if response.status != 200:
-			logger.error("HTTP request returned status code %i", response.status)
-			raise DAuthError("DAuth request failed with status %i" %response.status)
+			if response.json is not None:
+				logger.error("DAuth request returned errors:")
+				for error in response.json["errors"]:
+					logger.error("  (%s) %s", error["code"], error["message"])
+				raise DAuthError("DAuth request failed: %s" %response.json["errors"][0]["message"])
+			else:
+				logger.error("DAuth request returned status code %i", response.status)
+				raise DAuthError("DAuth request failed with status %i" %response.status)
 		return response
 		
 	def challenge(self):
@@ -86,7 +92,7 @@ class DAuthClient:
 		
 	def get_master_key(self):
 		keygen = self.key_generation
-		keyname = "master_key_%02i" %(keygen - 1)
+		keyname = "master_key_%02x" %(keygen - 1)
 		return self.keyset.get(keyname)
 		
 	def decrypt_key(self, key, kek):
