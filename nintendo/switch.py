@@ -98,21 +98,35 @@ class TicketList:
 			
 		self.tickets = {}
 		for i in range(len(list_data) // 0x20):
-			title_id, key_revision = struct.unpack_from(">qq", list_data, i * 0x20)
+			rights_id = list_data[i * 0x20 : i * 0x20 + 0x10]
+			title_id, key_revision = struct.unpack(">qq", rights_id)
 			if title_id == -1 and key_revision == -1:
 				break
+			
+			ticket_id = struct.unpack_from("<q", list_data, i * 0x20 + 16)[0]
 			
 			ticket_chunk = ticket_data[i * 0x400 : (i + 1) * 0x400]
 			signature_type = struct.unpack_from("<I", ticket_chunk)[0]
 			if signature_type != 0x010004:
-				raise ValueError("Unknown signature type: 0x%X" %signature_type)
+				raise ValueError("Invalid signature type: 0x%X" %signature_type)
 			
 			ticket_size = 0x2C0 + struct.unpack_from("<I", ticket_chunk, 0x2B4)[0]
 			if ticket_size > 0x400:
 				raise ValueError("Found ticket with invalid size")
+				
+			if ticket_id != struct.unpack_from("<q", ticket_chunk, 0x290)[0]:
+				raise ValueError("Ticket has unexpected ticket id")
+				
+			if key_revision != ticket_chunk[0x285]:
+				raise ValueError("Ticket has unexpected master key revision")
+			
+			if rights_id != ticket_chunk[0x2A0 : 0x2B0]:
+				raise ValueError("Ticket has unexpected rights id")
 			
 			ticket = ticket_chunk[:ticket_size]
 			self.tickets[(title_id, key_revision)] = ticket
 			
 	def get(self, title_id, key_revision):
+		if (title_id, key_revision) not in self.tickets:
+			raise ValueError("No ticket found for %016X:%i" %(title_id, key_revision))
 		return self.tickets[(title_id, key_revision)]
