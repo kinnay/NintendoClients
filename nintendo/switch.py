@@ -86,3 +86,33 @@ class ProdInfo:
 		rsa = RSA.construct((pubkey.n, pubkey.e, d))
 		der = rsa.export_key("DER")
 		return ssl.SSLPrivateKey.parse(der, ssl.TYPE_DER)
+
+
+class TicketList:
+	def __init__(self, list_file, ticket_file):
+		with open(list_file, "rb") as f:
+			list_data = f.read()
+			
+		with open(ticket_file, "rb") as f:
+			ticket_data = f.read()
+			
+		self.tickets = {}
+		for i in range(len(list_data) // 0x20):
+			title_id, key_revision = struct.unpack_from(">qq", list_data, i * 0x20)
+			if title_id == -1 and key_revision == -1:
+				break
+			
+			ticket_chunk = ticket_data[i * 0x400 : (i + 1) * 0x400]
+			signature_type = struct.unpack_from("<I", ticket_chunk)[0]
+			if signature_type != 0x010004:
+				raise ValueError("Unknown signature type: 0x%X" %signature_type)
+			
+			ticket_size = 0x2C0 + struct.unpack_from("<I", ticket_chunk, 0x2B4)[0]
+			if ticket_size > 0x400:
+				raise ValueError("Found ticket with invalid size")
+			
+			ticket = ticket_chunk[:ticket_size]
+			self.tickets[(title_id, key_revision)] = ticket
+			
+	def get(self, title_id, key_revision):
+		return self.tickets[(title_id, key_revision)]
