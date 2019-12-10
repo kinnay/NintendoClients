@@ -875,7 +875,7 @@ class PRUDPClient:
 		self.ping_timeout = settings.get("prudp.ping_timeout")
 		
 		self.stream = PRUDPStream(self, settings, sock)
-		self.stream.failure.add(self.cleanup)
+		self.stream.failure.connect(self.cleanup)
 		
 		self.set_access_key(settings.get("nex.access_key"))
 		

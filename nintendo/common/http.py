@@ -356,7 +356,7 @@ class HTTPSocket:
 		self.server = server
 		
 		self.parser = HTTPParser()
-		self.parser.message_event.add(self.process_message)
+		self.parser.message_event.connect(self.process_message)
 		
 		self.event = scheduler.add_socket(self.process_data, sock)
 		
@@ -412,7 +412,7 @@ class HTTPReqMgr:
 		self.event = scheduler.add_socket(self.handle, sock)
 		
 		self.closed = signal.Signal()
-		self.sock.closed.add(self.handle_closed)
+		self.sock.closed.connect(self.handle_closed)
 		
 		self.request_id = 0
 		self.response_id = 0
@@ -482,7 +482,7 @@ class HTTPPool:
 				return None
 			self.clients[key] = sock
 			self.timeouts[key] = scheduler.add_timeout(self.timeout, 15, param=key)
-			sock.closed.add(lambda: self.kill(key))
+			sock.closed.connect(lambda: self.kill(key))
 		else:
 			logger.debug("Reusing HTTP connection for %s", host)
 			self.timeouts[key].reset()
@@ -558,7 +558,7 @@ class HTTPServer:
 		
 		httpsock = HTTPSocket(socket, True)
 		event = scheduler.add_socket(self.handle_req, httpsock, httpsock)
-		httpsock.closed.add(lambda: scheduler.remove(event))
+		httpsock.closed.connect(lambda: scheduler.remove(event))
 		
 	def handle_req(self, request, sock):
 		logger.debug("Received HTTP request: %s %s", request.method, request.path)
