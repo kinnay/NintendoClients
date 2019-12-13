@@ -524,13 +524,17 @@ class HTTPPool:
 class HTTPClient:
 	def __init__(self, reuse=False):
 		self.pool = HTTPPool(reuse)
+		self.reuse = reuse
 		
 	def close(self):
 		self.pool.close()
 	
 	def request(self, req, tls, cert=None, timeout=5):
 		client = self.pool.get(req, tls, cert)
-		return client.request(req, timeout)
+		response = client.request(req, timeout)
+		if not self.reuse:
+			client.close()
+		return response
 
 
 class HTTPServer:
