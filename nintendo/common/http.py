@@ -191,20 +191,18 @@ class HTTPRequest(HTTPMessage):
 		
 
 class HTTPResponse(HTTPMessage):
-	def __init__(self):
+	def __init__(self, status=500):
 		super().__init__()
 		self.version = "HTTP/1.1"
-		self.status = 400
-		self.status_name = "Bad Request"
+		self.status = status
+		self.status_name = STATUS_NAMES[status]
 		
 	def encode_header(self):
 		return "%s %i %s" %(self.version, self.status, self.status_name)
 		
 	@staticmethod
 	def build(status, **kwargs):
-		response = HTTPResponse()
-		response.status = status
-		response.status_name = STATUS_NAMES[status]
+		response = HTTPResponse(status)
 		response.prepare(**kwargs)
 		return response
 
@@ -570,7 +568,7 @@ class HTTPServer:
 		response = self.handle(request)
 		if not isinstance(response, HTTPResponse):
 			logger.error("HTTP handler must return HTTPResponse")
-			response = HTTPResponse.build(500)
+			response = HTTPResponse(500)
 			
 		logger.debug("Sending HTTP response (%i)", response.status)
 		sock.send(response)
