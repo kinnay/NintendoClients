@@ -82,11 +82,16 @@ class SSLPrivateKey:
 		return SSLPrivateKey(pkey)
 
 
+# Using PyOpenSSL here because Python's own ssl
+# library doesn't support loading certificates
+# from memory. PyOpenSSL has weird behavior in
+# non-blocking mode though :(
 class SSLClient:
 	def __init__(self, version=VERSION_TLS12, sock=None):
-		self.s = sock
-		if not self.s:
-			self.s = socket.TCPClient()
+		if not sock:
+			sock = socket.TCPClient()
+		self.remote_addr = sock.remote_address()
+		self.s = sock.fd()
 		
 		self.context = SSL.Context(VersionMap[version])
 		
@@ -95,22 +100,24 @@ class SSLClient:
 		self.context.use_privatekey(key.obj)
 	
 	def connect(self, host, port):
-		sock = SSL.Connection(self.context, self.s.fd())
-		sock.set_tlsext_host_name(host.encode())
-		sock.connect((host, port))
-		sock.setblocking(False)
-		
-		wrapper = socket.SocketWrapper(sock)
-		self.s = socket.TCPClient(wrapper)
+		self.s = SSL.Connection(self.context, self.s)
+		self.s.set_tlsext_host_name(host.encode())
+		self.s.connect((host, port))
+		self.s.setblocking(False)
 		return True
 		
 	def send(self, data):
-		while True:
+		while data:
 			try:
-				self.s.send(data)
-				return
+				length = self.s.send(data)
+				data = data[length:]
 			except SSL.WantReadError:
 				pass
+			except SSL.SysCallError as e:
+				if e.args[0] == 11: #EAGAIN
+					pass
+				else:
+					raise
 	
 	def recv(self, num=4096):
 		try:
@@ -132,11 +139,13 @@ class SSLClient:
 			self.s.close()
 			return b""
 	
-	def close(self): self.s.close()
+	def close(self):
+		self.s.shutdown()
+		self.s.close()
 			
-	def fd(self): return self.s.fd()
-	def local_address(self): return self.s.local_address()
-	def remote_address(self): return self.s.remote_address()
+	def fd(self): return self.s
+	def local_address(self): return self.s.getsockname()
+	def remote_address(self): return self.remote_addr
 
 
 class SSLServer:
