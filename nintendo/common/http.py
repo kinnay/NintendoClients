@@ -155,6 +155,8 @@ class HTTPRequest(HTTPMessage):
 		self.params = HTTPFormData()
 		self.form = HTTPFormData()
 		
+		self.certificate = None
+		
 	def finish(self):
 		if not super().finish():
 			return False
@@ -172,12 +174,13 @@ class HTTPRequest(HTTPMessage):
 		return "%s %s %s" %(self.method, path, self.version)
 	
 	@staticmethod
-	def build(method, path, *, params=None, **kwargs):
+	def build(method, path, *, params=None, certificate=None, **kwargs):
 		request = HTTPRequest()
 		request.method = method
 		request.path = path
 		if params:
 			request.params = params
+		request.certificate = certificate
 		request.prepare(**kwargs)
 		return request
 		
@@ -386,6 +389,7 @@ class HTTPSocket:
 		
 	def process_message(self, message):
 		if isinstance(message, HTTPRequest):
+			message.certificate = self.sock.remote_certificate()
 			if self.server:
 				self.messages.append(message)
 			else:
@@ -464,7 +468,9 @@ class HTTPPool:
 		self.clients = {}
 		self.timeouts = {}
 		
-	def get(self, req, ssl, cert=None):
+	def get(self, req, ssl):
+		cert = req.certificate
+		
 		if "Host" not in req.headers:
 			raise ValueError("HTTP request requires Host header")
 			
@@ -527,8 +533,8 @@ class HTTPClient:
 	def close(self):
 		self.pool.close()
 	
-	def request(self, req, tls, cert=None, timeout=5):
-		client = self.pool.get(req, tls, cert)
+	def request(self, req, tls, timeout=5):
+		client = self.pool.get(req, tls)
 		response = client.request(req, timeout)
 		if not self.reuse:
 			client.close()

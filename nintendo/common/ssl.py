@@ -143,6 +143,11 @@ class SSLClient:
 		self.s.shutdown()
 		self.s.close()
 			
+	def remote_certificate(self):
+		cert = self.s.get_peer_certificate()
+		if cert:
+			return SSLCertificate(cert)
+			
 	def fd(self): return self.s
 	def local_address(self): return self.s.getsockname()
 	def remote_address(self): return self.remote_addr
@@ -161,10 +166,14 @@ class SSLServer:
 		self.context = SSL.Context(self.version)
 		self.context.use_certificate(cert.obj)
 		self.context.use_privatekey(key.obj)
+		self.context.set_verify(SSL.VERIFY_PEER, self.verify_callback)
 		
 	def set_certificate(self, cert, key):
 		self.context.use_certificate(cert.obj)
 		self.context.use_privatekey(key.obj)
+		
+	def verify_callback(self, *args):
+		return True
 		
 	def start(self, host, port):
 		sock = SSL.Connection(self.context, self.server.fd())
