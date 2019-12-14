@@ -225,7 +225,7 @@ class WebSocketClient:
 				self.buffer = self.buffer[offset + size:]
 				
 	def process_packet(self, opcode, payload):
-		if opcode == OPCODE_BINARY:
+		if opcode == OPCODE_BINARY or opcode == OPCODE_TEXT:
 			self.packets.append(payload)
 		elif opcode == OPCODE_DISCONNECT:
 			if self.state == STATE_CONNECTED:
@@ -267,6 +267,11 @@ class WebSocketClient:
 		if self.state != STATE_CONNECTED:
 			raise RuntimeError("Can't send data on a disconnected websocket")
 		self.send_packet(OPCODE_BINARY, data)
+		
+	def send_text(self, text):
+		if self.state!= STATE_CONNECTED:
+			raise RuntimeError("Can't send data on a disconnected websocket")
+		self.send_packet(OPCODE_TEXT, text.encode())
 
 	def recv(self):
 		if self.state != STATE_CONNECTED: return b""
