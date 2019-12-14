@@ -58,6 +58,8 @@ class WebSocketClient:
 		self.fragments = None
 		self.message_type = None
 		self.packets = []
+		
+		self.server_mode = False
 
 	def connect(self, host, port, timeout=None):
 		if self.state != STATE_READY:
@@ -97,6 +99,8 @@ class WebSocketClient:
 			raise RuntimeError("Socket may only be used once")
 			
 		self.state = STATE_ACCEPTING
+		
+		self.server_mode = True
 			
 		self.socket_event = scheduler.add_socket(self.handle_recv, self.sock)
 		
@@ -242,16 +246,22 @@ class WebSocketClient:
 	def send_packet(self, opcode, payload=b""):
 		data = bytes([0x80 | opcode])
 		
+		mask = 0 if self.server_mode else 0x80
+		
 		length = len(payload)
 		if length < 126:
-			data += bytes([0x80 | length])
+			data += bytes([mask | length])
 		elif length <= 0xFFFF:
-			data += struct.pack(">BH", 0xFE, length)
+			data += struct.pack(">BH", mask | 0x7E, length)
 		else:
-			data += struct.pack(">BQ", 0xFF, length)
-			
-		mask = secrets.token_bytes(4)
-		data += mask + self.apply_mask(payload, mask)
+			data += struct.pack(">BQ", mask | 0x7F, length)
+		
+		if self.server_mode:
+			data += payload
+		else:
+			mask = secrets.token_bytes(4)
+			data += mask + self.apply_mask(payload, mask)
+		
 		self.sock.send(data)
 		
 	def close(self):
