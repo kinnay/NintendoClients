@@ -1,6 +1,7 @@
 
 from nintendo.common import scheduler
 import socket
+import ssl
 
 import logging
 logger = logging.getLogger(__name__)
@@ -47,9 +48,10 @@ class SocketWrapper:
 	def recv(self, num=4096):
 		try:
 			return self.s.recv(num)
-		except BlockingIOError:
+		except (BlockingIOError, ssl.SSLWantReadError):
 			pass
-		except OSError:
+		except OSError as e:
+			logger.warning("Socket was closed unexpectedly")
 			return b""
 	
 	def sendto(self, data, addr): self.s.sendto(data, addr)

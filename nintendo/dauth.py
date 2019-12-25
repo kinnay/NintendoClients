@@ -45,6 +45,8 @@ class DAuthClient:
 	def set_key_generation(self, keygen): self.key_generation = keygen
 		
 	def request(self, req):
+		req.certificate = self.cert
+		
 		req.headers["Host"] = self.url
 		req.headers["User-Agent"] = self.user_agent
 		req.headers["Accept"] = "*/*"
@@ -52,7 +54,7 @@ class DAuthClient:
 		req.headers["Content-Length"] = 0
 		req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 		
-		response = self.client.request(req, True, self.cert)
+		response = self.client.request(req, True)
 		if response.status != 200:
 			if response.json is not None:
 				logger.error("DAuth request returned errors:")
