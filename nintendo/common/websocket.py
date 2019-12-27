@@ -231,6 +231,8 @@ class WebSocketClient:
 	def process_packet(self, opcode, payload):
 		if opcode == OPCODE_BINARY or opcode == OPCODE_TEXT:
 			self.packets.append(payload)
+		elif opcode == OPCODE_PING:
+			self.send_packet(OPCODE_PONG, payload)
 		elif opcode == OPCODE_DISCONNECT:
 			if self.state == STATE_CONNECTED:
 				self.send_packet(OPCODE_DISCONNECT)
