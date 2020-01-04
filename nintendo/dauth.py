@@ -111,4 +111,4 @@ class DAuthClient:
 		
 		mac = CMAC.new(key, ciphermod=AES)
 		mac.update(form.encode())
-		return base64.b64encode(mac.digest(), b"-_").decode()
+		return base64.b64encode(mac.digest(), b"-_").decode().rstrip("=")
