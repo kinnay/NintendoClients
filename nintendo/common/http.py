@@ -1,6 +1,7 @@
 
-from . import socket, ssl, signal, util, scheduler, types
+from . import socket, ssl, util, scheduler, types
 import datetime
+import time
 import json
 
 import logging
@@ -13,13 +14,20 @@ RESULT_ERROR = 2
 
 
 STATUS_NAMES = {
+	100: "Continue",
 	200: "OK",
 	400: "Bad Request",
 	401: "Unauthorized",
 	403: "Forbidden",
 	404: "Not Found",
 	405: "Method Not Allowed",
-	500: "Internal Server Error"
+	406: "Not Acceptable",
+	409: "Conflict",
+	412: "Precondition Failed",
+	422: "Unprocessable Entity",
+	500: "Internal Server Error",
+	502: "Bad Gateway",
+	503: "Service Unavailable"
 }
 
 
@@ -48,7 +56,7 @@ class HTTPFormData(types.OrderedDict):
 		fields = data.split("&")
 		for field in fields:
 			if not "=" in field:
-				logger.warning("Malformed form parameter")
+				logger.error("Malformed form parameter")
 				return False
 			key, value = field.split("=", 1)
 			self[key] = value
@@ -63,6 +71,8 @@ class HTTPFormData(types.OrderedDict):
 
 class HTTPMessage:
 	def __init__(self):
+		self.version = "HTTP/1.1"
+	
 		self.headers = HTTPHeaders()
 		self.body = b""
 		
@@ -76,6 +86,24 @@ class HTTPMessage:
 		if body: self.body = body
 		if form: self.form = form
 		
+	def check_version(self):
+		if not self.version.startswith("HTTP/"):
+			logger.error("HTTP version must start with HTTP/")
+			return False
+			
+		if self.version != "HTTP/1.1":
+			logger.error("HTTP version not supported")
+			return False
+			
+		return True
+		
+	def transfer_encodings(self):
+		encoding = self.headers.get("Transfer-Encoding", "identity")
+		return [enc.strip() for enc in encoding.split(",")]
+		
+	def is_chunked(self):
+		return "chunked" in self.transfer_encodings()
+		
 	def finish(self):
 		content_type = self.headers.get("Content-Type", "")
 		fields = content_type.split("; ")
@@ -84,7 +112,7 @@ class HTTPMessage:
 		param = {}
 		for field in fields[1:]:
 			if not "=" in field:
-				logger.warning("Malformed directive Content-Type header")
+				logger.error("Malformed directive Content-Type header")
 				return False
 			
 			key, value = field.split("=", 1)
@@ -94,7 +122,7 @@ class HTTPMessage:
 			try:
 				self.text = self.body.decode(param.get("charset", "UTF-8"))
 			except UnicodeDecodeError:
-				logger.warning("Failed to decode HTTP body")
+				logger.error("Failed to decode HTTP body")
 				return False
 		
 		if type == "application/x-www-form-urlencoded":
@@ -105,30 +133,12 @@ class HTTPMessage:
 			try:
 				self.json = json.loads(self.text)
 			except json.JSONDecodeError:
-				logger.warning("Failed to decode JSON body")
+				logger.error("Failed to decode JSON body")
 				return False
 		
 		return True
 		
-	def encode(self):
-		self.encode_body()
-		
-		encoding = self.headers.get("Transfer-Encoding", "identity")
-		encodings = [enc.strip() for enc in encoding.split(",")]
-		
-		if "chunked" in encodings:
-			self.body = b"%x\r\n" %len(self.body) + self.body + b"\r\n0\r\n\r\n"
-		else:
-			self.headers["Content-Length"] = len(self.body)
-		
-		lines = [self.encode_header()]
-		for key, value in self.headers.items():
-			lines.append("%s: %s" %(key, value))
-		
-		text = "\r\n".join(lines) + "\r\n\r\n"
-		return text.encode() + self.body
-		
-	def encode_body(self):
+	def prepare_body(self):
 		if self.form:
 			if "Content-Type" not in self.headers:
 				self.headers["Content-Type"] = "application/x-www-form-urlencoded"
@@ -141,8 +151,29 @@ class HTTPMessage:
 			
 		if self.text is not None:
 			self.body = self.text.encode()
+			
+		if self.is_chunked():
+			self.body = b"%x\r\n" %len(self.body) + self.body + b"\r\n0\r\n\r\n"
+		else:
+			self.headers["Content-Length"] = len(self.body)
+			if len(self.body) > 1024:
+				self.headers["Expect"] = "100-continue"
+			
+	def encode_start_line(self): return ""
+	
+	def encode(self):
+		return self.encode_headers() + self.encode_body()
+	
+	def encode_headers(self):
+		lines = [self.encode_start_line()]
+		for key, value in self.headers.items():
+			lines.append("%s: %s" %(key, value))
 		
-	def encode_header(self): return ""
+		text = "\r\n".join(lines) + "\r\n\r\n"
+		return text.encode()
+		
+	def encode_body(self):
+		return self.body
 
 
 class HTTPRequest(HTTPMessage):
@@ -150,10 +181,8 @@ class HTTPRequest(HTTPMessage):
 		super().__init__()
 		self.method = "GET"
 		self.path = "/"
-		self.version = "HTTP/1.1"
 		
 		self.params = HTTPFormData()
-		self.form = HTTPFormData()
 		
 		self.certificate = None
 		
@@ -167,11 +196,22 @@ class HTTPRequest(HTTPMessage):
 				return False
 		return True
 		
-	def encode_header(self):
+	def encode_start_line(self):
 		path = self.path
 		if self.params:
 			path += "?" + self.params.encode()
 		return "%s %s %s" %(self.method, path, self.version)
+		
+	def parse_start_line(self, line):
+		fields = line.split(maxsplit=2)
+		if len(fields) != 3:
+			logger.error("Failed to parse HTTP request start line")
+			return False
+		
+		self.method = fields[0]
+		self.path = fields[1]
+		self.version = fields[2]
+		return self.check_version()
 	
 	@staticmethod
 	def build(method, path, *, params=None, certificate=None, **kwargs):
@@ -196,47 +236,99 @@ class HTTPRequest(HTTPMessage):
 class HTTPResponse(HTTPMessage):
 	def __init__(self, status=500):
 		super().__init__()
-		self.version = "HTTP/1.1"
 		self.status = status
 		self.status_name = STATUS_NAMES[status]
 		
-	def encode_header(self):
+	def encode_start_line(self):
 		return "%s %i %s" %(self.version, self.status, self.status_name)
+		
+	def parse_start_line(self, line):
+		fields = line.split(maxsplit=2)
+		if len(fields) != 3:
+			logger.error("Failed to parse HTTP response start line")
+			return False
+		
+		self.version = fields[0]
+		if not self.check_version():
+			return False
+			
+		if not util.is_numeric(fields[1]):
+			logger.error("Received invalid status code in HTTP response")
+			return False
+			
+		self.status = int(fields[1])
+		self.status_name = fields[2]
+		return True
 		
 	@staticmethod
 	def build(status, **kwargs):
 		response = HTTPResponse(status)
 		response.prepare(**kwargs)
 		return response
-
-
+		
+		
 class HTTPParser:
-	def __init__(self):
+	def __init__(self, cls, sock):
+		self.cls = cls
+		self.sock = sock
+		
 		self.buffer = b""
 		self.state = self.state_header
-		self.message = None
+		self.result = RESULT_INCOMPLETE
+		self.message = self.cls()
+		self.messages = []
+		self.callback = None
 		
-		self.message_event = signal.Signal()
+		self.event = scheduler.add_socket(self.process, self.sock)
 		
-	def update(self, data):
+	def cleanup(self):
+		scheduler.remove(self.event)
+		self.sock.close()
+		
+		self.sock = None
+		
+	def listen(self, callback):
+		self.callback = callback
+		
+	def wait(self, timeout):
+		start = time.monotonic()
+		while self.sock and not self.messages:
+			if time.monotonic() - start > timeout:
+				self.cleanup()
+				raise RuntimeError("HTTP request timed out")
+			scheduler.update()
+			
+		if not self.messages:
+			raise RuntimeError("HTTP request failed")
+		
+		return self.messages.pop(0)
+		
+	def process(self, data):
+		if not data:
+			self.cleanup()
+			return
+	
 		self.buffer += data
 		
 		result = self.state()
 		while self.buffer and result == RESULT_DONE:
 			result = self.state()
 		
-		return result
+		if result == RESULT_ERROR:
+			self.cleanup()
 		
 	def finish(self):
 		if not self.message.finish():
 			return RESULT_ERROR
 		
-		self.message_event(self.message)
-		
+		if self.callback:
+			self.callback(self.message)
+		else:
+			self.messages.append(self.message)
+		self.message = self.cls()
 		self.state = self.state_header
-		self.message = None
 		return RESULT_DONE
-	
+		
 	def state_header(self):
 		if not b"\r\n\r\n" in self.buffer:
 			return RESULT_INCOMPLETE
@@ -246,59 +338,38 @@ class HTTPParser:
 		try:
 			lines = header.decode().splitlines()
 		except UnicodeDecodeError:
-			logger.warning("Failed to decode HTTP message")
+			logger.error("Failed to decode HTTP message")
 			return RESULT_ERROR
 			
 		if len(lines) == 0:
-			logger.warning("HTTP message must start with header line")
+			logger.error("HTTP message must start with header line")
 			return RESULT_ERROR
-		
-		fields = lines[0].split(maxsplit=2)
-		if len(fields) != 3:
-			logger.warning("Invalid HTTP start line")
-			return RESULT_ERROR
-		
-		if fields[0].startswith("HTTP/"):
-			if not util.is_numeric(fields[1]):
-				logger.warning("Invalid HTTP status code")
-				return RESULT_ERROR
-			self.message = HTTPResponse()
-			self.message.version = fields[0]
-			self.message.status = int(fields[1])
-			self.message.status_name = fields[2]
-		
-		elif fields[2].startswith("HTTP/"):
-			self.message = HTTPRequest()
-			self.message.method = fields[0]
-			self.message.path = fields[1]
-			self.message.version = fields[2]
 			
-		else:
-			logger.warning("Invalid HTTP start line")
+		if not self.message.parse_start_line(lines[0]):
 			return RESULT_ERROR
-		
+			
 		for header in lines[1:]:
 			if not ": " in header:
-				logger.warning("Invalid line in HTTP headers")
+				logger.error("Invalid line in HTTP headers")
 				return RESULT_ERROR
 			key, value = header.split(": ", 1)
 			self.message.headers[key] = value
-		
-		encoding = self.message.headers.get("Transfer-Encoding", "identity")
-		encodings = [enc.strip() for enc in encoding.split(",")]
-		
-		if "chunked" in encodings:
+			
+		if self.message.headers.get("Expect") == "100-continue":
+			logger.debug("Sending 100-continue response")
+			self.sock.send(HTTPResponse(100).encode())
+			
+		if self.message.is_chunked():
 			self.state = self.state_chunk_header
 			return self.state()
-		
 		elif "Content-Length" in self.message.headers:
 			if not util.is_numeric(self.message.headers["Content-Length"]):
-				logger.warning("Invalid Content-Length header")
+				logger.error("Invalid Content-Length header")
 				return RESULT_ERROR
 			
 			self.state = self.state_body
 			return self.state()
-		
+			
 		return self.finish()
 		
 	def state_chunk_header(self):
@@ -309,11 +380,11 @@ class HTTPParser:
 		try:
 			line = line.decode()
 		except UnicodeDecodeError:
-			logger.warning("Failed to decode chunk length")
+			logger.error("Failed to decode chunk length")
 			return RESULT_ERROR
 			
 		if not util.is_hexadecimal(line):
-			logger.warning("Invalid HTTP chunk length")
+			logger.error("Invalid HTTP chunk length")
 			return RESULT_ERROR
 		
 		self.chunk_length = int(line, 16)
@@ -326,7 +397,7 @@ class HTTPParser:
 			return RESULT_INCOMPLETE
 			
 		if self.buffer[self.chunk_length : self.chunk_length + 2] != b"\r\n":
-			logger.warning("HTTP chunk should be terminated with \\r\\n")
+			logger.error("HTTP chunk should be terminated with \\r\\n")
 			return RESULT_ERROR
 		
 		self.message.body += self.buffer[:self.chunk_length]
@@ -345,199 +416,84 @@ class HTTPParser:
 			return RESULT_INCOMPLETE
 			
 		self.message.body = self.buffer[:length]
-		
 		self.buffer = self.buffer[length:]
-		
 		return self.finish()
-		
-		
-class HTTPSocket:
-	def __init__(self, sock, server):
-		self.sock = sock
-		self.server = server
-		
-		self.parser = HTTPParser()
-		self.parser.message_event.connect(self.process_message)
-		
-		self.event = scheduler.add_socket(self.process_data, sock)
-		
-		self.active = True
-		self.closed = signal.Signal()
-		
-		self.messages = []
-	
-	def set_certificate(self, cert, key):
-		self.sock.set_certificate(cert, key)
-		
-	def close(self):
-		if self.active:
-			self.active = False
-			scheduler.remove(self.event)
-			self.sock.close()
-			self.closed()
-		
-	def process_data(self, data):
-		if not data:
-			logger.debug("HTTP socket was closed")
-			scheduler.remove(self.event)
-			self.closed()
-			self.active = False
-		else:
-			if self.parser.update(data) == RESULT_ERROR:
-				logger.warning("HTTP message parsing failed")
-				self.close()
-		
-	def process_message(self, message):
-		if isinstance(message, HTTPRequest):
-			message.certificate = self.sock.remote_certificate()
-			if self.server:
-				self.messages.append(message)
-			else:
-				logger.warning("Received unexpected HTTP request")
-		else:
-			if not self.server:
-				self.messages.append(message)
-			else:
-				logger.warning("Received unexpected HTTP response")
-	
-	def send(self, message):
-		self.sock.send(message.encode())
-	
-	def recv(self):
-		if self.messages:
-			return self.messages.pop(0)
-			
-			
-class HTTPReqMgr:
-	def __init__(self, sock):
-		self.sock = sock
-		self.event = scheduler.add_socket(self.handle, sock)
-		
-		self.closed = signal.Signal()
-		self.sock.closed.connect(self.handle_closed)
-		
-		self.request_id = 0
-		self.response_id = 0
-		self.responses = {}
-		
-	def handle_closed(self):
-		for i in range(self.response_id, self.request_id):
-			self.responses[i] = -1
-		self.closed()
-		
-	def close(self):
-		scheduler.remove(self.event)
-		self.sock.close()
 
-	def handle(self, message):
-		self.responses[self.response_id] = message
-		self.response_id += 1
-		
-	def cancel(self, id):
-		self.responses[id] = -2
-		
-	def request(self, req, timeout=5):
-		id = self.request_id
-		self.request_id += 1
-		
-		self.sock.send(req)
-		
-		event = scheduler.add_timeout(self.cancel, timeout, param=id)
-		while id not in self.responses:
-			scheduler.update()
-		scheduler.remove(event)
-		
-		response = self.responses.pop(id)
-		if response == -1:
-			raise ConnectionError("HTTP connection was closed unexpectedly")
-		elif response == -2:
-			self.close()
-			raise ConnectionError("HTTP request timed out")
-			
-		if response.headers.get("Connection") == "close":
-			logger.debug("Server requested connection close")
-			self.close()
-		
-		return response
-		
-		
-class HTTPPool:
-	def __init__(self, reuse):
-		self.reuse = reuse
-		
-		self.clients = {}
-		self.timeouts = {}
-		
-	def get(self, req, ssl):
-		cert = req.certificate
-		
-		if "Host" not in req.headers:
-			raise ValueError("HTTP request requires Host header")
-			
-		if not self.reuse:
-			return self.connect(req, ssl, cert)
-			
-		host = req.headers["Host"]
-		key = (host, ssl, cert if ssl else None)
-		
-		if key not in self.clients:
-			sock = self.connect(req, ssl, cert)
-			if not sock:
-				return None
-			self.clients[key] = sock
-			self.timeouts[key] = scheduler.add_timeout(self.timeout, 15, param=key)
-			sock.closed.connect(lambda: self.kill(key))
-		else:
-			logger.debug("Reusing HTTP connection for %s", host)
-			self.timeouts[key].reset()
-		return self.clients[key]
-		
-	def close(self):
-		for client in self.clients.values():
-			client.close()
-		
-	def connect(self, req, tls, cert):
-		host = req.headers["Host"]
-		
-		logger.debug("Establishing HTTP connection for %s", host)
-		
+
+class HTTPReqClient:
+	def create_socket(self, req, tls):
 		if tls:
-			sock = ssl.SSLClient(ssl.VERSION_TLS)
+			sock = ssl.SSLClient(ssl.VERSION_TLS12)
+			
+			cert = req.certificate
 			if cert:
 				sock.set_certificate(cert[0], cert[1])
 		else:
-			sock = socket.TCPSocket()
-		
-		port = 443 if ssl else 80
-		if not sock.connect(host, port):
-			logger.error("Failed to establish HTTP connection")
-			return None
-		
-		httpsock = HTTPSocket(sock, False)
-		return HTTPReqMgr(httpsock)
-		
-	def timeout(self, key):
-		logger.debug("Closing HTTP connection due to inactivity")
-		self.clients[key].close()
-		
-	def kill(self, key):
-		scheduler.remove(self.timeouts.pop(key))
-		self.clients.pop(key)
-		
-		
-class HTTPClient:
-	def __init__(self, reuse=False):
-		self.pool = HTTPPool(reuse)
-		self.reuse = reuse
-		
-	def close(self):
-		self.pool.close()
+			sock = socket.TCPClient()
+		return sock
 	
-	def request(self, req, tls, timeout=5):
-		client = self.pool.get(req, tls)
-		response = client.request(req, timeout)
-		if not self.reuse:
-			client.close()
+	def connect(self, req, tls, timeout):
+		if "Host" not in req.headers:
+			raise ValueError("HTTP request requires Host header")
+	
+		sock = self.create_socket(req, tls)
+			
+		host = req.headers["Host"]
+		port = 443 if tls else 80
+		
+		logger.debug("Establishing HTTP connection with %s:%i", host, port)
+		if not sock.connect(host, port, timeout):
+			raise RuntimeError("Failed to establish HTTP connection")
+			
+		return sock
+		
+	def process(self, req, tls, timeout):
+		sock = self.connect(req, tls, timeout)
+		parser = HTTPParser(HTTPResponse, sock)
+
+		req.prepare_body()
+		sock.send(req.encode_headers())
+		
+		if req.headers.get("Expect") == "100-continue":
+			response = parser.wait(timeout)
+			if response.status != 100:
+				parser.cleanup()
+				return response
+			
+		sock.send(req.encode_body())
+
+		response = parser.wait(timeout)
+		parser.cleanup()
+		
+		return response
+				
+				
+class HTTPReqServer:
+	def __init__(self, sock):
+		self.sock = sock
+		
+	def accept(self, callback):
+		self.callback = callback
+		self.decoder = HTTPParser(HTTPRequest, self.sock)
+		self.decoder.listen(self.process_request)
+				
+	def process_request(self, request):
+		response = self.callback(request)
+		response.prepare_body()
+		self.sock.send(response.encode())
+		
+		if request.headers.get("Connection") == "close":
+			logger.debug("Client requested connection close")
+			self.cleanup()
+			return
+
+
+class HTTPClient:
+	def request(self, req, tls, timeout=3):
+		client = HTTPReqClient()
+		logger.debug("Performing HTTP request: %s %s", req.method, req.path)
+		response = client.process(req, tls, timeout)
+		logger.debug("Received HTTP response: %i", response.status)
 		return response
 
 
@@ -564,21 +520,20 @@ class HTTPServer:
 		address = socket.remote_address()
 		logger.debug("New HTTP connection: %s:%i", address[0], address[1])
 		
-		httpsock = HTTPSocket(socket, True)
-		event = scheduler.add_socket(self.handle_req, httpsock, httpsock)
-		httpsock.closed.connect(lambda: scheduler.remove(event))
+		httpsock = HTTPReqServer(socket)
+		httpsock.accept(self.handle_req)
 		
-	def handle_req(self, request, sock):
+	def handle_req(self, request):
 		logger.debug("Received HTTP request: %s %s", request.method, request.path)
 		
 		response = self.handle(request)
 		if not isinstance(response, HTTPResponse):
 			logger.error("HTTP handler must return HTTPResponse")
 			response = HTTPResponse(500)
-			
-		logger.debug("Sending HTTP response (%i)", response.status)
-		sock.send(response)
 		
-		if request.headers.get("Connection") == "close":
-			logger.debug("Client requested connection close")
-			sock.close()
+		logger.debug("Sending HTTP response (%i)", response.status)
+		return response
+		
+	def handle(self, request):
+		logger.error("Server does not implement a HTTP request handler")
+		return HTTPResponse(500)
