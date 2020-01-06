@@ -183,7 +183,7 @@ class UDPServer:
 	def fd(self): return self.s.fd()
 	
 	def start(self, host, port):
-		self.s.bind((host, port))
+		self.s.bind(host, port)
 		scheduler.add_callback(self.update)
 		
 	def accept(self):
@@ -197,12 +197,11 @@ class UDPServer:
 		self.s.sendto(data, addr)
 			
 	def update(self):
-		try:
-			data, addr = self.s.recvfrom(4096)
+		result = self.s.recvfrom(4096)
+		if result:
+			data, addr = result
 			if addr not in self.clients:
 				client = UDPServerClient(self, addr)
 				self.clients[addr] = client
 				self.incoming.append(client)
 			self.clients[addr].handle(data)
-		except (BlockingIOError, ConnectionResetError):
-			pass
