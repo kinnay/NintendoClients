@@ -1,8 +1,8 @@
 
 from nintendo.common.http import HTTPClient, HTTPRequest
+from nintendo.switch import b64encode, b64decode
 from Crypto.Hash import CMAC
 from Crypto.Cipher import AES
-import base64
 
 import logging
 logger = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ class DAuthClient:
 	def device_token(self):
 		challenge = self.challenge()
 		
-		data = base64.b64decode(challenge["data"].encode(), b"-_")
+		data = b64decode(challenge["data"])
 		
 		req = HTTPRequest.post("/v6/device_auth_token")
 		req.form["challenge"] = challenge["challenge"]
@@ -90,7 +90,7 @@ class DAuthClient:
 		req.form["mac"] = self.calculate_mac(req.form.encode(), data)
 		
 		response = self.request(req)
-		return response.json["device_auth_token"]
+		return response.json
 		
 	def get_master_key(self):
 		keygen = self.key_generation
@@ -111,4 +111,4 @@ class DAuthClient:
 		
 		mac = CMAC.new(key, ciphermod=AES)
 		mac.update(form.encode())
-		return base64.b64encode(mac.digest(), b"-_").decode().rstrip("=")
+		return b64encode(mac.digest())
