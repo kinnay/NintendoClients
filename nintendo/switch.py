@@ -4,6 +4,16 @@ from Crypto.PublicKey import RSA
 from nintendo.common import ssl
 import hashlib
 import struct
+import base64
+
+
+def b64encode(data):
+	return base64.b64encode(data, b"-_").decode().rstrip("=")
+	
+def b64decode(text):
+	length = (len(text) + 3) & ~3
+	text = text.ljust(length, "=")
+	return base64.b64decode(text.encode(), b"-_")
 
 
 class KeySet:
