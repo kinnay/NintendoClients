@@ -38,6 +38,7 @@ JSON_TYPES = [
 
 TEXT_TYPES = [
 	"application/x-www-form-urlencoded",
+	"text/plain",
 	*JSON_TYPES
 ]
 
@@ -150,6 +151,8 @@ class HTTPMessage:
 			self.text = json.dumps(self.json)
 			
 		if self.text is not None:
+			if "Content-Type" not in self.headers:
+				self.headers["Content-Type"] = "text/plain"
 			self.body = self.text.encode()
 			
 		if self.is_chunked():
