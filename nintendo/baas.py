@@ -16,22 +16,26 @@ class BAASClient:
 		self.user_agent = "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)"
 		self.power_state = "FA"
 		
-		self.token = None
+		self.access_token = None
+		self.login_token = None
 		
 	def set_url(self, url): self.url = url
 	def set_user_agent(self, agent): self.user_agent = agent
 	def set_power_state(self, state): self.power_state = state
 		
-	def request(self, req):
+	def request(self, req, token, use_power_state):
 		req.headers["Host"] = self.url
 		req.headers["User-Agent"] = self.user_agent
 		req.headers["Accept"] = "*/*"
-		req.headers["X-Nintendo-PowerState"] = self.power_state
+		if token:
+			req.headers["Authorization"] = token
+		if use_power_state:
+			req.headers["X-Nintendo-PowerState"] = self.power_state
 		req.headers["Content-Length"] = 0
 		req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 		
 		response = self.client.request(req, True)
-		if response.status != 200:
+		if response.status not in [200, 201]:
 			logger.warning("BAAS request returned error: %s" %response.json)
 			raise BAASError("BAAS request failed: %s" %response.json["title"])
 		return response
@@ -41,6 +45,22 @@ class BAASClient:
 		req.form["grantType"] = "public_client"
 		req.form["assertion"] = device_token
 		
-		response = self.request(req)
-		self.token = response.json["tokenType"] + response.json["accessToken"]
-		return response
+		response = self.request(req, False, True)
+		self.access_token = response.json["tokenType"] + " " + response.json["accessToken"]
+		return response.json
+		
+	def login(self, id, password, app_token=None):
+		req = HTTPRequest.post("/1.0.0/login")
+		req.form["id"] = id
+		req.form["password"] = password
+		if app_token:
+			req.form["appAuthNToken"] = app_token
+			
+		response = self.request(req, self.access_token, True)
+		self.login_token = response.json["tokenType"] + " " + response.json["accessToken"]
+		return response.json
+		
+	def register(self):
+		req = HTTPRequest.post("/1.0.0/users")
+		response = self.request(req, self.access_token, False)
+		return response.json
