@@ -33,10 +33,10 @@ class NotificationServer(notification.NintendoNotificationServer):
 			print("%s is now offline" %name)
 
 		elif event.type == notification.NintendoNotificationType.UNFRIENDED:
-			print("%s removed you from his friend list" %name)
+			print("%s removed you from their friend list" %name)
 
 		elif event.type == notification.NintendoNotificationType.STATUS_CHANGE:
-			print("%s changed his status message to: %s" %(name, event.data.text))
+			print("%s changed their status message to: %s" %(name, event.data.text))
 			
 		elif event.type == notification.NintendoNotificationType.PRESENCE_CHANGE:
 			presence = event.data
