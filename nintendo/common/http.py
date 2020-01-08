@@ -444,7 +444,7 @@ class HTTPReqClient:
 		host = req.headers["Host"]
 		port = 443 if tls else 80
 		
-		logger.debug("Establishing HTTP connection with %s:%i", host, port)
+		logger.info("Establishing HTTP connection with %s:%i", host, port)
 		if not sock.connect(host, port, timeout):
 			raise RuntimeError("Failed to establish HTTP connection")
 			
@@ -494,9 +494,9 @@ class HTTPReqServer:
 class HTTPClient:
 	def request(self, req, tls, timeout=3):
 		client = HTTPReqClient()
-		logger.debug("Performing HTTP request: %s %s", req.method, req.path)
+		logger.info("Performing HTTP request: %s %s", req.method, req.path)
 		response = client.process(req, tls, timeout)
-		logger.debug("Received HTTP response: %i", response.status)
+		logger.info("Received HTTP response: %i", response.status)
 		return response
 
 
@@ -521,20 +521,20 @@ class HTTPServer:
 		
 	def handle_conn(self, socket):
 		address = socket.remote_address()
-		logger.debug("New HTTP connection: %s:%i", address[0], address[1])
+		logger.info("New HTTP connection: %s:%i", address[0], address[1])
 		
 		httpsock = HTTPReqServer(socket)
 		httpsock.accept(self.handle_req)
 		
 	def handle_req(self, request):
-		logger.debug("Received HTTP request: %s %s", request.method, request.path)
+		logger.info("Received HTTP request: %s %s", request.method, request.path)
 		
 		response = self.handle(request)
 		if not isinstance(response, HTTPResponse):
 			logger.error("HTTP handler must return HTTPResponse")
 			response = HTTPResponse(500)
 		
-		logger.debug("Sending HTTP response (%i)", response.status)
+		logger.info("Sending HTTP response (%i)", response.status)
 		return response
 		
 	def handle(self, request):
