@@ -41,9 +41,9 @@ class BackEndClient:
 	def configure(self, access_key, nex_version, client_version=None):
 		self.settings.set("nex.access_key", access_key)
 		self.settings.set("nex.version", nex_version)
-		if nex_version >= 40500:
+		if nex_version >= 40400:
 			if client_version is None:
-				raise ValueError("Must specify client version for NEX 4.5.0 or later")
+				raise ValueError("Must specify client version for NEX 4.4.0 or later")
 			self.settings.set("nex.client_version", client_version)
 		self.auth_client.set_access_key(access_key)
 		self.secure_client.set_access_key(access_key)
@@ -58,7 +58,7 @@ class BackEndClient:
 		self.secure_client.close()
 		
 	def login(self, username, password=None, auth_info=None, login_data=None):
-		if self.settings.get("nex.version") < 40500:
+		if self.settings.get("nex.version") < 40400:
 			result = self.login_normal(username, auth_info)
 		else:
 			result = self.login_with_param(username, auth_info)
