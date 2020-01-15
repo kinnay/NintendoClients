@@ -134,9 +134,12 @@ class TicketList:
 				raise ValueError("Ticket has unexpected rights id")
 			
 			ticket = ticket_chunk[:ticket_size]
-			self.tickets[(title_id, key_revision)] = ticket
 			
-	def get(self, title_id, key_revision):
-		if (title_id, key_revision) not in self.tickets:
-			raise ValueError("No ticket found for %016X:%i" %(title_id, key_revision))
-		return self.tickets[(title_id, key_revision)]
+			if title_id in self.tickets:
+				raise ValueError("Found multiple tickets for title %016X" %title_id)
+			self.tickets[title_id] = ticket
+			
+	def get(self, title_id):
+		if title_id not in self.tickets:
+			raise ValueError("No ticket found for %016X" %title_id)
+		return self.tickets[title_id]
