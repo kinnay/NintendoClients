@@ -1,4 +1,5 @@
 
+import netifaces
 import struct
 import socket
 import string
@@ -23,3 +24,13 @@ def crc16(data):
 				
 		hash ^= char
 	return hash
+	
+def local_address():
+	interface = netifaces.gateways()["default"][netifaces.AF_INET][1]
+	addresses = netifaces.ifaddresses(interface)[netifaces.AF_INET][0]
+	return addresses["addr"]
+	
+def broadcast_address():
+	interface = netifaces.gateways()["default"][netifaces.AF_INET][1]
+	addresses = netifaces.ifaddresses(interface)[netifaces.AF_INET][0]
+	return addresses["broadcast"]

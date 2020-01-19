@@ -1,5 +1,5 @@
 
-from nintendo.common import scheduler
+from nintendo.common import scheduler, util
 import socket
 import ssl
 
@@ -61,7 +61,12 @@ class SocketWrapper:
 		except (BlockingIOError, ConnectionResetError):
 			pass
 			
-	def local_address(self): return self.s.getsockname()
+	def local_address(self):
+		host, port = self.s.getsockname()
+		if host == "0.0.0.0":
+			return util.local_address(), port
+		return host, port
+	
 	def remote_address(self): return self.remote_addr
 
 

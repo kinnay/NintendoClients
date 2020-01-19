@@ -78,6 +78,7 @@ class Tetris99:
 	
 class Splatoon2:
 	PIA_VERSION = 50901
+	PIA_APP_VERSION = 60
 	PIA_KEY = bytes.fromhex("ee182a63e216cdb1f51ad4bed8cf6508")
 	
 class SMM2:

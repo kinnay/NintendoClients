@@ -13,8 +13,8 @@ class StreamOut(streams.StreamOut):
 		else:
 			self.u32(value)
 		
-	def add(self, inst):
-		inst.encode(self)
+	def add(self, inst, *args):
+		inst.encode(self, *args)
 		
 		
 class StreamIn(streams.StreamIn):
@@ -27,7 +27,7 @@ class StreamIn(streams.StreamIn):
 			return self.u64()
 		return self.u32()
 		
-	def extract(self, cls):
+	def extract(self, cls, *args):
 		inst = cls()
-		inst.decode(self)
+		inst.decode(self, *args)
 		return inst

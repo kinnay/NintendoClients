@@ -41,7 +41,12 @@ class Settings:
 		"pia.application_version": int,
 		"pia.station_extension": int,
 		"pia.crypto_enabled": int,
-		"pia.crypto_required": int
+		"pia.encryption_method": int,
+		"pia.signature_method": int,
+		"pia.header_version": int,
+		"pia.message_version": int,
+		"pia.protocol_type_revision": int,
+		"pia.lan_version": int
 	}
 
 	def __init__(self, filename=None):

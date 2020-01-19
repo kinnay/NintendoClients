@@ -149,11 +149,14 @@ DataHolder.register(NullData, "NullData")
 		
 class StationURL:
 
-	str_params = ["address"]
+	str_params = ["address", "Rsa"]
 	int_params = ["port", "stream", "sid", "PID", "CID", "type", "RVCID",
-				  "natm", "natf", "upnp", "pmp", "probeinit", "PRID"]
+				  "natm", "natf", "upnp", "pmp", "probeinit", "PRID",
+				  "Rsp"
+				  ]
 				  
 	url_types = {
+		None: 0,
 		"prudp": 1,
 		"prudps": 2,
 		"udp": 3
@@ -180,7 +183,7 @@ class StationURL:
 		
 	def __getitem__(self, field):
 		if field in self.str_params:
-			return str(self.params.get(field, ""))
+			return str(self.params.get(field, "0.0.0.0"))
 		if field in self.int_params:
 			return int(self.params.get(field, 0))
 		raise KeyError(field)

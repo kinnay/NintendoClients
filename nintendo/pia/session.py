@@ -1,223 +1,353 @@
 
-from nintendo.common import scheduler
-from nintendo.pia.natcheck import NATDetecter
-from nintendo.pia.nattraversal import NATTraversalProtocol, NATTraversalMgr
-from nintendo.pia.station import StationLocation, StationConnectionInfo, \
-	IdentificationInfo, StationProtocol, StationMgr
-from nintendo.pia.mesh import MeshProtocol, MeshMgr
-from nintendo.pia.keepalive import KeepAliveProtocol, KeepAliveMgr
-from nintendo.pia.unreliable import UnreliableProtocol
-from nintendo.pia.rtt import RttProtocol
-from nintendo.pia.transport import MessageTransport, ResendingTransport
-from nintendo.nex import secure
+from nintendo.pia.proto.station import StationProtocol
+from nintendo.pia.proto.mesh import MeshProtocol
+from nintendo.pia.proto.lan import LanProtocol
+from nintendo.pia.proto.unreliable import UnreliableProtocol
+from nintendo.pia.types import StationConnectionInfo, StationLocation, StationAddress
+from nintendo.pia.message import MessageTransport
+from nintendo.pia.resender import ResendingTransport
+from nintendo.pia.stations import StationTable, ConnectionState
+from nintendo.pia.lan import LANServer, LanStationInfo
+from nintendo.pia.mesh import Mesh
+from nintendo.nex.matchmaking import MatchmakeSession, MatchmakeExtensionClient, MatchMakingClient
+from nintendo.settings import Settings
+from nintendo.common import scheduler, util
+import secrets
+import random
+import socket
+import struct
+import hashlib
+import hmac
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class ConnectionMgr:
+class SessionSettings:
+	def __init__(self):
+		self.game_mode = 0
+		self.session_type = 0
+		self.attributes = [0] * 6
+		
+		self.min_participants = 1
+		self.max_participants = 4
+		
+		self.application_data = b""
 
-	RESULT_OK = 0
-	RESULT_NONE = 1
-	RESULT_TIMEOUT = 2
-	RESULT_DENIED = 3
 
-	def __init__(self, session):
-		self.session = session
-		self.backend = session.backend
-		self.nat_mgr = session.nat_mgr
-		self.nat_mgr.nat_traversal_finished.add(self.handle_nat_traversal_finished)
-		self.station_mgr = session.station_mgr
-		self.station_mgr.station_connected.add(self.handle_station_connected)
-		self.station_mgr.station_disconnected.add(self.handle_station_disconnected)
-		self.station_mgr.connection_denied.add(self.handle_connection_denied)
-		
-		self.timeouts = {}
-		self.pending_nat = []
-		self.pending_connect = []
-		self.results = {}
-	
-	def connect(self, *infos):
-		for info in infos:
-			self.connect_async(info)
-		for info in infos:
-			self.wait(info)
-		
-	def connect_async(self, info):
-		target_ip = info.public_station.address.address.host
-		my_ip = self.backend.public_station["address"]
-		
-		target = info.public_station
-		if target_ip == my_ip:
-			target = info.local_station
-	
-		rvcid = target.rvcid
-		if self.results.get(rvcid) != self.RESULT_OK:
-			if rvcid == self.session.rvcid:
-				self.results[rvcid] = self.RESULT_OK
-			else:
-				self.results[rvcid] = self.RESULT_NONE
-
-				self.timeouts[rvcid] = scheduler.add_timeout(
-					self.handle_timeout, 8, False, rvcid
-				)
-				
-				self.pending_nat.append(rvcid)
-				self.nat_mgr.start_nat_traversal(target.to_station_url())
-		
-	def wait(self, info):
-		rvcid = info.public_station.rvcid
-		while self.results[rvcid] == self.RESULT_NONE:
-			scheduler.update()
-			
-		result = self.results[rvcid]
-		if result == self.RESULT_TIMEOUT:
-			raise ConnectionError("Connection timed out")
-		if result == self.RESULT_DENIED:
-			raise ConnectionError("Connection denied")
-		
-	def handle_nat_traversal_finished(self, station):
-		if station.rvcid in self.pending_nat:
-			logger.info("NAT traversal completed")
-			self.pending_connect.append(station.rvcid)
-			self.pending_nat.remove(station.rvcid)
-			self.station_mgr.connect(station)
-			
-	def handle_station_connected(self, station):
-		if station.rvcid in self.pending_connect:
-			logger.info("Successfully connected to station")
-			self.pending_connect.remove(station.rvcid)
-			self.results[station.rvcid] = self.RESULT_OK
-			scheduler.remove(self.timeouts.pop(station.rvcid))
-			
-	def handle_connection_denied(self, station):
-		if station.rvcid in self.pending_connect:
-			self.results[station.rvcid] = self.RESULT_DENIED
-			scheduler.remove(self.timeouts.pop(station.rvcid))
-			self.pending_connect.remove(station.rvcid)
-			
-	def handle_timeout(self, rvcid):
-		logger.warning("Connection attempt timed out (rvcid=%i)", rvcid)
-		self.timeouts.pop(rvcid)
-		if rvcid in self.pending_nat:
-			self.pending_nat.remove(rvcid)
-		if rvcid in self.pending_connect:
-			self.pending_connect.remove(rvcid)
-
-			station = self.station_mgr.find_by_rvcid(rvcid)
-			self.station_mgr.cancel_connection(station)
-		self.results[rvcid] = self.RESULT_TIMEOUT
-
-	def handle_station_disconnected(self, station):
-		if self.results.get(station.rvcid) == self.RESULT_OK:
-			del self.results[station.rvcid]
-		
-		
 class PIASession:
-	def __init__(self, backend, session_key):
-		self.backend = backend
-		self.session_key = session_key
+	def __init__(self, settings=None):
+		if isinstance(settings, Settings):
+			self.settings = settings.copy()
+		else:
+			self.settings = Settings(settings)
 		
-		self.secure_client = secure.SecureConnectionClient(backend.secure_client)
-		
+		self.stations = StationTable()
 		self.transport = MessageTransport(self)
-		self.resending_transport = ResendingTransport(self.transport)
+		self.resender = ResendingTransport(self.transport)
+		self.mesh = Mesh()
 		
-		self.nat_protocol = NATTraversalProtocol(self)
+		self.session_key = None
+		self.my_station = None
+		
+		self.session_settings = None
+		
+		self.protocols = {}
+	
+	def configure(self, version):
+		self.settings.set("pia.version", version)
+		self.settings.set("pia.station_extension", version < 50000)
+		self.settings.set("pia.crypto_enabled", version >= 50900)
+		if version >= 50900:
+			self.settings.set("pia.encryption_method", 1)
+			self.settings.set("pia.signature_method", 0)
+		if version >= 51100:
+			self.settings.set("pia.header_version", 4)
+		if version >= 50900:
+			self.settings.set("pia.protocol_type_revision", 1)
+		self.settings.set("pia.message_version", self.derive_message_version(version))
+		
+	def derive_message_version(self, pia_version):
+		major_version = pia_version // 100
+		if major_version <= 503: return 0
+		if major_version in [509, 510]: return 1
+		if major_version == 511: return 2
+		if 514 <= major_version <= 517: return 3
+		if major_version == 518: return 4
+		raise ValueError("Unsupported PIA version: %i" %pia_version)
+		
+	def register_protocol(self, protocol):
+		self.protocols[protocol.get_protocol_type()] = protocol
+		
+	def create_protocols(self):
 		self.station_protocol = StationProtocol(self)
 		self.mesh_protocol = MeshProtocol(self)
-		self.keep_alive_protocol = KeepAliveProtocol(self)
 		self.unreliable_protocol = UnreliableProtocol(self)
-		self.rtt_protocol = RttProtocol(self)
 		
-		self.protocols = {
-			NATTraversalProtocol.PROTOCOL_ID: self.nat_protocol,
-			StationProtocol.PROTOCOL_ID: self.station_protocol,
-			MeshProtocol.PROTOCOL_ID: self.mesh_protocol,
-			KeepAliveProtocol.PROTOCOL_ID: self.keep_alive_protocol,
-			UnreliableProtocol.PROTOCOL_ID: self.unreliable_protocol,
-			RttProtocol.PROTOCOL_ID: self.rtt_protocol
-		}
+		self.register_protocol(self.station_protocol)
+		self.register_protocol(self.mesh_protocol)
+		self.register_protocol(self.unreliable_protocol)
 		
-		self.station_mgr = StationMgr(self)
-		self.nat_mgr = NATTraversalMgr(self)
-		self.connection_mgr = ConnectionMgr(self)
-		self.mesh_mgr = MeshMgr(self)
-		self.keep_alive_mgr = KeepAliveMgr(self)
-		
-	def start(self, identification, name):
+	def get_protocol(self, type):
+		return self.protocols[type]
+	
+	def prepare(self, identification_info):
 		logger.info("Initializing PIA session")
+		self.create_protocols()
 		
-		#Rendez-Vous connection id
-		self.rvcid = self.backend.local_station["RVCID"]
+		self.transport.prepare()
+		
+		location = self.prepare_station_location()
+		
+		connection_info = StationConnectionInfo(location)
+		
+		self.my_station = self.stations.create()
+		self.my_station.connection_state = ConnectionState.CONNECTED
+		self.my_station.address = self.transport.local_address()
+		self.my_station.connection_info = connection_info
+		self.my_station.identification_info = identification_info
+		self.my_station.id = self.build_station_id()
+		
+		self.event = scheduler.add_socket(self.handle_recv, self.transport)
+		
+	def cleanup(self):
+		scheduler.remove(self.event)
+		self.transport.cleanup()
 	
-		detecter = NATDetecter()
-		props = detecter.get_nat_properties()
-		self.nat_mgr.report_nat_properties(props)
-
-		self.create_local_station(props, identification, name)
+	def create_mesh(self, session_key, settings):
+		self.session_key = session_key
+		self.session_settings = settings
 		
-		self.transport.start(props.local_address)
-		self.transport.packet_received.add(self.handle_packet)
+		self.mesh.create(self.my_station)
 		
-	def close(self):
-		logger.info("Closing PIA session")
-		print("TODO: Implement PIASession.close")
-			
-	def create_local_station(self, props, identification, name):
-		self.station = self.station_mgr.create(props.local_address, self.rvcid)
-		self.station.is_connected = True
-	
-		local_station_url = self.backend.local_station.copy()
-		local_station_url["natm"] = props.nat_mapping
-		local_station_url["natf"] = props.nat_filtering
-		local_station_url["port"] = props.local_address[1]
+	def join_mesh(self, session_key, host_location):
+		self.session_key = session_key
 		
-		public_station_url = self.backend.public_station.copy()
-		public_station_url["natm"] = props.nat_mapping
-		public_station_url["natf"] = props.nat_filtering
-		public_station_url["port"] = props.public_address[1]
+		connection_info = StationConnectionInfo(host_location)
 		
-		self.secure_client.replace_url(self.backend.local_station, local_station_url)
-		self.backend.local_station = local_station_url
-		self.backend.public_station = public_station_url
+		address = host_location.local.address
+		host = self.stations.create()
+		host.address = address.host, address.port
+		host.connection_info = connection_info
+		self.connect_station(host)
+		host.wait_connected()
 		
-		local_location = StationLocation.from_station_url(local_station_url)
-		public_location = StationLocation.from_station_url(public_station_url)
-		self.station.connection_info = StationConnectionInfo(public_location, local_location)
+		self.mesh_protocol.join(host)
 		
-		self.station.identification_info = IdentificationInfo(identification, name)
+	def leave_mesh(self):
+		pass
 		
-	def create_mesh(self):
-		self.mesh_mgr.create()
+	def connect_station(self, station):
+		self.station_protocol.connect(station)
 		
-	def join_mesh(self, host_urls):
-		station = self.connect_to_host(host_urls)
-		self.mesh_mgr.join(station)
+	def handle_recv(self, pair):
+		station, message = pair
 		
-	def connect_to_host(self, host_urls):
-		public_url = None
-		local_url = None
-		
-		for url in host_urls:
-			if url.is_public():
-				public_url = url
-			else:
-				local_url = url
-				
-		if not public_url or not local_url:
-			raise ValueError("Incomplete station url list")
-			
-		public_location = StationLocation.from_station_url(public_url)
-		local_location = StationLocation.from_station_url(local_url)
-		conn_info = StationConnectionInfo(public_location, local_location)
-		
-		self.connection_mgr.connect(conn_info)
-		return self.station_mgr.find_by_rvcid(public_url["RVCID"])
-		
-	def handle_packet(self, station, packet):
-		protocol_id = packet.protocol_id
+		protocol_id = message.protocol_id
 		if protocol_id in self.protocols:
-			self.protocols[protocol_id].handle(station, packet)
+			self.protocols[protocol_id].handle(station, message)
 		else:
 			logger.warning("Unknown protocol id: 0x%X" %protocol_id)
+		
+	def get_mesh(self): return self.mesh
+	def get_station_table(self): return self.stations
+		
+	def local_station(self): return self.my_station
+	def host_station(self):
+		index = self.mesh.get_host_index()
+		return self.stations.find_by_index(index)
+		
+	def is_host(self):
+		return self.local_station() == self.host_station()
+		
+	def get_game_mode(self): return self.session_settings.game_mode
+	def get_attributes(self): return self.session_settings.attributes
+	def get_num_participants(self): return self.mesh.get_num_participants()
+	def get_min_participants(self): return self.session_settings.min_participants
+	def get_max_participants(self): return self.session_settings.max_participants
+	def get_session_type(self): return self.session_settings.session_type
+	def get_application_data(self): return self.session_settings.application_data
+	
+	def get_session_key(self):
+		return self.session_key
+	def set_session_key(self, key):
+		self.session_key = key
+
+	def join(self, session): raise NotImplementedError
+	def create(self): raise NotImplementedError
+	def leave(self): raise NotImplementedError
+		
+	def generate_nonce(self, packet):
+		raise NotImplementedError
+	def get_session_id(self):
+		raise NotImplementedError
+	def build_station_id(self):
+		raise NotImplementedError
+		
+		
+class NEXSession(PIASession):
+	def __init__(self, settings, backend):
+		super().__init__(settings)
+		self.backend = backend
+		
+		self.matchmake_ext = MatchmakeExtensionClient(backend.secure_client)
+		self.matchmaker = MatchMakingClient(backend.secure_client)
+		
+	def join(self, session):
+		key = self.matchmake_ext.join_matchmake_session(
+			session.id, "Hello!"
+		)
+		url = self.matchmaker.get_session_urls(session.id)[0]
+		location = StationLocation()
+		location.set_station_url(url)
+		self.join_mesh(key, location)
+	
+	def create(self, settings):
+		session = MatchmakeSession()
+		session.session_key = secrets.token_bytes(16)
+		self.create_mesh(session.session_key, settings)
+		
+	def leave(self):
+		self.leave_mesh()
+		
+	def create_protocols(self):
+		super().create_protocols()
+		
+		self.nat_protocol = NATTraversalProtocol(self)
+		
+		self.register_protocol(self.nat_protocol)
+		
+	def prepare_station_location(self):
+		location = StationLocation()
+		location.set_station_url(self.backend.local_station)
+		return location
+		
+	def get_session_id(self):
+		return self.gathering.id
+	
+	def generate_nonce(self, packet):
+		prefix = (packet.connection_id << 24) | (self.gathering_id & 0xFFFFFF)
+		return prefix + struct.pack(">Q", packet.nonce)
+		
+	def build_station_id(self):
+		return backend.local_station["RVCID"]
+
+
+class LANSession(PIASession):
+	def __init__(self, settings, key):
+		super().__init__(settings)
+		
+		self.server = LANServer(settings, key)
+		
+		self.game_key = key
+		
+	def configure(self, version, app_version=0):
+		super().configure(version)
+		self.settings.set("pia.system_version", self.system_version(version))
+		self.settings.set("pia.application_version", app_version)
+		self.settings.set("pia.lan_version", self.server.lan_version(version))
+		self.server.configure(version)
+		
+	def system_version(self, version):
+		version = version // 100
+		if version <= 503: return 0
+		if version == 509: return 5
+		if version == 510: return 6
+		if version >= 511: return 7
+		raise ValueError("Unsupported PIA version")
+		
+	def generate_session_key(self, param):
+		param = param[:31] + bytes([(param[31] + 1) & 0xFF])
+		return hmac.HMAC(self.game_key, param, hashlib.sha256).digest()[:16]
+		
+	def update_session_info(self):
+		info = self.server.session_info
+		info.game_mode = self.get_game_mode()
+		info.attributes = self.get_attributes()
+		info.num_participants = self.get_num_participants()
+		info.min_participants = self.get_min_participants()
+		info.max_participants = self.get_max_participants()
+		info.system_version = self.settings.get("pia.system_version")
+		info.application_version = self.settings.get("pia.application_version")
+		info.session_type = self.get_session_type()
+		info.application_data = self.get_application_data()
+		info.is_opened = True
+		
+		host = self.host_station()
+		info.host_location = host.connection_info.local
+		
+		info.stations = [LanStationInfo() for i in range(16)]
+		for i, station in enumerate(self.mesh.stations):
+			if station == host:
+				info.stations[i].role = LanStationInfo.HOST
+			else:
+				info.stations[i].role = LanStationInfo.PLAYER
+			player = station.identification_info.players[0]
+			info.stations[i].username = player.nickname
+			info.stations[i].id = station.id
+		
+	def join(self, session_info):
+		self.server.session_info = session_info
+		
+		key = self.generate_session_key(session_info.session_param)
+		host = session_info.host_location
+		self.join_mesh(key, host)
+	
+	def create(self, settings):
+		param = secrets.token_bytes(32)
+		key = self.generate_session_key(param)
+		self.server.session_info.session_param = param
+		self.server.session_info.session_id = self.generate_session_id()
+		self.create_mesh(key, settings)
+		
+		self.update_session_info()
+		self.server.start()
+		
+	def leave(self):
+		self.server.stop()
+		self.leave_mesh()
+	
+	def create_protocols(self):
+		super().create_protocols()
+		
+		self.lan_protocol = LanProtocol(self)
+		
+		self.register_protocol(self.lan_protocol)
+		
+	def get_session_info(self):
+		return self.server.session_info
+		
+	def get_session_id(self):
+		return self.get_session_info().session_id
+		
+	def prepare_station_location(self):
+		host = util.local_address()
+		port = self.transport.local_address()[1]
+		
+		location = StationLocation()
+		location.local = StationAddress(host, port)
+		location.pid = self.get_principal_id()
+		location.cid = random.randint(0, 0xFFFFFFFF)
+		location.rvcid = self.generate_session_id()
+		location.type = 0
+		return location
+		
+	def generate_nonce(self, packet):
+		host = socket.inet_aton(packet.address[0])
+		nonce = struct.pack(">Q", packet.nonce)
+		return host + bytes([packet.connection_id]) + nonce[1:]
+		
+	def generate_session_id(self):
+		address = self.transport.local_address()
+		data = socket.inet_aton(address[0]) + struct.pack(">H", address[1])
+		return struct.unpack_from(">I", data, 2)[0]
+		
+	def get_principal_id(self):
+		address = self.transport.local_address()
+		data = socket.inet_aton(address[0]) + struct.pack(">I", address[1])
+		return struct.unpack(">Q", data)[0]
+		
+	def build_station_id(self):
+		host, port = self.transport.local_address()
+		data = socket.inet_aton(host) + struct.pack(">I", port)
+		return struct.unpack(">Q", data)[0]
