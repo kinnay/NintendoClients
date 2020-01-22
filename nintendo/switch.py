@@ -6,6 +6,9 @@ import hashlib
 import struct
 import base64
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def b64encode(data):
 	return base64.b64encode(data, b"-_").decode().rstrip("=")
@@ -127,16 +130,13 @@ class TicketList:
 			if ticket_id != struct.unpack_from("<q", ticket_chunk, 0x290)[0]:
 				raise ValueError("Ticket has unexpected ticket id")
 				
-			if key_revision != ticket_chunk[0x285]:
-				raise ValueError("Ticket has unexpected master key revision")
-			
 			if rights_id != ticket_chunk[0x2A0 : 0x2B0]:
 				raise ValueError("Ticket has unexpected rights id")
 			
 			ticket = ticket_chunk[:ticket_size]
 			
 			if title_id in self.tickets:
-				raise ValueError("Found multiple tickets for title %016X" %title_id)
+				logger.warning("Found multiple tickets for title %016X" %title_id)
 			self.tickets[title_id] = ticket
 			
 	def get(self, title_id):

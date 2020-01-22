@@ -208,11 +208,11 @@ class CourseInfo(common.Structure):
 		self.clear_condition_magnitude = None
 		self.unk2 = None
 		self.unk3 = None
+		self.play_stats = None
+		self.ratings = None
 		self.unk4 = None
-		self.unk5 = None
-		self.unk6 = None
-		self.unk7 = UnknownStruct2()
-		self.unk8 = None
+		self.time_stats = CourseTimeStats()
+		self.comment_stats = None
 		self.unk9 = None
 		self.unk10 = None
 		self.unk11 = None
@@ -221,7 +221,7 @@ class CourseInfo(common.Structure):
 		self.entire_thumbnail = ThumbnailInfo()
 	
 	def check_required(self, settings):
-		for field in ['data_id', 'code', 'owner_id', 'name', 'description', 'game_style', 'course_theme', 'upload_time', 'difficulty', 'tag1', 'tag2', 'unk1', 'clear_condition', 'clear_condition_magnitude', 'unk2', 'unk3', 'unk4', 'unk5', 'unk6', 'unk8', 'unk9', 'unk10', 'unk11', 'unk12']:
+		for field in ['data_id', 'code', 'owner_id', 'name', 'description', 'game_style', 'course_theme', 'upload_time', 'difficulty', 'tag1', 'tag2', 'unk1', 'clear_condition', 'clear_condition_magnitude', 'unk2', 'unk3', 'play_stats', 'ratings', 'unk4', 'comment_stats', 'unk9', 'unk10', 'unk11', 'unk12']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -242,11 +242,11 @@ class CourseInfo(common.Structure):
 		self.clear_condition_magnitude = stream.u16()
 		self.unk2 = stream.u16()
 		self.unk3 = stream.qbuffer()
+		self.play_stats = stream.map(stream.u8, stream.u32)
+		self.ratings = stream.map(stream.u8, stream.u32)
 		self.unk4 = stream.map(stream.u8, stream.u32)
-		self.unk5 = stream.map(stream.u8, stream.u32)
-		self.unk6 = stream.map(stream.u8, stream.u32)
-		self.unk7 = stream.extract(UnknownStruct2)
-		self.unk8 = stream.map(stream.u8, stream.u32)
+		self.time_stats = stream.extract(CourseTimeStats)
+		self.comment_stats = stream.map(stream.u8, stream.u32)
 		self.unk9 = stream.u8()
 		self.unk10 = stream.u8()
 		self.unk11 = stream.u8()
@@ -272,17 +272,44 @@ class CourseInfo(common.Structure):
 		stream.u16(self.clear_condition_magnitude)
 		stream.u16(self.unk2)
 		stream.qbuffer(self.unk3)
+		stream.map(self.play_stats, stream.u8, stream.u32)
+		stream.map(self.ratings, stream.u8, stream.u32)
 		stream.map(self.unk4, stream.u8, stream.u32)
-		stream.map(self.unk5, stream.u8, stream.u32)
-		stream.map(self.unk6, stream.u8, stream.u32)
-		stream.add(self.unk7)
-		stream.map(self.unk8, stream.u8, stream.u32)
+		stream.add(self.time_stats)
+		stream.map(self.comment_stats, stream.u8, stream.u32)
 		stream.u8(self.unk9)
 		stream.u8(self.unk10)
 		stream.u8(self.unk11)
 		stream.u8(self.unk12)
 		stream.add(self.one_screen_thumbnail)
 		stream.add(self.entire_thumbnail)
+
+
+class CourseTimeStats(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.first_completion = None
+		self.world_record_holder = None
+		self.world_record = None
+		self.upload_time = None
+	
+	def check_required(self, settings):
+		for field in ['first_completion', 'world_record_holder', 'world_record', 'upload_time']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.first_completion = stream.pid()
+		self.world_record_holder = stream.pid()
+		self.world_record = stream.u32()
+		self.upload_time = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.pid(self.first_completion)
+		stream.pid(self.world_record_holder)
+		stream.u32(self.world_record)
+		stream.u32(self.upload_time)
 
 
 class DataStoreCompletePostParam(common.Structure):
@@ -469,13 +496,11 @@ class DataStorePrepareGetParam(common.Structure):
 		self.lock_id = 0
 		self.persistence_target = PersistenceTarget()
 		self.access_password = 0
-		self.extra_data = None
+		self.extra_data = []
 	
 	def check_required(self, settings):
 		if settings.get("nex.version") >= 30500:
-			for field in ['extra_data']:
-				if getattr(self, field) is None:
-					raise ValueError("No value assigned to required field: %s" %field)
+			pass
 	
 	def load(self, stream):
 		self.data_id = stream.u64()
@@ -865,7 +890,7 @@ class RelationObjectParam(common.Structure):
 		stream.string(self.value)
 
 
-class RelationObjectReqGetInfo(common.Structure):
+class ReqGetInfoHeadersInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.headers = None
@@ -1097,31 +1122,25 @@ class UnknownStruct1(common.Structure):
 		stream.u16(self.unk4)
 
 
-class UnknownStruct2(common.Structure):
+class UnknownStruct3(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.unk1 = None
 		self.unk2 = None
-		self.unk3 = None
-		self.unk4 = None
 	
 	def check_required(self, settings):
-		for field in ['unk1', 'unk2', 'unk3', 'unk4']:
+		for field in ['unk1', 'unk2']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
-		self.unk1 = stream.u64()
-		self.unk2 = stream.u64()
-		self.unk3 = stream.u32()
-		self.unk4 = stream.u32()
+		self.unk1 = stream.bool()
+		self.unk2 = stream.datetime()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
-		stream.u64(self.unk1)
-		stream.u64(self.unk2)
-		stream.u32(self.unk3)
-		stream.u32(self.unk4)
+		stream.bool(self.unk1)
+		stream.datetime(self.unk2)
 
 
 class UserInfo(common.Structure):
@@ -1139,16 +1158,26 @@ class UserInfo(common.Structure):
 		self.unk4 = None
 		self.unk5 = None
 		self.play_stats = None
-		self.unk6 = None
+		self.maker_stats = None
 		self.endless_challenge_high_scores = None
 		self.multiplayer_stats = None
 		self.unk7 = None
 		self.badges = None
 		self.unk8 = None
 		self.unk9 = None
+		self.unk10 = None
+		self.unk11 = None
+		self.unk12 = None
+		self.unk13 = UnknownStruct3()
+	
+	def get_version(self, settings):
+		version = 0
+		version = 1
+		version = 2
+		return version
 	
 	def check_required(self, settings):
-		for field in ['pid', 'code', 'name', 'unk2', 'country', 'region', 'last_active', 'unk3', 'unk4', 'unk5', 'play_stats', 'unk6', 'endless_challenge_high_scores', 'multiplayer_stats', 'unk7', 'badges', 'unk8', 'unk9']:
+		for field in ['pid', 'code', 'name', 'unk2', 'country', 'region', 'last_active', 'unk3', 'unk4', 'unk5', 'play_stats', 'maker_stats', 'endless_challenge_high_scores', 'multiplayer_stats', 'unk7', 'badges', 'unk8', 'unk9', 'unk10', 'unk11', 'unk12']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -1165,13 +1194,17 @@ class UserInfo(common.Structure):
 		self.unk4 = stream.bool()
 		self.unk5 = stream.bool()
 		self.play_stats = stream.map(stream.u8, stream.u32)
-		self.unk6 = stream.map(stream.u8, stream.u32)
+		self.maker_stats = stream.map(stream.u8, stream.u32)
 		self.endless_challenge_high_scores = stream.map(stream.u8, stream.u32)
 		self.multiplayer_stats = stream.map(stream.u8, stream.u32)
 		self.unk7 = stream.map(stream.u8, stream.u32)
 		self.badges = stream.list(BadgeInfo)
 		self.unk8 = stream.map(stream.u8, stream.u32)
 		self.unk9 = stream.map(stream.u8, stream.u32)
+		self.unk10 = stream.bool()
+		self.unk11 = stream.datetime()
+		self.unk12 = stream.bool()
+		self.unk13 = stream.extract(UnknownStruct3)
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -1187,13 +1220,17 @@ class UserInfo(common.Structure):
 		stream.bool(self.unk4)
 		stream.bool(self.unk5)
 		stream.map(self.play_stats, stream.u8, stream.u32)
-		stream.map(self.unk6, stream.u8, stream.u32)
+		stream.map(self.maker_stats, stream.u8, stream.u32)
 		stream.map(self.endless_challenge_high_scores, stream.u8, stream.u32)
 		stream.map(self.multiplayer_stats, stream.u8, stream.u32)
 		stream.map(self.unk7, stream.u8, stream.u32)
 		stream.list(self.badges, stream.add)
 		stream.map(self.unk8, stream.u8, stream.u32)
 		stream.map(self.unk9, stream.u8, stream.u32)
+		stream.bool(self.unk10)
+		stream.datetime(self.unk11)
+		stream.bool(self.unk12)
+		stream.add(self.unk13)
 
 
 class DataStoreProtocolSMM2:
@@ -1254,7 +1291,7 @@ class DataStoreProtocolSMM2:
 	METHOD_SEARCH_COURSES_ENDLESS_MODE = 79
 	METHOD_GET_COURSE_COMMENTS = 95
 	METHOD_GET_USER_OR_COURSE = 131
-	METHOD_PREPARE_GET_RELATION_OBJECT = 134
+	METHOD_GET_REQ_GET_INFO_HEADERS_INFO = 134
 	
 	PROTOCOL_ID = 0x73
 
@@ -1476,17 +1513,17 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		logger.info("DataStoreClientSMM2.get_user_or_course -> done")
 		return obj
 	
-	def prepare_get_relation_object(self, type):
-		logger.info("DataStoreClientSMM2.prepare_get_relation_object()")
+	def get_req_get_info_headers_info(self, type):
+		logger.info("DataStoreClientSMM2.get_req_get_info_headers_info()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_RELATION_OBJECT)
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_REQ_GET_INFO_HEADERS_INFO)
 		stream.u8(type)
 		self.client.send_message(stream)
 		
 		#--- response ---
 		stream = self.client.get_response(call_id)
-		result = stream.extract(RelationObjectReqGetInfo)
-		logger.info("DataStoreClientSMM2.prepare_get_relation_object -> done")
+		result = stream.extract(ReqGetInfoHeadersInfo)
+		logger.info("DataStoreClientSMM2.get_req_get_info_headers_info -> done")
 		return result
 
 
@@ -1550,7 +1587,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_SEARCH_COURSES_ENDLESS_MODE: self.handle_search_courses_endless_mode,
 			self.METHOD_GET_COURSE_COMMENTS: self.handle_get_course_comments,
 			self.METHOD_GET_USER_OR_COURSE: self.handle_get_user_or_course,
-			self.METHOD_PREPARE_GET_RELATION_OBJECT: self.handle_prepare_get_relation_object,
+			self.METHOD_GET_REQ_GET_INFO_HEADERS_INFO: self.handle_get_req_get_info_headers_info,
 		}
 	
 	def handle(self, context, method_id, input, output):
@@ -1908,15 +1945,15 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		output.add(response.user)
 		output.add(response.course)
 	
-	def handle_prepare_get_relation_object(self, context, input, output):
-		logger.info("DataStoreServerSMM2.prepare_get_relation_object()")
+	def handle_get_req_get_info_headers_info(self, context, input, output):
+		logger.info("DataStoreServerSMM2.get_req_get_info_headers_info()")
 		#--- request ---
 		type = input.u8()
-		response = self.prepare_get_relation_object(context, type)
+		response = self.get_req_get_info_headers_info(context, type)
 		
 		#--- response ---
-		if not isinstance(response, RelationObjectReqGetInfo):
-			raise RuntimeError("Expected RelationObjectReqGetInfo, got %s" %response.__class__.__name__)
+		if not isinstance(response, ReqGetInfoHeadersInfo):
+			raise RuntimeError("Expected ReqGetInfoHeadersInfo, got %s" %response.__class__.__name__)
 		output.add(response)
 	
 	def get_meta(self, *args):
@@ -1983,7 +2020,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		logger.warning("DataStoreServerSMM2.get_user_or_course not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	def prepare_get_relation_object(self, *args):
-		logger.warning("DataStoreServerSMM2.prepare_get_relation_object not implemented")
+	def get_req_get_info_headers_info(self, *args):
+		logger.warning("DataStoreServerSMM2.get_req_get_info_headers_info not implemented")
 		raise common.RMCError("Core::NotImplemented")
 

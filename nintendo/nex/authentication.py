@@ -13,10 +13,10 @@ class AuthenticationInfo(common.Data):
 		self.token = None
 		self.ngs_version = 3
 		self.token_type = 1
-		self.server_version = None
+		self.server_version = 0
 	
 	def check_required(self, settings):
-		for field in ['token', 'server_version']:
+		for field in ['token']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	

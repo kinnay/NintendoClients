@@ -57,7 +57,7 @@ protocol DataStore : 115 {
 		uint64 access_password = 0;
 		
 		[nex.version >= 30500] {
-			list<string> extra_data;
+			list<string> extra_data = [];
 		}
 	}
 	

@@ -82,6 +82,9 @@ class Splatoon2:
 	PIA_KEY = bytes.fromhex("ee182a63e216cdb1f51ad4bed8cf6508")
 	
 class SMM2:
+	TITLE_ID = 0x01009B90006DC000
+	TITLE_VERSION = 0x30000
+	
 	GAME_SERVER_ID = 0x22306D00
 	ACCESS_KEY = "fdf6617f"
 	NEX_VERSION = 40605 #4.6.18 (appslop)

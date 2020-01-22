@@ -191,13 +191,11 @@ class DataStorePrepareGetParam(common.Structure):
 		self.lock_id = 0
 		self.persistence_target = PersistenceTarget()
 		self.access_password = 0
-		self.extra_data = None
+		self.extra_data = []
 	
 	def check_required(self, settings):
 		if settings.get("nex.version") >= 30500:
-			for field in ['extra_data']:
-				if getattr(self, field) is None:
-					raise ValueError("No value assigned to required field: %s" %field)
+			pass
 	
 	def load(self, stream):
 		self.data_id = stream.u64()

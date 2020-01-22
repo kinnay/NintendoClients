@@ -78,13 +78,26 @@ protocol DataStore_SMM2 : DataStore {
 		bool unk4;
 		bool unk5;
 		map<uint8, uint32> play_stats;
-		map<uint8, uint32> unk6;
+		map<uint8, uint32> maker_stats;
 		map<uint8, uint32> endless_challenge_high_scores;
 		map<uint8, uint32> multiplayer_stats;
 		map<uint8, uint32> unk7;
 		list<BadgeInfo> badges;
 		map<uint8, uint32> unk8;
 		map<uint8, uint32> unk9;
+		
+		#revision 1
+		bool unk10;
+		datetime unk11;
+		bool unk12;
+		
+		#revision 2
+		UnknownStruct3 unk13;
+	}
+	
+	struct UnknownStruct3 {
+		bool unk1;
+		datetime unk2;
 	}
 
 	enum GameStyle {
@@ -167,11 +180,11 @@ protocol DataStore_SMM2 : DataStore {
 		uint16 clear_condition_magnitude;
 		uint16 unk2;
 		qbuffer unk3;
+		map<uint8, uint32> play_stats;
+		map<uint8, uint32> ratings;
 		map<uint8, uint32> unk4;
-		map<uint8, uint32> unk5;
-		map<uint8, uint32> unk6;
-		UnknownStruct2 unk7;
-		map<uint8, uint32> unk8;
+		CourseTimeStats time_stats;
+		map<uint8, uint32> comment_stats;
 		uint8 unk9;
 		uint8 unk10;
 		uint8 unk11;
@@ -208,11 +221,11 @@ protocol DataStore_SMM2 : DataStore {
 		uint16 unk4;
 	}
 	
-	struct UnknownStruct2 {
-		uint64 unk1;
-		uint64 unk2;
-		uint32 unk3;
-		uint32 unk4;
+	struct CourseTimeStats {
+		pid first_completion;
+		pid world_record_holder;
+		uint32 world_record;
+		uint32 upload_time;
 	}
 
 	struct SyncUserProfileParam {
@@ -244,7 +257,7 @@ protocol DataStore_SMM2 : DataStore {
 		string value;
 	}
 	
-	struct RelationObjectReqGetInfo {
+	struct ReqGetInfoHeadersInfo {
 		list<RelationObjectParam> headers;
 		uint32 expiration;
 	}
@@ -295,7 +308,7 @@ protocol DataStore_SMM2 : DataStore {
 		CourseInfo course;
 	}
 	
-	method(134) prepare_get_relation_object(uint8 type) {
-		RelationObjectReqGetInfo result;
+	method(134) get_req_get_info_headers_info(uint8 type) {
+		ReqGetInfoHeadersInfo result;
 	}
 }

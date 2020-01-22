@@ -4,7 +4,7 @@ protocol Authentication : 10 {
 		string token;
 		uint32 ngs_version = 3;
 		uint8 token_type = 1;
-		uint32 server_version;
+		uint32 server_version = 0;
 	}
 	
 	struct NintendoLoginData : Data {
