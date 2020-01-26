@@ -800,40 +800,46 @@ class PRUDPStream:
 						
 			else:
 				if packet.stream_id < self.substreams:
-					
 					packet.payload = self.message_encoder.decode(packet)
 					self.packets.append(packet)
 				else:
 					logger.error("Received packet with invalid substream id: %i", packet.stream_id)
 					
+	def is_new_aggregate_ack(self, packet):
+		if self.transport_type == self.settings.TRANSPORT_UDP:
+			if self.settings.get("prudp.version") == 0:
+				return False
+			return packet.stream_id == 1
+		return True
+					
 	def verify_aggregate_ack(self, packet):
 		if len(packet.payload) % 2:
 			logger.error("Aggregate ack payload size must be a multiple of 2")
 			return False
-
+		
 		if packet.stream_id not in [0, 1]:
 			logger.error("Aggregate ack packet has invalid stream id: %i", packet.stream_id)
 			return False
-			
-		if packet.stream_id == 1: #New version
-			if len(packet.payload) < 4:
-				logger.error("Aggregate ack payload is too small")
-				return False
+		
+		if self.is_new_aggregate_ack(packet):
 			if len(packet.payload) != 4 + packet.payload[1] * 2:
 				logger.error("Aggregate ack payload has incorrect size")
 				return False
+		elif len(packet.payload) < 4:
+			logger.error("Aggregate ack payload is too small")
+			return False
 		return True
 					
 	def handle_aggregate_ack(self, packet):
 		if self.verify_aggregate_ack(packet):
-			if packet.stream_id == 0:
-				stream_id = 0
-				base_id = packet.packet_id
-				extra_ids = struct.unpack("<%iH" %(len(packet.payload) // 2), packet.payload)
-			else:
+			if self.is_new_aggregate_ack(packet):
 				stream_id = packet.payload[0]
 				base_id = struct.unpack_from("<H", packet.payload, 2)[0]
 				extra_ids = struct.unpack_from("<%iH" %packet.payload[1], packet.payload, 4)
+			else:
+				stream_id = 0
+				base_id = packet.packet_id
+				extra_ids = struct.unpack("<%iH" %(len(packet.payload) // 2), packet.payload)
 			
 			for key in list(self.ack_events):
 				if key[0] == TYPE_DATA and key[1] == stream_id and key[2] <= base_id:

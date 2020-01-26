@@ -108,7 +108,8 @@ def remove(event):
 def process_events():
 	for event in events[:]:
 		try:
-			event.update()
+			if event in events:
+				event.update()
 		except:
 			logger.error("An exception occurred while processing an event")
 			import traceback
