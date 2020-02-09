@@ -1,0 +1,12 @@
+
+import datastore;
+
+protocol DataStore_SMM : DataStore {
+	method(61) get_application_config(uint32 id) {
+		list<uint32> config;
+	}
+	
+	method(74) get_application_config_string(uint32 id) {
+		list<string> config;
+	}
+}
