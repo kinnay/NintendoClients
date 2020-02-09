@@ -233,6 +233,34 @@ class NNAInfo(common.Data):
 common.DataHolder.register(NNAInfo, "NNAInfo")
 
 
+class NintendoCreateAccount(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.info = NNAInfo()
+		self.token = None
+		self.birthday = None
+		self.unk = None
+	
+	def check_required(self, settings):
+		for field in ['token', 'birthday', 'unk']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.info = stream.extract(NNAInfo)
+		self.token = stream.string()
+		self.birthday = stream.datetime()
+		self.unk = stream.u64()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.add(self.info)
+		stream.string(self.token)
+		stream.datetime(self.birthday)
+		stream.u64(self.unk)
+common.DataHolder.register(NintendoCreateAccount, "NintendoCreateAccount")
+
+
 class NintendoPresenceV2(common.Data):
 	def __init__(self):
 		super().__init__()

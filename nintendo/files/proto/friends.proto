@@ -21,6 +21,13 @@ protocol Friends : 102 {
 		uint8 unk2 = 11;
 	}
 	
+	struct NintendoCreateAccountData : Data {
+		NNAInfo info;
+		string token;
+		datetime birthday;
+		uint64 unk;
+	}
+	
 	struct GameKey : Data {
 		uint64 title_id = 0;
 		uint16 title_version = 0;
