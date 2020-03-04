@@ -11,6 +11,7 @@ class NintendoNotificationType:
 	LOGOUT = 10
 	PRESENCE_CHANGE = 24
 	UNFRIENDED = 26
+	FRIENDED = 30
 	STATUS_CHANGE = 33
 
 

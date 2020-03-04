@@ -233,7 +233,7 @@ class NNAInfo(common.Data):
 common.DataHolder.register(NNAInfo, "NNAInfo")
 
 
-class NintendoCreateAccount(common.Data):
+class NintendoCreateAccountData(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.info = NNAInfo()
@@ -258,7 +258,7 @@ class NintendoCreateAccount(common.Data):
 		stream.string(self.token)
 		stream.datetime(self.birthday)
 		stream.u64(self.unk)
-common.DataHolder.register(NintendoCreateAccount, "NintendoCreateAccount")
+common.DataHolder.register(NintendoCreateAccountData, "NintendoCreateAccountData")
 
 
 class NintendoPresenceV2(common.Data):
