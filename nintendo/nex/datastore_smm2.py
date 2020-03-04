@@ -1452,7 +1452,7 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		stream = self.client.get_response(call_id)
 		obj = common.RMCResponse()
 		obj.courses = stream.list(CourseInfo)
-		obj.unk = stream.list(stream.u32)
+		obj.ranks = stream.list(stream.u32)
 		obj.result = stream.bool()
 		logger.info("DataStoreClientSMM2.search_courses_point_ranking -> done")
 		return obj
@@ -1886,11 +1886,11 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		#--- response ---
 		if not isinstance(response, common.RMCResponse):
 			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
-		for field in ['courses', 'unk', 'result']:
+		for field in ['courses', 'ranks', 'result']:
 			if not hasattr(response, field):
 				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.list(response.courses, output.add)
-		output.list(response.unk, output.u32)
+		output.list(response.ranks, output.u32)
 		output.bool(response.result)
 	
 	def handle_search_courses_latest(self, context, input, output):

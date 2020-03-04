@@ -286,7 +286,7 @@ protocol DataStore_SMM2 : DataStore {
 	
 	method(71) search_courses_point_ranking(SearchCoursesPointRankingParam param) {
 		list<CourseInfo> courses;
-		list<uint32> unk;
+		list<uint32> ranks;
 		bool result;
 	}
 	
