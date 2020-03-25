@@ -55,6 +55,24 @@ class Gathering(common.Structure):
 		stream.string(self.description)
 
 
+class MatchmakeParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.param = None
+	
+	def check_required(self, settings):
+		for field in ['param']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.param = stream.map(stream.string, stream.variant)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.map(self.param, stream.string, stream.variant)
+
+
 class MatchmakeSession(Gathering):
 	def __init__(self):
 		super().__init__()
@@ -116,6 +134,12 @@ class MatchmakeSessionSearchCriteria(common.Structure):
 		self.exclude_non_host_pid = None
 		self.selection_method = None
 		self.vacant_participants = None
+		self.param = MatchmakeParam()
+		self.exclude_user_password = None
+		self.exclude_system_password = None
+		self.refer_gid = None
+		self.codeword = None
+		self.range = common.ResultRange()
 	
 	def check_required(self, settings):
 		for field in ['attribs', 'game_mode', 'min_players', 'max_players', 'matchmake_system', 'vacant_only', 'exclude_locked', 'exclude_non_host_pid', 'selection_method']:
@@ -123,6 +147,10 @@ class MatchmakeSessionSearchCriteria(common.Structure):
 				raise ValueError("No value assigned to required field: %s" %field)
 		if settings.get("nex.version") >= 30500:
 			for field in ['vacant_participants']:
+				if getattr(self, field) is None:
+					raise ValueError("No value assigned to required field: %s" %field)
+		if settings.get("nex.version") >= 40000:
+			for field in ['exclude_user_password', 'exclude_system_password', 'refer_gid', 'codeword']:
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -138,6 +166,13 @@ class MatchmakeSessionSearchCriteria(common.Structure):
 		self.selection_method = stream.u32()
 		if stream.settings.get("nex.version") >= 30500:
 			self.vacant_participants = stream.u16()
+		if stream.settings.get("nex.version") >= 40000:
+			self.param = stream.extract(MatchmakeParam)
+			self.exclude_user_password = stream.bool()
+			self.exclude_system_password = stream.bool()
+			self.refer_gid = stream.u32()
+			self.codeword = stream.string()
+			self.range = stream.extract(common.ResultRange)
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -152,6 +187,13 @@ class MatchmakeSessionSearchCriteria(common.Structure):
 		stream.u32(self.selection_method)
 		if stream.settings.get("nex.version") >= 30500:
 			stream.u16(self.vacant_participants)
+		if stream.settings.get("nex.version") >= 40000:
+			stream.add(self.param)
+			stream.bool(self.exclude_user_password)
+			stream.bool(self.exclude_system_password)
+			stream.u32(self.refer_gid)
+			stream.string(self.codeword)
+			stream.add(self.range)
 
 
 class PlayingSession(common.Structure):

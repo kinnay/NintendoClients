@@ -57,6 +57,30 @@ class StreamOut(streams.StreamOut):
 		holder.data = inst
 		self.add(holder)
 		
+	def variant(self, value):
+		if value is None: self.u8(0)
+		elif isinstance(value, int):
+			if value < 0:
+				self.u8(1)
+				self.s64(value)
+			else:
+				self.u8(6)
+				self.u64(value)
+		elif isinstance(value, float):
+			self.u8(2)
+			self.double(value)
+		elif isinstance(value, bool):
+			self.u8(3)
+			self.bool(value)
+		elif isinstance(value, str):
+			self.u8(4)
+			self.string(value)
+		elif isinstnace(value, common.DateTime):
+			self.u8(5)
+			self.datetime(value)
+		else:
+			raise TypeError("Type is not compatible with 'variant'")
+		
 		
 class StreamIn(streams.StreamIn):
 	def __init__(self, data, settings):
@@ -104,6 +128,9 @@ class StreamIn(streams.StreamIn):
 	def buffer(self): return self.read(self.u32())
 	def qbuffer(self): return self.read(self.u16())
 		
+	def substream(self):
+		return StreamIn(self.buffer(), self.settings)
+	
 	def extract(self, cls):
 		inst = cls()
 		inst.decode(self)
@@ -112,5 +139,13 @@ class StreamIn(streams.StreamIn):
 	def anydata(self):
 		return self.extract(common.DataHolder).data
 		
-	def substream(self):
-		return StreamIn(self.buffer(), self.settings)
+	def variant(self):
+		type = self.u8()
+		if type == 0: return None
+		elif type == 1: return self.s64()
+		elif type == 2: return self.double()
+		elif type == 3: return self.bool()
+		elif type == 4: return self.string()
+		elif type == 5: return self.datetime()
+		elif type == 6: return self.u64()
+		raise ValueError("Variant has invalid type id")

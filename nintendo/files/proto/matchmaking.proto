@@ -74,6 +74,10 @@ protocol MatchmakeExtension : 109 {
 		GLOBAL = 1,
 		FRIENDS = 2
 	}
+	
+	struct MatchmakeParam {
+		map<string, variant> param;
+	}
 
 	struct MatchmakeSessionSearchCriteria {
 		list<string> attribs;
@@ -88,6 +92,15 @@ protocol MatchmakeExtension : 109 {
 		
 		[nex.version >= 30500] {
 			uint16 vacant_participants;
+		}
+		
+		[nex.version >= 40000] {
+			MatchmakeParam param;
+			bool exclude_user_password;
+			bool exclude_system_password;
+			uint32 refer_gid;
+			string codeword;
+			ResultRange range;
 		}
 	}
 	

@@ -718,7 +718,7 @@ BASIC_TYPES = [
 	"float", "double", "bool",
 	"pid", "result", "datetime",
 	"string", "stationurl", "buffer",
-	"qbuffer", "anydata"
+	"qbuffer", "anydata", "variant"
 ]
 
 MAPPED_TYPES = {
@@ -1072,6 +1072,7 @@ class CodeGenerator:
 		if type.name == "list": return "list"
 		if type.name == "map": return "dict"
 		if type.name == "string": return "str"
+		if type.name == "variant": return "object"
 		if type.name in ["buffer", "qbuffer"]: return "bytes"
 		if type.name == "datetime": return "comon.DateTime"
 		if type.name == "stationurl": return "common.StationURL"
