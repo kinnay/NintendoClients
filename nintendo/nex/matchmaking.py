@@ -297,6 +297,12 @@ class MatchmakeExtensionProtocol:
 	METHOD_REQUEST_MATCHMAKING = 45
 	METHOD_WITHDRAW_MATCHMAKING = 46
 	METHOD_WITHDRAW_MATCHMAKING_ALL = 47
+	METHOD_FIND_MATCHMAKE_SESSION_BY_GATHERING_ID = 48
+	METHOD_FIND_MATCHMAKE_SESSION_BY_SINGLE_GATHERING_ID = 49
+	METHOD_FIND_MATCHMAKE_SESSION_BY_OWNER = 50
+	METHOD_FIND_MATCHMAKE_SESSION_BY_PARTICIPANT = 51
+	METHOD_BROWSE_MATCHMAKE_SESSION_NO_HOLDER_NO_RESULT_RANGE = 52
+	METHOD_BROWSE_MATCHMAKE_SESSION_WITH_HOST_URLS_NO_HOLDER_NO_RESULT_RANGE = 53
 	
 	PROTOCOL_ID = 0x6D
 
@@ -449,6 +455,19 @@ class MatchmakeExtensionClient(MatchmakeExtensionProtocol):
 		session = stream.extract(MatchmakeSession)
 		logger.info("MatchmakeExtensionClient.find_matchmake_session_by_gathering_id_detail -> done")
 		return session
+	
+	def browse_matchmake_session_no_holder_no_result_range(self, search_criteria):
+		logger.info("MatchmakeExtensionClient.browse_matchmake_session_no_holder_no_result_range()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_BROWSE_MATCHMAKE_SESSION_NO_HOLDER_NO_RESULT_RANGE)
+		stream.add(search_criteria)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		sessions = stream.list(MatchmakeSession)
+		logger.info("MatchmakeExtensionClient.browse_matchmake_session_no_holder_no_result_range -> done")
+		return sessions
 
 
 class MatchMakingServer(MatchMakingProtocol):
@@ -758,6 +777,12 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 			self.METHOD_REQUEST_MATCHMAKING: self.handle_request_matchmaking,
 			self.METHOD_WITHDRAW_MATCHMAKING: self.handle_withdraw_matchmaking,
 			self.METHOD_WITHDRAW_MATCHMAKING_ALL: self.handle_withdraw_matchmaking_all,
+			self.METHOD_FIND_MATCHMAKE_SESSION_BY_GATHERING_ID: self.handle_find_matchmake_session_by_gathering_id,
+			self.METHOD_FIND_MATCHMAKE_SESSION_BY_SINGLE_GATHERING_ID: self.handle_find_matchmake_session_by_single_gathering_id,
+			self.METHOD_FIND_MATCHMAKE_SESSION_BY_OWNER: self.handle_find_matchmake_session_by_owner,
+			self.METHOD_FIND_MATCHMAKE_SESSION_BY_PARTICIPANT: self.handle_find_matchmake_session_by_participant,
+			self.METHOD_BROWSE_MATCHMAKE_SESSION_NO_HOLDER_NO_RESULT_RANGE: self.handle_browse_matchmake_session_no_holder_no_result_range,
+			self.METHOD_BROWSE_MATCHMAKE_SESSION_WITH_HOST_URLS_NO_HOLDER_NO_RESULT_RANGE: self.handle_browse_matchmake_session_with_host_urls_no_holder_no_result_range,
 		}
 	
 	def handle(self, context, method_id, input, output):
@@ -1015,6 +1040,37 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 		logger.warning("MatchmakeExtensionServer.withdraw_matchmaking_all is unsupported")
 		raise common.RMCError("Core::NotImplemented")
 	
+	def handle_find_matchmake_session_by_gathering_id(self, context, input, output):
+		logger.warning("MatchmakeExtensionServer.find_matchmake_session_by_gathering_id is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def handle_find_matchmake_session_by_single_gathering_id(self, context, input, output):
+		logger.warning("MatchmakeExtensionServer.find_matchmake_session_by_single_gathering_id is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def handle_find_matchmake_session_by_owner(self, context, input, output):
+		logger.warning("MatchmakeExtensionServer.find_matchmake_session_by_owner is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def handle_find_matchmake_session_by_participant(self, context, input, output):
+		logger.warning("MatchmakeExtensionServer.find_matchmake_session_by_participant is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def handle_browse_matchmake_session_no_holder_no_result_range(self, context, input, output):
+		logger.info("MatchmakeExtensionServer.browse_matchmake_session_no_holder_no_result_range()")
+		#--- request ---
+		search_criteria = input.extract(MatchmakeSessionSearchCriteria)
+		response = self.browse_matchmake_session_no_holder_no_result_range(context, search_criteria)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
+	
+	def handle_browse_matchmake_session_with_host_urls_no_holder_no_result_range(self, context, input, output):
+		logger.warning("MatchmakeExtensionServer.browse_matchmake_session_with_host_urls_no_holder_no_result_range is unsupported")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def auto_matchmake_postpone(self, *args):
 		logger.warning("MatchmakeExtensionServer.auto_matchmake_postpone not implemented")
 		raise common.RMCError("Core::NotImplemented")
@@ -1041,5 +1097,9 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 	
 	def find_matchmake_session_by_gathering_id_detail(self, *args):
 		logger.warning("MatchmakeExtensionServer.find_matchmake_session_by_gathering_id_detail not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def browse_matchmake_session_no_holder_no_result_range(self, *args):
+		logger.warning("MatchmakeExtensionServer.browse_matchmake_session_no_holder_no_result_range not implemented")
 		raise common.RMCError("Core::NotImplemented")
 

@@ -199,4 +199,16 @@ protocol MatchmakeExtension : 109 {
 	method request_matchmaking;
 	method withdraw_matchmaking;
 	method withdraw_matchmaking_all;
+	method find_matchmake_session_by_gathering_id;
+	method find_matchmake_session_by_single_gathering_id;
+	method find_matchmake_session_by_owner;
+	method find_matchmake_session_by_participant;
+	
+	method browse_matchmake_session_no_holder_no_result_range(
+		MatchmakeSessionSearchCriteria search_criteria
+	) {
+		list<MatchmakeSession> sessions;
+	}
+	
+	method browse_matchmake_session_with_host_urls_no_holder_no_result_range;
 }

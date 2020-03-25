@@ -215,6 +215,27 @@ class DataStorePrepareGetParam(common.Structure):
 			stream.list(self.extra_data, stream.string)
 
 
+class DataStorePrepareGetParamV1(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.lock_id = 0
+	
+	def check_required(self, settings):
+		for field in ['data_id']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.lock_id = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.u32(self.lock_id)
+
+
 class DataStorePreparePostParam(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -416,6 +437,33 @@ class DataStoreReqGetInfo(common.Structure):
 			stream.u64(self.data_id)
 
 
+class DataStoreReqGetInfoV1(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.url = None
+		self.headers = None
+		self.size = None
+		self.root_ca_cert = None
+	
+	def check_required(self, settings):
+		for field in ['url', 'headers', 'size', 'root_ca_cert']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.url = stream.string()
+		self.headers = stream.list(DataStoreKeyValue)
+		self.size = stream.u32()
+		self.root_ca_cert = stream.buffer()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.url)
+		stream.list(self.headers, stream.add)
+		stream.u32(self.size)
+		stream.buffer(self.root_ca_cert)
+
+
 class DataStoreReqPostInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -521,6 +569,19 @@ class DataStoreProtocolSMM:
 class DataStoreClientSMM(DataStoreProtocolSMM):
 	def __init__(self, client):
 		self.client = client
+	
+	def prepare_get_object_v1(self, param):
+		logger.info("DataStoreClientSMM.prepare_get_object_v1()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT_V1)
+		stream.add(param)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		info = stream.extract(DataStoreReqGetInfoV1)
+		logger.info("DataStoreClientSMM.prepare_get_object_v1 -> done")
+		return info
 	
 	def get_meta(self, param):
 		logger.info("DataStoreClientSMM.get_meta()")
@@ -675,8 +736,15 @@ class DataStoreServerSMM(DataStoreProtocolSMM):
 			raise common.RMCError("Core::NotImplemented")
 	
 	def handle_prepare_get_object_v1(self, context, input, output):
-		logger.warning("DataStoreServerSMM.prepare_get_object_v1 is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("DataStoreServerSMM.prepare_get_object_v1()")
+		#--- request ---
+		param = input.extract(DataStorePrepareGetParamV1)
+		response = self.prepare_get_object_v1(context, param)
+		
+		#--- response ---
+		if not isinstance(response, DataStoreReqGetInfoV1):
+			raise RuntimeError("Expected DataStoreReqGetInfoV1, got %s" %response.__class__.__name__)
+		output.add(response)
 	
 	def handle_prepare_post_object_v1(self, context, input, output):
 		logger.warning("DataStoreServerSMM.prepare_post_object_v1 is unsupported")
@@ -913,6 +981,10 @@ class DataStoreServerSMM(DataStoreProtocolSMM):
 		if not isinstance(response, list):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.string)
+	
+	def prepare_get_object_v1(self, *args):
+		logger.warning("DataStoreServerSMM.prepare_get_object_v1 not implemented")
+		raise common.RMCError("Core::NotImplemented")
 	
 	def get_meta(self, *args):
 		logger.warning("DataStoreServerSMM.get_meta not implemented")

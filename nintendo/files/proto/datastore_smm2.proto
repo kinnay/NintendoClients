@@ -16,9 +16,15 @@ protocol DataStore_SMM2 : DataStore {
 		uint32 option = 0;
 	}
 	
-	struct GetCourseInfoParam {
+	struct GetCoursesParam {
 		list<uint64> data_ids;
 		uint32 option = 0x1CF;
+	}
+	
+	struct SearchUsersUserPointParam {
+		uint32 option = 0;
+		buffer buffer;
+		ResultRange range;
 	}
 
 	struct SearchCoursesPointRankingParam {
@@ -150,8 +156,8 @@ protocol DataStore_SMM2 : DataStore {
 	struct ThumbnailInfo {
 		string url;
 		uint8 data_type;
-		uint32 unk1;
-		buffer unk2;
+		uint32 size;
+		buffer unk;
 		string filename;
 	}
 	
@@ -252,13 +258,8 @@ protocol DataStore_SMM2 : DataStore {
 		bool unk6;
 	}
 	
-	struct RelationObjectParam {
-		string key;
-		string value;
-	}
-	
 	struct ReqGetInfoHeadersInfo {
-		list<RelationObjectParam> headers;
+		list<DataStoreKeyValue> headers;
 		uint32 expiration;
 	}
 	
@@ -272,6 +273,12 @@ protocol DataStore_SMM2 : DataStore {
 	method(49) sync_user_profile(SyncUserProfileParam param) {
 		SyncUserProfileResult result;
 	}
+	
+	method(50) search_users_user_point(SearchUsersUserPointParam param) {
+		list<UserInfo> users;
+		list<uint32> ranks;
+		bool result;
+	}
 
 	method(59) update_last_login_time() {}
 
@@ -279,7 +286,7 @@ protocol DataStore_SMM2 : DataStore {
 		uint8 unk;
 	}
 	
-	method(70) get_course_info(GetCourseInfoParam param) {
+	method(70) get_courses(GetCoursesParam param) {
 		list<CourseInfo> courses;
 		list<result> results;
 	}

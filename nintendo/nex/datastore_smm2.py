@@ -520,6 +520,27 @@ class DataStorePrepareGetParam(common.Structure):
 			stream.list(self.extra_data, stream.string)
 
 
+class DataStorePrepareGetParamV1(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.lock_id = 0
+	
+	def check_required(self, settings):
+		for field in ['data_id']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.lock_id = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.u32(self.lock_id)
+
+
 class DataStorePreparePostParam(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -721,6 +742,33 @@ class DataStoreReqGetInfo(common.Structure):
 			stream.u64(self.data_id)
 
 
+class DataStoreReqGetInfoV1(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.url = None
+		self.headers = None
+		self.size = None
+		self.root_ca_cert = None
+	
+	def check_required(self, settings):
+		for field in ['url', 'headers', 'size', 'root_ca_cert']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.url = stream.string()
+		self.headers = stream.list(DataStoreKeyValue)
+		self.size = stream.u32()
+		self.root_ca_cert = stream.buffer()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.url)
+		stream.list(self.headers, stream.add)
+		stream.u32(self.size)
+		stream.buffer(self.root_ca_cert)
+
+
 class DataStoreReqPostInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -751,7 +799,7 @@ class DataStoreReqPostInfo(common.Structure):
 		stream.buffer(self.root_ca_cert)
 
 
-class GetCourseInfoParam(common.Structure):
+class GetCoursesParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.data_ids = None
@@ -869,27 +917,6 @@ class RegisterUserParam(common.Structure):
 		stream.string(self.device_id)
 
 
-class RelationObjectParam(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.key = None
-		self.value = None
-	
-	def check_required(self, settings):
-		for field in ['key', 'value']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.key = stream.string()
-		self.value = stream.string()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.string(self.key)
-		stream.string(self.value)
-
-
 class ReqGetInfoHeadersInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -902,7 +929,7 @@ class ReqGetInfoHeadersInfo(common.Structure):
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
-		self.headers = stream.list(RelationObjectParam)
+		self.headers = stream.list(DataStoreKeyValue)
 		self.expiration = stream.u32()
 	
 	def save(self, stream):
@@ -979,6 +1006,30 @@ class SearchCoursesPointRankingParam(common.Structure):
 		stream.add(self.range)
 		stream.u8(self.difficulty)
 		stream.list(self.reject_regions, stream.u8)
+
+
+class SearchUsersUserPointParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.option = 0
+		self.buffer = None
+		self.range = common.ResultRange()
+	
+	def check_required(self, settings):
+		for field in ['buffer']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.option = stream.u32()
+		self.buffer = stream.buffer()
+		self.range = stream.extract(common.ResultRange)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.option)
+		stream.buffer(self.buffer)
+		stream.add(self.range)
 
 
 class SyncUserProfileParam(common.Structure):
@@ -1070,28 +1121,28 @@ class ThumbnailInfo(common.Structure):
 		super().__init__()
 		self.url = None
 		self.data_type = None
-		self.unk1 = None
-		self.unk2 = None
+		self.size = None
+		self.unk = None
 		self.filename = None
 	
 	def check_required(self, settings):
-		for field in ['url', 'data_type', 'unk1', 'unk2', 'filename']:
+		for field in ['url', 'data_type', 'size', 'unk', 'filename']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
 		self.url = stream.string()
 		self.data_type = stream.u8()
-		self.unk1 = stream.u32()
-		self.unk2 = stream.buffer()
+		self.size = stream.u32()
+		self.unk = stream.buffer()
 		self.filename = stream.string()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
 		stream.string(self.url)
 		stream.u8(self.data_type)
-		stream.u32(self.unk1)
-		stream.buffer(self.unk2)
+		stream.u32(self.size)
+		stream.buffer(self.unk)
 		stream.string(self.filename)
 
 
@@ -1283,9 +1334,10 @@ class DataStoreProtocolSMM2:
 	METHOD_REGISTER_USER = 47
 	METHOD_GET_USERS = 48
 	METHOD_SYNC_USER_PROFILE = 49
+	METHOD_SEARCH_USERS_USER_POINT = 50
 	METHOD_UPDATE_LAST_LOGIN_TIME = 59
 	METHOD_GET_USERNAME_NG_TYPE = 65
-	METHOD_GET_COURSE_INFO = 70
+	METHOD_GET_COURSES = 70
 	METHOD_SEARCH_COURSES_POINT_RANKING = 71
 	METHOD_SEARCH_COURSES_LATEST = 73
 	METHOD_SEARCH_COURSES_ENDLESS_MODE = 79
@@ -1299,6 +1351,19 @@ class DataStoreProtocolSMM2:
 class DataStoreClientSMM2(DataStoreProtocolSMM2):
 	def __init__(self, client):
 		self.client = client
+	
+	def prepare_get_object_v1(self, param):
+		logger.info("DataStoreClientSMM2.prepare_get_object_v1()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT_V1)
+		stream.add(param)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		info = stream.extract(DataStoreReqGetInfoV1)
+		logger.info("DataStoreClientSMM2.prepare_get_object_v1 -> done")
+		return info
 	
 	def get_meta(self, param):
 		logger.info("DataStoreClientSMM2.get_meta()")
@@ -1404,6 +1469,22 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		logger.info("DataStoreClientSMM2.sync_user_profile -> done")
 		return result
 	
+	def search_users_user_point(self, param):
+		logger.info("DataStoreClientSMM2.search_users_user_point()")
+		#--- request ---
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_SEARCH_USERS_USER_POINT)
+		stream.add(param)
+		self.client.send_message(stream)
+		
+		#--- response ---
+		stream = self.client.get_response(call_id)
+		obj = common.RMCResponse()
+		obj.users = stream.list(UserInfo)
+		obj.ranks = stream.list(stream.u32)
+		obj.result = stream.bool()
+		logger.info("DataStoreClientSMM2.search_users_user_point -> done")
+		return obj
+	
 	def update_last_login_time(self):
 		logger.info("DataStoreClientSMM2.update_last_login_time()")
 		#--- request ---
@@ -1426,10 +1507,10 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		logger.info("DataStoreClientSMM2.get_username_ng_type -> done")
 		return unk
 	
-	def get_course_info(self, param):
-		logger.info("DataStoreClientSMM2.get_course_info()")
+	def get_courses(self, param):
+		logger.info("DataStoreClientSMM2.get_courses()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_COURSE_INFO)
+		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_COURSES)
 		stream.add(param)
 		self.client.send_message(stream)
 		
@@ -1438,7 +1519,7 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		obj = common.RMCResponse()
 		obj.courses = stream.list(CourseInfo)
 		obj.results = stream.list(stream.result)
-		logger.info("DataStoreClientSMM2.get_course_info -> done")
+		logger.info("DataStoreClientSMM2.get_courses -> done")
 		return obj
 	
 	def search_courses_point_ranking(self, param):
@@ -1579,9 +1660,10 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_REGISTER_USER: self.handle_register_user,
 			self.METHOD_GET_USERS: self.handle_get_users,
 			self.METHOD_SYNC_USER_PROFILE: self.handle_sync_user_profile,
+			self.METHOD_SEARCH_USERS_USER_POINT: self.handle_search_users_user_point,
 			self.METHOD_UPDATE_LAST_LOGIN_TIME: self.handle_update_last_login_time,
 			self.METHOD_GET_USERNAME_NG_TYPE: self.handle_get_username_ng_type,
-			self.METHOD_GET_COURSE_INFO: self.handle_get_course_info,
+			self.METHOD_GET_COURSES: self.handle_get_courses,
 			self.METHOD_SEARCH_COURSES_POINT_RANKING: self.handle_search_courses_point_ranking,
 			self.METHOD_SEARCH_COURSES_LATEST: self.handle_search_courses_latest,
 			self.METHOD_SEARCH_COURSES_ENDLESS_MODE: self.handle_search_courses_endless_mode,
@@ -1598,8 +1680,15 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			raise common.RMCError("Core::NotImplemented")
 	
 	def handle_prepare_get_object_v1(self, context, input, output):
-		logger.warning("DataStoreServerSMM2.prepare_get_object_v1 is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("DataStoreServerSMM2.prepare_get_object_v1()")
+		#--- request ---
+		param = input.extract(DataStorePrepareGetParamV1)
+		response = self.prepare_get_object_v1(context, param)
+		
+		#--- response ---
+		if not isinstance(response, DataStoreReqGetInfoV1):
+			raise RuntimeError("Expected DataStoreReqGetInfoV1, got %s" %response.__class__.__name__)
+		output.add(response)
 	
 	def handle_prepare_post_object_v1(self, context, input, output):
 		logger.warning("DataStoreServerSMM2.prepare_post_object_v1 is unsupported")
@@ -1847,6 +1936,22 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			raise RuntimeError("Expected SyncUserProfileResult, got %s" %response.__class__.__name__)
 		output.add(response)
 	
+	def handle_search_users_user_point(self, context, input, output):
+		logger.info("DataStoreServerSMM2.search_users_user_point()")
+		#--- request ---
+		param = input.extract(SearchUsersUserPointParam)
+		response = self.search_users_user_point(context, param)
+		
+		#--- response ---
+		if not isinstance(response, common.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['users', 'ranks', 'result']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.users, output.add)
+		output.list(response.ranks, output.u32)
+		output.bool(response.result)
+	
 	def handle_update_last_login_time(self, context, input, output):
 		logger.info("DataStoreServerSMM2.update_last_login_time()")
 		#--- request ---
@@ -1862,11 +1967,11 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			raise RuntimeError("Expected int, got %s" %response.__class__.__name__)
 		output.u8(response)
 	
-	def handle_get_course_info(self, context, input, output):
-		logger.info("DataStoreServerSMM2.get_course_info()")
+	def handle_get_courses(self, context, input, output):
+		logger.info("DataStoreServerSMM2.get_courses()")
 		#--- request ---
-		param = input.extract(GetCourseInfoParam)
-		response = self.get_course_info(context, param)
+		param = input.extract(GetCoursesParam)
+		response = self.get_courses(context, param)
 		
 		#--- response ---
 		if not isinstance(response, common.RMCResponse):
@@ -1956,6 +2061,10 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			raise RuntimeError("Expected ReqGetInfoHeadersInfo, got %s" %response.__class__.__name__)
 		output.add(response)
 	
+	def prepare_get_object_v1(self, *args):
+		logger.warning("DataStoreServerSMM2.prepare_get_object_v1 not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def get_meta(self, *args):
 		logger.warning("DataStoreServerSMM2.get_meta not implemented")
 		raise common.RMCError("Core::NotImplemented")
@@ -1988,6 +2097,10 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		logger.warning("DataStoreServerSMM2.sync_user_profile not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
+	def search_users_user_point(self, *args):
+		logger.warning("DataStoreServerSMM2.search_users_user_point not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
 	def update_last_login_time(self, *args):
 		logger.warning("DataStoreServerSMM2.update_last_login_time not implemented")
 		raise common.RMCError("Core::NotImplemented")
@@ -1996,8 +2109,8 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		logger.warning("DataStoreServerSMM2.get_username_ng_type not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	def get_course_info(self, *args):
-		logger.warning("DataStoreServerSMM2.get_course_info not implemented")
+	def get_courses(self, *args):
+		logger.warning("DataStoreServerSMM2.get_courses not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	def search_courses_point_ranking(self, *args):
