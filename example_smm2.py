@@ -104,6 +104,7 @@ store = datastore.DataStoreClientSMM2(backend.secure_client)
 
 param = datastore.GetUserOrCourseParam()
 param.code = COURSE_ID
+param.course_option = datastore.CourseOption.ALL
 
 response = store.get_user_or_course(param)
 course = response.course

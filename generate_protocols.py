@@ -70,6 +70,8 @@ class Tokenizer:
 		if char == '"':
 			self.string = ""
 			self.state = self.state_string
+		elif char == "/":
+			self.state = self.state_comment_start
 		elif char == "0":
 			self.number = ""
 			self.state = self.state_number_prefix
@@ -86,6 +88,31 @@ class Tokenizer:
 			pass
 		else:
 			self.error(char)
+			
+	def state_comment_start(self, char):
+		if char == "/":
+			self.state = self.state_comment_line
+		elif char == "*":
+			self.state = self.state_comment_block
+		else:
+			self.error(char)
+			
+	def state_comment_line(self, char):
+		if char == "\n" or char == CHAR_EOF:
+			self.state = self.state_next
+			
+	def state_comment_block(self, char):
+		if char == CHAR_EOF:
+			self.error(char)
+		elif char == "*":
+			self.state = self.state_comment_end
+	
+	def state_comment_end(self, char):
+		if char == "/":
+			self.state = self.state_next
+		else:
+			self.state = self.state_comment_block
+			self.state(char)
 			
 	def state_name(self, char):
 		if char in NAME_CHARS:
@@ -872,6 +899,9 @@ class CodeGenerator:
 		stream.write_line()
 		
 	def generate_struct_load_body(self, stream, body):
+		if not body.fields:
+			stream.write_line("pass")
+		
 		for field in body.fields:
 			if isinstance(field, Variable):
 				stream.write_line("self.%s = %s" %(field.name, self.make_extract(field.type)))
