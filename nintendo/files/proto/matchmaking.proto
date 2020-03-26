@@ -116,10 +116,22 @@ protocol MatchmakeExtension : 109 {
 			uint8 progress_score = 100;
 		}
 		
-		buffer session_key = "";
+		[nex.version >= 30000] {
+			buffer session_key = "";
+		}
 		
 		[nex.version >= 30500] {
 			uint32 option = 0;
+		}
+		
+		[nex.version >= 40000] {
+			MatchmakeParam param;
+			datetime started_time;
+			string user_password;
+			uint32 refer_gid;
+			bool user_password_enabled;
+			bool system_password_enabled;
+			string codeword;
 		}
 	}
 	

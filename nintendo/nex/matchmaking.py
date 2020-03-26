@@ -85,12 +85,25 @@ class MatchmakeSession(Gathering):
 		self.progress_score = 100
 		self.session_key = b""
 		self.option = 0
+		self.param = MatchmakeParam()
+		self.started_time = None
+		self.user_password = None
+		self.refer_gid = None
+		self.user_password_enabled = None
+		self.system_password_enabled = None
+		self.codeword = None
 	
 	def check_required(self, settings):
 		if settings.get("nex.version") >= 30500:
 			pass
+		if settings.get("nex.version") >= 30000:
+			pass
 		if settings.get("nex.version") >= 30500:
 			pass
+		if settings.get("nex.version") >= 40000:
+			for field in ['started_time', 'user_password', 'refer_gid', 'user_password_enabled', 'system_password_enabled', 'codeword']:
+				if getattr(self, field) is None:
+					raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
 		self.game_mode = stream.u32()
@@ -101,9 +114,18 @@ class MatchmakeSession(Gathering):
 		self.player_count = stream.u32()
 		if stream.settings.get("nex.version") >= 30500:
 			self.progress_score = stream.u8()
-		self.session_key = stream.buffer()
+		if stream.settings.get("nex.version") >= 30000:
+			self.session_key = stream.buffer()
 		if stream.settings.get("nex.version") >= 30500:
 			self.option = stream.u32()
+		if stream.settings.get("nex.version") >= 40000:
+			self.param = stream.extract(MatchmakeParam)
+			self.started_time = stream.datetime()
+			self.user_password = stream.string()
+			self.refer_gid = stream.u32()
+			self.user_password_enabled = stream.bool()
+			self.system_password_enabled = stream.bool()
+			self.codeword = stream.string()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -115,9 +137,18 @@ class MatchmakeSession(Gathering):
 		stream.u32(self.player_count)
 		if stream.settings.get("nex.version") >= 30500:
 			stream.u8(self.progress_score)
-		stream.buffer(self.session_key)
+		if stream.settings.get("nex.version") >= 30000:
+			stream.buffer(self.session_key)
 		if stream.settings.get("nex.version") >= 30500:
 			stream.u32(self.option)
+		if stream.settings.get("nex.version") >= 40000:
+			stream.add(self.param)
+			stream.datetime(self.started_time)
+			stream.string(self.user_password)
+			stream.u32(self.refer_gid)
+			stream.bool(self.user_password_enabled)
+			stream.bool(self.system_password_enabled)
+			stream.string(self.codeword)
 common.DataHolder.register(MatchmakeSession, "MatchmakeSession")
 
 
