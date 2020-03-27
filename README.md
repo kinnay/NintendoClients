@@ -27,7 +27,8 @@ https://github.com/Kinnay/NintendoClients/wiki
 * **Switch**
     * **example_lan_splatoon2.py:** Searches for Splatoon 2 LAN sessions and prints information about them.
     * **example_lan_smm2.py:** Searches for Super Mario Maker 2 LAN sessions and prints information about them.
-    * **example_smm2.py:** Downloads a Super Mario Maker 2 level and its thumbnails, and prints information about both the level and its creator. This script requests new tokens every time it's run, even though the dauth and aauth tokens are valid for 24 hours and the id token is valid for 3 hours. If you want to avoid unnecessary requests, you can adjust the script to reuse old tokens as long as possible.<br><br>
+    * **example_smm2.py:** Downloads a Super Mario Maker 2 level and its thumbnails, and prints information about both the level and its creator. This script requests new tokens every time it's run, even though the dauth and aauth tokens are valid for 24 hours and the id token is valid for 3 hours. If you want to avoid unnecessary requests, you can adjust the script to reuse old tokens as long as possible.
+    * **example_smm2_ninji.py:** Requests the list of ninji courses and downloads a replay file.<br><br>
 * **Custom**
     * **example_server.py:** Shows how to create a simple game server with both an authentication server and a secure server.
     * **example_server_login.py:** Logs in on a game server and disconnects immediately. This can be used to test custom servers (such as example_server.py).
