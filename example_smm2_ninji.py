@@ -6,6 +6,7 @@ from nintendo.switch import ProdInfo, KeySet, TicketList
 from nintendo.nex import backend, authentication, datastore_smm2 as datastore
 from nintendo.games import SMM2
 import requests
+import zlib
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -116,6 +117,9 @@ print()
 header_info = store.get_req_get_info_headers_info(ghost.replay_file.data_type)
 headers = {h.key: h.value for h in header_info.headers}
 data = requests.get(ghost.replay_file.url, headers=headers).content
+
+# Decompress and save replay file
+data = zlib.decompress(data)
 with open("replay.bin", "wb") as f:
 	f.write(data)
 
