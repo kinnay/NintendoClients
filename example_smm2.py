@@ -11,6 +11,8 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
+SYSTEM_VERSION = 920 #9.2.0
+
 # You can get your username and password from
 # su/baas/<guid>.dat in save folder 8000000000000010.
 
@@ -68,6 +70,7 @@ pkey = info.get_ssl_key()
 # Request a dauth token
 dauth = DAuthClient(keys)
 dauth.set_certificate(cert, pkey)
+dauth.set_system_version(SYSTEM_VERSION)
 response = dauth.device_token()
 device_token = response["device_auth_token"]
 

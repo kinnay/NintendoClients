@@ -13,6 +13,13 @@ class DAuthError(Exception): pass
 
 DAUTH_SOURCE = bytes.fromhex("8be45abcf987021523ca4f5e2300dbf0")
 
+SYSTEM_VERSION_DIGEST = {
+	900: "CusHY#00090000#-80vwBkUjWLb5Kpb_cnuTjBZ0rHwZHhN7R1-vg0Ti5c=",
+	901: "CusHY#00090001#qVDSOCehwMDCHyDnkXiTSJ1wEJZHtpRV_CLMKgD-fSw=",
+	910: "CusHY#00090100#vIPNrRbf30SoU8ZJ6uGklMqKAkyjHfdE9m6yLFeChkE=",
+	920: "CusHY#00090200#Uxxmc8gYnfMqxzdZdygZ_OrKo98O7QA65s_EkZnGsDo="
+}
+
 class DAuthClient:
 	def __init__(self, keyset):
 		self.client = HTTPClient()
@@ -25,7 +32,7 @@ class DAuthClient:
 		
 		self.url = "dauth-lp1.ndas.srv.nintendo.net"
 		self.user_agent = "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 9.3.0.0)"
-		self.system_digest = "CusHY#00090200#Uxxmc8gYnfMqxzdZdygZ_OrKo98O7QA65s_EkZnGsDo="
+		self.system_digest = SYSTEM_VERSION_DIGEST[920]
 		
 		self.power_state = "FA"
 		
@@ -39,6 +46,10 @@ class DAuthClient:
 	def set_url(self, url): self.url = url
 	def set_user_agent(self, agent): self.user_agent = agent
 	def set_system_digest(self, digest): self.system_digest = digest
+	def set_system_version(self, version):
+		if version not in SYSTEM_VERSION_DIGEST:
+			raise ValueError("Unknown system version")
+		self.system_digest = SYSTEM_VERSION_DIGEST[version]
 	
 	def set_power_state(self, state): self.power_state = state
 	
