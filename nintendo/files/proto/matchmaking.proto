@@ -4,8 +4,8 @@ protocol MatchMaking : 21 {
 		uint32 id = 0;
 		pid owner_pid = 0;
 		pid host_pid = 0;
-		uint16 player_min = 0;
-		uint16 player_max = 0;
+		uint16 min_participants = 0;
+		uint16 max_participants = 0;
 		uint32 participation_policy = 1;
 		uint32 policy_argument = 0;
 		uint32 flags = 512;
@@ -76,7 +76,7 @@ protocol MatchmakeExtension : 109 {
 	}
 	
 	struct MatchmakeParam {
-		map<string, variant> param;
+		map<string, variant> param = {};
 	}
 
 	struct MatchmakeSessionSearchCriteria {
@@ -126,12 +126,12 @@ protocol MatchmakeExtension : 109 {
 		
 		[nex.version >= 40000] {
 			MatchmakeParam param;
-			datetime started_time;
-			string user_password;
-			uint32 refer_gid;
-			bool user_password_enabled;
-			bool system_password_enabled;
-			string codeword;
+			datetime started_time = 0;
+			string user_password = "";
+			uint32 refer_gid = 0;
+			bool user_password_enabled = false;
+			bool system_password_enabled = false;
+			string codeword = "";
 		}
 	}
 	

@@ -18,8 +18,8 @@ class Gathering(common.Structure):
 		self.id = 0
 		self.owner_pid = 0
 		self.host_pid = 0
-		self.player_min = 0
-		self.player_max = 0
+		self.min_participants = 0
+		self.max_participants = 0
 		self.participation_policy = 1
 		self.policy_argument = 0
 		self.flags = 512
@@ -33,8 +33,8 @@ class Gathering(common.Structure):
 		self.id = stream.u32()
 		self.owner_pid = stream.pid()
 		self.host_pid = stream.pid()
-		self.player_min = stream.u16()
-		self.player_max = stream.u16()
+		self.min_participants = stream.u16()
+		self.max_participants = stream.u16()
 		self.participation_policy = stream.u32()
 		self.policy_argument = stream.u32()
 		self.flags = stream.u32()
@@ -46,8 +46,8 @@ class Gathering(common.Structure):
 		stream.u32(self.id)
 		stream.pid(self.owner_pid)
 		stream.pid(self.host_pid)
-		stream.u16(self.player_min)
-		stream.u16(self.player_max)
+		stream.u16(self.min_participants)
+		stream.u16(self.max_participants)
 		stream.u32(self.participation_policy)
 		stream.u32(self.policy_argument)
 		stream.u32(self.flags)
@@ -58,12 +58,10 @@ class Gathering(common.Structure):
 class MatchmakeParam(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.param = None
+		self.param = {}
 	
 	def check_required(self, settings):
-		for field in ['param']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
+		pass
 	
 	def load(self, stream):
 		self.param = stream.map(stream.string, stream.variant)
@@ -86,12 +84,12 @@ class MatchmakeSession(Gathering):
 		self.session_key = b""
 		self.option = 0
 		self.param = MatchmakeParam()
-		self.started_time = None
-		self.user_password = None
-		self.refer_gid = None
-		self.user_password_enabled = None
-		self.system_password_enabled = None
-		self.codeword = None
+		self.started_time = common.DateTime(0)
+		self.user_password = ""
+		self.refer_gid = 0
+		self.user_password_enabled = False
+		self.system_password_enabled = False
+		self.codeword = ""
 	
 	def check_required(self, settings):
 		if settings.get("nex.version") >= 30500:
@@ -101,9 +99,7 @@ class MatchmakeSession(Gathering):
 		if settings.get("nex.version") >= 30500:
 			pass
 		if settings.get("nex.version") >= 40000:
-			for field in ['started_time', 'user_password', 'refer_gid', 'user_password_enabled', 'system_password_enabled', 'codeword']:
-				if getattr(self, field) is None:
-					raise ValueError("No value assigned to required field: %s" %field)
+			pass
 	
 	def load(self, stream):
 		self.game_mode = stream.u32()
