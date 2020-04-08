@@ -5,6 +5,8 @@ To import this into your code, run `python setup.py install` or place the `ninte
 
 You might need to adjust your scripts if you pull new commits from this package (it may receive backwards compatibility breaking changes at any time).
 
+Keep in mind that Nintendo is still banning Switch devices. This package tries to mimic the behavior of a real Switch as closely as possible, and as far as I'm aware no one has been banned for running the example scripts. However, using them is at your own risk. If you want to avoid unnecessary requests, adjust the scripts to reuse tokens as long as possible: the dauth and aauth tokens are valid for 24 hours and the id token is valid for 3 hours. Of course, only the scripts that send your device information to Nintendo may pose a risk. The other scripts are perfectly safe.
+
 ### Documentation
 https://github.com/Kinnay/NintendoClients/wiki
 
@@ -27,7 +29,7 @@ https://github.com/Kinnay/NintendoClients/wiki
 * **Switch**
     * **example_lan_splatoon2.py:** Searches for Splatoon 2 LAN sessions and prints information about them.
     * **example_lan_smm2.py:** Searches for Super Mario Maker 2 LAN sessions and prints information about them.
-    * **example_smm2.py:** Downloads a Super Mario Maker 2 level and its thumbnails, and prints information about both the level and its creator. This script requests new tokens every time it's run, even though the dauth and aauth tokens are valid for 24 hours and the id token is valid for 3 hours. If you want to avoid unnecessary requests, you can adjust the script to reuse old tokens as long as possible.
+    * **example_smm2.py:** Downloads a Super Mario Maker 2 level and its thumbnails, and prints information about both the level and its creator.
     * **example_smm2_ninji.py:** Requests the list of ninji courses and downloads a replay file.<br><br>
 * **Custom**
     * **example_server.py:** Shows how to create a simple game server with both an authentication server and a secure server.
