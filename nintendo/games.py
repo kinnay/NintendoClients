@@ -76,9 +76,9 @@ class SMM:
 
 #===== Switch Games =====#
 
-class ACNewHorizons:
+class ACNH:
 	TITLE_ID = 0x01006F8002326000
-	TITLE_VERSION = 0x20000
+	TITLE_VERSION = 0x50000
 	
 	GAME_SERVER_ID = 0x2EE2E300
 	ACCESS_KEY = "v43a10em"
