@@ -33,6 +33,7 @@ https://github.com/Kinnay/NintendoClients/wiki
     * **example_lan_smm2.py:** Searches for Super Mario Maker 2 LAN sessions and prints information about them.
     * **example_smm2.py:** Downloads a Super Mario Maker 2 level and its thumbnails, and prints information about both the level and its creator.
     * **example_smm2_ninji.py:** Requests the list of ninji courses and downloads a replay file.<br><br>
+	* **example_animalcrossing.py:** Searches for an island by dodo code and prints information about it.
 * **Custom**
     * **example_server.py:** Shows how to create a simple game server with both an authentication server and a secure server.
     * **example_server_login.py:** Logs in on a game server and disconnects immediately. This can be used to test custom servers (such as example_server.py).

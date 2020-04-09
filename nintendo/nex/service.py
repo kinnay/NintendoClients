@@ -130,7 +130,7 @@ class RMCClient:
 				elif isinstance(e, KeyError): result = common.Result("PythonCore::KeyError")
 				else: result = common.Result("PythonCore::Exception")
 		else:
-			logger.warning("Received RMC request with unsupported protocol id: 0x%X", protocol_id)
+			logger.warning("Received RMC request with unimplemented protocol id: 0x%X", protocol_id)
 			result = common.Result("Core::NotImplemented")
 		
 		if result.is_error():
