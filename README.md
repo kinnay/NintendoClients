@@ -7,6 +7,8 @@ You might need to adjust your scripts if you pull new commits from this package 
 
 Keep in mind that Nintendo is still banning Switch devices. This package tries to mimic the behavior of a real Switch as closely as possible, and as far as I'm aware no one has been banned for running the example scripts. However, using them is at your own risk. If you want to avoid unnecessary requests, adjust the scripts to reuse tokens as long as possible: the dauth and aauth tokens are valid for 24 hours and the id token is valid for 3 hours. Of course, only the scripts that send your device information to Nintendo may pose a risk. The other scripts are perfectly safe.
 
+Only digital titles are supported in the Switch examples that require a ticket (no game cards).
+
 ### Documentation
 https://github.com/Kinnay/NintendoClients/wiki
 

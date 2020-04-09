@@ -68,6 +68,8 @@ class AAuthClient:
 	def verify_ticket(self, ticket, title_id):
 		if len(ticket) != 0x2C0:
 			raise ValueError("Ticket has unexpected size")
+		if struct.unpack_from("<I", ticket)[0] != 0x10004:
+			raise ValueError("Ticket has invalid signature type")
 		if struct.unpack_from(">Q", ticket, 0x2A0)[0] != title_id:
 			raise ValueError("Ticket has different title id")
 		if struct.unpack_from(">Q", ticket, 0x2A8)[0] != ticket[0x285]:

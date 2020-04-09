@@ -24,7 +24,7 @@ SYSTEM_VERSION = 920 #9.2.0
 # Alternatively, you can set up a mitm on your Switch
 # and extract them from the request to /1.0.0/login
 
-BAAS_USERNAME = "0123456789abcdef"
+BAAS_USERNAME = "0123456789abcdef" # 16 hex digits
 BAAS_PASSWORD = "..." # Should be 40 characters
 
 # You can dump prod.keys with Lockpick_RCM and
@@ -32,12 +32,10 @@ BAAS_PASSWORD = "..." # Should be 40 characters
 keys = KeySet("/path/to/prod.keys")
 info = ProdInfo(keys, "/path/to/PRODINFO")
 
-# These files can be found in save folder
-# 80000000000000e2 (espersonalized)
-tickets = TicketList(
-	"/path/to/ticket_list.bin",
-	"/path/to/ticket.bin"
-)
+# Tickets can be dumped with nxdumptool.
+# You need the base ticket, not an update ticket.
+with open("/path/to/ticket", "rb") as f:
+	ticket = f.read()
 
 
 HOST = "g%08x-lp1.s.n.srv.nintendo.net" %SMM2.GAME_SERVER_ID
