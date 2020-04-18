@@ -122,6 +122,10 @@ class SMO:
 	NEX_VERSION = 40302 #4.3.2
 	
 class Splatoon2:
+	GAME_SERVER_ID = 0x2DF33D01
+	ACCESS_KEY = "4eb18d39"
+	NEX_VERSION = 40308 #4.3.8 (appblz)
+	
 	PIA_VERSION = 50901
 	PIA_APP_VERSION = 60
 	PIA_KEY = bytes.fromhex("ee182a63e216cdb1f51ad4bed8cf6508")

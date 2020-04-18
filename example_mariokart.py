@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 #Serial number can be found on the back of the Wii U
 DEVICE_ID = 12345678
 SERIAL_NUMBER = "..."
-SYSTEM_VERSION = 0x220
+SYSTEM_VERSION = 0x250
 REGION_ID = 4
 COUNTRY_ID = 94
 REGION_NAME = "EUR"
