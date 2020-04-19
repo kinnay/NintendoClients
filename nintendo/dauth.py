@@ -14,11 +14,31 @@ class DAuthError(Exception): pass
 DAUTH_SOURCE = bytes.fromhex("8be45abcf987021523ca4f5e2300dbf0")
 
 SYSTEM_VERSION_DIGEST = {
-	900: "CusHY#00090000#-80vwBkUjWLb5Kpb_cnuTjBZ0rHwZHhN7R1-vg0Ti5c=",
-	901: "CusHY#00090001#qVDSOCehwMDCHyDnkXiTSJ1wEJZHtpRV_CLMKgD-fSw=",
-	910: "CusHY#00090100#vIPNrRbf30SoU8ZJ6uGklMqKAkyjHfdE9m6yLFeChkE=",
-	920: "CusHY#00090200#Uxxmc8gYnfMqxzdZdygZ_OrKo98O7QA65s_EkZnGsDo="
+	900:  "CusHY#00090000#-80vwBkUjWLb5Kpb_cnuTjBZ0rHwZHhN7R1-vg0Ti5c=",
+	901:  "CusHY#00090001#qVDSOCehwMDCHyDnkXiTSJ1wEJZHtpRV_CLMKgD-fSw=",
+	910:  "CusHY#00090100#vIPNrRbf30SoU8ZJ6uGklMqKAkyjHfdE9m6yLFeChkE=",
+	920:  "CusHY#00090200#Uxxmc8gYnfMqxzdZdygZ_OrKo98O7QA65s_EkZnGsDo=",
+	1000: "CusHY#000a0000#EmdxOnZjZ9Ihf3Zskt_48pYgowAUeeJccU6tCBIweEc="
 }
+
+USER_AGENT = {
+	900:  "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 9.3.0.0)",
+	901:  "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 9.3.0.0)",
+	910:  "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 9.3.0.0)",
+	920:  "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 9.3.0.0)",
+	1000: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 10.4.0.0)"
+}
+
+KEY_GENERATION = {
+	900:  10,
+	901:  10,
+	910:  11,
+	920:  11,
+	1000: 11
+}
+
+LATEST_VERSION = 1000
+
 
 class DAuthClient:
 	def __init__(self, keyset):
@@ -31,12 +51,11 @@ class DAuthClient:
 		self.client_id = 0x8F849B5D34778D8E
 		
 		self.url = "dauth-lp1.ndas.srv.nintendo.net"
-		self.user_agent = "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 9.3.0.0)"
-		self.system_digest = SYSTEM_VERSION_DIGEST[920]
+		self.user_agent = USER_AGENT[LATEST_VERSION]
+		self.system_digest = SYSTEM_VERSION_DIGEST[LATEST_VERSION]
+		self.key_generation = KEY_GENERATION[LATEST_VERSION]
 		
 		self.power_state = "FA"
-		
-		self.key_generation = 11
 		
 	def set_certificate(self, cert, key): self.cert = cert, key
 	
