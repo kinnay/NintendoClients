@@ -107,7 +107,8 @@ class UserOption:
 	UNK7 = 1024
 	UNK11 = 4096
 	UNK13 = 8192
-	ALL = 16383
+	UNK15 = 32768
+	ALL = 65535
 
 
 class BadgeInfo(common.Structure):
@@ -1557,15 +1558,19 @@ class UserInfo(common.Structure):
 		self.unk11 = None
 		self.unk12 = None
 		self.unk13 = UnknownStruct3()
+		self.unk14 = None
+		self.unk15 = None
+		self.unk16 = None
 	
 	def get_version(self, settings):
 		version = 0
 		version = 1
 		version = 2
+		version = 3
 		return version
 	
 	def check_required(self, settings):
-		for field in ['pid', 'code', 'name', 'unk2', 'country', 'region', 'last_active', 'unk3', 'unk4', 'unk5', 'play_stats', 'maker_stats', 'endless_challenge_high_scores', 'multiplayer_stats', 'unk7', 'badges', 'unk8', 'unk9', 'unk10', 'unk11', 'unk12']:
+		for field in ['pid', 'code', 'name', 'unk2', 'country', 'region', 'last_active', 'unk3', 'unk4', 'unk5', 'play_stats', 'maker_stats', 'endless_challenge_high_scores', 'multiplayer_stats', 'unk7', 'badges', 'unk8', 'unk9', 'unk10', 'unk11', 'unk12', 'unk14', 'unk15', 'unk16']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -1593,6 +1598,9 @@ class UserInfo(common.Structure):
 		self.unk11 = stream.datetime()
 		self.unk12 = stream.bool()
 		self.unk13 = stream.extract(UnknownStruct3)
+		self.unk14 = stream.string()
+		self.unk15 = stream.map(stream.u8, stream.u32)
+		self.unk16 = stream.bool()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -1619,6 +1627,9 @@ class UserInfo(common.Structure):
 		stream.datetime(self.unk11)
 		stream.bool(self.unk12)
 		stream.add(self.unk13)
+		stream.string(self.unk14)
+		stream.map(self.unk15, stream.u8, stream.u32)
+		stream.bool(self.unk16)
 
 
 class DataStoreProtocolSMM2:

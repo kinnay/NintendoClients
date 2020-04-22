@@ -113,7 +113,9 @@ protocol DataStore_SMM2 : DataStore {
 		UNK11 = 0x1000,
 		UNK13 = 0x2000,
 		
-		ALL = 0x3FFF
+		UNK15 = 0x8000,
+		
+		ALL = 0xFFFF
 	}
 	
 	/*** Method parameters ***/
@@ -379,6 +381,11 @@ protocol DataStore_SMM2 : DataStore {
 		
 		#revision 2
 		UnknownStruct3 unk13;
+		
+		#revision 3
+		string unk14;
+		map<uint8, uint32> unk15;
+		bool unk16;
 	}
 	
 	/*** Unknown structures ***/
