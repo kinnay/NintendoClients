@@ -54,6 +54,7 @@ device_token = response["device_auth_token"]
 
 # Request an aauth token
 aauth = AAuthClient()
+aauth.set_system_version(SYSTEM_VERSION)
 response = aauth.auth_digital(
 	ACNH.TITLE_ID, ACNH.TITLE_VERSION,
 	device_token, ticket
@@ -62,6 +63,7 @@ app_token = response["application_auth_token"]
 
 # Log in on baas server
 baas = BAASClient()
+baas.set_system_version(SYSTEM_VERSION)
 baas.authenticate(device_token)
 response = baas.login(BAAS_USERNAME, BAAS_PASSWORD, app_token)
 

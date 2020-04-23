@@ -69,9 +69,11 @@ class DAuthClient:
 	def set_user_agent(self, agent): self.user_agent = agent
 	def set_system_digest(self, digest): self.system_digest = digest
 	def set_system_version(self, version):
-		if version not in SYSTEM_VERSION_DIGEST:
+		if version not in USER_AGENT:
 			raise ValueError("Unknown system version")
+		self.user_agent = USER_AGENT[version]
 		self.system_digest = SYSTEM_VERSION_DIGEST[version]
+		self.key_generation = KEY_GENERATION[version]
 	
 	def set_power_state(self, state): self.power_state = state
 	

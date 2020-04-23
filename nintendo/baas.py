@@ -5,6 +5,18 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+USER_AGENT = {
+	900:  "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
+	901:  "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
+	910:  "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
+	920:  "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
+	1000: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
+	1001: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)"
+}
+
+LATEST_VERSION = 1001
+
+
 class BAASError(Exception): pass
 
 
@@ -13,7 +25,7 @@ class BAASClient:
 		self.client = HTTPClient()
 		
 		self.url = "e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com"
-		self.user_agent = "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)"
+		self.user_agent = USER_AGENT[LATEST_VERSION]
 		self.power_state = "FA"
 		
 		self.access_token = None
@@ -22,6 +34,11 @@ class BAASClient:
 	def set_url(self, url): self.url = url
 	def set_user_agent(self, agent): self.user_agent = agent
 	def set_power_state(self, state): self.power_state = state
+	
+	def set_system_version(self, version):
+		if version not in USER_AGENT:
+			raise ValueError("Unknown system version")
+		self.user_agent = USER_AGENT[version]
 		
 	def request(self, req, token, use_power_state):
 		req.headers["Host"] = self.url
