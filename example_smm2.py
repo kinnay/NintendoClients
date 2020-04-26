@@ -52,7 +52,9 @@ CourseThemes = [
 TagNames = [
 	"None", "Standard", "Puzzle solving", "Speedrun",
 	"Autoscroll", "Auto mario", "Short and sweet",
-	"Multiplayer versus", "Themed", "Music"
+	"Multiplayer versus", "Themed", "Music", "Art",
+	"Technical", "Shooter", "Boss battle",
+	"Single player", "Link"
 ]
 
 
