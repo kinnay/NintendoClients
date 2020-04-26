@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 SYSTEM_VERSION = 1001 #10.0.1
 
-# You can get your username and password from
+# You can get your user id and password from
 # su/baas/<guid>.dat in save folder 8000000000000010.
 
 # Bytes 0x20 - 0x28 contain the user id in reversed
@@ -23,7 +23,7 @@ SYSTEM_VERSION = 1001 #10.0.1
 # Alternatively, you can set up a mitm on your Switch
 # and extract them from the request to /1.0.0/login
 
-BAAS_USERNAME = "0123456789abcdef" # 16 hex digits
+BAAS_USER_ID = 0x0123456789abcdef # 16 hex digits
 BAAS_PASSWORD = "..." # Should be 40 characters
 
 # You can dump prod.keys with Lockpick_RCM and
@@ -83,7 +83,7 @@ app_token = response["application_auth_token"]
 baas = BAASClient()
 baas.set_system_version(SYSTEM_VERSION)
 baas.authenticate(device_token)
-response = baas.login(BAAS_USERNAME, BAAS_PASSWORD, app_token)
+response = baas.login(BAAS_USER_ID, BAAS_PASSWORD, app_token)
 
 user_id = int(response["user"]["id"], 16)
 id_token = response["idToken"]

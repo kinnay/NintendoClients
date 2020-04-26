@@ -68,7 +68,7 @@ class BAASClient:
 		
 	def login(self, id, password, app_token=None):
 		req = HTTPRequest.post("/1.0.0/login")
-		req.form["id"] = id
+		req.form["id"] = "%016x" %id
 		req.form["password"] = password
 		if app_token:
 			req.form["appAuthNToken"] = app_token
