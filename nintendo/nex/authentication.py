@@ -1,7 +1,7 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common
+from nintendo.nex import common, streams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -172,97 +172,110 @@ class AuthenticationProtocol:
 
 class AuthenticationClient(AuthenticationProtocol):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def login(self, username):
 		logger.info("AuthenticationClient.login()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_LOGIN)
+		stream = streams.StreamOut(self.settings)
 		stream.string(username)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_LOGIN, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.result = stream.result()
 		obj.pid = stream.pid()
 		obj.ticket = stream.buffer()
 		obj.connection_data = stream.extract(RVConnectionData)
 		obj.server_name = stream.string()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AuthenticationClient.login -> done")
 		return obj
 	
 	def login_ex(self, username, extra_data):
 		logger.info("AuthenticationClient.login_ex()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_LOGIN_EX)
+		stream = streams.StreamOut(self.settings)
 		stream.string(username)
 		stream.anydata(extra_data)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_LOGIN_EX, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.result = stream.result()
 		obj.pid = stream.pid()
 		obj.ticket = stream.buffer()
 		obj.connection_data = stream.extract(RVConnectionData)
 		obj.server_name = stream.string()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AuthenticationClient.login_ex -> done")
 		return obj
 	
 	def request_ticket(self, source, target):
 		logger.info("AuthenticationClient.request_ticket()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_REQUEST_TICKET)
+		stream = streams.StreamOut(self.settings)
 		stream.pid(source)
 		stream.pid(target)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_REQUEST_TICKET, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.result = stream.result()
 		obj.ticket = stream.buffer()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AuthenticationClient.request_ticket -> done")
 		return obj
 	
 	def get_pid(self, username):
 		logger.info("AuthenticationClient.get_pid()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_PID)
+		stream = streams.StreamOut(self.settings)
 		stream.string(username)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_PID, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		pid = stream.pid()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AuthenticationClient.get_pid -> done")
 		return pid
 	
 	def get_name(self, pid):
 		logger.info("AuthenticationClient.get_name()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_NAME)
+		stream = streams.StreamOut(self.settings)
 		stream.pid(pid)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_NAME, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		name = stream.string()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AuthenticationClient.get_name -> done")
 		return name
 	
 	def login_with_param(self, param):
 		logger.info("AuthenticationClient.login_with_param()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_LOGIN_WITH_PARAM)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_LOGIN_WITH_PARAM, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.extract(ValidateAndRequestTicketResult)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AuthenticationClient.login_with_param -> done")
 		return result
 

@@ -1,7 +1,7 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common
+from nintendo.nex import common, streams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -121,44 +121,52 @@ class NintendoNotificationProtocol:
 
 class NotificationClient(NotificationProtocol):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def process_notification_event(self, event):
 		logger.info("NotificationClient.process_notification_event()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PROCESS_NOTIFICATION_EVENT)
+		stream = streams.StreamOut(self.settings)
 		stream.add(event)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_PROCESS_NOTIFICATION_EVENT, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("NotificationClient.process_notification_event -> done")
 
 
 class NintendoNotificationClient(NintendoNotificationProtocol):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def process_nintendo_notification_event(self, event):
 		logger.info("NintendoNotificationClient.process_nintendo_notification_event()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT)
+		stream = streams.StreamOut(self.settings)
 		stream.add(event)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("NintendoNotificationClient.process_nintendo_notification_event -> done")
 	
 	def process_presence_change_event(self, event):
 		logger.info("NintendoNotificationClient.process_presence_change_event()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PROCESS_PRESENCE_CHANGE_EVENT)
+		stream = streams.StreamOut(self.settings)
 		stream.add(event)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_PROCESS_PRESENCE_CHANGE_EVENT, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("NintendoNotificationClient.process_presence_change_event -> done")
 
 

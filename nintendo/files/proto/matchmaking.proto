@@ -222,8 +222,10 @@ protocol MatchmakeExtension : 109 {
 	method browse_matchmake_session_with_host_urls_no_holder;
 	method update_matchmake_session_part;
 	method request_matchmaking;
-	method withdraw_matchmaking;
-	method withdraw_matchmaking_all;
+	
+	method withdraw_matchmaking(uint64 request_id) {}
+	method withdraw_matchmaking_all() {}
+	
 	method find_matchmake_session_by_gathering_id;
 	method find_matchmake_session_by_single_gathering_id;
 	method find_matchmake_session_by_owner;

@@ -1,7 +1,7 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common
+from nintendo.nex import common, streams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -378,163 +378,212 @@ class MatchmakeExtensionProtocol:
 
 class MatchMakingClient(MatchMakingProtocol):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def find_by_participants(self, pids):
 		logger.info("MatchMakingClient.find_by_participants()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_FIND_BY_PARTICIPANTS)
+		stream = streams.StreamOut(self.settings)
 		stream.list(pids, stream.pid)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_FIND_BY_PARTICIPANTS, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		gatherings = stream.list(stream.anydata)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MatchMakingClient.find_by_participants -> done")
 		return gatherings
 	
 	def find_by_sql_query(self, query, range):
 		logger.info("MatchMakingClient.find_by_sql_query()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_FIND_BY_SQL_QUERY)
+		stream = streams.StreamOut(self.settings)
 		stream.string(query)
 		stream.add(range)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_FIND_BY_SQL_QUERY, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		gatherings = stream.list(stream.anydata)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MatchMakingClient.find_by_sql_query -> done")
 		return gatherings
 	
 	def get_session_urls(self, gid):
 		logger.info("MatchMakingClient.get_session_urls()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_SESSION_URLS)
+		stream = streams.StreamOut(self.settings)
 		stream.u32(gid)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_SESSION_URLS, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		urls = stream.list(stream.stationurl)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MatchMakingClient.get_session_urls -> done")
 		return urls
 
 
 class MatchmakeExtensionClient(MatchmakeExtensionProtocol):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def auto_matchmake_postpone(self, gathering, message):
 		logger.info("MatchmakeExtensionClient.auto_matchmake_postpone()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_AUTO_MATCHMAKE_POSTPONE)
+		stream = streams.StreamOut(self.settings)
 		stream.anydata(gathering)
 		stream.string(message)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_AUTO_MATCHMAKE_POSTPONE, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		gathering = stream.anydata()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MatchmakeExtensionClient.auto_matchmake_postpone -> done")
 		return gathering
 	
 	def create_matchmake_session(self, gathering, description, participation_count):
 		logger.info("MatchmakeExtensionClient.create_matchmake_session()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_CREATE_MATCHMAKE_SESSION)
+		stream = streams.StreamOut(self.settings)
 		stream.anydata(gathering)
 		stream.string(description)
 		stream.u16(participation_count)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_CREATE_MATCHMAKE_SESSION, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.gid = stream.u32()
 		obj.session_key = stream.buffer()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MatchmakeExtensionClient.create_matchmake_session -> done")
 		return obj
 	
 	def join_matchmake_session(self, gid, message):
 		logger.info("MatchmakeExtensionClient.join_matchmake_session()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_JOIN_MATCHMAKE_SESSION)
+		stream = streams.StreamOut(self.settings)
 		stream.u32(gid)
 		stream.string(message)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_JOIN_MATCHMAKE_SESSION, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		session_key = stream.buffer()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MatchmakeExtensionClient.join_matchmake_session -> done")
 		return session_key
 	
 	def auto_matchmake_with_search_criteria_postpone(self, search_criteria, gathering, message):
 		logger.info("MatchmakeExtensionClient.auto_matchmake_with_search_criteria_postpone()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_AUTO_MATCHMAKE_WITH_SEARCH_CRITERIA_POSTPONE)
+		stream = streams.StreamOut(self.settings)
 		stream.list(search_criteria, stream.add)
 		stream.anydata(gathering)
 		stream.string(message)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_AUTO_MATCHMAKE_WITH_SEARCH_CRITERIA_POSTPONE, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		gathering = stream.anydata()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MatchmakeExtensionClient.auto_matchmake_with_search_criteria_postpone -> done")
 		return gathering
 	
 	def get_playing_session(self, pids):
 		logger.info("MatchmakeExtensionClient.get_playing_session()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_PLAYING_SESSION)
+		stream = streams.StreamOut(self.settings)
 		stream.list(pids, stream.pid)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_PLAYING_SESSION, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		sessions = stream.list(PlayingSession)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MatchmakeExtensionClient.get_playing_session -> done")
 		return sessions
 	
 	def get_simple_playing_session(self, pids, include_login_user):
 		logger.info("MatchmakeExtensionClient.get_simple_playing_session()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_SIMPLE_PLAYING_SESSION)
+		stream = streams.StreamOut(self.settings)
 		stream.list(pids, stream.pid)
 		stream.bool(include_login_user)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_SIMPLE_PLAYING_SESSION, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		session = stream.list(SimplePlayingSession)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MatchmakeExtensionClient.get_simple_playing_session -> done")
 		return session
 	
 	def find_matchmake_session_by_gathering_id_detail(self, gid):
 		logger.info("MatchmakeExtensionClient.find_matchmake_session_by_gathering_id_detail()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_FIND_MATCHMAKE_SESSION_BY_GATHERING_ID_DETAIL)
+		stream = streams.StreamOut(self.settings)
 		stream.u32(gid)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_FIND_MATCHMAKE_SESSION_BY_GATHERING_ID_DETAIL, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		session = stream.extract(MatchmakeSession)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MatchmakeExtensionClient.find_matchmake_session_by_gathering_id_detail -> done")
 		return session
+	
+	def withdraw_matchmaking(self, request_id):
+		logger.info("MatchmakeExtensionClient.withdraw_matchmaking()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u64(request_id)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_WITHDRAW_MATCHMAKING, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeExtensionClient.withdraw_matchmaking -> done")
+	
+	def withdraw_matchmaking_all(self):
+		logger.info("MatchmakeExtensionClient.withdraw_matchmaking_all()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_WITHDRAW_MATCHMAKING_ALL, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeExtensionClient.withdraw_matchmaking_all -> done")
 	
 	def browse_matchmake_session_no_holder_no_result_range(self, search_criteria):
 		logger.info("MatchmakeExtensionClient.browse_matchmake_session_no_holder_no_result_range()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_BROWSE_MATCHMAKE_SESSION_NO_HOLDER_NO_RESULT_RANGE)
+		stream = streams.StreamOut(self.settings)
 		stream.add(search_criteria)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_BROWSE_MATCHMAKE_SESSION_NO_HOLDER_NO_RESULT_RANGE, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		sessions = stream.list(MatchmakeSession)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MatchmakeExtensionClient.browse_matchmake_session_no_holder_no_result_range -> done")
 		return sessions
 
@@ -1102,12 +1151,15 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 		raise common.RMCError("Core::NotImplemented")
 	
 	def handle_withdraw_matchmaking(self, context, input, output):
-		logger.warning("MatchmakeExtensionServer.withdraw_matchmaking is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("MatchmakeExtensionServer.withdraw_matchmaking()")
+		#--- request ---
+		request_id = input.u64()
+		self.withdraw_matchmaking(context, request_id)
 	
 	def handle_withdraw_matchmaking_all(self, context, input, output):
-		logger.warning("MatchmakeExtensionServer.withdraw_matchmaking_all is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("MatchmakeExtensionServer.withdraw_matchmaking_all()")
+		#--- request ---
+		self.withdraw_matchmaking_all(context)
 	
 	def handle_find_matchmake_session_by_gathering_id(self, context, input, output):
 		logger.warning("MatchmakeExtensionServer.find_matchmake_session_by_gathering_id is unsupported")
@@ -1166,6 +1218,14 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 	
 	def find_matchmake_session_by_gathering_id_detail(self, *args):
 		logger.warning("MatchmakeExtensionServer.find_matchmake_session_by_gathering_id_detail not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def withdraw_matchmaking(self, *args):
+		logger.warning("MatchmakeExtensionServer.withdraw_matchmaking not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def withdraw_matchmaking_all(self, *args):
+		logger.warning("MatchmakeExtensionServer.withdraw_matchmaking_all not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	def browse_matchmake_session_no_holder_no_result_range(self, *args):

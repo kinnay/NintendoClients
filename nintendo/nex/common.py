@@ -7,32 +7,44 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class RMCError(Exception):
-	def __init__(self, code):
-		if type(code) == str:
-			code = error_codes[code]
-		self.error_code = code
-		self.error_name = error_names[code]
-		
-	def __str__(self):
-		return "%s (0x%08X)" %(self.error_name, self.error_code)
-
-
 class RMCResponse:
 	pass
 
+
+ERROR_MASK = 1 << 31
+
+class RMCError(Exception):
+	def __init__(self, code="Core::Unknown"):
+		if type(code) == str:
+			code = error_codes[code] | ERROR_MASK
+		self.name = error_names[code & ~ERROR_MASK]
+		self.code = code
+		
+	def __str__(self):
+		return "%s (0x%08X)" %(self.name, self.code)
+
 	
 class Result:
-	def __init__(self, code):
-		if type(code) == str:
-			code = error_codes[code]
+	def __init__(self, code=0x10001):
 		self.error_code = code
 		
+	@staticmethod
+	def success(code="Core::Unknown"):
+		if type(code) == str:
+			code = error_codes[code]
+		return Result(code & ~ERROR_MASK)
+		
+	@staticmethod
+	def error(code="Core::Unknown"):
+		if type(code) == str:
+			code = error_codes[code]
+		return Result(code | ERROR_MASK)
+	
 	def is_success(self):
-		return self.error_code == 0x10001
+		return not self.error_code & ERROR_MASK
 		
 	def is_error(self):
-		return self.error_code != 0x10001
+		return bool(self.error_code & ERROR_MASK)
 	
 	def code(self):
 		return self.error_code
@@ -40,7 +52,7 @@ class Result:
 	def name(self):
 		if self.is_success():
 			return "success"
-		return error_names.get(self.error_code, "unknown error")
+		return error_names.get(self.error_code & ~ERROR_MASK, "unknown error")
 		
 	def raise_if_error(self):
 		if self.is_error():

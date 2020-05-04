@@ -1,7 +1,7 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common
+from nintendo.nex import common, streams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -16,29 +16,34 @@ class MonitoringProtocol:
 
 class MonitoringClient(MonitoringProtocol):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def ping_daemon(self):
 		logger.info("MonitoringClient.ping_daemon()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PING_DAEMON)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_PING_DAEMON, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MonitoringClient.ping_daemon -> done")
 		return result
 	
 	def get_cluster_members(self):
 		logger.info("MonitoringClient.get_cluster_members()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_CLUSTER_MEMBERS)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_CLUSTER_MEMBERS, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		members = stream.list(stream.string)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MonitoringClient.get_cluster_members -> done")
 		return members
 

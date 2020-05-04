@@ -79,13 +79,18 @@ class HTTPMessage:
 		
 		self.text = None
 		
+		self.files = types.OrderedDict()
 		self.form = HTTPFormData()
 		self.json = None
 		
-	def prepare(self, *, headers=None, body=None, form=None, json=None):
+		self.boundary = "--------BOUNDARY--------"
+		
+	def prepare(self, *, headers=None, body=None, form=None, json=None, files=None):
 		if headers: self.headers = headers
 		if body: self.body = body
 		if form: self.form = form
+		if json: self.json = json
+		if files: self.files = files
 		
 	def check_version(self):
 		if not self.version.startswith("HTTP/"):
@@ -139,7 +144,14 @@ class HTTPMessage:
 		
 		return True
 		
+	def check_conflicts(self):
+		params = [self.form, self.json, self.files, self.text, self.body]
+		if len([x for x in params if x]) > 1:
+			raise ValueError("Parameters are incompatible")
+		
 	def prepare_body(self):
+		self.check_conflicts()
+		
 		if self.form:
 			if "Content-Type" not in self.headers:
 				self.headers["Content-Type"] = "application/x-www-form-urlencoded"
@@ -149,6 +161,18 @@ class HTTPMessage:
 			if "Content-Type" not in self.headers:
 				self.headers["Content-Type"] = "application/json"
 			self.text = json.dumps(self.json)
+			
+		elif self.files is not None:
+			if "Content-Type" not in self.headers:
+				self.headers["Content-Type"] = "multipart/form-data"
+			self.headers["Content-Type"] += "; boundary=%s" %self.boundary
+				
+			self.body = b""
+			for name, data in self.files.items():
+				self.body += b"--%s\r\n" %self.boundary.encode()
+				self.body += b"Content-Disposition: form-data; name=\"%s\"\r\n\r\n" %name.encode()
+				self.body += data + b"\r\n"
+			self.body += b"--%s--\r\n" %self.boundary.encode()
 			
 		if self.text is not None:
 			if "Content-Type" not in self.headers:

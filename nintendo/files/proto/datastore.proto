@@ -1,31 +1,20 @@
 
 protocol DataStore : 115 {
-	struct PersistenceTarget {
-		pid owner_id = 0;
-		uint16 persistence_id = 65535;
+	struct DataStoreCompletePostParam {
+		uint64 data_id;
+		bool success;
 	}
-	
-	struct DataStorePermission {
-		uint8 permission = 3;
-		list<pid> recipients = [];
-	}
-	
-	struct DataStoreRatingInfo {
-		sint64 total_value;
-		uint32 count;
-		sint64 initial_value;
-	}
-	
-	struct DataStoreRatingInfoWithSlot {
-		uint8 slot;
-		DataStoreRatingInfo info;
-	}
-	
+
 	struct DataStoreGetMetaParam {
 		uint64 data_id = 0;
-		PersistenceTarget persistence_target;
+		DataStorePersistenceTarget persistence_target;
 		uint8 result_option = 0;
 		uint64 access_password = 0;
+	}
+	
+	struct DataStoreKeyValue {
+		string key;
+		string value;
 	}
 	
 	struct DataStoreMetaInfo {
@@ -50,15 +39,31 @@ protocol DataStore : 115 {
 		list<DataStoreRatingInfoWithSlot> ratings;
 	}
 	
-	struct DataStorePrepareGetParamV1 {
+	struct DataStorePasswordInfo {
 		uint64 data_id;
-		uint32 lock_id = 0;
+		uint64 access_password;
+		uint64 update_password;
+	}
+	
+	struct DataStorePermission {
+		uint8 permission = 3;
+		list<pid> recipients = [];
+	}
+	
+	struct DataStorePersistenceInitParam {
+		uint16 persistence_id = 65535;
+		bool delete_last_object = true;
+	}
+	
+	struct DataStorePersistenceTarget {
+		pid owner_id = 0;
+		uint16 persistence_id = 65535;
 	}
 	
 	struct DataStorePrepareGetParam {
 		uint64 data_id = 0;
 		uint32 lock_id = 0;
-		PersistenceTarget persistence_target;
+		DataStorePersistenceTarget persistence_target;
 		uint64 access_password = 0;
 		
 		[nex.version >= 30500] {
@@ -66,27 +71,9 @@ protocol DataStore : 115 {
 		}
 	}
 	
-	struct DataStoreKeyValue {
-		string key;
-		string value;
-	}
-	
-	struct DataStoreReqGetInfoV1 {
-		string url;
-		list<DataStoreKeyValue> headers;
-		uint32 size;
-		buffer root_ca_cert;
-	}
-	
-	struct DataStoreReqGetInfo {
-		string url;
-		list<DataStoreKeyValue> headers;
-		uint32 size;
-		buffer root_ca_cert;
-		
-		[nex.version >= 30500] {
-			uint64 data_id;
-		}
+	struct DataStorePrepareGetParamV1 {
+		uint64 data_id;
+		uint32 lock_id = 0;
 	}
 	
 	struct DataStorePreparePostParam {
@@ -108,9 +95,15 @@ protocol DataStore : 115 {
 		}
 	}
 	
-	struct DataStoreRatingInitParamWithSlot {
-		sint8 slot;
-		DataStoreRatingInitParam param;
+	struct DataStoreRatingInfo {
+		sint64 total_value;
+		uint32 count;
+		sint64 initial_value;
+	}
+	
+	struct DataStoreRatingInfoWithSlot {
+		uint8 slot;
+		DataStoreRatingInfo info;
 	}
 	
 	struct DataStoreRatingInitParam {
@@ -124,9 +117,27 @@ protocol DataStore : 115 {
 		sint16 period_duration;
 	}
 	
-	struct DataStorePersistenceInitParam {
-		uint16 persistence_id = 65535;
-		bool delete_last_object = true;
+	struct DataStoreRatingInitParamWithSlot {
+		sint8 slot;
+		DataStoreRatingInitParam param;
+	}
+	
+	struct DataStoreReqGetInfo {
+		string url;
+		list<DataStoreKeyValue> headers;
+		uint32 size;
+		buffer root_ca_cert;
+		
+		[nex.version >= 30500] {
+			uint64 data_id;
+		}
+	}
+	
+	struct DataStoreReqGetInfoV1 {
+		string url;
+		list<DataStoreKeyValue> headers;
+		uint32 size;
+		buffer root_ca_cert;
 	}
 	
 	struct DataStoreReqPostInfo {
@@ -135,11 +146,6 @@ protocol DataStore : 115 {
 		list<DataStoreKeyValue> headers;
 		list<DataStoreKeyValue> form;
 		buffer root_ca_cert;
-	}
-	
-	struct DataStoreCompletePostParam {
-		uint64 data_id;
-		bool success;
 	}
 	
 	method prepare_get_object_v1(DataStorePrepareGetParamV1 param) {
@@ -190,7 +196,11 @@ protocol DataStore : 115 {
 	method perpetuate_object;
 	method unperpetuate_object;
 	method prepare_get_object_or_meta;
-	method get_password_info;
+	
+	method get_password_info(uint64 data_id) {
+		DataStorePasswordInfo password_info;
+	}
+	
 	method get_password_infos;
 	
 	method get_metas_multiple_param(list<DataStoreGetMetaParam> params) {

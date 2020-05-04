@@ -1,7 +1,7 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common
+from nintendo.nex import common, streams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -107,428 +107,489 @@ class AccountProtocol:
 
 class AccountClient(AccountProtocol):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def create_account(self, name, key, groups, email):
 		logger.info("AccountClient.create_account()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_CREATE_ACCOUNT)
+		stream = streams.StreamOut(self.settings)
 		stream.string(name)
 		stream.string(key)
 		stream.u32(groups)
 		stream.string(email)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_CREATE_ACCOUNT, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.result()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.create_account -> done")
 		return result
 	
 	def delete_account(self, pid):
 		logger.info("AccountClient.delete_account()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_DELETE_ACCOUNT)
+		stream = streams.StreamOut(self.settings)
 		stream.pid(pid)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_DELETE_ACCOUNT, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.delete_account -> done")
 	
 	def disable_account(self, pid, until, message):
 		logger.info("AccountClient.disable_account()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_DISABLE_ACCOUNT)
+		stream = streams.StreamOut(self.settings)
 		stream.pid(pid)
 		stream.datetime(until)
 		stream.string(message)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_DISABLE_ACCOUNT, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.result()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.disable_account -> done")
 		return result
 	
 	def change_password(self, new_key):
 		logger.info("AccountClient.change_password()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_CHANGE_PASSWORD)
+		stream = streams.StreamOut(self.settings)
 		stream.string(new_key)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_CHANGE_PASSWORD, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.change_password -> done")
 		return result
 	
 	def test_capability(self, capability):
 		logger.info("AccountClient.test_capability()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_TEST_CAPABILITY)
+		stream = streams.StreamOut(self.settings)
 		stream.u32(capability)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_TEST_CAPABILITY, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.test_capability -> done")
 		return result
 	
 	def get_name(self, pid):
 		logger.info("AccountClient.get_name()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_NAME)
+		stream = streams.StreamOut(self.settings)
 		stream.pid(pid)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_NAME, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		name = stream.string()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.get_name -> done")
 		return name
 	
 	def get_account_data(self):
 		logger.info("AccountClient.get_account_data()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_ACCOUNT_DATA)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_ACCOUNT_DATA, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.result = stream.result()
 		obj.data = stream.extract(AccountData)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.get_account_data -> done")
 		return obj
 	
 	def get_private_data(self):
 		logger.info("AccountClient.get_private_data()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_PRIVATE_DATA)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_PRIVATE_DATA, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.result = stream.bool()
 		obj.data = stream.anydata()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.get_private_data -> done")
 		return obj
 	
 	def get_public_data(self, pid):
 		logger.info("AccountClient.get_public_data()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_PUBLIC_DATA)
+		stream = streams.StreamOut(self.settings)
 		stream.pid(pid)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_PUBLIC_DATA, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.result = stream.bool()
 		obj.data = stream.anydata()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.get_public_data -> done")
 		return obj
 	
 	def get_multiple_public_data(self, pids):
 		logger.info("AccountClient.get_multiple_public_data()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_MULTIPLE_PUBLIC_DATA)
+		stream = streams.StreamOut(self.settings)
 		stream.list(pids, stream.pid)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_MULTIPLE_PUBLIC_DATA, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.result = stream.bool()
 		obj.data = stream.list(stream.anydata)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.get_multiple_public_data -> done")
 		return obj
 	
 	def update_account_name(self, name):
 		logger.info("AccountClient.update_account_name()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPDATE_ACCOUNT_NAME)
+		stream = streams.StreamOut(self.settings)
 		stream.string(name)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_UPDATE_ACCOUNT_NAME, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.result()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.update_account_name -> done")
 		return result
 	
 	def update_account_email(self, email):
 		logger.info("AccountClient.update_account_email()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPDATE_ACCOUNT_EMAIL)
+		stream = streams.StreamOut(self.settings)
 		stream.string(email)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_UPDATE_ACCOUNT_EMAIL, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.result()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.update_account_email -> done")
 		return result
 	
 	def update_custom_data(self, public_data, private_data):
 		logger.info("AccountClient.update_custom_data()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPDATE_CUSTOM_DATA)
+		stream = streams.StreamOut(self.settings)
 		stream.anydata(public_data)
 		stream.anydata(private_data)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_UPDATE_CUSTOM_DATA, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.result()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.update_custom_data -> done")
 		return result
 	
 	def find_by_name_regex(self, groups, regex, range):
 		logger.info("AccountClient.find_by_name_regex()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_FIND_BY_NAME_REGEX)
+		stream = streams.StreamOut(self.settings)
 		stream.u32(groups)
 		stream.string(regex)
 		stream.add(range)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_FIND_BY_NAME_REGEX, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		accounts = stream.list(BasicAccountInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.find_by_name_regex -> done")
 		return accounts
 	
 	def update_account_expiry_date(self, pid, expiry, message):
 		logger.info("AccountClient.update_account_expiry_date()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPDATE_ACCOUNT_EXPIRY_DATE)
+		stream = streams.StreamOut(self.settings)
 		stream.pid(pid)
 		stream.datetime(expiry)
 		stream.string(message)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_UPDATE_ACCOUNT_EXPIRY_DATE, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.update_account_expiry_date -> done")
 	
 	def update_account_effective_date(self, pid, effective_from, message):
 		logger.info("AccountClient.update_account_effective_date()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPDATE_ACCOUNT_EFFECTIVE_DATE)
+		stream = streams.StreamOut(self.settings)
 		stream.pid(pid)
 		stream.datetime(effective_from)
 		stream.string(message)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_UPDATE_ACCOUNT_EFFECTIVE_DATE, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.update_account_effective_date -> done")
 	
 	def update_status(self, status):
 		logger.info("AccountClient.update_status()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPDATE_STATUS)
+		stream = streams.StreamOut(self.settings)
 		stream.string(status)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_UPDATE_STATUS, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.update_status -> done")
 	
 	def get_status(self, pid):
 		logger.info("AccountClient.get_status()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_STATUS)
+		stream = streams.StreamOut(self.settings)
 		stream.pid(pid)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_STATUS, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		status = stream.string()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.get_status -> done")
 		return status
 	
 	def get_last_connection_stats(self, pid):
 		logger.info("AccountClient.get_last_connection_stats()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_LAST_CONNECTION_STATS)
+		stream = streams.StreamOut(self.settings)
 		stream.pid(pid)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_LAST_CONNECTION_STATS, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.last_session_login = stream.datetime()
 		obj.last_session_logout = stream.datetime()
 		obj.current_session_login = stream.datetime()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.get_last_connection_stats -> done")
 		return obj
 	
 	def reset_password(self):
 		logger.info("AccountClient.reset_password()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_RESET_PASSWORD)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_RESET_PASSWORD, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.reset_password -> done")
 		return result
 	
 	def create_account_with_custom_data(self, name, key, groups, email, public_data, private_data):
 		logger.info("AccountClient.create_account_with_custom_data()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_CREATE_ACCOUNT_WITH_CUSTOM_DATA)
+		stream = streams.StreamOut(self.settings)
 		stream.string(name)
 		stream.string(key)
 		stream.u32(groups)
 		stream.string(email)
 		stream.anydata(public_data)
 		stream.anydata(private_data)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_CREATE_ACCOUNT_WITH_CUSTOM_DATA, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.create_account_with_custom_data -> done")
 	
 	def retrieve_account(self):
 		logger.info("AccountClient.retrieve_account()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_RETRIEVE_ACCOUNT)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_RETRIEVE_ACCOUNT, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.account_data = stream.extract(AccountData)
 		obj.public_data = stream.anydata()
 		obj.private_data = stream.anydata()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.retrieve_account -> done")
 		return obj
 	
 	def update_account(self, key, email, public_data, private_data):
 		logger.info("AccountClient.update_account()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPDATE_ACCOUNT)
+		stream = streams.StreamOut(self.settings)
 		stream.string(key)
 		stream.string(email)
 		stream.anydata(public_data)
 		stream.anydata(private_data)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_UPDATE_ACCOUNT, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.update_account -> done")
 	
 	def change_password_by_guest(self, name, email, key):
 		logger.info("AccountClient.change_password_by_guest()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_CHANGE_PASSWORD_BY_GUEST)
+		stream = streams.StreamOut(self.settings)
 		stream.string(name)
 		stream.string(email)
 		stream.string(key)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_CHANGE_PASSWORD_BY_GUEST, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.change_password_by_guest -> done")
 	
 	def find_by_name_like(self, groups, like, range):
 		logger.info("AccountClient.find_by_name_like()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_FIND_BY_NAME_LIKE)
+		stream = streams.StreamOut(self.settings)
 		stream.u32(groups)
 		stream.string(like)
 		stream.add(range)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_FIND_BY_NAME_LIKE, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		accounts = stream.list(BasicAccountInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.find_by_name_like -> done")
 		return accounts
 	
 	def custom_create_account(self, name, key, groups, email, auth_data):
 		logger.info("AccountClient.custom_create_account()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_CUSTOM_CREATE_ACCOUNT)
+		stream = streams.StreamOut(self.settings)
 		stream.string(name)
 		stream.string(key)
 		stream.u32(groups)
 		stream.string(email)
 		stream.anydata(auth_data)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_CUSTOM_CREATE_ACCOUNT, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		pid = stream.pid()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.custom_create_account -> done")
 		return pid
 	
 	def nintendo_create_account(self, name, key, groups, email, auth_data):
 		logger.info("AccountClient.nintendo_create_account()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_NINTENDO_CREATE_ACCOUNT)
+		stream = streams.StreamOut(self.settings)
 		stream.string(name)
 		stream.string(key)
 		stream.u32(groups)
 		stream.string(email)
 		stream.anydata(auth_data)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_NINTENDO_CREATE_ACCOUNT, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.pid = stream.pid()
 		obj.pid_hmac = stream.string()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.nintendo_create_account -> done")
 		return obj
 	
 	def lookup_or_create_account(self, name, key, groups, email, auth_data):
 		logger.info("AccountClient.lookup_or_create_account()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_LOOKUP_OR_CREATE_ACCOUNT)
+		stream = streams.StreamOut(self.settings)
 		stream.string(name)
 		stream.string(key)
 		stream.u32(groups)
 		stream.string(email)
 		stream.anydata(auth_data)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_LOOKUP_OR_CREATE_ACCOUNT, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		pid = stream.pid()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.lookup_or_create_account -> done")
 		return pid
 	
 	def disconnect_principal(self, pid):
 		logger.info("AccountClient.disconnect_principal()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_DISCONNECT_PRINCIPAL)
+		stream = streams.StreamOut(self.settings)
 		stream.pid(pid)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_DISCONNECT_PRINCIPAL, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.disconnect_principal -> done")
 		return result
 	
 	def disconnect_all_principals(self):
 		logger.info("AccountClient.disconnect_all_principals()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_DISCONNECT_ALL_PRINCIPALS)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_DISCONNECT_ALL_PRINCIPALS, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AccountClient.disconnect_all_principals -> done")
 		return result
 

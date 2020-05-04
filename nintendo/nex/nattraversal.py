@@ -1,7 +1,7 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common
+from nintendo.nex import common, streams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -21,53 +21,62 @@ class NATTraversalProtocol:
 
 class NATTraversalClient(NATTraversalProtocol):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def request_probe_initiation(self, target_urls):
 		logger.info("NATTraversalClient.request_probe_initiation()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_REQUEST_PROBE_INITIATION)
+		stream = streams.StreamOut(self.settings)
 		stream.list(target_urls, stream.stationurl)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_REQUEST_PROBE_INITIATION, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("NATTraversalClient.request_probe_initiation -> done")
 	
 	def initiate_probe(self, station_to_probe):
 		logger.info("NATTraversalClient.initiate_probe()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_INITIATE_PROBE)
+		stream = streams.StreamOut(self.settings)
 		stream.stationurl(station_to_probe)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_INITIATE_PROBE, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("NATTraversalClient.initiate_probe -> done")
 	
 	def request_probe_initiation_ext(self, target_urls, station_to_probe):
 		logger.info("NATTraversalClient.request_probe_initiation_ext()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_REQUEST_PROBE_INITIATION_EXT)
+		stream = streams.StreamOut(self.settings)
 		stream.list(target_urls, stream.stationurl)
 		stream.stationurl(station_to_probe)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_REQUEST_PROBE_INITIATION_EXT, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("NATTraversalClient.request_probe_initiation_ext -> done")
 	
 	def report_nat_properties(self, natm, natf, rtt):
 		logger.info("NATTraversalClient.report_nat_properties()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_REPORT_NAT_PROPERTIES)
+		stream = streams.StreamOut(self.settings)
 		stream.u32(natm)
 		stream.u32(natf)
 		stream.u32(rtt)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_REPORT_NAT_PROPERTIES, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("NATTraversalClient.report_nat_properties -> done")
 
 

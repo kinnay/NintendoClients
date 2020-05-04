@@ -89,6 +89,9 @@ class StreamIn:
 		self.pos += num
 		return data
 		
+	def readall(self):
+		return self.read(self.available())
+		
 	def pad(self, num, char=b"\0"):
 		if self.read(num) != char * num:
 			raise ValueError("Incorrect padding")

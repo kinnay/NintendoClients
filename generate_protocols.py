@@ -785,7 +785,7 @@ class CodeGenerator:
 		stream.write_line()
 		stream.write_line("# This file was generated automatically by generate_protocols.py")
 		stream.write_line()
-		stream.write_line("from nintendo.nex import common")
+		stream.write_line("from nintendo.nex import common, streams")
 		stream.write_line()
 		stream.write_line("import logging")
 		stream.write_line("logger = logging.getLogger(__name__)")
@@ -958,6 +958,7 @@ class CodeGenerator:
 		stream.indent()
 		
 		stream.write_line("def __init__(self, client):")
+		stream.write_line("\tself.settings = client.settings")
 		stream.write_line("\tself.client = client")
 		stream.write_line()
 			
@@ -982,29 +983,28 @@ class CodeGenerator:
 		stream.indent()
 		stream.write_line('logger.info("%s.%s()")' %(class_name, method.name))
 		stream.write_line("#--- request ---")
-		stream.write_line("stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_%s)" %method.name.upper())
+		stream.write_line("stream = streams.StreamOut(self.settings)")
 		for param in method.request.vars:
 			stream.write_line(self.make_encode(param.type, param.name))
-		stream.write_line("self.client.send_message(stream)")
+		stream.write_line("data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_%s, stream.get())" %method.name.upper())
 		
 		stream.write_line()
 		stream.write_line("#--- response ---")
+		stream.write_line("stream = streams.StreamIn(data, self.settings)")
 		if len(method.response.vars) > 1:
-			stream.write_line("stream = self.client.get_response(call_id)")
 			stream.write_line("obj = common.RMCResponse()")
 			for var in method.response.vars:
 				stream.write_line("obj.%s = %s" %(var.name, self.make_extract(var.type)))
-			stream.write_line('logger.info("%s.%s -> done")' %(class_name, method.name))
-			stream.write_line("return obj")
 		elif len(method.response.vars) == 1:
 			value = method.response.vars[0]
-			stream.write_line("stream = self.client.get_response(call_id)")
 			stream.write_line("%s = %s" %(value.name, self.make_extract(value.type)))
-			stream.write_line('logger.info("%s.%s -> done")' %(class_name, method.name))
-			stream.write_line("return %s" %value.name)
-		else:
-			stream.write_line("self.client.get_response(call_id)")
-			stream.write_line('logger.info("%s.%s -> done")' %(class_name, method.name))
+		stream.write_line("if not stream.eof():")
+		stream.write_line('\traise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))')
+		stream.write_line('logger.info("%s.%s -> done")' %(class_name, method.name))
+		if len(method.response.vars) > 1:
+			stream.write_line("return obj")
+		elif len(method.response.vars) == 1:
+			stream.write_line("return %s"  %(method.response.vars[0].name))
 		stream.unindent()
 		
 	def generate_server(self, stream, proto):

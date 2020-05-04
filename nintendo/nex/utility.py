@@ -1,7 +1,7 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common
+from nintendo.nex import common, streams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -43,101 +43,118 @@ class UtilityProtocol:
 
 class UtilityClient(UtilityProtocol):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def acquire_nex_unique_id(self):
 		logger.info("UtilityClient.acquire_nex_unique_id()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_ACQUIRE_NEX_UNIQUE_ID)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_ACQUIRE_NEX_UNIQUE_ID, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		unique_id = stream.u64()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("UtilityClient.acquire_nex_unique_id -> done")
 		return unique_id
 	
 	def acquire_nex_unique_id_with_password(self):
 		logger.info("UtilityClient.acquire_nex_unique_id_with_password()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_ACQUIRE_NEX_UNIQUE_ID_WITH_PASSWORD)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_ACQUIRE_NEX_UNIQUE_ID_WITH_PASSWORD, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		info = stream.extract(UniqueIdInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("UtilityClient.acquire_nex_unique_id_with_password -> done")
 		return info
 	
 	def associate_nex_unique_id_with_my_principal_id(self, info):
 		logger.info("UtilityClient.associate_nex_unique_id_with_my_principal_id()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_ASSOCIATE_NEX_UNIQUE_ID_WITH_MY_PRINCIPAL_ID)
+		stream = streams.StreamOut(self.settings)
 		stream.add(info)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_ASSOCIATE_NEX_UNIQUE_ID_WITH_MY_PRINCIPAL_ID, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("UtilityClient.associate_nex_unique_id_with_my_principal_id -> done")
 	
 	def associate_nex_unique_ids_with_my_principal_id(self, infos):
 		logger.info("UtilityClient.associate_nex_unique_ids_with_my_principal_id()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_ASSOCIATE_NEX_UNIQUE_IDS_WITH_MY_PRINCIPAL_ID)
+		stream = streams.StreamOut(self.settings)
 		stream.list(infos, stream.add)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_ASSOCIATE_NEX_UNIQUE_IDS_WITH_MY_PRINCIPAL_ID, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("UtilityClient.associate_nex_unique_ids_with_my_principal_id -> done")
 	
 	def get_associated_nex_unique_id_with_my_principal_id(self):
 		logger.info("UtilityClient.get_associated_nex_unique_id_with_my_principal_id()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_ASSOCIATED_NEX_UNIQUE_ID_WITH_MY_PRINCIPAL_ID)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_ASSOCIATED_NEX_UNIQUE_ID_WITH_MY_PRINCIPAL_ID, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		info = stream.extract(UniqueIdInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("UtilityClient.get_associated_nex_unique_id_with_my_principal_id -> done")
 		return info
 	
 	def get_associated_nex_unique_ids_with_my_principal_id(self):
 		logger.info("UtilityClient.get_associated_nex_unique_ids_with_my_principal_id()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_ASSOCIATED_NEX_UNIQUE_IDS_WITH_MY_PRINCIPAL_ID)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_ASSOCIATED_NEX_UNIQUE_IDS_WITH_MY_PRINCIPAL_ID, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		infos = stream.list(UniqueIdInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("UtilityClient.get_associated_nex_unique_ids_with_my_principal_id -> done")
 		return infos
 	
 	def get_integer_settings(self, index):
 		logger.info("UtilityClient.get_integer_settings()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_INTEGER_SETTINGS)
+		stream = streams.StreamOut(self.settings)
 		stream.u32(index)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_INTEGER_SETTINGS, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		settings = stream.map(stream.u16, stream.s32)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("UtilityClient.get_integer_settings -> done")
 		return settings
 	
 	def get_string_settings(self, index):
 		logger.info("UtilityClient.get_string_settings()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_STRING_SETTINGS)
+		stream = streams.StreamOut(self.settings)
 		stream.u32(index)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_STRING_SETTINGS, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		settings = stream.map(stream.u16, stream.string)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("UtilityClient.get_string_settings -> done")
 		return settings
 

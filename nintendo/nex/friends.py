@@ -1,7 +1,7 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common
+from nintendo.nex import common, streams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -431,19 +431,20 @@ class FriendsProtocol:
 
 class FriendsClient(FriendsProtocol):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def get_all_information(self, nna_info, presence, birthday):
 		logger.info("FriendsClient.get_all_information()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_ALL_INFORMATION)
+		stream = streams.StreamOut(self.settings)
 		stream.add(nna_info)
 		stream.add(presence)
 		stream.datetime(birthday)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_ALL_INFORMATION, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.principal_preference = stream.extract(PrincipalPreference)
 		obj.comment = stream.extract(Comment)
@@ -454,18 +455,22 @@ class FriendsClient(FriendsProtocol):
 		obj.unk1 = stream.bool()
 		obj.notifications = stream.list(PersistentNotification)
 		obj.unk2 = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("FriendsClient.get_all_information -> done")
 		return obj
 	
 	def update_presence(self, presence):
 		logger.info("FriendsClient.update_presence()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPDATE_PRESENCE)
+		stream = streams.StreamOut(self.settings)
 		stream.add(presence)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_UPDATE_PRESENCE, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("FriendsClient.update_presence -> done")
 
 

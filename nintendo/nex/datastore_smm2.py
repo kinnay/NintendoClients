@@ -1,7 +1,7 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common
+from nintendo.nex import common, streams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -379,7 +379,7 @@ class DataStoreGetMetaParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.data_id = 0
-		self.persistence_target = PersistenceTarget()
+		self.persistence_target = DataStorePersistenceTarget()
 		self.result_option = 0
 		self.access_password = 0
 	
@@ -388,7 +388,7 @@ class DataStoreGetMetaParam(common.Structure):
 	
 	def load(self, stream):
 		self.data_id = stream.u64()
-		self.persistence_target = stream.extract(PersistenceTarget)
+		self.persistence_target = stream.extract(DataStorePersistenceTarget)
 		self.result_option = stream.u8()
 		self.access_password = stream.u64()
 	
@@ -493,6 +493,30 @@ class DataStoreMetaInfo(common.Structure):
 		stream.list(self.ratings, stream.add)
 
 
+class DataStorePasswordInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.access_password = None
+		self.update_password = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'access_password', 'update_password']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.access_password = stream.u64()
+		self.update_password = stream.u64()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.u64(self.access_password)
+		stream.u64(self.update_password)
+
+
 class DataStorePermission(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -531,12 +555,31 @@ class DataStorePersistenceInitParam(common.Structure):
 		stream.bool(self.delete_last_object)
 
 
+class DataStorePersistenceTarget(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.owner_id = 0
+		self.persistence_id = 65535
+	
+	def check_required(self, settings):
+		pass
+	
+	def load(self, stream):
+		self.owner_id = stream.pid()
+		self.persistence_id = stream.u16()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.pid(self.owner_id)
+		stream.u16(self.persistence_id)
+
+
 class DataStorePrepareGetParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.data_id = 0
 		self.lock_id = 0
-		self.persistence_target = PersistenceTarget()
+		self.persistence_target = DataStorePersistenceTarget()
 		self.access_password = 0
 		self.extra_data = []
 	
@@ -547,7 +590,7 @@ class DataStorePrepareGetParam(common.Structure):
 	def load(self, stream):
 		self.data_id = stream.u64()
 		self.lock_id = stream.u32()
-		self.persistence_target = stream.extract(PersistenceTarget)
+		self.persistence_target = stream.extract(DataStorePersistenceTarget)
 		self.access_password = stream.u64()
 		if stream.settings.get("nex.version") >= 30500:
 			self.extra_data = stream.list(stream.string)
@@ -1166,25 +1209,6 @@ class GetUsersParam(common.Structure):
 		stream.u32(self.option)
 
 
-class PersistenceTarget(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.owner_id = 0
-		self.persistence_id = 65535
-	
-	def check_required(self, settings):
-		pass
-	
-	def load(self, stream):
-		self.owner_id = stream.pid()
-		self.persistence_id = stream.u16()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.pid(self.owner_id)
-		stream.u16(self.persistence_id)
-
-
 class RegisterUserParam(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -1704,339 +1728,405 @@ class DataStoreProtocolSMM2:
 
 class DataStoreClientSMM2(DataStoreProtocolSMM2):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def prepare_get_object_v1(self, param):
 		logger.info("DataStoreClientSMM2.prepare_get_object_v1()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT_V1)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT_V1, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		info = stream.extract(DataStoreReqGetInfoV1)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.prepare_get_object_v1 -> done")
 		return info
 	
 	def get_meta(self, param):
 		logger.info("DataStoreClientSMM2.get_meta()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_META)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_META, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		info = stream.extract(DataStoreMetaInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_meta -> done")
 		return info
 	
 	def prepare_post_object(self, param):
 		logger.info("DataStoreClientSMM2.prepare_post_object()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PREPARE_POST_OBJECT)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_PREPARE_POST_OBJECT, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		info = stream.extract(DataStoreReqPostInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.prepare_post_object -> done")
 		return info
 	
 	def prepare_get_object(self, param):
 		logger.info("DataStoreClientSMM2.prepare_get_object()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		info = stream.extract(DataStoreReqGetInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.prepare_get_object -> done")
 		return info
 	
 	def complete_post_object(self, param):
 		logger.info("DataStoreClientSMM2.complete_post_object()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_COMPLETE_POST_OBJECT)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_COMPLETE_POST_OBJECT, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.complete_post_object -> done")
+	
+	def get_password_info(self, data_id):
+		logger.info("DataStoreClientSMM2.get_password_info()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u64(data_id)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_PASSWORD_INFO, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		password_info = stream.extract(DataStorePasswordInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.get_password_info -> done")
+		return password_info
 	
 	def get_metas_multiple_param(self, params):
 		logger.info("DataStoreClientSMM2.get_metas_multiple_param()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_METAS_MULTIPLE_PARAM)
+		stream = streams.StreamOut(self.settings)
 		stream.list(params, stream.add)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_METAS_MULTIPLE_PARAM, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.infos = stream.list(DataStoreMetaInfo)
 		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_metas_multiple_param -> done")
 		return obj
 	
 	def register_user(self, param):
 		logger.info("DataStoreClientSMM2.register_user()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_REGISTER_USER)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_REGISTER_USER, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.register_user -> done")
 	
 	def get_users(self, param):
 		logger.info("DataStoreClientSMM2.get_users()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_USERS)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_USERS, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.users = stream.list(UserInfo)
 		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_users -> done")
 		return obj
 	
 	def sync_user_profile(self, param):
 		logger.info("DataStoreClientSMM2.sync_user_profile()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_SYNC_USER_PROFILE)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_SYNC_USER_PROFILE, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.extract(SyncUserProfileResult)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.sync_user_profile -> done")
 		return result
 	
 	def search_users_user_point(self, param):
 		logger.info("DataStoreClientSMM2.search_users_user_point()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_SEARCH_USERS_USER_POINT)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_SEARCH_USERS_USER_POINT, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.users = stream.list(UserInfo)
 		obj.ranks = stream.list(stream.u32)
 		obj.result = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.search_users_user_point -> done")
 		return obj
 	
 	def update_last_login_time(self):
 		logger.info("DataStoreClientSMM2.update_last_login_time()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPDATE_LAST_LOGIN_TIME)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_UPDATE_LAST_LOGIN_TIME, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.update_last_login_time -> done")
 	
 	def get_username_ng_type(self):
 		logger.info("DataStoreClientSMM2.get_username_ng_type()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_USERNAME_NG_TYPE)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_USERNAME_NG_TYPE, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		unk = stream.u8()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_username_ng_type -> done")
 		return unk
 	
 	def get_courses(self, param):
 		logger.info("DataStoreClientSMM2.get_courses()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_COURSES)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_COURSES, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.courses = stream.list(CourseInfo)
 		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_courses -> done")
 		return obj
 	
 	def search_courses_point_ranking(self, param):
 		logger.info("DataStoreClientSMM2.search_courses_point_ranking()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_POINT_RANKING)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_POINT_RANKING, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.courses = stream.list(CourseInfo)
 		obj.ranks = stream.list(stream.u32)
 		obj.result = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.search_courses_point_ranking -> done")
 		return obj
 	
 	def search_courses_latest(self, param):
 		logger.info("DataStoreClientSMM2.search_courses_latest()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_LATEST)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_LATEST, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.courses = stream.list(CourseInfo)
 		obj.result = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.search_courses_latest -> done")
 		return obj
 	
 	def search_courses_endless_mode(self, param):
 		logger.info("DataStoreClientSMM2.search_courses_endless_mode()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_ENDLESS_MODE)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_ENDLESS_MODE, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		courses = stream.list(CourseInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.search_courses_endless_mode -> done")
 		return courses
 	
 	def get_courses_event(self, param, dummy):
 		logger.info("DataStoreClientSMM2.get_courses_event()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_COURSES_EVENT)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
 		stream.add(dummy)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_COURSES_EVENT, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.courses = stream.list(EventCourseInfo)
 		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_courses_event -> done")
 		return obj
 	
 	def search_courses_event(self, param):
 		logger.info("DataStoreClientSMM2.search_courses_event()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_EVENT)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_EVENT, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		courses = stream.list(EventCourseInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.search_courses_event -> done")
 		return courses
 	
 	def get_course_comments(self, data_id):
 		logger.info("DataStoreClientSMM2.get_course_comments()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_COURSE_COMMENTS)
+		stream = streams.StreamOut(self.settings)
 		stream.u64(data_id)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_COURSE_COMMENTS, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		comments = stream.list(CommentInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_course_comments -> done")
 		return comments
 	
 	def get_user_or_course(self, param):
 		logger.info("DataStoreClientSMM2.get_user_or_course()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_USER_OR_COURSE)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_USER_OR_COURSE, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.user = stream.extract(UserInfo)
 		obj.course = stream.extract(CourseInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_user_or_course -> done")
 		return obj
 	
 	def get_req_get_info_headers_info(self, type):
 		logger.info("DataStoreClientSMM2.get_req_get_info_headers_info()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_REQ_GET_INFO_HEADERS_INFO)
+		stream = streams.StreamOut(self.settings)
 		stream.u8(type)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_REQ_GET_INFO_HEADERS_INFO, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.extract(ReqGetInfoHeadersInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_req_get_info_headers_info -> done")
 		return result
 	
 	def get_event_course_stamp(self):
 		logger.info("DataStoreClientSMM2.get_event_course_stamp()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_EVENT_COURSE_STAMP)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_EVENT_COURSE_STAMP, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		stamps = stream.u32()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_event_course_stamp -> done")
 		return stamps
 	
 	def get_event_course_status(self):
 		logger.info("DataStoreClientSMM2.get_event_course_status()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_EVENT_COURSE_STATUS)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_EVENT_COURSE_STATUS, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		info = stream.extract(EventCourseStatusInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_event_course_status -> done")
 		return info
 	
 	def get_event_course_histogram(self, param):
 		logger.info("DataStoreClientSMM2.get_event_course_histogram()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_EVENT_COURSE_HISTOGRAM)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_EVENT_COURSE_HISTOGRAM, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		histogram = stream.extract(EventCourseHistogram)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_event_course_histogram -> done")
 		return histogram
 	
 	def get_event_course_ghost(self, param):
 		logger.info("DataStoreClientSMM2.get_event_course_ghost()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_EVENT_COURSE_GHOST)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_EVENT_COURSE_GHOST, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		ghosts = stream.list(EventCourseGhostInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_event_course_ghost -> done")
 		return ghosts
 
@@ -2281,8 +2371,15 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		raise common.RMCError("Core::NotImplemented")
 	
 	def handle_get_password_info(self, context, input, output):
-		logger.warning("DataStoreServerSMM2.get_password_info is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("DataStoreServerSMM2.get_password_info()")
+		#--- request ---
+		data_id = input.u64()
+		response = self.get_password_info(context, data_id)
+		
+		#--- response ---
+		if not isinstance(response, DataStorePasswordInfo):
+			raise RuntimeError("Expected DataStorePasswordInfo, got %s" %response.__class__.__name__)
+		output.add(response)
 	
 	def handle_get_password_infos(self, context, input, output):
 		logger.warning("DataStoreServerSMM2.get_password_infos is unsupported")
@@ -2587,6 +2684,10 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	
 	def complete_post_object(self, *args):
 		logger.warning("DataStoreServerSMM2.complete_post_object not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def get_password_info(self, *args):
+		logger.warning("DataStoreServerSMM2.get_password_info not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	def get_metas_multiple_param(self, *args):

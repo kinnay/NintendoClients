@@ -1,7 +1,7 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common
+from nintendo.nex import common, streams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -205,79 +205,90 @@ class RankingProtocol:
 
 class RankingClient(RankingProtocol):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def upload_score(self, score_data, unique_id):
 		logger.info("RankingClient.upload_score()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_UPLOAD_SCORE)
+		stream = streams.StreamOut(self.settings)
 		stream.add(score_data)
 		stream.u64(unique_id)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_UPLOAD_SCORE, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("RankingClient.upload_score -> done")
 	
 	def get_common_data(self, unique_id):
 		logger.info("RankingClient.get_common_data()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_COMMON_DATA)
+		stream = streams.StreamOut(self.settings)
 		stream.u64(unique_id)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_COMMON_DATA, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		data = stream.buffer()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("RankingClient.get_common_data -> done")
 		return data
 	
 	def get_ranking(self, mode, category, order, unique_id, pid):
 		logger.info("RankingClient.get_ranking()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_RANKING)
+		stream = streams.StreamOut(self.settings)
 		stream.u8(mode)
 		stream.u32(category)
 		stream.add(order)
 		stream.u64(unique_id)
 		stream.pid(pid)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_RANKING, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.extract(RankingResult)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("RankingClient.get_ranking -> done")
 		return result
 	
 	def get_stats(self, category, order, flags):
 		logger.info("RankingClient.get_stats()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_STATS)
+		stream = streams.StreamOut(self.settings)
 		stream.u32(category)
 		stream.add(order)
 		stream.u32(flags)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_STATS, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		stats = stream.extract(RankingStats)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("RankingClient.get_stats -> done")
 		return stats
 	
 	def get_ranking_by_pid_list(self, pids, mode, category, order, unique_id):
 		logger.info("RankingClient.get_ranking_by_pid_list()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_RANKING_BY_PID_LIST)
+		stream = streams.StreamOut(self.settings)
 		stream.list(pids, stream.pid)
 		stream.u8(mode)
 		stream.u32(category)
 		stream.add(order)
 		stream.u64(unique_id)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_RANKING_BY_PID_LIST, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.extract(RankingResult)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("RankingClient.get_ranking_by_pid_list -> done")
 		return result
 

@@ -1,7 +1,7 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common
+from nintendo.nex import common, streams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ class DataStoreGetMetaParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.data_id = 0
-		self.persistence_target = PersistenceTarget()
+		self.persistence_target = DataStorePersistenceTarget()
 		self.result_option = 0
 		self.access_password = 0
 	
@@ -41,7 +41,7 @@ class DataStoreGetMetaParam(common.Structure):
 	
 	def load(self, stream):
 		self.data_id = stream.u64()
-		self.persistence_target = stream.extract(PersistenceTarget)
+		self.persistence_target = stream.extract(DataStorePersistenceTarget)
 		self.result_option = stream.u8()
 		self.access_password = stream.u64()
 	
@@ -146,6 +146,30 @@ class DataStoreMetaInfo(common.Structure):
 		stream.list(self.ratings, stream.add)
 
 
+class DataStorePasswordInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.access_password = None
+		self.update_password = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'access_password', 'update_password']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.access_password = stream.u64()
+		self.update_password = stream.u64()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.u64(self.access_password)
+		stream.u64(self.update_password)
+
+
 class DataStorePermission(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -184,12 +208,31 @@ class DataStorePersistenceInitParam(common.Structure):
 		stream.bool(self.delete_last_object)
 
 
+class DataStorePersistenceTarget(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.owner_id = 0
+		self.persistence_id = 65535
+	
+	def check_required(self, settings):
+		pass
+	
+	def load(self, stream):
+		self.owner_id = stream.pid()
+		self.persistence_id = stream.u16()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.pid(self.owner_id)
+		stream.u16(self.persistence_id)
+
+
 class DataStorePrepareGetParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.data_id = 0
 		self.lock_id = 0
-		self.persistence_target = PersistenceTarget()
+		self.persistence_target = DataStorePersistenceTarget()
 		self.access_password = 0
 		self.extra_data = []
 	
@@ -200,7 +243,7 @@ class DataStorePrepareGetParam(common.Structure):
 	def load(self, stream):
 		self.data_id = stream.u64()
 		self.lock_id = stream.u32()
-		self.persistence_target = stream.extract(PersistenceTarget)
+		self.persistence_target = stream.extract(DataStorePersistenceTarget)
 		self.access_password = stream.u64()
 		if stream.settings.get("nex.version") >= 30500:
 			self.extra_data = stream.list(stream.string)
@@ -494,25 +537,6 @@ class DataStoreReqPostInfo(common.Structure):
 		stream.buffer(self.root_ca_cert)
 
 
-class PersistenceTarget(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.owner_id = 0
-		self.persistence_id = 65535
-	
-	def check_required(self, settings):
-		pass
-	
-	def load(self, stream):
-		self.owner_id = stream.pid()
-		self.persistence_id = stream.u16()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.pid(self.owner_id)
-		stream.u16(self.persistence_id)
-
-
 class DataStoreProtocolSMM:
 	METHOD_PREPARE_GET_OBJECT_V1 = 1
 	METHOD_PREPARE_POST_OBJECT_V1 = 2
@@ -568,109 +592,141 @@ class DataStoreProtocolSMM:
 
 class DataStoreClientSMM(DataStoreProtocolSMM):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def prepare_get_object_v1(self, param):
 		logger.info("DataStoreClientSMM.prepare_get_object_v1()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT_V1)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT_V1, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		info = stream.extract(DataStoreReqGetInfoV1)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM.prepare_get_object_v1 -> done")
 		return info
 	
 	def get_meta(self, param):
 		logger.info("DataStoreClientSMM.get_meta()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_META)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_META, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		info = stream.extract(DataStoreMetaInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM.get_meta -> done")
 		return info
 	
 	def prepare_post_object(self, param):
 		logger.info("DataStoreClientSMM.prepare_post_object()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PREPARE_POST_OBJECT)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_PREPARE_POST_OBJECT, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		info = stream.extract(DataStoreReqPostInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM.prepare_post_object -> done")
 		return info
 	
 	def prepare_get_object(self, param):
 		logger.info("DataStoreClientSMM.prepare_get_object()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		info = stream.extract(DataStoreReqGetInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM.prepare_get_object -> done")
 		return info
 	
 	def complete_post_object(self, param):
 		logger.info("DataStoreClientSMM.complete_post_object()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_COMPLETE_POST_OBJECT)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_COMPLETE_POST_OBJECT, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM.complete_post_object -> done")
+	
+	def get_password_info(self, data_id):
+		logger.info("DataStoreClientSMM.get_password_info()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u64(data_id)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_PASSWORD_INFO, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		password_info = stream.extract(DataStorePasswordInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM.get_password_info -> done")
+		return password_info
 	
 	def get_metas_multiple_param(self, params):
 		logger.info("DataStoreClientSMM.get_metas_multiple_param()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_METAS_MULTIPLE_PARAM)
+		stream = streams.StreamOut(self.settings)
 		stream.list(params, stream.add)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_METAS_MULTIPLE_PARAM, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		obj = common.RMCResponse()
 		obj.infos = stream.list(DataStoreMetaInfo)
 		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM.get_metas_multiple_param -> done")
 		return obj
 	
 	def get_application_config(self, id):
 		logger.info("DataStoreClientSMM.get_application_config()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_APPLICATION_CONFIG)
+		stream = streams.StreamOut(self.settings)
 		stream.u32(id)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_APPLICATION_CONFIG, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		config = stream.list(stream.u32)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM.get_application_config -> done")
 		return config
 	
 	def get_application_config_string(self, id):
 		logger.info("DataStoreClientSMM.get_application_config_string()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_APPLICATION_CONFIG_STRING)
+		stream = streams.StreamOut(self.settings)
 		stream.u32(id)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_APPLICATION_CONFIG_STRING, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		config = stream.list(stream.string)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM.get_application_config_string -> done")
 		return config
 
@@ -898,8 +954,15 @@ class DataStoreServerSMM(DataStoreProtocolSMM):
 		raise common.RMCError("Core::NotImplemented")
 	
 	def handle_get_password_info(self, context, input, output):
-		logger.warning("DataStoreServerSMM.get_password_info is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("DataStoreServerSMM.get_password_info()")
+		#--- request ---
+		data_id = input.u64()
+		response = self.get_password_info(context, data_id)
+		
+		#--- response ---
+		if not isinstance(response, DataStorePasswordInfo):
+			raise RuntimeError("Expected DataStorePasswordInfo, got %s" %response.__class__.__name__)
+		output.add(response)
 	
 	def handle_get_password_infos(self, context, input, output):
 		logger.warning("DataStoreServerSMM.get_password_infos is unsupported")
@@ -1000,6 +1063,10 @@ class DataStoreServerSMM(DataStoreProtocolSMM):
 	
 	def complete_post_object(self, *args):
 		logger.warning("DataStoreServerSMM.complete_post_object not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	def get_password_info(self, *args):
+		logger.warning("DataStoreServerSMM.get_password_info not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	def get_metas_multiple_param(self, *args):

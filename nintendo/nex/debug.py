@@ -1,7 +1,7 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common
+from nintendo.nex import common, streams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -42,52 +42,61 @@ class DebugProtocol:
 
 class DebugClient(DebugProtocol):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def enable_api_recorder(self):
 		logger.info("DebugClient.enable_api_recorder()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_ENABLE_API_RECORDER)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_ENABLE_API_RECORDER, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DebugClient.enable_api_recorder -> done")
 	
 	def disable_api_recorder(self):
 		logger.info("DebugClient.disable_api_recorder()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_DISABLE_API_RECORDER)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_DISABLE_API_RECORDER, stream.get())
 		
 		#--- response ---
-		self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DebugClient.disable_api_recorder -> done")
 	
 	def is_api_recorder_enabled(self):
 		logger.info("DebugClient.is_api_recorder_enabled()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_IS_API_RECORDER_ENABLED)
-		self.client.send_message(stream)
+		stream = streams.StreamOut(self.settings)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_IS_API_RECORDER_ENABLED, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		result = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DebugClient.is_api_recorder_enabled -> done")
 		return result
 	
 	def get_api_calls(self, pids, unk2, unk3):
 		logger.info("DebugClient.get_api_calls()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_API_CALLS)
+		stream = streams.StreamOut(self.settings)
 		stream.list(pids, stream.pid)
 		stream.u64(unk2)
 		stream.u64(unk3)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_API_CALLS, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		calls = stream.list(ApiCall)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DebugClient.get_api_calls -> done")
 		return calls
 

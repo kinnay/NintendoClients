@@ -1,7 +1,7 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common
+from nintendo.nex import common, streams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -195,31 +195,36 @@ class Ranking2Protocol:
 
 class Ranking2Client(Ranking2Protocol):
 	def __init__(self, client):
+		self.settings = client.settings
 		self.client = client
 	
 	def get_ranking(self, param):
 		logger.info("Ranking2Client.get_ranking()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_RANKING)
+		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_RANKING, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		info = stream.extract(Ranking2Info)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("Ranking2Client.get_ranking -> done")
 		return info
 	
 	def get_category_setting(self, category):
 		logger.info("Ranking2Client.get_category_setting()")
 		#--- request ---
-		stream, call_id = self.client.init_request(self.PROTOCOL_ID, self.METHOD_GET_CATEGORY_SETTING)
+		stream = streams.StreamOut(self.settings)
 		stream.u32(category)
-		self.client.send_message(stream)
+		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_CATEGORY_SETTING, stream.get())
 		
 		#--- response ---
-		stream = self.client.get_response(call_id)
+		stream = streams.StreamIn(data, self.settings)
 		setting = stream.extract(Ranking2CategorySetting)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("Ranking2Client.get_category_setting -> done")
 		return setting
 
