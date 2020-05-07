@@ -3,9 +3,6 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
-[dev-packages]
-pylint = "*"
-
 [packages]
 requests = "*"
 beautifulsoup4 = "*"
@@ -14,6 +11,3 @@ cryptography = "==2.9"
 pyopenssl = "*"
 netifaces = "*"
 pycryptodome = "*"
-
-[requires]
-python_version = "3.8"
