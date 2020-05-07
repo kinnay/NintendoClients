@@ -1,0 +1,15 @@
+beautifulsoup4
+certifi
+cffi
+chardet
+cryptography==2.9
+idna
+lxml
+netifaces
+pycparser
+pycryptodome
+pyOpenSSL
+requests
+six
+soupsieve
+urllib3
