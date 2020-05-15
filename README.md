@@ -1,7 +1,7 @@
 # Nintendo Clients
 Python package to communicate with Nintendo servers
 
-To import this into your code, run `python setup.py install` or place the `nintendo` folder somewhere Python can find it.
+To import this into your code, run `pip install .` or place the `nintendo` folder somewhere Python can find it.
 
 You might need to adjust your scripts if you pull new commits from this package (it may receive backwards compatibility breaking changes at any time).
 
@@ -19,6 +19,8 @@ https://github.com/Kinnay/NintendoClients/wiki
 * PyCryptodome
 * PyOpenSSL
 * netifaces
+
+If you install this package with `pip install .` all requirements (except for Python itself) will be installed automatically.
 
 ### Example scripts
 * **Wii U**
