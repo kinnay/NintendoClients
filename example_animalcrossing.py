@@ -32,6 +32,7 @@ info = ProdInfo(keys, "/path/to/PRODINFO")
 
 # Tickets can be dumped with nxdumptool.
 # You need the base ticket, not an update ticket.
+# Do not remove console specific data.
 with open("/path/to/ticket", "rb") as f:
 	ticket = f.read()
 
