@@ -58,6 +58,9 @@ class SSLCertificate:
 		cert.set_notBefore(b"20000101000000Z")
 		cert.set_notAfter(b"29990101000000Z")
 		
+		subject = cert.get_subject()
+		subject.commonName = "*"
+		
 		cert.sign(key.obj, "sha1")
 		
 		return SSLCertificate(cert)
