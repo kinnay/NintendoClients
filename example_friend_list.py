@@ -6,7 +6,7 @@ from nintendo import nnas
 import logging
 logging.basicConfig(level=logging.INFO)
 
-#Device id can be retrieved with a call to MCP_GetDeviceId on the Wii U
+#Device id can be retrieved from MCP_GetDeviceId
 #Serial number can be found on the back of the Wii U
 DEVICE_ID = 12345678
 SERIAL_NUMBER = "..."
@@ -43,7 +43,7 @@ nna_info = friends.NNAInfo()
 nna_info.principal_info.pid = pid
 nna_info.principal_info.nnid = USERNAME
 nna_info.principal_info.mii.name = mii.name
-nna_info.principal_info.mii.data = mii.data.build()
+nna_info.principal_info.mii.data = mii.data
 
 #NintendoPresenceV2 tells the server about your online status, which
 #game you're currently playing, etc. This will be shown to your friends

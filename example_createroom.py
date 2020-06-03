@@ -7,13 +7,14 @@ import struct
 import logging
 logging.basicConfig(level=logging.INFO)
 
-#Device id can be retrieved with a call to MCP_GetDeviceId on the Wii U
+#Device id can be retrieved from MCP_GetDeviceId
 #Serial number can be found on the back of the Wii U
 DEVICE_ID = 12345678
 SERIAL_NUMBER = "..."
 SYSTEM_VERSION = 0x250
 REGION = 4 #EUR
 COUNTRY = "NL"
+LANGUAGE = "en"
 
 USERNAME = "..." #Nintendo network id
 PASSWORD = "..." #Nintendo network password
@@ -35,7 +36,7 @@ def backend_login(title, use_auth_info, use_login_data, settings=None):
 		login_data.token = nex_token.token
 	
 	client = backend.BackEndClient(settings)
-	clietn.configure(title.ACCESS_KEY, title.NEX_VERSION)
+	client.configure(title.ACCESS_KEY, title.NEX_VERSION)
 	client.connect(nex_token.host, nex_token.port)
 	client.login(
 		nex_token.username, nex_token.password, auth_info, login_data
@@ -44,7 +45,8 @@ def backend_login(title, use_auth_info, use_login_data, settings=None):
 
 
 nnas = NNASClient()
-nnas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY)
+nnas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION)
+nnas.set_locale(REGION, COUNTRY, LANGUAGE)
 nnas.login(USERNAME, PASSWORD)
 
 #Connect to both the Mario Kart 8 server and the Wii U friends server

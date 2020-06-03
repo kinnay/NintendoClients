@@ -6,7 +6,7 @@ from nintendo import nnas
 import logging
 logging.basicConfig(level=logging.INFO)
 
-#Device id can be retrieved with a call to MCP_GetDeviceId on the Wii U
+#Device id can be retrieved from MCP_GetDeviceId
 #Serial number can be found on the back of the Wii U
 DEVICE_ID = 12345678
 SERIAL_NUMBER = "..."
@@ -55,8 +55,9 @@ class NotificationServer(notification.NintendoNotificationServer):
 
 
 nnas = nnas.NNASClient()
-nnas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY)
-nnas.set_title(Friends.TITLE_ID_EUR, Friends.LATEST_VERSION)
+nnas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION) #Can't login without this
+nnas.set_title(Friends.TITLE_ID_EUR, Friends.LATEST_VERSION) #This is necessary to request a token for the game server
+nnas.set_locale(REGION, COUNTRY, LANGUAGE)
 nnas.login(USERNAME, PASSWORD)
 
 nex_token = nnas.get_nex_token(Friends.GAME_SERVER_ID)

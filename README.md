@@ -15,7 +15,6 @@ https://github.com/Kinnay/NintendoClients/wiki
 ### Requirements
 * Python 3.6 or higher
 * Python requests (http://docs.python-requests.org)
-* BeautifulSoup4 and lxml
 * PyCryptodome
 * PyOpenSSL
 * netifaces

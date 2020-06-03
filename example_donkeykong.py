@@ -7,21 +7,23 @@ import requests
 import logging
 logging.basicConfig(level=logging.INFO)
 
-#Device id can be retrieved with a call to MCP_GetDeviceId on the Wii U
+#Device id can be retrieved from MCP_GetDeviceId
 #Serial number can be found on the back of the Wii U
 DEVICE_ID = 12345678
 SERIAL_NUMBER = "..."
 SYSTEM_VERSION = 0x250
 REGION = 4 #EUR
 COUNTRY = "NL"
+LANGUAGE = "en"
 
 USERNAME = "..." #Nintendo network id
 PASSWORD = "..." #Nintendo network password
 
 
 nnas = nnas.NNASClient()
-nnas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION, COUNTRY) #Can't login without this
+nnas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION) #Can't login without this
 nnas.set_title(DKCTF.TITLE_ID_EUR, DKCTF.LATEST_VERSION) #This is necessary to request a token for the game server
+nnas.set_locale(REGION, COUNTRY, LANGUAGE)
 nnas.login(USERNAME, PASSWORD)
 
 #Each game server has its own game server id and access token

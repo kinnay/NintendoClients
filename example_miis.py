@@ -1,4 +1,5 @@
 
+from nintendo.miis import MiiData
 from nintendo import nnas
 
 nnas = nnas.NNASClient()
@@ -8,7 +9,7 @@ print("NNID:", mii.nnid)
 print("PID:", pid) #Same as mii.pid
 print("Name:", mii.name)
 
-info = mii.data
+info = MiiData.parse(mii.data)
 print("Mii:")
 print("\tBirthday: %i-%i" %(info.birth_day, info.birth_month))
 print("\tCreator name:", info.creator_name)

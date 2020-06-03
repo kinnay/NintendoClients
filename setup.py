@@ -12,8 +12,6 @@ setup(
 	package_data={"nintendo": ["files/config/*", "files/cert/*"]},
 	install_requires=[
 		'requests',
-		'beautifulsoup4',
-		'lxml',
 		'cryptography',
 		'pyopenssl',
 		'netifaces',

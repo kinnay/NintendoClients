@@ -1,5 +1,5 @@
 
-from . import socket, ssl, util, scheduler, types
+from nintendo.common import socket, ssl, util, scheduler, types, xml
 import datetime
 import time
 import json
@@ -16,6 +16,7 @@ RESULT_ERROR = 2
 STATUS_NAMES = {
 	100: "Continue",
 	200: "OK",
+	201: "Created",
 	400: "Bad Request",
 	401: "Unauthorized",
 	403: "Forbidden",
@@ -30,16 +31,24 @@ STATUS_NAMES = {
 	503: "Service Unavailable"
 }
 
+STATUS_SUCCESS = [200, 201]
+
 
 JSON_TYPES = [
 	"application/json",
 	"application/problem+json"
 ]
 
+XML_TYPES = [
+	"application/xml",
+	"text/xml"
+]
+
 TEXT_TYPES = [
 	"application/x-www-form-urlencoded",
 	"text/plain",
-	*JSON_TYPES
+	*JSON_TYPES,
+	*XML_TYPES
 ]
 
 
@@ -60,7 +69,7 @@ class HTTPFormData(types.OrderedDict):
 				logger.error("Malformed form parameter")
 				return False
 			key, value = field.split("=", 1)
-			self[key] = value
+			self[util.urldecode(key)] = util.urldecode(value)
 		return True
 		
 	def encode(self):
@@ -82,15 +91,9 @@ class HTTPMessage:
 		self.files = types.OrderedDict()
 		self.form = HTTPFormData()
 		self.json = None
+		self.xml = None
 		
 		self.boundary = "--------BOUNDARY--------"
-		
-	def prepare(self, *, headers=None, body=None, form=None, json=None, files=None):
-		if headers: self.headers = headers
-		if body: self.body = body
-		if form: self.form = form
-		if json: self.json = json
-		if files: self.files = files
 		
 	def check_version(self):
 		if not self.version.startswith("HTTP/"):
@@ -112,11 +115,12 @@ class HTTPMessage:
 		
 	def finish(self):
 		content_type = self.headers.get("Content-Type", "")
-		fields = content_type.split("; ")
-		type = fields[0]
+		fields = content_type.split(";")
+		type = fields[0].strip()
 		
 		param = {}
 		for field in fields[1:]:
+			field = field.strip()
 			if not "=" in field:
 				logger.error("Malformed directive Content-Type header")
 				return False
@@ -141,6 +145,13 @@ class HTTPMessage:
 			except json.JSONDecodeError:
 				logger.error("Failed to decode JSON body")
 				return False
+				
+		if type in XML_TYPES:
+			try:
+				self.xml = xml.parse(self.text)
+			except ValueError as e:
+				logger.error("Failed to decode XML body: %s" %e)
+				return False
 		
 		return True
 		
@@ -162,7 +173,12 @@ class HTTPMessage:
 				self.headers["Content-Type"] = "application/json"
 			self.text = json.dumps(self.json)
 			
-		elif self.files is not None:
+		elif self.xml is not None:
+			if "Content-Type" not in self.headers:
+				self.headers["Content-Type"] = "application/xml"
+			self.text = self.xml.encode()
+			
+		elif self.files:
 			if "Content-Type" not in self.headers:
 				self.headers["Content-Type"] = "multipart/form-data"
 			self.headers["Content-Type"] += "; boundary=%s" %self.boundary
@@ -241,23 +257,19 @@ class HTTPRequest(HTTPMessage):
 		return self.check_version()
 	
 	@staticmethod
-	def build(method, path, *, params=None, certificate=None, **kwargs):
+	def build(method, path):
 		request = HTTPRequest()
 		request.method = method
 		request.path = path
-		if params:
-			request.params = params
-		request.certificate = certificate
-		request.prepare(**kwargs)
 		return request
 		
 	@staticmethod
-	def get(*args, **kwargs):
-		return HTTPRequest.build("GET", *args, **kwargs)
+	def get(path):
+		return HTTPRequest.build("GET", path)
 		
 	@staticmethod
-	def post(*args, **kwargs):
-		return HTTPRequest.build("POST", *args, **kwargs)
+	def post(path):
+		return HTTPRequest.build("POST", path)
 		
 
 class HTTPResponse(HTTPMessage):
@@ -265,6 +277,12 @@ class HTTPResponse(HTTPMessage):
 		super().__init__()
 		self.status = status
 		self.status_name = STATUS_NAMES[status]
+		
+	def success(self):
+		return self.status in STATUS_SUCCESS
+		
+	def error(self):
+		return not self.success()
 		
 	def encode_start_line(self):
 		return "%s %i %s" %(self.version, self.status, self.status_name)
@@ -286,12 +304,6 @@ class HTTPResponse(HTTPMessage):
 		self.status = int(fields[1])
 		self.status_name = fields[2]
 		return True
-		
-	@staticmethod
-	def build(status, **kwargs):
-		response = HTTPResponse(status)
-		response.prepare(**kwargs)
-		return response
 		
 		
 class HTTPParser:
@@ -516,7 +528,7 @@ class HTTPReqServer:
 
 
 class HTTPClient:
-	def request(self, req, tls, timeout=3):
+	def request(self, req, tls, timeout=5):
 		client = HTTPReqClient()
 		logger.info("Performing HTTP request: %s %s", req.method, req.path)
 		response = client.process(req, tls, timeout)

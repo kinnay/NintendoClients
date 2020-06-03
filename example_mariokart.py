@@ -7,7 +7,7 @@ import requests
 import logging
 logging.basicConfig(level=logging.INFO)
 
-#Device id can be retrieved with a call to MCP_GetDeviceId on the Wii U
+#Device id can be retrieved from MCP_GetDeviceId
 #Serial number can be found on the back of the Wii U
 DEVICE_ID = 12345678
 SERIAL_NUMBER = "..."
@@ -16,6 +16,7 @@ REGION_ID = 4
 COUNTRY_ID = 94
 REGION_NAME = "EUR"
 COUNTRY_NAME = "NL"
+LANGUAGE = "en"
 
 USERNAME = "..." #Nintendo network id
 PASSWORD = "..." #Nintendo network password
@@ -24,8 +25,9 @@ TRACK_ID = 27 #Mario Kart Stadium
 
 
 nnas = nnas.NNASClient()
-nnas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION, REGION_ID, COUNTRY_NAME)
+nnas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION)
 nnas.set_title(MK8.TITLE_ID_EUR, MK8.LATEST_VERSION)
+nnas.set_locale(REGION_ID, COUNTRY_NAME, LANGUAGE)
 nnas.login(USERNAME, PASSWORD)
 
 nex_token = nnas.get_nex_token(MK8.GAME_SERVER_ID)
