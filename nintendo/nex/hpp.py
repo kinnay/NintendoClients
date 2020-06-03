@@ -2,7 +2,6 @@
 from nintendo.common.http import HTTPClient, HTTPRequest
 from nintendo.nex import service, kerberos, streams, common
 from nintendo.settings import Settings
-import requests
 import secrets
 import hashlib
 import hmac
