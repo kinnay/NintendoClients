@@ -64,7 +64,7 @@ class BAASClient:
 		req.form["grantType"] = "public_client"
 		req.form["assertion"] = device_token
 		
-		response = self.request(req, False, True)
+		response = self.request(req, None, True)
 		self.access_token = response.json["tokenType"] + " " + response.json["accessToken"]
 		return response.json
 		
