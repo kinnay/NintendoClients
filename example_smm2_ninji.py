@@ -42,8 +42,6 @@ with open("/path/to/ticket", "rb") as f:
 HOST = "g%08x-lp1.s.n.srv.nintendo.net" %SMM2.GAME_SERVER_ID
 PORT = 443
 
-ticket = tickets.get(SMM2.TITLE_ID)
-
 cert = info.get_ssl_cert()
 pkey = info.get_ssl_key()
 
@@ -92,8 +90,8 @@ param = datastore.SearchCoursesEventParam()
 courses = store.search_courses_event(param)
 print("Found %i ninji courses.\n" %len(courses))
 
-# Print information about the most recent ninji course
-course = courses[0]
+# Print information about the oldest ninji course
+course = courses[-1]
 print("Name:", course.name)
 print("Description:", course.description)
 print("Start time:", course.upload_time)
