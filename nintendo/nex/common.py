@@ -241,13 +241,15 @@ class DateTime:
 	def day(self): return (self.value >> 17) & 31
 	def month(self): return (self.value >> 22) & 15
 	def year(self): return self.value >> 26
+
+	def to_standard_datetime(self):
+		return datetime.datetime(
+			self.year(), self.month(), self.day(),
+			self.hour(), self.minute(), self.second(),
+		)
 	
 	def timestamp(self):
-		dt = datetime.datetime(
-			self.year(), self.month(), self.day(),
-			self.hour(), self.minute(), self.second()
-		)
-		return dt.timestamp()
+		return self.to_standard_datetime().timestamp()
 	
 	def __repr__(self):
 		return "%i-%i-%i %i:%02i:%02i" %(self.day(), self.month(), self.year(), self.hour(), self.minute(), self.second())
