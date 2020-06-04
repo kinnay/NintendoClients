@@ -110,7 +110,8 @@ else:
 	print("\nFound island:")
 	print("\tId:", session.id)
 	print("\tActive players:", session.player_count)
-	print("\tIsland name:", data[12:32].decode("utf16"))
+	print("\tIsland name:", data[12:32].decode("utf16").rstrip("\0"))
+	print("\tHost name:", data[40:60].decode("utf16").rstrip("\0"))
 	print()
 
 # Disconnect from game server
