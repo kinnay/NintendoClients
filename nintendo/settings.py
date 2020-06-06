@@ -1,4 +1,5 @@
 
+import contextlib
 import pkg_resources
 
 
@@ -49,13 +50,14 @@ class Settings:
 		"pia.lan_version": int
 	}
 
-	def __init__(self, filename=None):
+	def __init__(self, filename=None, *, load_default=True):
 		self.settings = {}
-		self.reset()
+		if load_default:
+			self.reset()
 		if filename:
 			self.load(filename)
 		
-	def reset(self): self.load("default.cfg")
+	def reset(self): self.settings = default_settings.copy()
 	def copy(self):
 		copy = Settings()
 		copy.settings = self.settings.copy()
@@ -80,3 +82,7 @@ class Settings:
 					else:
 						raise ValueError("Syntax error at line %i" %linenum)
 				linenum += 1
+
+default_settings = Settings(load_default=False)
+default_settings.load('default.cfg')
+default_settings = default_settings.settings
