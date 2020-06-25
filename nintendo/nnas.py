@@ -7,6 +7,7 @@ import collections
 import hashlib
 import struct
 import base64
+import urllib.parse
 
 import logging
 logger = logging.getLogger(__name__)
@@ -209,8 +210,8 @@ class NNASClient:
 		self.prepare(req, cert=self.device_cert)
 		
 		req.form["grant_type"] = "password"
-		req.form["user_id"] = util.urlencode(username)
-		req.form["password"] = util.urlencode(password)
+		req.form["user_id"] = urllib.parse.quote(username)
+		req.form["password"] = urllib.parse.quote(password)
 		if password_type is not None:
 			req.form["password_type"] = password_type
 		
@@ -237,7 +238,7 @@ class NNASClient:
 		
 	def get_miis(self, pids):
 		req = HTTPRequest.get("/v1/api/miis")
-		req.params["pids"] = util.urlencode(",".join([str(pid) for pid in pids]))
+		req.params["pids"] = urllib.parse.quote(",".join([str(pid) for pid in pids]))
 		self.prepare(req)
 		
 		response = self.request(req)
@@ -247,7 +248,7 @@ class NNASClient:
 		req = HTTPRequest.get("/v1/api/admin/mapped_ids")
 		req.params["input_type"] = "user_id"
 		req.params["output_type"] = "pid"
-		req.params["input"] = util.urlencode(",".join(nnids))
+		req.params["input"] = urllib.parse.quote(",".join(nnids))
 		self.prepare(req)
 		
 		response = self.request(req)
@@ -257,7 +258,7 @@ class NNASClient:
 		req = HTTPRequest.get("/v1/api/admin/mapped_ids")
 		req.params["input_type"] = "pid"
 		req.params["output_type"] = "user_id"
-		req.params["input"] = util.urlencode(",".join([str(pid) for pid in pids]))
+		req.params["input"] = urllib.parse.quote(",".join([str(pid) for pid in pids]))
 		self.prepare(req)
 		
 		response = self.request(req)
