@@ -3,6 +3,7 @@ from nintendo.common import socket, ssl, util, scheduler, types, xml
 import datetime
 import time
 import json
+import urllib.parse
 
 import logging
 logger = logging.getLogger(__name__)
@@ -69,7 +70,7 @@ class HTTPFormData(types.OrderedDict):
 				logger.error("Malformed form parameter")
 				return False
 			key, value = field.split("=", 1)
-			self[util.urldecode(key)] = util.urldecode(value)
+			self[urllib.parse.unquote(key)] = urllib.parse.unquote(value)
 		return True
 		
 	def encode(self):
@@ -297,11 +298,12 @@ class HTTPResponse(HTTPMessage):
 		if not self.check_version():
 			return False
 			
-		if not util.is_numeric(fields[1]):
+		try:
+			self.status = int(fields[1])
+		except ValueError:
 			logger.error("Received invalid status code in HTTP response")
 			return False
-			
-		self.status = int(fields[1])
+
 		self.status_name = fields[2]
 		return True
 		
@@ -402,7 +404,7 @@ class HTTPParser:
 			self.state = self.state_chunk_header
 			return self.state()
 		elif "Content-Length" in self.message.headers:
-			if not util.is_numeric(self.message.headers["Content-Length"]):
+			if not self.message.headers["Content-Length"].isdecimal():
 				logger.error("Invalid Content-Length header")
 				return RESULT_ERROR
 			
