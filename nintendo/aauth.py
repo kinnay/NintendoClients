@@ -93,7 +93,17 @@ class AAuthClient:
 			raise ValueError("Ticket has different title id")
 		if struct.unpack_from(">Q", ticket, 0x2A8)[0] != ticket[0x285]:
 			raise ValueError("Ticket has inconsistent master key revision")
-		
+
+	def auth_system(self, title_id, title_version, device_token):
+		req = HTTPRequest.post("/v3/application_auth_token")
+		req.form["application_id"] = "%016x" %title_id
+		req.form["application_version"] = "%08x" %title_version
+		req.form["device_auth_token"] = device_token
+		req.form["media_type"] = "SYSTEM"
+
+		response = self.request(req, True)
+		return response.json
+
 	def auth_digital(self, title_id, title_version, device_token, ticket):
 		self.verify_ticket(ticket, title_id)
 		
