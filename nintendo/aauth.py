@@ -4,7 +4,7 @@ from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
-from nintendo.common.http import HTTPRequest, HTTPClient
+from nintendo.common.http import HTTPRequest, HTTPClient, HTTPError
 from nintendo.switch import b64encode, b64decode
 import struct
 
@@ -42,7 +42,7 @@ USER_AGENT = {
 LATEST_VERSION = 1003
 
 
-class AAuthError(Exception): pass
+class AAuthError(HTTPError): pass
 
 
 class AAuthClient:
@@ -76,12 +76,13 @@ class AAuthClient:
 		if response.status != 200:
 			if response.json is not None:
 				logger.error("AAuth request returned errors:")
-				for error in response.json["errors"]:
+				errors = response.json["errors"]
+				for error in errors:
 					logger.error("  (%s) %s", error["code"], error["message"])
-				raise AAuthError("AAuth request failed: %s" %response.json["errors"][0]["message"])
+				raise AAuthError(status_code=response.status, errors=errors)
 			else:
-				logger.error("DAuth request returned status code %i", response.status)
-				raise AAuthError("AAuth request failed with status %i" %response.status)
+				logger.error("AAuth request returned status code %i", response.status)
+				raise AAuthError(status_code=response.status)
 		return response
 		
 	def verify_ticket(self, ticket, title_id):

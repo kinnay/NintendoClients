@@ -1,5 +1,5 @@
 
-from nintendo.common.http import HTTPClient, HTTPRequest
+from nintendo.common.http import HTTPClient, HTTPRequest, HTTPError
 from nintendo.switch import b64encode, b64decode
 from Crypto.Hash import CMAC
 from Crypto.Cipher import AES
@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class DAuthError(Exception): pass
+class DAuthError(HTTPError): pass
 
 
 DAUTH_SOURCE = bytes.fromhex("8be45abcf987021523ca4f5e2300dbf0")
@@ -99,12 +99,13 @@ class DAuthClient:
 		if response.status != 200:
 			if response.json is not None:
 				logger.error("DAuth request returned errors:")
-				for error in response.json["errors"]:
+				errors = response.json["errors"]
+				for error in errors:
 					logger.error("  (%s) %s", error["code"], error["message"])
-				raise DAuthError("DAuth request failed: %s" %response.json["errors"][0]["message"])
+				raise DAuthError(status_code=response.status, errors=errors)
 			else:
 				logger.error("DAuth request returned status code %i", response.status)
-				raise DAuthError("DAuth request failed with status %i" %response.status)
+				raise DAuthError(status_code=response.status)
 		return response
 		
 	def challenge(self):

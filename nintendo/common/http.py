@@ -58,6 +58,16 @@ def format_date():
 	return now.strftime("%a, %d %b %Y %H:%M:%S GMT")
 
 
+class HTTPError(Exception):
+	def __init__(self, *, status_code=None, errors=None):
+		self.status_code = status_code
+		self.errors = errors
+		if errors is not None:
+			super().__init__(errors[0]["message"])
+		else:
+			super().__init__("HTTP request failed with status code: %d" %status_code)
+
+
 class HTTPHeaders(types.CaseInsensitiveDict):
 	pass
 

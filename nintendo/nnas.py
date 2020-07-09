@@ -97,7 +97,11 @@ Profile.parse = lambda obj: Profile(
 )
 		
 
-class NNASError(Exception): pass
+class NNASError(Exception):
+	def __init__(self, *, status_code, text):
+		self.status_code = status_code
+		self.text = text
+		super().__init__("Account request failed with status %i" %status_code)
 
 
 class NNASClient:
@@ -202,7 +206,7 @@ class NNASClient:
 		response = self.client.request(req, True)
 		if response.error():
 			logger.error("Account request returned status code %i\n%s", response.status, response.text)
-			raise NNASError("Account request failed with status %i" %response.status)
+			raise NNASError(status_code=response.status, text=response.text)
 		return response.xml
 		
 	def login(self, username, password, password_type=None):
