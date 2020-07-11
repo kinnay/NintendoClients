@@ -4,8 +4,8 @@ from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
-from nintendo.common.http import HTTPRequest, HTTPClient, HTTPError
-from nintendo.switch import b64encode, b64decode
+from nintendo.common.http import HTTPRequest, HTTPClient
+from nintendo.switch import HTTPError, b64encode, b64decode
 import struct
 
 import logging

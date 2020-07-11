@@ -1,6 +1,6 @@
 
 from nintendo.common.http import HTTPClient, HTTPRequest, HTTPError
-from nintendo.switch import b64encode, b64decode
+from nintendo.switch import HTTPError, b64encode, b64decode
 from Crypto.Hash import CMAC
 from Crypto.Cipher import AES
 
