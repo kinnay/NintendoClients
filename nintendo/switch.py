@@ -18,7 +18,7 @@ class HTTPError(Exception):
 	def __str__(self):
 		if self.errors is not None:
 			return errors[0]["message"]
-		return "HTTP request failed with status code: %d" %self.status_code
+		return "HTTP request failed with status code: %i" %self.status_code
 
 
 def b64encode(data):
