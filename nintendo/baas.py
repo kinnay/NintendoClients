@@ -56,7 +56,7 @@ class BAASClient:
 		response = self.client.request(req, True)
 		if response.status not in [200, 201]:
 			logger.warning("BAAS request returned error: %s" %response.json)
-			raise BAASError("BAAS request failed: %s" %response.json["title"])
+			raise BAASError(response.json["title"])
 		return response
 		
 	def authenticate(self, device_token):

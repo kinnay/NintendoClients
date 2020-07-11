@@ -10,6 +10,17 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class HTTPError(Exception):
+	def __init__(self, *, status_code=None, errors=None):
+		self.status_code = status_code
+		self.errors = errors
+
+	def __str__(self):
+		if self.errors is not None:
+			return errors[0]["message"]
+		return "HTTP request failed with status code: %i" %self.status_code
+
+
 def b64encode(data):
 	return base64.b64encode(data, b"-_").decode().rstrip("=")
 	
