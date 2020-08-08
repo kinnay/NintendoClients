@@ -1,7 +1,9 @@
 
 /*.egg-info/
 __pycache__/
+/site/
 
 /private/
 /*.bin
 /*.jpg
+

@@ -1,0 +1,65 @@
+
+## Welcome to NintendoClients
+
+This package lets you communicate with various Wii U and Switch servers. For documentation about the servers and protocols go here: [https://github.com/Kinnay/NintendoClients/wiki](https://github.com/Kinnay/NintendoClients/wiki).
+
+## API Reference
+
+* nintendo
+	* common
+		* [crypto](reference/common/crypto)
+		* [http](reference/common/http)
+		* [streams](reference/common/streams)
+		* [tcp](reference/common/tcp)
+		* [tls](reference/common/tls)
+		* [types](reference/common/types)
+		* [udp](reference/common/udp)
+		* [util](reference/common/util)
+		* [websocket](reference/common/websocket)
+		* [xml](reference/common/xml)
+	* enl
+		* [crypto](reference/enl/crypto)
+	* nex
+		* [aauser](reference/nex/aauser)
+		* [account](reference/nex/account)
+		* [authentication](reference/nex/authentication)
+		* [backend](reference/nex/backend)
+		* [common](reference/nex/common)
+		* [datastore](reference/nex/datastore)
+		* [datastore_smm](reference/nex/datastore_smm)
+		* [datastore_smm2](reference/nex/datastore_smm2)
+		* [debug](reference/nex/debug)
+		* [errors](reference/nex/errors)
+		* [friends](reference/nex/friends)
+		* [health](reference/nex/health)
+		* [hpp](reference/nex/hpp)
+		* [kerberos](reference/nex/kerberos)
+		* [matchmaking](reference/nex/matchmaking)
+		* [messaging](reference/nex/messaging)
+		* [monitoring](reference/nex/monitoring)
+		* [nattraversal](reference/nex/nattraversal)
+		* [nintendonotification](reference/nex/nintendonotification)
+		* [notification](reference/nex/notification)
+		* [prudp](reference/nex/prudp)
+		* [ranking](reference/nex/ranking)
+		* [ranking2](reference/nex/ranking2)
+		* [remotelog](reference/nex/remotelog)
+		* [rmc](reference/nex/rmc)
+		* [screening](reference/nex/screening)
+		* [secure](reference/nex/secure)
+		* [streams](reference/nex/streams)
+		* [subscriber](reference/nex/subscriber)
+		* [utility](reference/nex/utility)
+	* pia
+		* [lan](reference/pia/lan)
+		* [settings](reference/pia/settings)
+		* [types](reference/pia/types)
+	* [aauth](reference/aauth)
+	* [baas](reference/baas)
+	* [dauth](reference/dauth)
+	* [games](reference/games)
+	* [idbe](reference/idbe)
+	* [miis](reference/miis)
+	* [nnas](reference/nnas)
+	* [sead](reference/sead)
+	* [switch](reference/switch)

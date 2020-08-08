@@ -1,0 +1,24 @@
+
+.docs {
+	margin-left: 25px;
+	display: inline-block;
+}
+
+code, .rst-content code {
+	background: transparent;
+	font-size: 100%;
+	border: none;
+	padding: 0px;
+}
+
+.docs code {
+	color: #c60;
+}
+
+td, th {
+	padding: 5px;
+}
+
+table {
+	margin-bottom: 20px;
+}

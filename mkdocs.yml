@@ -1,0 +1,3 @@
+site_name: NintendoClients
+theme: readthedocs
+extra_css: [style.css]
