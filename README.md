@@ -22,7 +22,7 @@ https://github.com/Kinnay/NintendoClients/wiki
 If you install this package with `pip install .` all requirements (except for Python itself) will be installed automatically.
 
 ### Example scripts
-* **wiiu/*
+* **wiiu/**
     * **donkeykong.py:** Downloads DKC Tropical Freeze rankings and the replay file of the world record.
     * **mariokart.py:** Downloads Mario Kart 8 rankings and the replay file of whoever is in 500th place.
     * **miis.py:** Requests all kinds of information about the primary mii associated with a NNID.
