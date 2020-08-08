@@ -17,6 +17,7 @@ https://github.com/Kinnay/NintendoClients/wiki
 * PyCryptodome
 * PyOpenSSL
 * netifaces
+* anyio
 
 If you install this package with `pip install .` all requirements (except for Python itself) will be installed automatically.
 
