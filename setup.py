@@ -7,7 +7,7 @@ setup(
 	url="https://github.com/Kinnay/NintendoClients",
 	packages=[
 		"nintendo", "nintendo.common", "nintendo.enl",
-		"nintendo.nex", "nintendo.pia", "nintendo.sead"
+		"nintendo.nex", "nintendo.pia"
 	],
 	package_data={"nintendo": ["files/config/*", "files/cert/*"]},
 	install_requires=[
