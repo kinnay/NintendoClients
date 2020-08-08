@@ -31,6 +31,7 @@ Provides useful functions and classes related to Nintendo Switch.
 
 <code>**def _\_getitem__**(key: str) -> bytes</code><br>
 <span class="docs">Returns the key with the given name.</span>
+
 <code>**def _\_setitem__**(key: str, value: bytes) -> None</code><br>
 <span class="docs">Adds or changes a key.</span>
 
