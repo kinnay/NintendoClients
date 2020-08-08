@@ -1,15 +1,19 @@
 
-from Crypto.Util.Padding import pad, unpad
+from Crypto.Util.Padding import pad
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
-from nintendo.common.http import HTTPRequest, HTTPClient
-from nintendo.switch import HTTPError, b64encode, b64decode
+from nintendo.common import http, tls
+from nintendo import switch
+import pkg_resources
 import struct
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CA_G3.der")
 
 
 RSA_MODULUS =  int(
@@ -24,46 +28,54 @@ RSA_MODULUS =  int(
 	"4782505679727111312756904637828438785474471375120478991907979820"
 	"98870089661523253199182993983393803812441"
 )
-	
+
 RSA_EXPONENT = 65537
 
 
 USER_AGENT = {
-	900:  "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
-	901:  "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
-	910:  "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
-	920:  "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
+	 900: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
+	 901: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
+	 910: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
+	 920: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
 	1000: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
 	1001: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
 	1002: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
-	1003: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)"
+	1003: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
+	1004: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
+	1010: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
+	1011: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)"
 }
 
-LATEST_VERSION = 1003
+LATEST_VERSION = 1011
 
 
-class AAuthError(HTTPError): pass
+class AAuthError(switch.NDASError): pass
 
 
 class AAuthClient:
 	def __init__(self):
-		self.client = HTTPClient()
-		
 		self.url = "aauth-lp1.ndas.srv.nintendo.net"
 		
 		self.user_agent = USER_AGENT[LATEST_VERSION]
 		self.power_state = "FA"
+		
+		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
+		self.context = tls.TLSContext()
+		self.context.set_authority(ca)
 	
 	def set_url(self, url): self.url = url
 	def set_user_agent(self, agent): self.user_agent = agent
 	def set_power_state(self, state): self.power_state = state
+	
+	def set_context(self, context):
+		self.context = context
 	
 	def set_system_version(self, version):
 		if version not in USER_AGENT:
 			raise ValueError("Unknown system version")
 		self.user_agent = USER_AGENT[version]
 	
-	def request(self, req, use_power_state):
+	async def request(self, req, use_power_state):
 		req.headers["Host"] = self.url
 		req.headers["User-Agent"] = self.user_agent
 		req.headers["Accept"] = "*/*"
@@ -72,17 +84,17 @@ class AAuthClient:
 		req.headers["Content-Length"] = 0
 		req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 		
-		response = self.client.request(req, True)
-		if response.status != 200:
-			if response.json is not None:
-				logger.error("AAuth request returned errors:")
+		response = await http.request(req, self.context)
+		if response.error():
+			if response.json:
+				logger.error("AAuth server returned errors:")
 				errors = response.json["errors"]
 				for error in errors:
 					logger.error("  (%s) %s", error["code"], error["message"])
-				raise AAuthError(status_code=response.status, errors=errors)
+				raise AAuthError(response.status_code, errors)
 			else:
-				logger.error("AAuth request returned status code %i", response.status)
-				raise AAuthError(status_code=response.status)
+				logger.error("AAuth server returned status code %i", response.status_code)
+				raise AAuthError(response.status_code)
 		return response
 		
 	def verify_ticket(self, ticket, title_id):
@@ -95,17 +107,17 @@ class AAuthClient:
 		if struct.unpack_from(">Q", ticket, 0x2A8)[0] != ticket[0x285]:
 			raise ValueError("Ticket has inconsistent master key revision")
 
-	def auth_system(self, title_id, title_version, device_token):
-		req = HTTPRequest.post("/v3/application_auth_token")
+	async def auth_system(self, title_id, title_version, device_token):
+		req = http.HTTPRequest.post("/v3/application_auth_token")
 		req.form["application_id"] = "%016x" %title_id
 		req.form["application_version"] = "%08x" %title_version
 		req.form["device_auth_token"] = device_token
 		req.form["media_type"] = "SYSTEM"
 
-		response = self.request(req, True)
+		response = await self.request(req, True)
 		return response.json
 
-	def auth_digital(self, title_id, title_version, device_token, ticket):
+	async def auth_digital(self, title_id, title_version, device_token, ticket):
 		self.verify_ticket(ticket, title_id)
 		
 		plain_key = get_random_bytes(16)
@@ -117,14 +129,14 @@ class AAuthClient:
 		rsa = PKCS1_OAEP.new(rsa_key, SHA256)
 		encrypted_key = rsa.encrypt(plain_key)
 	
-		req = HTTPRequest.post("/v3/application_auth_token")
+		req = http.HTTPRequest.post("/v3/application_auth_token")
 		req.form["application_id"] = "%016x" %title_id
 		req.form["application_version"] = "%08x" %title_version
 		req.form["device_auth_token"] = device_token
 		req.form["media_type"] = "DIGITAL"
 		
-		req.form["cert"] = b64encode(encrypted_ticket)
-		req.form["cert_key"] = b64encode(encrypted_key)
+		req.form["cert"] = switch.b64encode(encrypted_ticket)
+		req.form["cert_key"] = switch.b64encode(encrypted_key)
 	
-		response = self.request(req, True)
+		response = await self.request(req, True)
 		return response.json

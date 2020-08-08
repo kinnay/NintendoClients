@@ -1,20 +1,127 @@
 
 from Crypto.Cipher import AES
-from nintendo.pia.streams import StreamOut, StreamIn
-from nintendo.pia.types import StationLocation, StationAddress, InetAddress, ResultRange, Range
-from nintendo.common.socket import UDPSocket
-from nintendo.common import scheduler, util
-from nintendo.settings import Settings
-import socket
-import struct
+from nintendo.common import udp, util
+from nintendo.pia import streams, types
+import contextlib
+import itertools
 import secrets
 import hashlib
+import struct
+import anyio
 import hmac
-import time
 
 import logging
 logger = logging.getLogger(__name__)
 
+
+nonce_counter = itertools.count()
+
+
+def encrypt_key(kek, key):
+	aes = AES.new(kek, AES.MODE_ECB)
+	return aes.encrypt(key)
+
+def generate_nonce(nonce_id):
+	addr = util.broadcast_address()
+	return struct.pack(">IQ", util.ip_to_hex(addr), nonce_id)
+
+def generate_challenge_reply(game_key, challenge_key, challenge_data, nonce):
+	key = hmac.digest(game_key, challenge_key, hashlib.sha256)[:16]
+	data = hmac.digest(game_key, challenge_data, hashlib.sha256)[:16]
+	
+	aes = AES.new(key, AES.MODE_GCM, nonce=nonce)
+	ciphertext, tag = aes.encrypt_and_digest(data)
+	return tag + ciphertext
+
+def make_browse_request(settings, search_criteria, game_key, challenge_key, challenge_data):
+	stream = streams.StreamOut(settings)
+	stream.add(search_criteria)
+	buffer = stream.get()
+	
+	stream = streams.StreamOut(settings)
+	stream.u8(0) #Packet type
+	stream.u32(len(buffer))
+	stream.write(buffer)
+	
+	if settings["pia.lan_version"] != 0:
+		nonce_id = next(nonce_counter)
+		stream.u8(settings["pia.lan_version"])
+		stream.bool(settings["pia.crypto_enabled"])
+		stream.u64(nonce_id)
+		stream.write(challenge_key)
+		
+		if settings["pia.crypto_enabled"]:
+			key = encrypt_key(game_key, challenge_key)
+			nonce = generate_nonce(nonce_id)
+			
+			aes = AES.new(key, AES.MODE_GCM, nonce=nonce)
+			ciphertext, tag = aes.encrypt_and_digest(challenge_data)
+			challenge = tag + ciphertext
+		else:
+			challenge = secrets.token_bytes(16 + 256)
+		stream.write(challenge)
+	return stream.get()
+
+def verify_challenge_reply(stream, game_key, challenge_key, challenge_data):
+	if stream.settings["pia.lan_version"] == 0:
+		return True
+	
+	version = stream.u8()
+	expected = stream.settings["pia.lan_version"]
+	if version != expected:
+		logger.warning("Unexpected version in challenge reply header (%i != %i)", version, expected)
+		return False
+		
+	enabled = stream.bool()
+	if enabled != stream.settings["pia.crypto_enabled"]:
+		logger.warning("Received challenge reply with unexpected crypo setting")
+		return False
+	
+	if not enabled:
+		stream.skip(8 + 16 + 32)
+		return True
+	
+	nonce_id = stream.u64()
+	key = stream.read(16) + challenge_key
+	reply = stream.read(32)
+	
+	nonce = generate_nonce(nonce_id)
+	expected = generate_challenge_reply(game_key, key, challenge_data, nonce)
+	
+	if reply != expected:
+		logger.warning("Incorrect challenge reply received")
+		return False
+	return True
+
+def parse_browse_reply(settings, data, game_key, challenge_key, challenge_data):
+	stream = streams.StreamIn(data, settings)
+	if stream.u8() != 1:
+		logger.warning("Received packet that is not a browse reply")
+		return None
+	
+	size = stream.u32()
+	data = stream.read(size)
+	
+	if not verify_challenge_reply(stream, game_key, challenge_key, challenge_data):
+		return None
+	
+	if not stream.eof():
+		logger.warning("Browse reply is bigger than expected")
+		return None
+	
+	stream = streams.StreamIn(data, settings)
+	try:
+		session_info = stream.extract(LanSessionInfo)
+	except Exception as e:
+		logger.warning("Failed to parse LanSessionInfo: %s", e)
+		return None
+	
+	if not stream.eof():
+		logger.warning("LanSessionInfo has unexpected size")
+		return None
+	
+	return session_info
+	
 
 def default(value, default):
 	if value is None:
@@ -23,14 +130,14 @@ def default(value, default):
 
 class LanSessionSearchCriteria:
 	def __init__(self):
-		self.clear()
+		self.reset()
 		
-	def clear(self):
+	def reset(self):
 		self.min_participants = None
 		self.max_participants = None
 		self.opened_only = None
 		self.vacant_only = None
-		self.result_range = ResultRange()
+		self.result_range = types.ResultRange()
 		self.game_mode = None
 		self.session_type = None
 		self.attributes = [None] * 6
@@ -110,19 +217,19 @@ class LanSessionSearchCriteria:
 				stream.u8(0)
 				
 		for attrib in self.attributes:
-			if isinstance(attrib, Range):
+			if isinstance(attrib, types.Range):
 				stream.u32(attrib.min)
 			else:
 				stream.u32(0)
 		
 		for attrib in self.attributes:
-			if isinstance(attrib, Range):
+			if isinstance(attrib, types.Range):
 				stream.u32(attrib.max)
 			else:
 				stream.u32(0)
 				
 		for attrib in self.attributes:
-			if isinstance(attrib, Range):
+			if isinstance(attrib, types.Range):
 				stream.bool(True)
 			else:
 				stream.bool(False)
@@ -130,10 +237,10 @@ class LanSessionSearchCriteria:
 		stream.u32(self.calc_flags())
 		
 	def decode(self, stream):
-		self.clear()
+		self.reset()
 		
-		min_participants = Range()
-		max_participants = Range()
+		min_participants = types.Range()
+		max_participants = types.Range()
 		
 		min_participants.max = stream.u16()
 		min_participants.min = stream.u16()
@@ -141,7 +248,7 @@ class LanSessionSearchCriteria:
 		max_participants.min = stream.u16()
 		opened_only = stream.bool()
 		vacant_only = stream.bool()
-		result_range = stream.extract(ResultRange)
+		result_range = stream.extract(types.ResultRange)
 		game_mode = stream.u32()
 		session_type = stream.u32()
 		
@@ -165,7 +272,7 @@ class LanSessionSearchCriteria:
 		for i in range(6):
 			if flags & (64 << i):
 				if attrib_mode[i]:
-					self.attributes[i] = Range(attrib_range_min[i], attrib_range_max[i])
+					self.attributes[i] = types.Range(attrib_range_min[i], attrib_range_max[i])
 				else:
 					self.attributes[i] = attrib_values[i][:attrib_sizes[i]]
 					
@@ -229,7 +336,7 @@ class LanSessionInfo:
 		self.session_type = None
 		self.application_data = b""
 		self.is_opened = None
-		self.host_location = StationLocation()
+		self.host_location = types.StationLocation()
 		self.stations = [LanStationInfo() for i in range(16)]
 		self.session_param = bytes(32)
 		
@@ -240,7 +347,7 @@ class LanSessionInfo:
 		stream.u16(self.num_participants)
 		stream.u16(self.min_participants)
 		stream.u16(self.max_participants)
-		if stream.settings.get("pia.version") < 50300:
+		if stream.settings["pia.version"] < 50300:
 			stream.u32(self.session_type)
 		else:
 			stream.u8(self.system_version)
@@ -249,12 +356,12 @@ class LanSessionInfo:
 		stream.write(self.application_data.ljust(0x180, b"\0"))
 		stream.u32(len(self.application_data))
 		stream.bool(self.is_opened)
-		if stream.settings.get("pia.version") < 51000:
+		if stream.settings["pia.version"] < 51000:
 			stream.add(self.host_location)
 		else:
-			type = InetAddress.IPV4
-			if stream.settings.get("pia.lan_version") == 2:
-				type = InetAddress.IPV6
+			type = types.InetAddress.IPV4
+			if stream.settings["pia.lan_version"] == 2:
+				type = types.InetAddress.IPV6
 			stream.add(self.host_location.local, type)
 			stream.pid(self.host_location.pid)
 			stream.u32(self.host_location.cid)
@@ -269,7 +376,7 @@ class LanSessionInfo:
 		self.num_participants = stream.u16()
 		self.min_participants = stream.u16()
 		self.max_participants = stream.u16()
-		if stream.settings.get("pia.version") < 50300:
+		if stream.settings["pia.version"] < 50300:
 			self.session_type = stream.u32()
 		else:
 			self.system_version = stream.u8()
@@ -278,14 +385,14 @@ class LanSessionInfo:
 		self.application_data = stream.read(0x180)
 		self.application_data = self.application_data[:stream.u32()]
 		self.is_opened = stream.bool()
-		if stream.settings.get("pia.version") < 51000:
-			self.host_location = stream.extract(StationLocation)
+		if stream.settings["pia.version"] < 51000:
+			self.host_location = stream.extract(types.StationLocation)
 		else:
-			type = InetAddress.IPV4
-			if stream.settings.get("pia.lan_version") == 2:
-				type = InetAddress.IPV6
-			self.host_location = StationLocation()
-			self.host_location.local = stream.extract(StationAddress, type)
+			type = types.InetAddress.IPV4
+			if stream.settings["pia.lan_version"] == 2:
+				type = types.InetAddress.IPV6
+			self.host_location = types.StationLocation()
+			self.host_location.local = stream.extract(types.StationAddress, type)
 			self.host_location.pid = stream.pid()
 			self.host_location.cid = stream.u32()
 			self.host_location.rvcid = stream.u32()
@@ -295,230 +402,100 @@ class LanSessionInfo:
 		self.session_param = stream.read(32)
 
 
-class LANClient:
-	def __init__(self, settings, key):
-		if isinstance(settings, Settings):
-			self.settings = settings.copy()
-		else:
-			self.settings = Settings(settings)
-		
-		self.key = key
-		
-		self.nonce_counter = 0
-		
-		self.broadcast = (util.broadcast_address(), 30000)
-		
-	def configure(self, version):
-		self.settings.set("pia.version", version)
-		self.settings.set("pia.lan_version", self.lan_version(version))
-		self.settings.set("pia.station_extension", version < 50000)
-		self.settings.set("pia.crypto_enabled", version >= 50900)
-		
-	def lan_version(self, version):
-		if version >= 51100: return 2
-		if version >= 50900: return 1
-		return 0
+class LanServer:
+	def __init__(self, settings, handler, key, sock, group):
+		self.settings = settings
+		self.handler = handler
+		self.game_key = key
+		self.sock = sock
+		self.group = group
 	
-	def generate_challenge_key(self, key):
-		aes = AES.new(self.key, AES.MODE_ECB)
-		return aes.encrypt(key)
-		
-	def generate_nonce(self, counter):
-		broadcast = socket.inet_aton(self.broadcast[0])
-		return broadcast + struct.pack(">Q", counter)
-		
-	def generate_challenge_reply(self, nonce, key, challenge):
-		key = hmac.new(self.key, key, digestmod=hashlib.sha256).digest()[:16]
-		data = hmac.new(self.key, challenge, digestmod=hashlib.sha256).digest()[:16]
-		
-		aes = AES.new(key, AES.MODE_GCM, nonce=nonce)
-		ciphertext, tag = aes.encrypt_and_digest(data)
-		return tag + ciphertext
-
-
-class LANBrowser(LANClient):
-	def __init__(self, settings, key):
-		super().__init__(settings, key)
-		
-		self.s = UDPSocket()
-		self.s.bind("", 0)
-		
-	def browse(self, search_criteria, timeout=1, max=0):
-		key = secrets.token_bytes(16)
-		challenge = secrets.token_bytes(256)
-		self.send_browse_request(search_criteria, key, challenge)
-		return self.receive_browse_reply(timeout, max, key, challenge)
-		
-	def generate_challenge(self, key, challenge):
-		key = self.generate_challenge_key(key)
-		nonce = self.generate_nonce(self.nonce_counter)
-		
-		aes = AES.new(key, AES.MODE_GCM, nonce=nonce)
-		ciphertext, tag = aes.encrypt_and_digest(challenge)
-		return tag + ciphertext
-		
-	def verify_challenge_reply(self, stream, key, challenge):
-		if self.settings.get("pia.lan_version") == 0:
-			return True
+	async def __aenter__(self): return self
+	async def __aexit__(self, typ, val, tr):
+		await self.group.cancel_scope.cancel()
 	
-		version = stream.u8()
-		expected = self.settings.get("pia.lan_version")
-		if version != expected:
-			logger.warning("Unexpected version in challenge reply header (%i != %i)", version, expected)
-			return False
-			
-		enabled = stream.bool()
-		if not enabled:
-			stream.skip(8 + 16 + 32)
-			return True
-		
-		nonce_counter = stream.u64()
-		key = stream.read(16) + key
-		reply = stream.read(32)
-		
-		nonce = self.generate_nonce(nonce_counter)
-		expected = self.generate_challenge_reply(nonce, key, challenge)
-		
-		if reply != expected:
-			logger.warning("Incorrect challenge reply received")
-			return False
-		return True
+	async def start(self):
+		await self.group.spawn(self.process)
 	
-	def send_browse_request(self, search_criteria, key, challenge):
-		stream = StreamOut(self.settings)
-		stream.add(search_criteria)
-		buffer = stream.get()
-		
-		stream = StreamOut(self.settings)
-		stream.u8(0) #Packet type
-		stream.u32(len(buffer))
-		stream.write(buffer)
-		
-		if self.settings.get("pia.lan_version") != 0:
-			self.nonce_counter += 1
-			
-			stream.u8(self.settings.get("pia.lan_version"))
-			stream.bool(self.settings.get("pia.crypto_enabled"))
-			stream.u64(self.nonce_counter)
-			stream.write(key)
-			
-			if self.settings.get("pia.crypto_enabled"):
-				challenge = self.generate_challenge(key, challenge)
-			else:
-				challenge = secrets.token_bytes(16 + 256)
-			stream.write(challenge)
-		
-		self.s.send(stream.get(), self.broadcast)
-		
-	def parse_browse_reply(self, data, key, challenge):
-		stream = StreamIn(data, self.settings)
-		if stream.u8() != 1:
-			return None
+	async def process(self):
+		while True:
+			data, addr = await self.sock.recv()
+			await self.process_request(data, addr)
+	
+	async def process_request(self, data, addr):
+		stream = streams.StreamIn(data, self.settings)
+		if stream.u8() != 0:
+			logger.debug("Message is not a browse request")
+			return
 		
 		size = stream.u32()
-		data = stream.read(size)
+		end = stream.tell() + size
 		
-		if not self.verify_challenge_reply(stream, key, challenge):
-			return None
-			
+		criteria = stream.extract(LanSessionSearchCriteria)
+		if stream.tell() != end:
+			logger.warning("LanSessionSearchCriteria has unexpected size")
+			return
+		
+		challenge_response = self.process_challenge(stream)
+		if challenge_response is None:
+			return
+		
 		if not stream.eof():
-			logger.warning("Browse reply is bigger than expected")
-			return None
-			
-		stream = StreamIn(data, self.settings)
-			
-		try:
-			session_info = stream.extract(LanSessionInfo)
-		except Exception as e:
-			logger.warning("Failed to parse LanSessionInfo: %s", e)
-			return None
-			
-		if not stream.eof():
-			logger.warning("LanSessionInfo has unexpected size")
-			return None
+			logger.warning("Browse request is bigger than expected")
+			return
 		
-		return session_info
+		logger.info("Received browse request")
 		
-	def receive_browse_reply(self, timeout, max, key, challenge):
 		sessions = []
-		ids = []
+		for session in self.handler():
+			if criteria.check(session):
+				sessions.append(session)
 		
-		start = time.monotonic()
-		while time.monotonic() - start < timeout:
-			result = self.s.recv()
-			if result:
-				data, addr = result
-				session = self.parse_browse_reply(data, key, challenge)
-				if session and session.session_id not in ids:
-					ids.append(session.session_id)
-					sessions.append(session)
-			scheduler.update()
-		
-		return sessions
-		
-		
-class LANServer(LANClient):
-	def __init__(self, settings, key):
-		super().__init__(settings, key)
-		
-		self.session_info = LanSessionInfo()
-		
-		self.event = None
-		
-	def start(self):
-		self.s = UDPSocket()
-		self.s.bind(self.broadcast[0], self.broadcast[1])
-		
-		self.event = scheduler.add_socket(self.handle_recv, self.s)
+		logger.info("%i sessions match search criteria", len(sessions))
+		for session in sessions:
+			data = self.make_browse_reply(session, challenge_response)
+			await self.sock.send(data, addr)
 	
-	def stop(self):
-		if self.event:
-			scheduler.remove(self.event)
-			self.s.close()
-			
-			self.event = None
-		
-	def generate_browse_reply(self, challenge):
-		stream = StreamOut(self.settings)
-		stream.add(self.session_info)
+	def make_browse_reply(self, session_info, challenge):
+		stream = streams.StreamOut(self.settings)
+		stream.add(session_info)
 		buffer = stream.get()
-	
-		stream = StreamOut(self.settings)
+		
+		stream = streams.StreamOut(self.settings)
 		stream.u8(1) #Packet type
 		stream.u32(len(buffer))
 		stream.write(buffer)
 		
-		if self.settings.get("pia.lan_version") != 0:
-			stream.u8(self.settings.get("pia.lan_version"))
-			stream.bool(self.settings.get("pia.crypto_enabled"))
+		if self.settings["pia.lan_version"] != 0:
+			stream.u8(self.settings["pia.lan_version"])
+			stream.bool(self.settings["pia.crypto_enabled"])
 			stream.write(challenge)
-			
+		
 		return stream.get()
-		
-	def decrypt_challenge_key(self, key):
-		aes = AES.new(self.key, AES.MODE_ECB)
-		return aes.decrypt(key)
-		
-	def parse_challenge(self, stream):
-		if self.settings.get("pia.lan_version") == 0:
+	
+	def process_challenge(self, stream):
+		if self.settings["pia.lan_version"] == 0:
 			return b""
-			
+		
 		version = stream.u8()
-		if version != self.settings.get("pia.lan_version"):
+		if version != self.settings["pia.lan_version"]:
 			logger.warning("Browse request has unexpected version number")
 			return None
-			
+		
 		crypto = stream.bool()
-			
-		nonce = stream.u64()
+		if crypto != self.settings["pia.crypto_enabled"]:
+			logger.warning("Browse request has unexpected crypto settings")
+			return None
+		
+		nonce_id = stream.u64()
 		key = stream.read(16)
 		
 		tag = stream.read(16)
 		challenge = stream.read(256)
 		
 		if crypto:
-			challenge_key = self.generate_challenge_key(key)
-			nonce = self.generate_nonce(nonce)
+			challenge_key = encrypt_key(self.game_key, key)
+			nonce = generate_nonce(nonce_id)
 			
 			aes = AES.new(challenge_key, AES.MODE_GCM, nonce=nonce)
 			try:
@@ -528,50 +505,37 @@ class LANServer(LANClient):
 				return None
 			
 			new_key = secrets.token_bytes(16)
+			nonce_id = next(nonce_counter)
+			nonce = generate_nonce(nonce_id)
 			
-			self.nonce_counter += 1
-			nonce = self.generate_nonce(self.nonce_counter)
-			
-			reply = struct.pack(">Q", self.nonce_counter) + new_key
-			reply += self.generate_challenge_reply(nonce, new_key + key, challenge)
+			response = struct.pack(">Q", nonce_id) + new_key
+			response += generate_challenge_reply(self.game_key, new_key + key, challenge, nonce)
 		else:
-			reply = secrets.token_bytes(16 + 16 + 16)
-			
-		return reply
+			response = secrets.token_bytes(16 + 16 + 16)
+		return response
+
+
+async def browse(settings, search_criteria, key=None, timeout=1, max=0):
+	challenge_key = secrets.token_bytes(16)
+	challenge_data = secrets.token_bytes(256)
+	async with udp.bind() as sock:
+		request = make_browse_request(settings, search_criteria, key, challenge_key, challenge_data)
+		await sock.broadcast(request, 30000)
 		
-	def parse_browse_request(self, data):
-		stream = StreamIn(data, self.settings)
-		if stream.u8() != 0:
-			logger.debug("Message is not a browse request")
-			return None
-			
-		size = stream.u32()
-		end = stream.tell() + size
-		
-		criteria = stream.extract(LanSessionSearchCriteria)
-		if stream.tell() != end:
-			logger.warning("LanSessionSearchCriteria has unexpected size")
-			return None
-		
-		reply = self.parse_challenge(stream)
-		if reply is None:
-			return None
-		
-		if not stream.eof():
-			logger.warning("Browse request is bigger than expected")
-			return None
-		
-		logger.info("Received browse request")
-		return criteria, reply
-		
-	def handle_recv(self, pair):
-		data, addr = pair
-		
-		result = self.parse_browse_request(data)
-		if result is not None:
-			criteria, challenge_reply = result
-			if criteria.check(self.session_info):
-				reply = self.generate_browse_reply(challenge_reply)
-				self.s.send(reply, addr)
-			else:
-				logger.info("Search criteria do not match active session")
+		sessions = []
+		ids = []
+		async with anyio.move_on_after(timeout):
+			data, addr = await sock.recv()
+			session = parse_browse_reply(settings, data, key, challenge_key, challenge_data)
+			if session and session.session_id not in ids:
+				ids.append(session.session_id)
+				sessions.append(session)
+	return sessions
+
+@contextlib.asynccontextmanager
+async def serve(settings, handler, key=None):
+	async with udp.bind(util.broadcast_address(), 30000) as sock:
+		async with anyio.create_task_group() as group:
+			async with LanServer(settings, handler, key, sock, group) as server:
+				await server.start()
+				yield

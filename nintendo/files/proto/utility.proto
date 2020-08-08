@@ -1,10 +1,10 @@
 
-protocol Utility : 110 {
-	struct UniqueIdInfo {
-		uint64 unique_id;
-		uint64 password;
-	}
+struct UniqueIdInfo {
+	uint64 unique_id;
+	uint64 password;
+}
 
+protocol Utility : 110 {
 	method acquire_nex_unique_id() {
 		uint64 unique_id;
 	}

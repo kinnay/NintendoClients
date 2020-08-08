@@ -1,0 +1,14 @@
+
+struct ApplicationInfo {
+	uint64 title_id;
+	uint16 title_version;
+}
+
+protocol AAUser : 123 {
+	method register_application(uint64 title_id) {}
+	method unregister_application(uint64 title_id) {}
+	method set_application_info(list<ApplicationInfo> application_info) {}
+	method get_application_info() {
+		list<ApplicationInfo> info;
+	}
+}

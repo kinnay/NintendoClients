@@ -1,50 +1,43 @@
 
-from nintendo.common.http import HTTPClient, HTTPRequest
-from nintendo.nex import service, kerberos, streams, common
-from nintendo.settings import Settings
+from nintendo.common import http, tls
+from nintendo.nex import kerberos, rmc
+import pkg_resources
 import secrets
 import hashlib
 import hmac
 
 
-class HppClient(service.RMCClientBase):
-	def __init__(self, settings):
-		super().__init__(settings)
-		self.game_server_id = None
-		self.access_key = None
-		self.nex_version = None
-		
-		self.pid = None
-		self.password = None
+CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CLASS2_CA_G3.der")
+
+
+class HppClient:
+	def __init__(self, settings, game_server_id, nex_version, pid, password):
+		self.settings = settings
+		self.game_server_id = game_server_id
+		self.nex_version = nex_version
+		self.pid = pid
+		self.password = password
 		
 		self.environment = "L1"
 		
 		self.key_derivation = kerberos.KeyDerivationOld(65000, 1024)
 		
-		self.client = HTTPClient()
-		self.call_id = 0
+		self.call_id = 1
 		
+		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
+		self.context = tls.TLSContext()
+		self.context.set_authority(ca)
+
 	def set_environment(self, env): self.environment = env
-		
-	def configure(self, game_server_id, access_key, nex_version):
-		self.game_server_id = game_server_id
-		self.access_key = access_key
-		self.nex_version = nex_version
-		
-		self.settings.set("nex.version", 20000)
-		
-	def login(self, pid, password):
-		self.pid = pid
-		self.password = password
-		
+	
 	def host(self):
 		return "hpp-%08x-%s.n.app.nintendo.net" %(self.game_server_id, self.environment.lower())
-		
-	def send_request(self, protocol, method, body):
+
+	async def request(self, protocol, method, body):
 		call_id = self.call_id
-		self.call_id += 1
+		self.call_id = (call_id + 1) & 0xFFFFFFFF
 		
-		message = service.RMCMessage.request(self.settings, protocol, method, call_id, body)
+		message = rmc.RMCMessage.request(self.settings, protocol, method, call_id, body)
 		
 		data = message.encode()
 		
@@ -56,7 +49,7 @@ class HppClient(service.RMCClientBase):
 		
 		random = secrets.token_hex(8).upper()
 		
-		req = HTTPRequest.post("https://%s/hpp/" %self.host())
+		req = http.HTTPRequest.post("https://%s/hpp/" %self.host())
 		req.headers["Host"] = self.host()
 		req.headers["pid"] = str(self.pid)
 		req.headers["version"] = self.nex_version
@@ -68,9 +61,9 @@ class HppClient(service.RMCClientBase):
 		req.boundary = "--------BOUNDARY--------" + random
 		req.files["file"] = data
 		
-		response = self.client.request(req, True)
-		if response.status != 200:
-			raise ValueError("Hpp request failed with status %i" %response.status)
+		response = await http.request(req, self.context)
+		if response.error():
+			raise ValueError("Hpp request failed with status %i" %response.status_code)
 		
 		stream = streams.StreamIn(response.body, self.settings)
 		if stream.u32() != stream.available():

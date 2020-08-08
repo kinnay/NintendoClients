@@ -1,0 +1,7 @@
+
+protocol Health : 18 {
+	method ping_daemon() { bool result; }
+	method ping_database() { bool result; }
+	method run_sanity_check() { bool result; }
+	method fix_sanity_errors() { bool result; }
+}

@@ -1,414 +1,412 @@
 
 import datastore;
 
+/*** Enums ***/
+
+enum ClearCondition {
+	NORMAL = 0,
+	COLLECT_COINS = 4116396131,
+	KILL_SKIPSQUEAKS = 4042480826
+}
+
+enum CourseDifficulty {
+	EASY = 0,
+	STANDARD = 1,
+	EXPERT = 2,
+	SUPER_EXPERT = 3
+}
+
+enum CourseTag {
+	NONE = 0,
+	STANDARD = 1,
+	PUZZLE_SOLVING = 2,
+	SPEEDRUN = 3,
+	AUTOSCROLL = 4,
+	AUTO_MARIO = 5,
+	SHORT_AND_SWEET = 6,
+	MULTIPLAYER_VS = 7,
+	THEMED = 8,
+	MUSIC = 9
+}
+
+enum CourseTheme {
+	GROUND = 0,
+	UNDERGROUND = 1,
+	CASTLE = 2,
+	AIRSHIP = 3,
+	UNDERWATER = 4,
+	GHOST_HOUSE = 5,
+	SNOW = 6,
+	DESERT = 7,
+	SKY = 8,
+	FOREST = 9
+}
+
+enum GameStyle {
+	SMB1 = 0,
+	SMB3 = 1,
+	SMW = 2,
+	NSMBU = 3,
+	SM3DW = 4
+}
+
+enum MultiplayerStatsKeys {
+	MULTIPLAYER_SCORE = 0,
+	VERSUS_PLAYS = 2,
+	VERSUS_WINS = 3,
+	COOP_PLAYS = 10,
+	COOP_WINS = 11
+}
+
+enum PlayStatsKeys {
+	PLAYS = 0,
+	CLEARS = 1,
+	ATTEMPTS = 2,
+	DEATHS = 3
+}
+
+/*** Option flags ***/
+	
+enum CourseOption {
+	PLAY_STATS = 1,
+	RATINGS = 2,
+	TIME_STATS = 4,
+	COMMENT_STATS = 8,
+	UNK9 = 0x10,
+	UNK10 = 0x20,
+	UNK8 = 0x40,
+	ONE_SCREEN_THUMBNAIL = 0x80,
+	ENTIRE_THUMBNAIL = 0x100,
+	
+	ALL = 0x1FF
+}
+
+enum EventCourseOption {
+	UNK3 = 1,
+	GET_INFO = 2,
+	
+	BEST_TIME = 8,
+	ONE_SCREEN_THUMBNAIL = 0x10,
+	ENTIRE_THUMBNAIL = 0x20,
+	UNK1 = 0x40,
+	
+	MEDAL_TIME = 0x100,
+	GHOST = 0x200,
+	
+	ALL = 0x3FF
+}
+
+enum UserOption {
+	PLAY_STATS = 1,
+	MAKER_STATS = 2,
+	UNK2 = 4,
+	ENDLESS_MODE = 8,
+	MULTIPLAYER_STATS = 0x10,
+	BADGE_INFO = 0x20,
+	UNK8 = 0x40,
+	UNK9 = 0x80,
+	
+	UNK1 = 0x200,
+	UNK7 = 0x400,
+	
+	UNK11 = 0x1000,
+	UNK13 = 0x2000,
+	
+	UNK15 = 0x8000,
+	
+	ALL = 0xFFFF
+}
+
+/*** Method parameters ***/
+
+struct GetCoursesParam {
+	list<uint64> data_ids;
+	uint32 option = 0;
+}
+
+struct GetCoursesEventParam {}
+
+struct GetEventCourseGhostParam {
+	uint64 data_id;
+	uint32 time;
+	uint8 count;
+}
+
+struct GetEventCourseHistogramParam {
+	uint64 data_id;
+}
+
+struct GetUserOrCourseParam {
+	string code;
+	uint32 user_option = 0;
+	uint32 course_option = 0;
+}
+
+struct GetUsersParam {
+	list<pid> pids;
+	uint32 option = 0;
+}
+
+struct RegisterUserParam {
+	string name;
+	UnknownStruct1 unk1;
+	qbuffer unk2;
+	uint8 language;
+	string country;
+	string device_id;
+}
+
+struct SearchCoursesEndlessModeParam {
+	uint32 option = 0;
+	uint32 count;
+	uint8 difficulty;
+}
+
+struct SearchCoursesEventParam {
+	uint32 option = 0;
+}
+
+struct SearchCoursesLatestParam {
+	uint32 option = 0;
+	ResultRange range;
+}
+
+struct SearchCoursesPointRankingParam {
+	uint32 option = 0;
+	ResultRange range;
+	uint8 difficulty;
+	list<uint8> reject_regions = [];
+}
+
+struct SearchUsersUserPointParam {
+	uint32 option = 0;
+	buffer buffer;
+	ResultRange range;
+}
+
+struct SyncUserProfileParam {
+	string	username;
+	UnknownStruct1 unk1;
+	qbuffer	unk2;
+	uint8	unk3;
+	string	country;
+	bool	unk4;
+	bool	unk5;
+	string	unk_guid;
+	uint32	unk6;
+}
+
+/*** Other structures ***/
+
+struct BadgeInfo {
+	uint16 unk1;
+	uint8 unk2;
+}
+
+struct CommentInfo {
+	uint64 unk1;
+	string unk2;
+	uint8 unk3;
+	uint8 unk4;
+	uint64 unk5;
+	uint16 unk6;
+	uint16 unk7;
+	uint8 unk8;
+	uint8 unk9;
+	uint8 unk10;
+	bool unk11;
+	bool unk12;
+	datetime unk13;
+	qbuffer unk14;
+	string unk15;
+	CommentPictureReqGetInfoWithoutHeaders picture;
+	uint16 unk16;
+	uint8 unk17;
+}
+
+struct CommentPictureReqGetInfoWithoutHeaders {
+	string url;
+	uint8 data_type;
+	uint32 unk1;
+	buffer unk2;
+	string filename;
+}
+
+struct CourseInfo {
+	uint64 data_id;
+	string code;
+	pid owner_id;
+	string name;
+	string description;
+	uint8 game_style;
+	uint8 course_theme;
+	datetime upload_time;
+	uint8 difficulty;
+	uint8 tag1;
+	uint8 tag2;
+	uint8 unk1;
+	uint32 clear_condition;
+	uint16 clear_condition_magnitude;
+	uint16 unk2;
+	qbuffer unk3;
+	map<uint8, uint32> play_stats;
+	map<uint8, uint32> ratings;
+	map<uint8, uint32> unk4;
+	CourseTimeStats time_stats;
+	map<uint8, uint32> comment_stats;
+	uint8 unk9;
+	uint8 unk10;
+	uint8 unk11;
+	uint8 unk12;
+	RelationObjectReqGetInfo one_screen_thumbnail;
+	RelationObjectReqGetInfo entire_thumbnail;
+}
+
+struct CourseTimeStats {
+	pid first_completion;
+	pid world_record_holder;
+	uint32 world_record;
+	uint32 upload_time;
+}
+
+struct EventCourseGhostInfo {
+	RelationObjectReqGetInfo replay_file;
+	uint32 time;
+	pid pid;
+}
+
+struct EventCourseHistogram {
+	uint64 data_id;
+	uint32 unk1;
+	uint32 unk2;
+	uint32 unk3;
+	list<uint32> values;
+	map<uint8, uint32> medals;
+	uint32 unk4;
+}
+
+struct EventCourseInfo {
+	uint64 data_id;
+	string name;
+	string description;
+	uint8 game_style;
+	uint8 course_theme;
+	bool unk1;
+	bool unk2;
+	datetime upload_time;
+	DataStoreReqGetInfo get_info;
+	map<uint8, uint32> unk3;
+	UnknownStruct6 unk4;
+	uint8 unk5;
+	EventCourseThumbnail one_screen_thumbnail;
+	EventCourseThumbnail entire_thumbnail;
+	
+	#revision 1
+	datetime end_time;
+	uint8 unk6;
+	uint32 unk7;
+	uint16 unk8;
+	uint16 unk9;
+	uint32 best_time;
+	uint32 unk10;
+	uint32 medal_time;
+	RelationObjectReqGetInfo personal_ghost;
+}
+
+struct EventCourseStatusInfo {
+	uint64 unk1;
+	bool unk2;
+	datetime unk3;
+}
+
+struct EventCourseThumbnail {
+	string url;
+	list<DataStoreKeyValue> headers;
+	uint32 filesize;
+	buffer root_ca_cert;
+	string filename;
+}
+
+struct RelationObjectReqGetInfo {
+	string url;
+	uint8 data_type;
+	uint32 size;
+	buffer unk;
+	string filename;
+}
+
+struct ReqGetInfoHeadersInfo {
+	list<DataStoreKeyValue> headers;
+	uint32 expiration;
+}
+
+struct SyncUserProfileResult {
+	uint64 pid;
+	string username;
+	UnknownStruct1 unk1;
+	qbuffer unk2;
+	uint8 unk3;
+	string country;
+	uint8 unk4;
+	bool unk5;
+	bool unk6;
+}
+
+struct UserInfo {
+	pid pid;
+	string code;
+	string name;
+	UnknownStruct1 unk1;
+	qbuffer unk2;
+	string country;
+	uint8 region;
+	datetime last_active;
+	bool unk3;
+	bool unk4;
+	bool unk5;
+	map<uint8, uint32> play_stats;
+	map<uint8, uint32> maker_stats;
+	map<uint8, uint32> endless_challenge_high_scores;
+	map<uint8, uint32> multiplayer_stats;
+	map<uint8, uint32> unk7;
+	list<BadgeInfo> badges;
+	map<uint8, uint32> unk8;
+	map<uint8, uint32> unk9;
+	
+	#revision 1
+	bool unk10;
+	datetime unk11;
+	bool unk12;
+	
+	#revision 2
+	UnknownStruct3 unk13;
+	
+	#revision 3
+	string unk14;
+	map<uint8, uint32> unk15;
+	bool unk16;
+}
+
+/*** Unknown structures ***/
+
+struct UnknownStruct1 {
+	uint16 unk1;
+	uint16 unk2;
+	uint16 unk3;
+	uint16 unk4;
+}
+
+struct UnknownStruct3 {
+	bool unk1;
+	datetime unk2;
+}
+
+struct UnknownStruct6 {
+	uint64 unk1;
+	uint32 unk2;
+}
+
 protocol DataStore_SMM2 : DataStore {
-	/*** Enums ***/
-	
-	enum ClearCondition {
-		NORMAL = 0,
-		COLLECT_COINS = 4116396131,
-		KILL_SKIPSQUEAKS = 4042480826
-	}
-
-	enum CourseDifficulty {
-		EASY = 0,
-		STANDARD = 1,
-		EXPERT = 2,
-		SUPER_EXPERT = 3
-	}
-
-	enum CourseTag {
-		NONE = 0,
-		STANDARD = 1,
-		PUZZLE_SOLVING = 2,
-		SPEEDRUN = 3,
-		AUTOSCROLL = 4,
-		AUTO_MARIO = 5,
-		SHORT_AND_SWEET = 6,
-		MULTIPLAYER_VS = 7,
-		THEMED = 8,
-		MUSIC = 9
-	}
-
-	enum CourseTheme {
-		GROUND = 0,
-		UNDERGROUND = 1,
-		CASTLE = 2,
-		AIRSHIP = 3,
-		UNDERWATER = 4,
-		GHOST_HOUSE = 5,
-		SNOW = 6,
-		DESERT = 7,
-		SKY = 8,
-		FOREST = 9
-	}
-
-	enum GameStyle {
-		SMB1 = 0,
-		SMB3 = 1,
-		SMW = 2,
-		NSMBU = 3,
-		SM3DW = 4
-	}
-
-	enum MultiplayerStatsKeys {
-		MULTIPLAYER_SCORE = 0,
-		VERSUS_PLAYS = 2,
-		VERSUS_WINS = 3,
-		COOP_PLAYS = 10,
-		COOP_WINS = 11
-	}
-
-	enum PlayStatsKeys {
-		PLAYS = 0,
-		CLEARS = 1,
-		ATTEMPTS = 2,
-		DEATHS = 3
-	}
-	
-	/*** Option flags ***/
-	
-	enum CourseOption {
-		PLAY_STATS = 1,
-		RATINGS = 2,
-		TIME_STATS = 4,
-		COMMENT_STATS = 8,
-		UNK9 = 0x10,
-		UNK10 = 0x20,
-		UNK8 = 0x40,
-		ONE_SCREEN_THUMBNAIL = 0x80,
-		ENTIRE_THUMBNAIL = 0x100,
-		
-		ALL = 0x1FF
-	}
-	
-	enum EventCourseOption {
-		UNK3 = 1,
-		GET_INFO = 2,
-		
-		BEST_TIME = 8,
-		ONE_SCREEN_THUMBNAIL = 0x10,
-		ENTIRE_THUMBNAIL = 0x20,
-		UNK1 = 0x40,
-		
-		MEDAL_TIME = 0x100,
-		GHOST = 0x200,
-		
-		ALL = 0x3FF
-	}
-	
-	enum UserOption {
-		PLAY_STATS = 1,
-		MAKER_STATS = 2,
-		UNK2 = 4,
-		ENDLESS_MODE = 8,
-		MULTIPLAYER_STATS = 0x10,
-		BADGE_INFO = 0x20,
-		UNK8 = 0x40,
-		UNK9 = 0x80,
-		
-		UNK1 = 0x200,
-		UNK7 = 0x400,
-		
-		UNK11 = 0x1000,
-		UNK13 = 0x2000,
-		
-		UNK15 = 0x8000,
-		
-		ALL = 0xFFFF
-	}
-	
-	/*** Method parameters ***/
-	
-	struct GetCoursesParam {
-		list<uint64> data_ids;
-		uint32 option = 0;
-	}
-	
-	struct GetCoursesEventParam {}
-	
-	struct GetEventCourseGhostParam {
-		uint64 data_id;
-		uint32 time;
-		uint8 count;
-	}
-	
-	struct GetEventCourseHistogramParam {
-		uint64 data_id;
-	}
-	
-	struct GetUserOrCourseParam {
-		string code;
-		uint32 user_option = 0;
-		uint32 course_option = 0;
-	}
-	
-	struct GetUsersParam {
-		list<pid> pids;
-		uint32 option = 0;
-	}
-	
-	struct RegisterUserParam {
-		string name;
-		UnknownStruct1 unk1;
-		qbuffer unk2;
-		uint8 language;
-		string country;
-		string device_id;
-	}
-	
-	struct SearchCoursesEndlessModeParam {
-		uint32 option = 0;
-		uint32 count;
-		uint8 difficulty;
-	}
-	
-	struct SearchCoursesEventParam {
-		uint32 option = 0;
-	}
-	
-	struct SearchCoursesLatestParam {
-		uint32 option = 0;
-		ResultRange range;
-	}
-	
-	struct SearchCoursesPointRankingParam {
-		uint32 option = 0;
-		ResultRange range;
-		uint8 difficulty;
-		list<uint8> reject_regions = [];
-	}
-	
-	struct SearchUsersUserPointParam {
-		uint32 option = 0;
-		buffer buffer;
-		ResultRange range;
-	}
-	
-	struct SyncUserProfileParam {
-		string	username;
-		UnknownStruct1 unk1;
-		qbuffer	unk2;
-		uint8	unk3;
-		string	country;
-		bool	unk4;
-		bool	unk5;
-		string	unk_guid;
-		uint32	unk6;
-	}
-	
-	/*** Other structures ***/
-	
-	struct BadgeInfo {
-		uint16 unk1;
-		uint8 unk2;
-	}
-	
-	struct CommentInfo {
-		uint64 unk1;
-		string unk2;
-		uint8 unk3;
-		uint8 unk4;
-		uint64 unk5;
-		uint16 unk6;
-		uint16 unk7;
-		uint8 unk8;
-		uint8 unk9;
-		uint8 unk10;
-		bool unk11;
-		bool unk12;
-		datetime unk13;
-		qbuffer unk14;
-		string unk15;
-		CommentPictureReqGetInfoWithoutHeaders picture;
-		uint16 unk16;
-		uint8 unk17;
-	}
-
-	struct CommentPictureReqGetInfoWithoutHeaders {
-		string url;
-		uint8 data_type;
-		uint32 unk1;
-		buffer unk2;
-		string filename;
-	}
-	
-	struct CourseInfo {
-		uint64 data_id;
-		string code;
-		pid owner_id;
-		string name;
-		string description;
-		uint8 game_style;
-		uint8 course_theme;
-		datetime upload_time;
-		uint8 difficulty;
-		uint8 tag1;
-		uint8 tag2;
-		uint8 unk1;
-		uint32 clear_condition;
-		uint16 clear_condition_magnitude;
-		uint16 unk2;
-		qbuffer unk3;
-		map<uint8, uint32> play_stats;
-		map<uint8, uint32> ratings;
-		map<uint8, uint32> unk4;
-		CourseTimeStats time_stats;
-		map<uint8, uint32> comment_stats;
-		uint8 unk9;
-		uint8 unk10;
-		uint8 unk11;
-		uint8 unk12;
-		RelationObjectReqGetInfo one_screen_thumbnail;
-		RelationObjectReqGetInfo entire_thumbnail;
-	}
-	
-	struct CourseTimeStats {
-		pid first_completion;
-		pid world_record_holder;
-		uint32 world_record;
-		uint32 upload_time;
-	}
-	
-	struct EventCourseGhostInfo {
-		RelationObjectReqGetInfo replay_file;
-		uint32 time;
-		pid pid;
-	}
-	
-	struct EventCourseHistogram {
-		uint64 data_id;
-		uint32 unk1;
-		uint32 unk2;
-		uint32 unk3;
-		list<uint32> values;
-		map<uint8, uint32> medals;
-		uint32 unk4;
-	}
-	
-	struct EventCourseInfo {
-		uint64 data_id;
-		string name;
-		string description;
-		uint8 game_style;
-		uint8 course_theme;
-		bool unk1;
-		bool unk2;
-		datetime upload_time;
-		DataStoreReqGetInfo get_info;
-		map<uint8, uint32> unk3;
-		UnknownStruct6 unk4;
-		uint8 unk5;
-		EventCourseThumbnail one_screen_thumbnail;
-		EventCourseThumbnail entire_thumbnail;
-		
-		#revision 1
-		datetime end_time;
-		uint8 unk6;
-		uint32 unk7;
-		uint16 unk8;
-		uint16 unk9;
-		uint32 best_time;
-		uint32 unk10;
-		uint32 medal_time;
-		RelationObjectReqGetInfo personal_ghost;
-	}
-	
-	struct EventCourseStatusInfo {
-		uint64 unk1;
-		bool unk2;
-		datetime unk3;
-	}
-	
-	struct EventCourseThumbnail {
-		string url;
-		list<DataStoreKeyValue> headers;
-		uint32 filesize;
-		buffer root_ca_cert;
-		string filename;
-	}
-	
-	struct RelationObjectReqGetInfo {
-		string url;
-		uint8 data_type;
-		uint32 size;
-		buffer unk;
-		string filename;
-	}
-	
-	struct ReqGetInfoHeadersInfo {
-		list<DataStoreKeyValue> headers;
-		uint32 expiration;
-	}
-
-	struct SyncUserProfileResult {
-		uint64 pid;
-		string username;
-		UnknownStruct1 unk1;
-		qbuffer unk2;
-		uint8 unk3;
-		string country;
-		uint8 unk4;
-		bool unk5;
-		bool unk6;
-	}
-	
-	struct UserInfo {
-		pid pid;
-		string code;
-		string name;
-		UnknownStruct1 unk1;
-		qbuffer unk2;
-		string country;
-		uint8 region;
-		datetime last_active;
-		bool unk3;
-		bool unk4;
-		bool unk5;
-		map<uint8, uint32> play_stats;
-		map<uint8, uint32> maker_stats;
-		map<uint8, uint32> endless_challenge_high_scores;
-		map<uint8, uint32> multiplayer_stats;
-		map<uint8, uint32> unk7;
-		list<BadgeInfo> badges;
-		map<uint8, uint32> unk8;
-		map<uint8, uint32> unk9;
-		
-		#revision 1
-		bool unk10;
-		datetime unk11;
-		bool unk12;
-		
-		#revision 2
-		UnknownStruct3 unk13;
-		
-		#revision 3
-		string unk14;
-		map<uint8, uint32> unk15;
-		bool unk16;
-	}
-	
-	/*** Unknown structures ***/
-	
-	struct UnknownStruct1 {
-		uint16 unk1;
-		uint16 unk2;
-		uint16 unk3;
-		uint16 unk4;
-	}
-	
-	struct UnknownStruct3 {
-		bool unk1;
-		datetime unk2;
-	}
-	
-	struct UnknownStruct6 {
-		uint64 unk1;
-		uint32 unk2;
-	}
-	
-	/*** Methods ***/
-	
 	method(47) register_user(RegisterUserParam param) {}
 
 	method(48) get_users(GetUsersParam param) {

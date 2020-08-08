@@ -1,12 +1,25 @@
 
-from nintendo.common import streams, util
+from nintendo.common import streams
 import struct
+
 
 def swap32(data, offs):
 	struct.pack_into("<I", data, offs, struct.unpack_from(">I", data, offs)[0])
 
 def swap16(data, offs):
 	struct.pack_into("<H", data, offs, struct.unpack_from(">H", data, offs)[0])
+
+def crc16(data):
+	hash = 0
+	for char in data:
+		for i in range(8):
+			flag = hash & 0x8000
+			hash = (hash << 1) & 0xFFFF
+			if flag:
+				hash ^= 0x1021
+				
+		hash ^= char
+	return hash
 
 
 HairColors = [
@@ -121,7 +134,7 @@ class MiiData:
 		self.unk48 = stream.read(2)
 		stream.u16() #CRC16 of this whole struct
 		
-		if util.crc16(data) != 0:
+		if crc16(data) != 0:
 			raise ValueError("Mii data checksum not valid")
 		
 	def encode(self, outstream):
@@ -213,7 +226,7 @@ class MiiData:
 
 		data = self.swap_endian(stream.get())
 		outstream.write(data)
-		outstream.u16(util.crc16(data + b"\0\0"))
+		outstream.u16(crc16(data + b"\0\0"))
 		
 	def swap_endian(self, data):
 		array = bytearray(data)

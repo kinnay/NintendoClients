@@ -17,10 +17,11 @@ class StreamOut:
 	def tell(self): return self.pos
 	def seek(self, pos):
 		if pos > len(self.data):
-			self.pad(len(self.data) - pos)
+			self.data += bytes(pos - len(self.data))
 		self.pos = pos
 	def skip(self, num): self.seek(self.pos + num)
 	def align(self, num): self.skip((num - self.pos % num) % num)
+	def available(self): return len(self.data) - self.pos
 	def eof(self): return self.pos >= len(self.data)
 		
 	def write(self, data):
@@ -71,22 +72,33 @@ class StreamIn:
 		self.endian = endian
 		self.data = data
 		self.pos = 0
+		self.stack = []
+		
+	def push(self): self.stack.append(self.pos)
+	def pop(self): self.pos = self.stack.pop()
 		
 	def get(self): return self.data
 	def size(self): return len(self.data)
+	
 	def tell(self): return self.pos
-	def seek(self, pos): self.pos = pos
-	def skip(self, num): self.pos += num
-	def align(self, num): self.pos += (num - self.pos % num) % num
-	def eof(self): return self.pos >= len(self.data)
+	def seek(self, pos):
+		if pos > self.size():
+			raise OverflowError("Buffer overflow")
+		self.pos = pos
+	
+	def skip(self, num): self.seek(self.pos + num)
+	def align(self, num): self.skip((num - self.pos % num) % num)
+	def eof(self): return self.pos == len(self.data)
 	def available(self): return len(self.data) - self.pos
 	
 	def peek(self, num):
+		if self.available() < num:
+			raise OverflowError("Buffer overflow")
 		return self.data[self.pos : self.pos + num]
 		
 	def read(self, num):
-		data = self.data[self.pos : self.pos + num]
-		self.pos += num
+		data = self.peek(num)
+		self.skip(num)
 		return data
 		
 	def readall(self):
@@ -136,12 +148,19 @@ class BitStreamOut(StreamOut):
 	def push(self): self.stack.append((self.pos, self.bitpos))
 	def pop(self): self.pos, self.bitpos = self.stack.pop()
 	
-	def seek(self, pos, bitpos=0):
+	def seek(self, pos):
 		super().seek(pos)
-		if bitpos > 0 and self.pos == len(self.data):
+		self.bitpos = 0
+	
+	def seekbits(self, pos):
+		super().seek(pos // 8)
+		self.bitpos = pos % 8
+		if self.bitpos != 0 and self.eof():
 			self.data += b"\0"
-		self.bitpos = bitpos
-		
+			
+	def tellbits(self):
+		return self.pos * 8 + self.bitpos
+	
 	def bytealign(self):
 		if self.bitpos != 0:
 			self.skip(1)
@@ -188,13 +207,22 @@ class BitStreamIn(StreamIn):
 	def push(self): self.stack.append((self.pos, self.bitpos))
 	def pop(self): self.pos, self.bitpos = self.stack.pop()
 	
-	def seek(self, pos, bitpos=0):
-		self.pos = pos
-		self.bitpos = bitpos
+	def seek(self, pos):
+		super().seek(pos)
+		self.bitpos = 0
+		
+	def seekbits(self, pos):
+		if pos > len(self.data) * 8:
+			raise OverflowError("Buffer overflow")
+		self.pos = pos // 8
+		self.bitpos = pos % 8
+		
+	def tellbits(self):
+		return self.pos * 8 + self.bitpos
 		
 	def bytealign(self):
 		if self.bitpos != 0:
-			self.pos += 1
+			self.skip(1)
 			self.bitpos = 0
 		
 	def align(self, num):

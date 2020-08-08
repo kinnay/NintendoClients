@@ -1,19 +1,23 @@
 
-protocol Debug : 116 {
-	struct ApiCall {
-		string name;
-		datetime date;
-		pid pid;
-	}
+struct ApiCall {
+	string name;
+	datetime time;
+	pid pid;
+}
 
+protocol Debug : 116 {
 	method enable_api_recorder() {}
 	method disable_api_recorder() {}
 	
 	method is_api_recorder_enabled() {
-		bool result;
+		bool enabled;
 	}
 	
-	method get_api_calls(list<pid> pids, uint64 unk2, uint64 unk3) {
+	method get_api_calls(list<pid> pids, datetime unk1, datetime unk2) {
 		list<ApiCall> calls;
 	}
+	
+	method set_exclude_joined_matchmake_session;
+	method get_exclude_joined_matchmake_session;
+	method get_api_call_summary;
 }

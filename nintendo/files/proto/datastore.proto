@@ -1,183 +1,443 @@
 
-protocol DataStore : 115 {
-	struct DataStoreCompletePostParam {
-		uint64 data_id;
-		bool success;
-	}
+struct DataStoreChangeMetaCompareParam {
+	uint32 comparison_flag;
+	string name;
+	DataStorePermission permission;
+	DataStorePermission delete_permission;
+	uint16 period;
+	qbuffer meta_binary;
+	list<string> tags;
+	uint32 referred_count;
+	uint16 data_type;
+	uint8 status;
+}
 
-	struct DataStoreGetMetaParam {
-		uint64 data_id = 0;
-		DataStorePersistenceTarget persistence_target;
-		uint8 result_option = 0;
-		uint64 access_password = 0;
-	}
+struct DataStoreChangeMetaParam {
+	uint64 data_id;
+	uint32 modifies_flag;
+	string name;
+	DataStorePermission permission;
+	DataStorePermission delete_permission;
+	uint16 period;
+	qbuffer meta_binary;
+	list<string> tags;
+	uint64 update_password;
+	uint32 referred_count;
+	uint16 data_type;
+	uint8 status;
+	DataStoreChangeMetaCompareParam compare_param;
+	DataStorePersistenceTarget persistence_target;
+}
+
+struct DataStoreChangeMetaParamV1 {
+	uint64 data_id;
+	uint32 modifies_flag;
+	string name;
+	DataStorePermission permission;
+	DataStorePermission delete_permission;
+	uint16 period;
+	qbuffer meta_binary;
+	list<string> tags;
+	uint64 update_password;
+}
+
+struct DataStoreCompletePostParam {
+	uint64 data_id;
+	bool success;
+}
+
+struct DataStoreCompletePostParamV1 {
+	uint32 data_id;
+	bool success;
+}
+
+struct DataStoreCompleteUpdateParam {
+	uint64 data_id;
+	uint32 version;
+	bool success;
+}
+
+struct DataStoreDeleteParam {
+	uint64 data_id;
+	uint64 update_password;
+}
+
+struct DataStoreGetMetaParam {
+	uint64 data_id = 0;
+	DataStorePersistenceTarget persistence_target;
+	uint8 result_option = 0;
+	uint64 access_password = 0;
+}
+
+struct DataStoreGetNewArrivedNotificationsParam {
+	uint64 last_notification_id;
+	uint16 limit;
+}
+
+struct DataStoreGetNotificationUrlParam {
+	string previous_url;
+}
+
+struct DataStoreGetSpecificMetaParam {
+	list<uint64> data_ids;
+}
+
+struct DataStoreGetSpecificMetaParamV1 {
+	list<uint32> data_ids;
+}
+
+struct DataStoreKeyValue {
+	string key;
+	string value;
+}
+
+struct DataStoreMetaInfo {
+	uint64 data_id;
+	pid owner_id;
+	uint32 size;
+	string name;
+	uint16 data_type;
+	qbuffer meta_binary;
+	DataStorePermission permission;
+	DataStorePermission delete_permission;
+	datetime create_time;
+	datetime update_time;
+	uint16 period;
+	uint8 status;
+	uint32 referred_count;
+	uint32 refer_data_id;
+	uint32 flag;
+	datetime referred_time;
+	datetime expire_time;
+	list<string> tags;
+	list<DataStoreRatingInfoWithSlot> ratings;
+}
+
+struct DataStoreNotification {
+	uint64 notification_id;
+	uint64 data_id;
+}
+
+struct DataStoreNotificationV1 {
+	uint64 notification_id;
+	uint32 data_id;
+}
+
+struct DataStorePasswordInfo {
+	uint64 data_id;
+	uint64 access_password;
+	uint64 update_password;
+}
+
+struct DataStorePermission {
+	uint8 permission = 3;
+	list<pid> recipients = [];
+}
+
+struct DataStorePersistenceInfo {
+	pid owner_id;
+	uint16 slot_id;
+	uint64 data_id;
+}
+
+struct DataStorePersistenceInitParam {
+	uint16 persistence_id = 65535;
+	bool delete_last_object = true;
+}
+
+struct DataStorePersistenceTarget {
+	pid owner_id = 0;
+	uint16 persistence_id = 65535;
+}
+
+struct DataStorePrepareGetParam {
+	uint64 data_id = 0;
+	uint32 lock_id = 0;
+	DataStorePersistenceTarget persistence_target;
+	uint64 access_password = 0;
 	
-	struct DataStoreKeyValue {
-		string key;
-		string value;
+	[nex.version >= 30500] {
+		list<string> extra_data = [];
 	}
+}
+
+struct DataStorePrepareGetParamV1 {
+	uint32 data_id;
+	uint32 lock_id = 0;
+}
+
+struct DataStorePreparePostParam {
+	uint32 size;
+	string name;
+	uint16 data_type;
+	qbuffer meta_binary;
+	DataStorePermission permission;
+	DataStorePermission delete_permission;
+	uint32 flag;
+	uint16 period;
+	uint32 refer_data_id = 0;
+	list<string> tags = [];
+	list<DataStoreRatingInitParamWithSlot> rating_init_param = [];
+	DataStorePersistenceInitParam persistence_init_param;
 	
-	struct DataStoreMetaInfo {
+	[nex.version >= 30500] {
+		list<string> extra_data;
+	}
+}
+
+struct DataStorePreparePostParamV1 {
+	uint32 size;
+	string name;
+	uint16 data_type = 0;
+	qbuffer meta_binary = "";
+	DataStorePermission permission;
+	DataStorePermission delete_permission;
+	uint32 flag;
+	uint16 period;
+	uint32 refer_data_id = 0;
+	list<string> tags;
+	list<DataStoreRatingInitParamWithSlot> rating_init_param;
+}
+
+struct DataStorePrepareUpdateParam {
+	uint64 data_id;
+	uint32 size;
+	uint64 update_password;
+	list<string> extra_data;
+}
+
+struct DataStoreRateObjectParam {
+	sint32 rating_value;
+	uint64 access_password;
+}
+
+struct DataStoreRatingInfo {
+	sint64 total_value;
+	uint32 count;
+	sint64 initial_value;
+}
+
+struct DataStoreRatingInfoWithSlot {
+	uint8 slot;
+	DataStoreRatingInfo info;
+}
+
+struct DataStoreRatingInitParam {
+	uint8 flag;
+	uint8 internal_flag;
+	uint8 lock_type;
+	sint64 initial_value;
+	sint32 range_min;
+	sint32 range_max;
+	sint8 period_hour;
+	sint16 period_duration;
+}
+
+struct DataStoreRatingInitParamWithSlot {
+	sint8 slot;
+	DataStoreRatingInitParam param;
+}
+
+struct DataStoreRatingLog {
+	bool is_rated;
+	pid pid;
+	sint32 rating_value;
+	datetime lock_expiration_time;
+}
+
+struct DataStoreRatingTarget {
+	uint64 data_id;
+	sint8 slot;
+}
+
+struct DataStoreReqGetAdditionalMeta {
+	pid owner_id;
+	uint16 data_type;
+	uint16 version;
+	qbuffer meta_binary;
+}
+
+struct DataStoreReqGetInfo {
+	string url;
+	list<DataStoreKeyValue> headers;
+	uint32 size;
+	buffer root_ca_cert;
+	
+	[nex.version >= 30500] {
 		uint64 data_id;
-		pid owner_id;
-		uint32 size;
-		string name;
-		uint16 data_type;
-		qbuffer meta_binary;
-		DataStorePermission permission;
-		DataStorePermission delete_permission;
-		datetime create_time;
-		datetime update_time;
-		uint16 period;
-		uint8 status;
-		uint32 referred_count;
-		uint32 refer_data_id;
-		uint32 flag;
-		datetime referred_time;
-		datetime expire_time;
-		list<string> tags;
-		list<DataStoreRatingInfoWithSlot> ratings;
 	}
-	
-	struct DataStorePasswordInfo {
-		uint64 data_id;
-		uint64 access_password;
-		uint64 update_password;
-	}
-	
-	struct DataStorePermission {
-		uint8 permission = 3;
-		list<pid> recipients = [];
-	}
-	
-	struct DataStorePersistenceInitParam {
-		uint16 persistence_id = 65535;
-		bool delete_last_object = true;
-	}
-	
-	struct DataStorePersistenceTarget {
-		pid owner_id = 0;
-		uint16 persistence_id = 65535;
-	}
-	
-	struct DataStorePrepareGetParam {
-		uint64 data_id = 0;
-		uint32 lock_id = 0;
-		DataStorePersistenceTarget persistence_target;
-		uint64 access_password = 0;
-		
-		[nex.version >= 30500] {
-			list<string> extra_data = [];
-		}
-	}
-	
-	struct DataStorePrepareGetParamV1 {
-		uint64 data_id;
-		uint32 lock_id = 0;
-	}
-	
-	struct DataStorePreparePostParam {
-		uint32 size;
-		string name = "";
-		uint16 data_type = 0;
-		qbuffer meta_binary = "";
-		DataStorePermission permission;
-		DataStorePermission delete_permission;
-		uint32 flag;
-		uint16 period;
-		uint32 refer_data_id = 0;
-		list<string> tags = [];
-		list<DataStoreRatingInitParamWithSlot> rating_init_param = [];
-		DataStorePersistenceInitParam persistence_init_param;
-		
-		[nex.version >= 30500] {
-			list<string> extra_data;
-		}
-	}
-	
-	struct DataStoreRatingInfo {
-		sint64 total_value;
-		uint32 count;
-		sint64 initial_value;
-	}
-	
-	struct DataStoreRatingInfoWithSlot {
-		uint8 slot;
-		DataStoreRatingInfo info;
-	}
-	
-	struct DataStoreRatingInitParam {
-		uint8 flag;
-		uint8 internal_flag;
-		uint8 lock_type;
-		sint64 initial_value;
-		sint32 range_min;
-		sint32 range_max;
-		sint8 period_hour;
-		sint16 period_duration;
-	}
-	
-	struct DataStoreRatingInitParamWithSlot {
-		sint8 slot;
-		DataStoreRatingInitParam param;
-	}
-	
-	struct DataStoreReqGetInfo {
-		string url;
-		list<DataStoreKeyValue> headers;
-		uint32 size;
-		buffer root_ca_cert;
-		
-		[nex.version >= 30500] {
-			uint64 data_id;
-		}
-	}
-	
-	struct DataStoreReqGetInfoV1 {
-		string url;
-		list<DataStoreKeyValue> headers;
-		uint32 size;
-		buffer root_ca_cert;
-	}
-	
-	struct DataStoreReqPostInfo {
-		uint64 data_id;
-		string url;
-		list<DataStoreKeyValue> headers;
-		list<DataStoreKeyValue> form;
-		buffer root_ca_cert;
-	}
-	
+}
+
+struct DataStoreReqGetInfoV1 {
+	string url;
+	list<DataStoreKeyValue> headers;
+	uint32 size;
+	buffer root_ca_cert;
+}
+
+struct DataStoreReqGetNotificationUrlInfo {
+	string url;
+	string key;
+	string query;
+	buffer root_ca_cert;
+}
+
+struct DataStoreReqPostInfo {
+	uint64 data_id;
+	string url;
+	list<DataStoreKeyValue> headers;
+	list<DataStoreKeyValue> form;
+	buffer root_ca_cert;
+}
+
+struct DataStoreReqPostInfoV1 {
+	uint32 data_id;
+	string url;
+	list<DataStoreKeyValue> headers;
+	list<DataStoreKeyValue> form;
+	buffer root_ca_cert;
+}
+
+struct DataStoreReqUpdateInfo {
+	uint32 version;
+	string url;
+	list<DataStoreKeyValue> headers;
+	list<DataStoreKeyValue> form;
+	buffer root_ca_cert;
+}
+
+struct DataStoreSearchParam {
+	uint8 search_target;
+	list<pid> owner_ids;
+	uint8 owner_type;
+	list<uint64> destination_ids;
+	uint16 data_type;
+	datetime created_after;
+	datetime created_before;
+	datetime updated_after;
+	datetime updated_before;
+	uint32 refer_data_id;
+	list<string> tags;
+	uint8 result_order_column;
+	uint8 result_order;
+	ResultRange result_range;
+	uint8 result_option;
+	uint32 minimal_rating_frequency;
+	bool use_cache;
+	bool total_count_enabled;
+	list<uint16> data_types;
+}
+
+struct DataStoreSearchResult {
+	uint32 total_count;
+	list<DataStoreMetaInfo> result;
+	uint8 total_count_type;
+}
+
+struct DataStoreSpecificMetaInfo {
+	uint64 data_id;
+	pid owner_id;
+	uint32 size;
+	uint16 data_type;
+	uint32 version;
+}
+
+struct DataStoreSpecificMetaInfoV1 {
+	uint32 data_id;
+	pid owner_id;
+	uint32 size;
+	uint16 data_type;
+	uint16 version;
+}
+
+struct DataStoreTouchObjectParam {
+	uint64 data_id;
+	uint32 lock_id;
+	uint64 access_password;
+}
+
+protocol DataStore : 115 {
 	method prepare_get_object_v1(DataStorePrepareGetParamV1 param) {
 		DataStoreReqGetInfoV1 info;
 	}
 	
-	method prepare_post_object_v1;
-	method complete_post_object_v1;
-	method delete_object;
-	method delete_objects;
-	method change_meta_v1;
-	method change_metas_v1;
+	method prepare_post_object_v1(DataStorePreparePostParamV1 param) {
+		DataStoreReqPostInfoV1 info;
+	}
+	
+	method complete_post_object_v1(DataStoreCompletePostParamV1 param) {}
+	
+	method delete_object(DataStoreDeleteParam param) {}
+	method delete_objects(list<DataStoreDeleteParam> param, bool transactional) {
+		list<result> results;
+	}
+	
+	method change_meta_v1(DataStoreChangeMetaParamV1 param) {}
+	method change_metas_v1(list<uint64> data_ids, list<DataStoreChangeMetaParamV1> param, bool transactional) {
+		list<result> results;
+	}
 	
 	method get_meta(DataStoreGetMetaParam param) {
 		DataStoreMetaInfo info;
 	}
 	
-	method get_metas;
-	method prepare_update_object;
-	method complete_update_object;
-	method search_object;
-	method get_notification_url;
-	method get_new_arrived_notifications_v1;
-	method rate_object;
-	method get_rating;
-	method get_ratings;
-	method reset_rating;
-	method reset_ratings;
-	method get_specific_meta_v1;
-	method post_meta_binary;
-	method touch_object;
-	method get_rating_with_log;
+	method get_metas(list<uint64> data_ids, DataStoreGetMetaParam param) {
+		list<DataStoreMetaInfo> info;
+		list<result> results;
+	}
+	
+	method prepare_update_object(DataStorePrepareUpdateParam param) {
+		DataStoreReqUpdateInfo info;
+	}
+	
+	method complete_update_object(DataStoreCompleteUpdateParam param) {}
+	
+	method search_object(DataStoreSearchParam param) {
+		DataStoreSearchResult result;
+	}
+	
+	method get_notification_url(DataStoreGetNotificationUrlParam param) {
+		DataStoreReqGetNotificationUrlInfo info;
+	}
+	
+	method get_new_arrived_notifications_v1(DataStoreGetNewArrivedNotificationsParam param) {
+		list<DataStoreNotificationV1> result;
+		bool has_next;
+	}
+	
+	method rate_object(DataStoreRatingTarget target, DataStoreRateObjectParam param, bool fetch_ratings) {
+		DataStoreRatingInfo info;
+	}
+	
+	method get_rating(DataStoreRatingTarget target, uint64 access_password) {
+		DataStoreRatingInfo rating;
+	}
+	
+	method get_ratings(list<uint64> data_ids, uint64 access_password) {
+		list<list<DataStoreRatingInfoWithSlot>> ratings;
+		list<result> results;
+	}
+	
+	method reset_rating(DataStoreRatingTarget target, uint64 update_password) {}
+	
+	method reset_ratings(list<uint64> data_ids, bool transactional) {
+		list<result> results;
+	}
+	
+	method get_specific_meta_v1(DataStoreGetSpecificMetaParamV1 param) {
+		list<DataStoreSpecificMetaInfoV1> infos;
+	}
+	
+	method post_meta_binary(DataStorePreparePostParam param) {
+		uint64 data_id;
+	}
+	
+	method touch_object(DataStoreTouchObjectParam param) {}
+	
+	method get_rating_with_log(DataStoreRatingTarget target, uint64 access_password) {
+		DataStoreRatingInfo rating;
+		DataStoreRatingLog log;
+	}
 	
 	method prepare_post_object(DataStorePreparePostParam param) {
 		DataStoreReqPostInfo info;
@@ -189,33 +449,84 @@ protocol DataStore : 115 {
 	
 	method complete_post_object(DataStoreCompletePostParam param) {}
 	
-	method get_new_arrived_notifications;
-	method get_specific_meta;
-	method get_persistence_info;
-	method get_persistence_infos;
-	method perpetuate_object;
-	method unperpetuate_object;
-	method prepare_get_object_or_meta;
-	
-	method get_password_info(uint64 data_id) {
-		DataStorePasswordInfo password_info;
+	method get_new_arrived_notifications(DataStoreGetNewArrivedNotificationsParam param) {
+		list<DataStoreNotification> result;
+		bool has_next;
 	}
 	
-	method get_password_infos;
+	method get_specific_meta(DataStoreGetSpecificMetaParam param) {
+		list<DataStoreSpecificMetaInfo> infos;
+	}
+	
+	method get_persistence_info(pid owner_id, uint16 slot_id) {
+		DataStorePersistenceInfo info;
+	}
+	
+	method get_persistence_infos(pid owner_id, list<uint16> slot_ids) {
+		list<DataStorePersistenceInfo> infos;
+		list<result> results;
+	}
+	
+	method perpetuate_object(uint16 persistence_slot_id, uint64 data_id, bool delete_last_object) {}
+	method unperpetuate_object(uint16 persistence_slot_id, bool delete_last_object) {}
+	
+	method prepare_get_object_or_meta(DataStorePrepareGetParam param) {
+		DataStoreReqGetInfo get_info;
+		DataStoreReqGetAdditionalMeta additional_meta;
+	}
+	
+	method get_password_info(uint64 data_id) {
+		DataStorePasswordInfo info;
+	}
+	
+	method get_password_infos(list<uint64> data_ids) {
+		list<DataStorePasswordInfo> infos;
+		list<result> results;
+	}
 	
 	method get_metas_multiple_param(list<DataStoreGetMetaParam> params) {
 		list<DataStoreMetaInfo> infos;
 		list<result> results;
 	}
 	
-	method complete_post_objects;
-	method change_meta;
-	method change_metas;
-	method rate_objects;
-	method post_meta_binary_with_data_id;
-	method post_meta_binaries_with_data_id;
-	method rate_object_with_posting;
-	method rate_objects_with_posting;
-	method get_object_infos;
-	method search_object_light;
+	method complete_post_objects(list<uint64> data_ids) {}
+	
+	method change_meta(DataStoreChangeMetaParam param) {}
+	method change_metas(list<uint64> data_ids, list<DataStoreChangeMetaParam> param, bool transactional) {
+		list<result> results;
+	}
+	
+	method rate_objects(list<DataStoreRatingTarget> targets, list<DataStoreRateObjectParam> param, bool transactional, bool fetch_ratings) {
+		list<DataStoreRatingInfo> infos;
+		list<result> results;
+	}
+	
+	method post_meta_binary_with_data_id(uint64 data_id, DataStorePreparePostParam param) {}
+	method post_meta_binaries_with_data_id(list<uint64> data_ids, list<DataStorePreparePostParam> param, bool transactional) {
+		list<result> results;
+	}
+	
+	method rate_object_with_posting(
+		DataStoreRatingTarget target, DataStoreRateObjectParam rate_param,
+		DataStorePreparePostParam post_param, bool fetch_ratings
+	) {
+		DataStoreRatingInfo info;
+	}
+	
+	method rate_objects_with_posting(
+		list<DataStoreRatingTarget> targets, list<DataStoreRateObjectParam> rate_param,
+		list<DataStorePreparePostParam> post_param, bool transactional, bool fetch_ratings
+	) {
+		list<DataStoreRatingInfo> ratings;
+		list<result> results;
+	}
+	
+	method get_object_infos(list<uint64> data_ids) {
+		list<DataStoreReqGetInfo> infos;
+		list<result> results;
+	}
+	
+	method search_object_light(DataStoreSearchParam param) {
+		DataStoreSearchResult result;
+	}
 }

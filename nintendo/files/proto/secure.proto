@@ -1,10 +1,14 @@
 
+struct ConnectionData {
+	stationurl station;
+	uint32 connection_id;
+}
+
+struct NintendoLoginData {
+	string token;
+}
+
 protocol SecureConnection : 11 {
-	struct ConnectionData {
-		stationurl station;
-		uint32 connection_id;
-	}
-	
 	method register(list<stationurl> urls) {
 		result result;
 		uint32 connection_id;

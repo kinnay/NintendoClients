@@ -5,11 +5,17 @@ protocol NATTraversal : 3 {
 	method request_probe_initiation_ext(
 		list<stationurl> target_urls, stationurl station_to_probe
 	) {}
-	
-	method report_nat_traversal_result;
-	
+	method report_nat_traversal_result(uint32 cid, bool result) {}
 	method report_nat_properties(uint32 natm, uint32 natf, uint32 rtt) {}
 	
-	method get_relay_signature_key;
-	method report_nat_traversal_result_detail;
+	method get_relay_signature_key() {
+		sint32 mode;
+		datetime time;
+		string address;
+		uint16 port;
+		sint32 address_type;
+		uint32 game_server_id;
+	}
+	
+	method report_nat_traversal_result_detail(uint32 cid, bool result, sint32 detail, uint32 rtt) {}
 }

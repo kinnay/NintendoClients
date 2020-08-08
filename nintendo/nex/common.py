@@ -7,26 +7,25 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class RMCResponse:
-	pass
-
-
 ERROR_MASK = 1 << 31
 
 class RMCError(Exception):
 	def __init__(self, code="Core::Unknown"):
-		if type(code) == str:
-			code = error_codes[code] | ERROR_MASK
-		self.name = error_names[code & ~ERROR_MASK]
-		self.code = code
-		
+		self.res = Result.error(code)
+	
 	def __str__(self):
-		return "%s (0x%08X)" %(self.name, self.code)
+		return str(self.res)
+	
+	def result(self):
+		return self.res
 
 	
 class Result:
 	def __init__(self, code=0x10001):
 		self.error_code = code
+	
+	def __str__(self):
+		return "%s (0x%08X)" %(self.name(), self.code())
 		
 	@staticmethod
 	def success(code="Core::Unknown"):
@@ -62,11 +61,9 @@ class Result:
 # Black magic going on here
 class Structure:
 	def init_version(self, cls, settings):
-		nex_version = settings.get("nex.version")
-		if nex_version < 30500:
-			return -1
-		else:
+		if settings["nex.struct_header"]:
 			return cls.get_version(self, settings)
+		return -1
 			
 	def get_version(self, settings): return 0
 			
@@ -99,7 +96,7 @@ class Structure:
 				cls.load(self, stream)
 			else:
 				version = stream.u8()
-				if stream.settings.get("debug.check_struct_version"):
+				if stream.settings["debug.check_struct_version"]:
 					if version != expected_version:
 						raise ValueError(
 							"Struct %s version (%i) doesn't match expected version (%i)" %(
@@ -110,7 +107,7 @@ class Structure:
 				substream = stream.substream()
 				cls.load(self, substream)
 				
-				if stream.settings.get("debug.check_struct_size"):
+				if stream.settings["debug.check_struct_size"]:
 					if not substream.eof():
 						raise TypeError(
 							"Struct %s has unexpected size (got %i bytes, but only %i were read)" %(
@@ -162,35 +159,21 @@ DataHolder.register(NullData, "NullData")
 class StationURL:
 
 	str_params = ["address", "Rsa"]
-	int_params = ["port", "stream", "sid", "PID", "CID", "type", "RVCID",
-				  "natm", "natf", "upnp", "pmp", "probeinit", "PRID",
-				  "Rsp"
-				  ]
-				  
-	url_types = {
-		None: 0,
-		"prudp": 1,
-		"prudps": 2,
-		"udp": 3
-	}
-	
-	url_schemes = {
-		0: None,
-		1: "prudp",
-		2: "prudps",
-		3: "udp"
-	}
+	int_params = [
+		"port", "stream", "sid", "PID", "CID", "type", "RVCID",
+		"natm", "natf", "upnp", "pmp", "probeinit", "PRID", "Rsp"
+	]
 
 	def __init__(self, scheme="prudp", **kwargs):
-		self.scheme = scheme
+		self.urlscheme = scheme
 		self.params = kwargs
 
 	def __repr__(self):
 		params = ";".join(
 			["%s=%s" %(key, value) for key, value in self.params.items()]
 		)
-		if self.scheme:
-			return "%s:/%s" %(self.scheme, params)
+		if self.urlscheme:
+			return "%s:/%s" %(self.urlscheme, params)
 		return params
 		
 	def __getitem__(self, field):
@@ -202,22 +185,19 @@ class StationURL:
 		
 	def __setitem__(self, field, value):
 		self.params[field] = value
+	
+	def scheme(self):
+		return self.urlscheme
 		
-	def get_address(self):
+	def address(self):
 		return self["address"], self["port"]
-		
-	def get_type_id(self):
-		return self.url_types[self.scheme]
-		
-	def set_type_id(self, id):
-		self.scheme = self.url_schemes[id]
 		
 	def is_public(self): return bool(self["type"] & 2)
 	def is_behind_nat(self): return bool(self["type"] & 1)
 	def is_global(self): return self.is_public() and not self.is_behind_nat()
 		
 	def copy(self):
-		return StationURL(self.scheme, **self.params)
+		return StationURL(self.urlscheme, **self.params)
 		
 	@classmethod
 	def parse(cls, string):
@@ -233,36 +213,43 @@ class StationURL:
 		
 class DateTime:
 	def __init__(self, value):
-		self.value = value
+		self.val = value
 		
-	def second(self): return self.value & 63
-	def minute(self): return (self.value >> 6) & 63
-	def hour(self): return (self.value >> 12) & 31
-	def day(self): return (self.value >> 17) & 31
-	def month(self): return (self.value >> 22) & 15
-	def year(self): return self.value >> 26
+	def second(self): return self.val & 63
+	def minute(self): return (self.val >> 6) & 63
+	def hour(self): return (self.val >> 12) & 31
+	def day(self): return (self.val >> 17) & 31
+	def month(self): return (self.val >> 22) & 15
+	def year(self): return self.val >> 26
+	
+	def value(self): return self.val
 
 	def standard_datetime(self):
 		return datetime.datetime(
 			self.year(), self.month(), self.day(),
 			self.hour(), self.minute(), self.second(),
-		).replace(tzinfo=datetime.timezone.utc)
+			tzinfo=datetime.timezone.utc
+		)
 	
 	def timestamp(self):
-		return self.standard_datetime().timestamp()
+		return int(self.standard_datetime().replace(tzinfo=None).timestamp())
 	
 	def __repr__(self):
 		return "%i-%i-%i %i:%02i:%02i" %(self.day(), self.month(), self.year(), self.hour(), self.minute(), self.second())
 		
 	@classmethod
-	def make(cls, day, month, year, hour, minute, second):
+	def never(cls):
+		return cls(0)
+		
+	@classmethod
+	def make(cls, year, month=1, day=1, hour=0, minute=0, second=0):
 		return cls(second | (minute << 6) | (hour << 12) | (day << 17) | (month << 22) | (year << 26))
 		
 	@classmethod
 	def fromtimestamp(cls, timestamp):
 		dt = datetime.datetime.fromtimestamp(timestamp)
-		return cls.make(dt.day, dt.month, dt.year, dt.hour, dt.minute, dt.second)
-		
+		return cls.make(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+	
 	@classmethod
 	def now(cls):
 		return cls.fromtimestamp(time.time())

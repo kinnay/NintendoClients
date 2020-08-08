@@ -1,45 +1,43 @@
 
-protocol Authentication : 10 {
-	struct AuthenticationInfo : Data {
-		string token;
-		uint32 ngs_version = 3;
-		uint8 token_type = 1;
-		uint32 server_version = 0;
-	}
-	
-	struct NintendoLoginData : Data {
-		string token;
-	}
+// Defines protocol 10
 
-	struct RVConnectionData {
-		stationurl main_station;
-		list<uint8> special_protocols;
-		stationurl special_station;
-		
-		[nex.version >= 30500] {
-			#revision 1
-			datetime server_time;
-		}
-	}
-	
-	struct ValidateAndRequestTicketParam {
-		uint32 platform = 3;
-		string username;
-		anydata data;
-		bool unk = false;
-		uint32 nex_version;
-		uint32 client_version;
-	}
-	
-	struct ValidateAndRequestTicketResult {
-		pid pid;
-		buffer ticket;
-		stationurl server_url;
+struct AuthenticationInfo : Data {
+	string token;
+	uint32 ngs_version = 3;
+	uint8 token_type = 1;
+	uint32 server_version = 0;
+}
+
+struct RVConnectionData {
+	stationurl main_station;
+	list<uint8> special_protocols;
+	stationurl special_station;
+
+	[nex.version >= 30500] {
+		#revision 1
 		datetime server_time;
-		string server_name;
-		string ticket_key;
 	}
+}
 
+struct ValidateAndRequestTicketParam {
+	uint32 platform = 3;
+	string username;
+	anydata data;
+	bool unk = false;
+	uint32 nex_version;
+	uint32 client_version;
+}
+
+struct ValidateAndRequestTicketResult {
+	pid pid;
+	buffer ticket;
+	stationurl server_url;
+	datetime server_time;
+	string server_name;
+	string source_key;
+}
+
+protocol Authentication : 10 {
 	method login(string username) {
 		result result;
 		pid pid;
@@ -69,7 +67,46 @@ protocol Authentication : 10 {
 		string name;
 	}
 	
-	method login_with_param(ValidateAndRequestTicketParam param) {
+	method login_with_context(anydata login_data) {
+		result result;
+		pid pid;
+		buffer ticket;
+		RVConnectionData connection_data;
+	}
+}
+
+protocol Authentication_NX : 10 {
+	method validate_and_request_ticket(string username) {
+		result result;
+		pid pid;
+		buffer ticket;
+		RVConnectionData connection_data;
+		string server_name;
+	}
+	
+	method validate_and_request_ticket_with_custom_data(string username, anydata extra_data) {
+		result result;
+		pid pid;
+		buffer ticket;
+		RVConnectionData connection_data;
+		string server_name;
+		string source_key;
+	}
+	
+	method request_ticket(pid source, pid target) {
+		result result;
+		buffer ticket;
+	}
+	
+	method get_pid(string username) {
+		pid pid;
+	}
+	
+	method get_name(pid pid) {
+		string name;
+	}
+	
+	method validate_and_request_ticket_with_param(ValidateAndRequestTicketParam param) {
 		ValidateAndRequestTicketResult result;
 	}
 }

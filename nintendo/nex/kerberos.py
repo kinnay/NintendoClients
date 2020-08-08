@@ -8,7 +8,7 @@ import hmac
 
 
 class KeyDerivationOld:
-	def __init__(self, base_count, pid_count):
+	def __init__(self, base_count = 65000, pid_count = 1024):
 		self.base_count = base_count
 		self.pid_count = pid_count
 		
@@ -20,7 +20,7 @@ class KeyDerivationOld:
 		
 		
 class KeyDerivationNew:
-	def __init__(self, base_count, pid_count):
+	def __init__(self, base_count = 1, pid_count = 1):
 		self.base_count = base_count
 		self.pid_count = pid_count
 		
@@ -41,14 +41,14 @@ class KerberosEncryption:
 		self.key = key
 		self.rc4 = crypto.RC4(key, True)
 		
-	def check_hmac(self, buffer):
+	def check(self, buffer):
 		data = buffer[:-0x10]
 		checksum = buffer[-0x10:]
 		mac = hmac.new(self.key, data, digestmod=hashlib.md5)
 		return checksum == mac.digest()
 		
 	def decrypt(self, buffer):
-		if not self.check_hmac(buffer):
+		if not self.check(buffer):
 			raise ValueError("Invalid Kerberos checksum (incorrect password)")
 		return self.rc4.crypt(buffer[:-0x10])
 		
@@ -61,26 +61,27 @@ class KerberosEncryption:
 class ClientTicket:
 	def __init__(self):
 		self.session_key = None
-		self.target_pid = None
+		self.target = None
 		self.internal = b""
-		
-		self.source_pid = None
-		self.target_cid = None
-		
-	def decrypt(self, data, key, settings):
+	
+	@classmethod
+	def decrypt(cls, data, key, settings):
 		kerberos = KerberosEncryption(key)
 		decrypted = kerberos.decrypt(data)
 		stream = streams.StreamIn(decrypted, settings)
-		self.session_key = stream.read(settings.get("kerberos.key_size"))
-		self.target_pid = stream.pid()
-		self.internal = stream.buffer()
+		
+		ticket = cls()
+		ticket.session_key = stream.read(settings["kerberos.key_size"])
+		ticket.target = stream.pid()
+		ticket.internal = stream.buffer()
+		return ticket
 
 	def encrypt(self, key, settings):
 		stream = streams.StreamOut(settings)
-		if settings.get("kerberos.key_size") != len(self.session_key):
+		if settings["kerberos.key_size"] != len(self.session_key):
 			raise ValueError("Incorrect session_key size")
 		stream.write(self.session_key)
-		stream.pid(self.target_pid)
+		stream.pid(self.target)
 		stream.buffer(self.internal)
 
 		data = stream.get()
@@ -90,42 +91,54 @@ class ClientTicket:
 		
 class ServerTicket:
 	def __init__(self):
-		self.expiration = None
-		self.source_pid = None
+		self.timestamp = None
+		self.source = None
 		self.session_key = None
-		
-	def decrypt(self, data, key, settings):
-		stream = streams.StreamIn(data, settings)
-		ticket_key = stream.buffer()
-		ticket_body = stream.buffer()
-		final_key = hashlib.md5(key + ticket_key).digest()
+	
+	@classmethod
+	def decrypt(cls, data, key, settings):
+		if settings["kerberos.ticket_version"] == 1:
+			stream = streams.StreamIn(data, settings)
+			ticket_key = stream.buffer()
+			data = stream.buffer()
+			key = hashlib.md5(key + ticket_key).digest()
 
-		kerberos = KerberosEncryption(final_key)
-		decrypted = kerberos.decrypt(ticket_body)
+		kerberos = KerberosEncryption(key)
+		decrypted = kerberos.decrypt(data)
 		
 		stream = streams.StreamIn(decrypted, settings)
-		self.expiration = stream.datetime()
-		self.source_pid = stream.pid()
-		self.session_key = stream.read(settings.get("kerberos.key_size"))
+		
+		ticket = cls()
+		ticket.timestamp = stream.datetime()
+		ticket.source = stream.pid()
+		ticket.session_key = stream.read(settings["kerberos.key_size"])
+		return ticket
 
 	def encrypt(self, key, settings):
-		ticket_key = secrets.token_bytes(16)
-		
 		stream = streams.StreamOut(settings)
-		stream.datetime(self.expiration)
-		stream.pid(self.source_pid)
-		if len(self.session_key) != settings.get("kerberos.key_size"):
+		stream.datetime(self.timestamp)
+		stream.pid(self.source)
+		if len(self.session_key) != settings["kerberos.key_size"]:
 			raise ValueError("Incorrect session_key length")
 		stream.write(self.session_key)
 
-		ticket_body = stream.get()
+		data = stream.get()
+		if settings["kerberos.ticket_version"] == 1:
+			ticket_key = secrets.token_bytes(16)
+			final_key = hashlib.md5(key + ticket_key).digest()
 
-		final_key = hashlib.md5(key + ticket_key).digest()
+			kerberos = KerberosEncryption(final_key)
+			encrypted = kerberos.encrypt(data)
+			
+			stream = streams.StreamOut(settings)
+			stream.buffer(ticket_key)
+			stream.buffer(encrypted)
+			return stream.get()
+		return data
 
-		kerberos = KerberosEncryption(final_key)
-		encrypted = kerberos.encrypt(ticket_body)
 
-		stream = streams.StreamOut(settings)
-		stream.buffer(ticket_key)
-		stream.buffer(encrypted)
-		return stream.get()
+class Credentials:
+	def __init__(self, ticket, pid, cid):
+		self.ticket = ticket
+		self.pid = pid
+		self.cid = cid

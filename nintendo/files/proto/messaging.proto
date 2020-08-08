@@ -1,0 +1,52 @@
+
+struct MessageRecipient {
+	uint32 type;
+	pid pid;
+	uint32 gid;
+}
+
+struct UserMessage {
+	uint32 id;
+	uint32 parent_id;
+	pid sender;
+	datetime reception_time;
+	uint32 life_time;
+	uint32 flags;
+	string subject;
+	string sender_name;
+	MessageRecipient recipient;
+}
+
+protocol Messaging : 23 {
+	method deliver_message(anydata message) {
+		anydata modified_message;
+		list<uint32> sandbox_node_ids;
+		list<pid> participants;
+	}
+	
+	method get_number_of_messages(MessageRecipient recipient) {
+		uint32 number;
+	}
+	
+	method get_message_headers(MessageRecipient recipient, ResultRange range) {
+		list<UserMessage> headers;
+	}
+	
+	method retrieve_all_messages_within_range(MessageRecipient recipient, ResultRange range) {
+		list<anydata> messages;
+	}
+	
+	method retrieve_messages(MessageRecipient recipient, list<uint32> message_ids, bool leave_on_server) {
+		list<anydata> messages;
+	}
+	
+	method delete_messages(MessageRecipient recipient, list<uint32> message_ids) {}
+	
+	method delete_all_messages(MessageRecipient recipient) {
+		uint32 number_deleted;
+	}
+}
+
+protocol MessageDelivery : 27 {
+	method deliver_message(anydata message) {}
+}

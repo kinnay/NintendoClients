@@ -1,110 +1,144 @@
 
-protocol Friends : 102 {
-	struct MiiV2 : Data {
-		string name;
-		uint8 unk1 = 0;
-		uint8 unk2 = 0;
-		buffer data;
-		datetime datetime = 0;
-	}
-	
-	struct PrincipalBasicInfo : Data {
-		pid pid;
-		string nnid;
-		MiiV2 mii;
-		uint8 unk = 2;
-	}
-	
-	struct NNAInfo : Data {
-		PrincipalBasicInfo principal_info;
-		uint8 unk1 = 94;
-		uint8 unk2 = 11;
-	}
-	
-	struct NintendoCreateAccountData : Data {
-		NNAInfo info;
-		string token;
-		datetime birthday;
-		uint64 unk;
-	}
-	
-	struct GameKey : Data {
-		uint64 title_id = 0;
-		uint16 title_version = 0;
-	}
-	
-	struct NintendoPresenceV2 : Data {
-		uint32 flags = 0;
-		bool is_online = false;
-		GameKey game_key;
-		uint8 unk1 = 0;
-		string message = "";
-		uint32 unk2 = 0;
-		uint8 unk3 = 0;
-		uint32 game_server_id = 0;
-		uint32 unk4 = 0;
-		uint32 pid = 0;
-		uint32 gathering_id = 0;
-		buffer application_data = "";
-		uint8 unk5 = 3;
-		uint8 unk6 = 3;
-		uint8 unk7 = 3;
-	}
-	
-	struct PrincipalPreference : Data {
-		bool unk1;
-		bool unk2;
-		bool unk3;
-	}
-	
-	struct Comment : Data {
-		uint8 unk;
-		string text;
-		datetime changed;
-	}
-	
-	struct FriendInfo : Data {
-		NNAInfo nna_info;
-		NintendoPresenceV2 presence;
-		Comment comment;
-		datetime befriended;
-		datetime last_online;
-		uint64 unk;
-	}
-	
-	struct FriendRequestMessage : Data {
-		uint64 unk1;
-		uint8 unk2;
-		uint8 unk3;
-		string message;
-		uint8 unk4;
-		string string;
-		GameKey game_key;
-		datetime datetime;
-		datetime expires;
-	}
-	
-	struct FriendRequest : Data {
-		PrincipalBasicInfo principal_info;
-		FriendRequestMessage message;
-		datetime sent;
-	}
-	
-	struct BlacklistedPrincipal : Data {
-		PrincipalBasicInfo principal_info;
-		GameKey game_key;
-		datetime since;
-	}
-	
-	struct PersistentNotification : Data {
-		uint64 unk1;
-		uint32 unk2;
-		uint32 unk3;
-		uint32 unk4;
-		string string;
-	}
-	
-	method get_all_information(NNAInfo nna_info, NintendoPresenceV2 presence, datetime birthday) {
+struct BlacklistedPrincipal : Data {
+	PrincipalBasicInfo principal_info;
+	GameKey game_key;
+	datetime since;
+}
+
+struct Comment : Data {
+	uint8 unk;
+	string text;
+	datetime changed;
+}
+
+struct FriendInfo : Data {
+	NNAInfo nna_info;
+	NintendoPresenceV2 presence;
+	Comment comment;
+	datetime befriended;
+	datetime last_online;
+	uint64 unk;
+}
+
+struct FriendRequest : Data {
+	PrincipalBasicInfo principal_info;
+	FriendRequestMessage message;
+	datetime sent;
+}
+
+struct FriendRequestMessage : Data {
+	uint64 unk1;
+	uint8 unk2;
+	uint8 unk3;
+	string message;
+	uint8 unk4;
+	string string;
+	GameKey game_key;
+	datetime datetime;
+	datetime expires;
+}
+
+struct GameKey : Data {
+	uint64 title_id = 0;
+	uint16 title_version = 0;
+}
+
+struct MiiV2 : Data {
+	string name;
+	uint8 unk1 = 0;
+	uint8 unk2 = 0;
+	buffer data;
+	datetime datetime = 0;
+}
+
+struct NNAInfo : Data {
+	PrincipalBasicInfo principal_info;
+	uint8 unk1 = 94;
+	uint8 unk2 = 11;
+}
+
+struct NintendoCreateAccountData : Data {
+	NNAInfo info;
+	string token;
+	datetime birthday;
+	uint64 unk;
+}
+
+struct NintendoPresenceV2 : Data {
+	uint32 flags = 0;
+	bool is_online = false;
+	GameKey game_key;
+	uint8 unk1 = 0;
+	string message = "";
+	uint32 unk2 = 0;
+	uint8 unk3 = 0;
+	uint32 game_server_id = 0;
+	uint32 unk4 = 0;
+	uint32 pid = 0;
+	uint32 gathering_id = 0;
+	buffer application_data = "";
+	uint8 unk5 = 3;
+	uint8 unk6 = 3;
+	uint8 unk7 = 3;
+}
+
+struct PersistentNotification : Data {
+	uint64 unk1;
+	uint32 unk2;
+	uint32 unk3;
+	uint32 unk4;
+	string string;
+}
+
+struct PrincipalBasicInfo : Data {
+	pid pid;
+	string nnid;
+	MiiV2 mii;
+	uint8 unk = 2;
+}
+
+struct PrincipalPreference : Data {
+	bool unk1;
+	bool unk2;
+	bool unk3;
+}
+
+struct PrincipalRequestBlockSetting {
+	uint32 unk1;
+	bool unk2;
+}
+
+protocol Friends_V1 : 101 {
+	method update_profile;
+	method update_mii;
+	method update_mii_list;
+	method update_played_games;
+	method update_preference;
+	method get_friend_mii;
+	method get_friend_mii_list;
+	method is_active_game;
+	method get_principal_id_by_local_friend_code;
+	method get_friend_relationships;
+	method add_friend_by_principal_id;
+	method add_friend_by_principal_ids;
+	method remove_friend_by_local_friend_code;
+	method remove_friend_by_principal_id;
+	method get_all_friends;
+	method update_black_list;
+	method sync_friend;
+	method update_presence;
+	method update_favorite_game_key;
+	method update_comment;
+	method update_picture;
+	method get_friend_presence;
+	method get_friend_comment;
+	method get_friend_picture;
+	method get_friend_persistent_info;
+	method send_invitation;
+}
+
+protocol Friends_V2 : 102 {
+	method update_and_get_all_information(NNAInfo nna_info, NintendoPresenceV2 presence, datetime birthday) {
 		PrincipalPreference principal_preference;
 		Comment comment;
 		list<FriendInfo> friends;
@@ -116,25 +150,69 @@ protocol Friends : 102 {
 		bool unk2;
 	}
 	
-	method add_friend;
-	method add_friend_by_name;
-	method remove_friend;
-	method add_friend_request;
-	method cancel_friend_request;
-	method accept_friend_request;
-	method delete_friend_request;
-	method deny_friend_request;
-	method mark_friend_requests_as_received;
-	method add_black_list;
-	method remove_black_list;
+	method add_friend(pid pid) {
+		FriendRequest request;
+		FriendInfo info;
+	}
+	
+	method add_friend_by_name(string name) {
+		FriendRequest request;
+		FriendInfo info;
+	}
+	
+	method remove_friend(pid pid) {}
+	
+	method add_friend_request(
+		uint32 unk1, uint8 unk2, string unk3, uint8 unk4,
+		string unk5, GameKey game_key, datetime unk6
+	) {
+		FriendRequest request;
+		FriendInfo info;
+	}
+	
+	method cancel_friend_request(uint64 id) {}
+	
+	method accept_friend_request(uint64 id) {
+		FriendInfo info;
+	}
+	
+	method delete_friend_request(uint64 id) {}
+	
+	method deny_friend_request(uint64 id) {
+		BlacklistedPrincipal blacklist;
+	}
+	
+	method mark_friend_requests_as_received(list<uint64> ids) {}
+	
+	method add_black_list(BlacklistedPrincipal principal) {
+		BlacklistedPrincipal principal;
+	}
+	
+	method remove_black_list(pid pid) {}
 	
 	method update_presence(NintendoPresenceV2 presence) {}
 	
-	method update_mii;
-	method update_comment;
-	method update_preference;
-	method get_basic_info;
-	method delete_friend_flags;
-	method check_setting_status;
-	method get_request_block_settings;
+	method update_mii(MiiV2 mii) {
+		datetime unk;
+	}
+	
+	method update_comment(Comment comment) {
+		datetime unk;
+	}
+	
+	method update_preference(PrincipalPreference preference) {}
+	
+	method get_basic_info(list<pid> pids) {
+		list<PrincipalBasicInfo> info;
+	}
+	
+	method delete_persistent_notification(list<PersistentNotification> notifications) {}
+	
+	method check_setting_status() {
+		uint8 unk;
+	}
+	
+	method get_request_block_settings(list<uint32> unk) {
+		list<PrincipalRequestBlockSetting> settings;
+	}
 }

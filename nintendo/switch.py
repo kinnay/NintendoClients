@@ -1,24 +1,13 @@
 
 from Crypto.Cipher import AES
 from Crypto.PublicKey import RSA
-from nintendo.common import ssl
+from nintendo.common import tls
 import hashlib
 import struct
 import base64
 
 import logging
 logger = logging.getLogger(__name__)
-
-
-class HTTPError(Exception):
-	def __init__(self, *, status_code=None, errors=None):
-		self.status_code = status_code
-		self.errors = errors
-
-	def __str__(self):
-		if self.errors is not None:
-			return errors[0]["message"]
-		return "HTTP request failed with status code: %i" %self.status_code
 
 
 def b64encode(data):
@@ -30,10 +19,29 @@ def b64decode(text):
 	return base64.b64decode(text.encode(), b"-_")
 
 
+class NDASError(Exception):
+	def __init__(self, status_code, errors=None):
+		self.status_code = status_code
+		self.errors = errors
+	
+	def __str__(self):
+		if self.errors is not None:
+			return self.errors[0]["message"]
+		return "Server returned status code: %i" %self.status_code
+
+
 class KeySet:
-	def __init__(self, filename):
+	def __init__(self):
 		self.keys = {}
+	
+	def __getitem__(self, key):
+		return self.keys[key]
+	def __setitem__(self, key, value):
+		self.keys[key] = value
 		
+	@classmethod
+	def load(cls, filename):
+		keyset = cls()
 		with open(filename) as f:
 			lines = f.readlines()
 			
@@ -41,10 +49,8 @@ class KeySet:
 			line = line.strip()
 			if line:
 				name, key = line.split("=")
-				self.keys[name.strip()] = bytes.fromhex(key)
-	
-	def get(self, name):
-		return self.keys[name]
+				keyset[name.strip()] = bytes.fromhex(key)
+		return keyset
 
 
 table = [
@@ -81,35 +87,35 @@ class ProdInfo:
 		region_code = struct.unpack_from("<I", self.data, 0x3510)[0]
 		return 2 if region_code == 4 else 1
 	
-	def get_ssl_cert(self):
+	def get_tls_cert(self):
 		self.check(0xAD0, 0x10)
 		
 		length = struct.unpack_from("<I", self.data, 0xAD0)[0]
 		if length > 0x800:
-			raise ValueError("SSL certificate is too big")
+			raise ValueError("TLS certificate is too big")
 			
 		data = self.data[0xAE0 : 0xAE0 + length]
 		hash = hashlib.sha256(data).digest()
 		if hash != self.data[0x12E0 : 0x1300]:
 			raise ValueError("SHA256 check failed")
 		
-		return ssl.SSLCertificate.parse(data, ssl.TYPE_DER)
+		return tls.TLSCertificate.parse(data, tls.TYPE_DER)
 		
-	def get_ssl_key(self):
+	def get_tls_key(self):
 		self.check(0x3AE0, 0x140)
 		
 		initial = self.data[0x3AE0 : 0x3AF0]
 		cipher = self.data[0x3AF0 : 0x3BF0]
 		
-		kek = self.keyset.get("ssl_rsa_kek")
+		kek = self.keyset["ssl_rsa_kek"]
 		aes = AES.new(kek, AES.MODE_CTR, nonce=b"", initial_value=initial)
 		d = int.from_bytes(aes.decrypt(cipher), "big")
 		
-		pubkey = self.get_ssl_cert().public_key()
+		pubkey = self.get_tls_cert().public_key()
 		
 		rsa = RSA.construct((pubkey.n, pubkey.e, d))
 		der = rsa.export_key("DER")
-		return ssl.SSLPrivateKey.parse(der, ssl.TYPE_DER)
+		return tls.TLSPrivateKey.parse(der, tls.TYPE_DER)
 
 
 class TicketList:

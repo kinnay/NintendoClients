@@ -1,0 +1,18 @@
+
+protocol Subscriber : 121 {
+	method hello;
+	method post_content;
+	method get_content;
+	method follow;
+	method unfollow_all_and_follow;
+	method unfollow;
+	method get_following;
+	method get_follower;
+	method get_num_followers;
+	method get_timeline;
+	method delete_content;
+	method get_content_multi;
+	method update_user_status;
+	method get_friend_user_statuses;
+	method get_user_statuses;
+}

@@ -8,7 +8,7 @@ class StreamOut(streams.StreamOut):
 		self.settings = settings
 		
 	def pid(self, value):
-		if self.settings.get("common.pid_size") == 8:
+		if self.settings["common.pid_size"] == 8:
 			self.u64(value)
 		else:
 			self.u32(value)
@@ -23,7 +23,7 @@ class StreamIn(streams.StreamIn):
 		self.settings = settings
 		
 	def pid(self):
-		if self.settings.get("common.pid_size") == 8:
+		if self.settings["common.pid_size"] == 8:
 			return self.u64()
 		return self.u32()
 		

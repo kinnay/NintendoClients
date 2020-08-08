@@ -1,69 +1,142 @@
 
-protocol Ranking2 : 122 {
-	enum RankingMode {
-		GLOBAL_AROUND_USER = 1,
-		GLOBAL = 2,
-		FRIENDS = 3
-	}
+enum RankingMode {
+	GLOBAL_AROUND_SELF = 1,
+	GLOBAL = 2,
+	FRIENDS = 3
+}
 
-	struct Ranking2GetParam {
-		uint64 unk1 = 0;
-		pid pid = 0;
-		uint32 category;
-		uint32 offset = 0;
-		uint32 count = 10;
-		uint32 unk2 = 0;
-		uint32 unk3 = 0;
-		uint8 mode = 2;
-		uint8 unk4 = 0;
-	}
+struct Ranking2CategorySetting {
+	uint32 min_score;
+	uint32 max_score;
+	uint32 lowest_rank;
+	uint16 reset_month;
+	uint8 reset_day;
+	uint8 reset_hour;
+	uint8 reset_mode;
+	uint8 max_seasons_to_go_back;
+	bool score_order;
+}
+
+struct Ranking2ChartInfo {
+	datetime create_time;
+	uint32 index;
+	uint32 category;
+	sint32 season;
+	uint8 bins_size;
+	uint8 sampling_rate;
+	bool score_order;
+	uint32 estimate_length;
+	uint32 estimate_highest_score;
+	uint32 estimate_lowest_score;
+	uint32 estimate_median_score;
+	double estimate_average_score;
+	uint32 highest_bins_score;
+	uint32 lowest_bins_score;
+	uint32 bins_width;
+	uint32 attribute1;
+	uint32 attribute2;
+	list<uint32> quantities;
+}
+
+struct Ranking2ChartInfoInput {
+	uint32 chart_index;
+	uint8 seasons_to_go_back;
+}
+
+struct Ranking2CommonData {
+	string username;
+	qbuffer mii;
+	qbuffer binary_data;
+}
+
+struct Ranking2EstimateScoreRankInput {
+	uint32 category;
+	uint8 seasons_to_go_back;
+	uint32 score;
+}
+
+struct Ranking2EstimateScoreRankOutput {
+	uint32 rank;
+	uint32 length;
+	uint32 score;
+	uint32 category;
+	sint32 season;
+}
+
+struct Ranking2GetByListParam {
+	uint32 category;
+	uint32 offset;
+	uint32 length;
+	uint32 sort_flags;
+	uint32 option_flags;
+	uint8 seasons_to_go_back;
+}
+
+struct Ranking2GetParam {
+	uint64 unique_id = 0;
+	pid pid = 0;
+	uint32 category;
+	uint32 offset = 0;
+	uint32 count = 10;
+	uint32 sort_flags = 0;
+	uint32 option_flags = 0;
+	uint8 mode = 2;
+	uint8 seasons_to_go_back = 0;
+}
+
+struct Ranking2Info {
+	list<Ranking2RankData> data;
+	uint32 lowest_rank;
+	uint32 num_entries;
+	sint32 season;
+}
+
+struct Ranking2RankData {
+	uint64 misc;
+	uint64 unique_id;
+	pid pid;
+	uint32 rank;
+	uint32 score;
+	Ranking2CommonData common_data;
+}
+
+struct Ranking2ScoreData {
+	uint64 misc;
+	uint32 category;
+	uint32 score;
+}
+
+protocol Ranking2 : 122 {
+	method put_score(list<Ranking2ScoreData> socres, uint64 unique_id) {}
 	
-	struct Ranking2Info {
-		list<Ranking2RankData> data;
-		uint32 unk1;
-		uint32 num_entries;
-		sint32 unk2;
-	}
-	
-	struct Ranking2RankData {
-		uint64 unk1;
-		uint64 unk2;
-		pid pid;
-		uint32 rank;
-		uint32 score;
+	method get_common_data(uint32 option_flags, pid pid, uint64 unique_id) {
 		Ranking2CommonData common_data;
 	}
 	
-	struct Ranking2CommonData {
-		string username;
-		qbuffer unk1;
-		qbuffer unk2;
-	}
-
-	struct Ranking2CategorySetting {
-		uint32 unk1;
-		uint32 unk2;
-		uint32 unk3;
-		uint16 unk4;
-		uint8 unk5;
-		uint8 unk6;
-		uint8 unk7;
-		uint8 unk8;
-		bool unk9;
-	}
-	
-	method put_score;
-	method get_common_data;
-	method put_common_data;
-	method delete_common_data;
+	method put_common_data(Ranking2CommonData data, uint64 unique_id) {}
+	method delete_common_data(uint64 unique_id) {}
 	
 	method get_ranking(Ranking2GetParam param) {
 		Ranking2Info info;
 	}
 	
-	method get_ranking_by_principal_id;
+	method get_ranking_by_principal_id(Ranking2GetByListParam param, list<pid> pids) {
+		Ranking2Info info;
+	}
 	
 	method get_category_setting(uint32 category) {
 		Ranking2CategorySetting setting;
+	}
+	
+	method get_ranking_chart(Ranking2ChartInfoInput input) {
+		Ranking2ChartInfo info;
+	}
+	
+	method get_ranking_charts(list<Ranking2ChartInfoInput> inputs) {
+		list<Ranking2ChartInfo> infos;
+	}
+	
+	method get_estimate_score_rank(Ranking2EstimateScoreRankInput input) {
+		Ranking2EstimateScoreRankOutput output;
 	}
 }

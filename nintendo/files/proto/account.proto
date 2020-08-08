@@ -1,22 +1,22 @@
 
+struct AccountData {
+	pid pid;
+	string name;
+	uint32 groups;
+	string email;
+	datetime creation_date;
+	datetime effective_date;
+	string not_effective_message;
+	datetime expiry_date;
+	string expired_message;
+}
+
+struct BasicAccountInfo {
+	pid pid;
+	string name;
+}
+
 protocol Account : 25 {
-	struct AccountData {
-		pid pid;
-		string name;
-		uint32 groups;
-		string email;
-		datetime creation_date;
-		datetime effective_date;
-		string not_effective_message;
-		datetime expiry_date;
-		string expired_message;
-	}
-	
-	struct BasicAccountInfo {
-		pid pid;
-		string name;
-	}
-	
 	method create_account(string name, string key, uint32 groups, string email) {
 		result result;
 	}

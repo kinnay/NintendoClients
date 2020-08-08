@@ -1,10 +1,154 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common, streams
+from nintendo.nex import notification, rmc, common, streams
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+class DataStoreChangeMetaCompareParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.comparison_flag = None
+		self.name = None
+		self.permission = DataStorePermission()
+		self.delete_permission = DataStorePermission()
+		self.period = None
+		self.meta_binary = None
+		self.tags = None
+		self.referred_count = None
+		self.data_type = None
+		self.status = None
+	
+	def check_required(self, settings):
+		for field in ['comparison_flag', 'name', 'period', 'meta_binary', 'tags', 'referred_count', 'data_type', 'status']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.comparison_flag = stream.u32()
+		self.name = stream.string()
+		self.permission = stream.extract(DataStorePermission)
+		self.delete_permission = stream.extract(DataStorePermission)
+		self.period = stream.u16()
+		self.meta_binary = stream.qbuffer()
+		self.tags = stream.list(stream.string)
+		self.referred_count = stream.u32()
+		self.data_type = stream.u16()
+		self.status = stream.u8()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.comparison_flag)
+		stream.string(self.name)
+		stream.add(self.permission)
+		stream.add(self.delete_permission)
+		stream.u16(self.period)
+		stream.qbuffer(self.meta_binary)
+		stream.list(self.tags, stream.string)
+		stream.u32(self.referred_count)
+		stream.u16(self.data_type)
+		stream.u8(self.status)
+
+
+class DataStoreChangeMetaParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.modifies_flag = None
+		self.name = None
+		self.permission = DataStorePermission()
+		self.delete_permission = DataStorePermission()
+		self.period = None
+		self.meta_binary = None
+		self.tags = None
+		self.update_password = None
+		self.referred_count = None
+		self.data_type = None
+		self.status = None
+		self.compare_param = DataStoreChangeMetaCompareParam()
+		self.persistence_target = DataStorePersistenceTarget()
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'modifies_flag', 'name', 'period', 'meta_binary', 'tags', 'update_password', 'referred_count', 'data_type', 'status']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.modifies_flag = stream.u32()
+		self.name = stream.string()
+		self.permission = stream.extract(DataStorePermission)
+		self.delete_permission = stream.extract(DataStorePermission)
+		self.period = stream.u16()
+		self.meta_binary = stream.qbuffer()
+		self.tags = stream.list(stream.string)
+		self.update_password = stream.u64()
+		self.referred_count = stream.u32()
+		self.data_type = stream.u16()
+		self.status = stream.u8()
+		self.compare_param = stream.extract(DataStoreChangeMetaCompareParam)
+		self.persistence_target = stream.extract(DataStorePersistenceTarget)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.u32(self.modifies_flag)
+		stream.string(self.name)
+		stream.add(self.permission)
+		stream.add(self.delete_permission)
+		stream.u16(self.period)
+		stream.qbuffer(self.meta_binary)
+		stream.list(self.tags, stream.string)
+		stream.u64(self.update_password)
+		stream.u32(self.referred_count)
+		stream.u16(self.data_type)
+		stream.u8(self.status)
+		stream.add(self.compare_param)
+		stream.add(self.persistence_target)
+
+
+class DataStoreChangeMetaParamV1(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.modifies_flag = None
+		self.name = None
+		self.permission = DataStorePermission()
+		self.delete_permission = DataStorePermission()
+		self.period = None
+		self.meta_binary = None
+		self.tags = None
+		self.update_password = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'modifies_flag', 'name', 'period', 'meta_binary', 'tags', 'update_password']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.modifies_flag = stream.u32()
+		self.name = stream.string()
+		self.permission = stream.extract(DataStorePermission)
+		self.delete_permission = stream.extract(DataStorePermission)
+		self.period = stream.u16()
+		self.meta_binary = stream.qbuffer()
+		self.tags = stream.list(stream.string)
+		self.update_password = stream.u64()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.u32(self.modifies_flag)
+		stream.string(self.name)
+		stream.add(self.permission)
+		stream.add(self.delete_permission)
+		stream.u16(self.period)
+		stream.qbuffer(self.meta_binary)
+		stream.list(self.tags, stream.string)
+		stream.u64(self.update_password)
 
 
 class DataStoreCompletePostParam(common.Structure):
@@ -26,6 +170,72 @@ class DataStoreCompletePostParam(common.Structure):
 		self.check_required(stream.settings)
 		stream.u64(self.data_id)
 		stream.bool(self.success)
+
+
+class DataStoreCompletePostParamV1(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.success = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'success']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u32()
+		self.success = stream.bool()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.data_id)
+		stream.bool(self.success)
+
+
+class DataStoreCompleteUpdateParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.version = None
+		self.success = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'version', 'success']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.version = stream.u32()
+		self.success = stream.bool()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.u32(self.version)
+		stream.bool(self.success)
+
+
+class DataStoreDeleteParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.update_password = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'update_password']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.update_password = stream.u64()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.u64(self.update_password)
 
 
 class DataStoreGetMetaParam(common.Structure):
@@ -51,6 +261,81 @@ class DataStoreGetMetaParam(common.Structure):
 		stream.add(self.persistence_target)
 		stream.u8(self.result_option)
 		stream.u64(self.access_password)
+
+
+class DataStoreGetNewArrivedNotificationsParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.last_notification_id = None
+		self.limit = None
+	
+	def check_required(self, settings):
+		for field in ['last_notification_id', 'limit']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.last_notification_id = stream.u64()
+		self.limit = stream.u16()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.last_notification_id)
+		stream.u16(self.limit)
+
+
+class DataStoreGetNotificationUrlParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.previous_url = None
+	
+	def check_required(self, settings):
+		for field in ['previous_url']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.previous_url = stream.string()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.previous_url)
+
+
+class DataStoreGetSpecificMetaParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_ids = None
+	
+	def check_required(self, settings):
+		for field in ['data_ids']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_ids = stream.list(stream.u64)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.list(self.data_ids, stream.u64)
+
+
+class DataStoreGetSpecificMetaParamV1(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_ids = None
+	
+	def check_required(self, settings):
+		for field in ['data_ids']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_ids = stream.list(stream.u32)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.list(self.data_ids, stream.u32)
 
 
 class DataStoreKeyValue(common.Structure):
@@ -146,6 +431,48 @@ class DataStoreMetaInfo(common.Structure):
 		stream.list(self.ratings, stream.add)
 
 
+class DataStoreNotification(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.notification_id = None
+		self.data_id = None
+	
+	def check_required(self, settings):
+		for field in ['notification_id', 'data_id']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.notification_id = stream.u64()
+		self.data_id = stream.u64()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.notification_id)
+		stream.u64(self.data_id)
+
+
+class DataStoreNotificationV1(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.notification_id = None
+		self.data_id = None
+	
+	def check_required(self, settings):
+		for field in ['notification_id', 'data_id']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.notification_id = stream.u64()
+		self.data_id = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.notification_id)
+		stream.u32(self.data_id)
+
+
 class DataStorePasswordInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -187,6 +514,30 @@ class DataStorePermission(common.Structure):
 		self.check_required(stream.settings)
 		stream.u8(self.permission)
 		stream.list(self.recipients, stream.pid)
+
+
+class DataStorePersistenceInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.owner_id = None
+		self.slot_id = None
+		self.data_id = None
+	
+	def check_required(self, settings):
+		for field in ['owner_id', 'slot_id', 'data_id']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.owner_id = stream.pid()
+		self.slot_id = stream.u16()
+		self.data_id = stream.u64()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.pid(self.owner_id)
+		stream.u16(self.slot_id)
+		stream.u64(self.data_id)
 
 
 class DataStorePersistenceInitParam(common.Structure):
@@ -237,7 +588,7 @@ class DataStorePrepareGetParam(common.Structure):
 		self.extra_data = []
 	
 	def check_required(self, settings):
-		if settings.get("nex.version") >= 30500:
+		if settings["nex.version"] >= 30500:
 			pass
 	
 	def load(self, stream):
@@ -245,7 +596,7 @@ class DataStorePrepareGetParam(common.Structure):
 		self.lock_id = stream.u32()
 		self.persistence_target = stream.extract(DataStorePersistenceTarget)
 		self.access_password = stream.u64()
-		if stream.settings.get("nex.version") >= 30500:
+		if stream.settings["nex.version"] >= 30500:
 			self.extra_data = stream.list(stream.string)
 	
 	def save(self, stream):
@@ -254,7 +605,7 @@ class DataStorePrepareGetParam(common.Structure):
 		stream.u32(self.lock_id)
 		stream.add(self.persistence_target)
 		stream.u64(self.access_password)
-		if stream.settings.get("nex.version") >= 30500:
+		if stream.settings["nex.version"] >= 30500:
 			stream.list(self.extra_data, stream.string)
 
 
@@ -270,12 +621,12 @@ class DataStorePrepareGetParamV1(common.Structure):
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
-		self.data_id = stream.u64()
+		self.data_id = stream.u32()
 		self.lock_id = stream.u32()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
-		stream.u64(self.data_id)
+		stream.u32(self.data_id)
 		stream.u32(self.lock_id)
 
 
@@ -283,9 +634,9 @@ class DataStorePreparePostParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.size = None
-		self.name = ""
-		self.data_type = 0
-		self.meta_binary = b""
+		self.name = None
+		self.data_type = None
+		self.meta_binary = None
 		self.permission = DataStorePermission()
 		self.delete_permission = DataStorePermission()
 		self.flag = None
@@ -297,10 +648,10 @@ class DataStorePreparePostParam(common.Structure):
 		self.extra_data = None
 	
 	def check_required(self, settings):
-		for field in ['size', 'flag', 'period']:
+		for field in ['size', 'name', 'data_type', 'meta_binary', 'flag', 'period']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-		if settings.get("nex.version") >= 30500:
+		if settings["nex.version"] >= 30500:
 			for field in ['extra_data']:
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
@@ -318,7 +669,7 @@ class DataStorePreparePostParam(common.Structure):
 		self.tags = stream.list(stream.string)
 		self.rating_init_param = stream.list(DataStoreRatingInitParamWithSlot)
 		self.persistence_init_param = stream.extract(DataStorePersistenceInitParam)
-		if stream.settings.get("nex.version") >= 30500:
+		if stream.settings["nex.version"] >= 30500:
 			self.extra_data = stream.list(stream.string)
 	
 	def save(self, stream):
@@ -335,8 +686,104 @@ class DataStorePreparePostParam(common.Structure):
 		stream.list(self.tags, stream.string)
 		stream.list(self.rating_init_param, stream.add)
 		stream.add(self.persistence_init_param)
-		if stream.settings.get("nex.version") >= 30500:
+		if stream.settings["nex.version"] >= 30500:
 			stream.list(self.extra_data, stream.string)
+
+
+class DataStorePreparePostParamV1(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.size = None
+		self.name = None
+		self.data_type = 0
+		self.meta_binary = b""
+		self.permission = DataStorePermission()
+		self.delete_permission = DataStorePermission()
+		self.flag = None
+		self.period = None
+		self.refer_data_id = 0
+		self.tags = None
+		self.rating_init_param = None
+	
+	def check_required(self, settings):
+		for field in ['size', 'name', 'flag', 'period', 'tags', 'rating_init_param']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.size = stream.u32()
+		self.name = stream.string()
+		self.data_type = stream.u16()
+		self.meta_binary = stream.qbuffer()
+		self.permission = stream.extract(DataStorePermission)
+		self.delete_permission = stream.extract(DataStorePermission)
+		self.flag = stream.u32()
+		self.period = stream.u16()
+		self.refer_data_id = stream.u32()
+		self.tags = stream.list(stream.string)
+		self.rating_init_param = stream.list(DataStoreRatingInitParamWithSlot)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.size)
+		stream.string(self.name)
+		stream.u16(self.data_type)
+		stream.qbuffer(self.meta_binary)
+		stream.add(self.permission)
+		stream.add(self.delete_permission)
+		stream.u32(self.flag)
+		stream.u16(self.period)
+		stream.u32(self.refer_data_id)
+		stream.list(self.tags, stream.string)
+		stream.list(self.rating_init_param, stream.add)
+
+
+class DataStorePrepareUpdateParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.size = None
+		self.update_password = None
+		self.extra_data = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'size', 'update_password', 'extra_data']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.size = stream.u32()
+		self.update_password = stream.u64()
+		self.extra_data = stream.list(stream.string)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.u32(self.size)
+		stream.u64(self.update_password)
+		stream.list(self.extra_data, stream.string)
+
+
+class DataStoreRateObjectParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.rating_value = None
+		self.access_password = None
+	
+	def check_required(self, settings):
+		for field in ['rating_value', 'access_password']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.rating_value = stream.s32()
+		self.access_password = stream.u64()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.s32(self.rating_value)
+		stream.u64(self.access_password)
 
 
 class DataStoreRatingInfo(common.Structure):
@@ -444,6 +891,81 @@ class DataStoreRatingInitParamWithSlot(common.Structure):
 		stream.add(self.param)
 
 
+class DataStoreRatingLog(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.is_rated = None
+		self.pid = None
+		self.rating_value = None
+		self.lock_expiration_time = None
+	
+	def check_required(self, settings):
+		for field in ['is_rated', 'pid', 'rating_value', 'lock_expiration_time']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.is_rated = stream.bool()
+		self.pid = stream.pid()
+		self.rating_value = stream.s32()
+		self.lock_expiration_time = stream.datetime()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.bool(self.is_rated)
+		stream.pid(self.pid)
+		stream.s32(self.rating_value)
+		stream.datetime(self.lock_expiration_time)
+
+
+class DataStoreRatingTarget(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.slot = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'slot']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.slot = stream.s8()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.s8(self.slot)
+
+
+class DataStoreReqGetAdditionalMeta(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.owner_id = None
+		self.data_type = None
+		self.version = None
+		self.meta_binary = None
+	
+	def check_required(self, settings):
+		for field in ['owner_id', 'data_type', 'version', 'meta_binary']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.owner_id = stream.pid()
+		self.data_type = stream.u16()
+		self.version = stream.u16()
+		self.meta_binary = stream.qbuffer()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.pid(self.owner_id)
+		stream.u16(self.data_type)
+		stream.u16(self.version)
+		stream.qbuffer(self.meta_binary)
+
+
 class DataStoreReqGetInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -457,7 +979,7 @@ class DataStoreReqGetInfo(common.Structure):
 		for field in ['url', 'headers', 'size', 'root_ca_cert']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
-		if settings.get("nex.version") >= 30500:
+		if settings["nex.version"] >= 30500:
 			for field in ['data_id']:
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
@@ -467,7 +989,7 @@ class DataStoreReqGetInfo(common.Structure):
 		self.headers = stream.list(DataStoreKeyValue)
 		self.size = stream.u32()
 		self.root_ca_cert = stream.buffer()
-		if stream.settings.get("nex.version") >= 30500:
+		if stream.settings["nex.version"] >= 30500:
 			self.data_id = stream.u64()
 	
 	def save(self, stream):
@@ -476,7 +998,7 @@ class DataStoreReqGetInfo(common.Structure):
 		stream.list(self.headers, stream.add)
 		stream.u32(self.size)
 		stream.buffer(self.root_ca_cert)
-		if stream.settings.get("nex.version") >= 30500:
+		if stream.settings["nex.version"] >= 30500:
 			stream.u64(self.data_id)
 
 
@@ -504,6 +1026,33 @@ class DataStoreReqGetInfoV1(common.Structure):
 		stream.string(self.url)
 		stream.list(self.headers, stream.add)
 		stream.u32(self.size)
+		stream.buffer(self.root_ca_cert)
+
+
+class DataStoreReqGetNotificationUrlInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.url = None
+		self.key = None
+		self.query = None
+		self.root_ca_cert = None
+	
+	def check_required(self, settings):
+		for field in ['url', 'key', 'query', 'root_ca_cert']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.url = stream.string()
+		self.key = stream.string()
+		self.query = stream.string()
+		self.root_ca_cert = stream.buffer()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.url)
+		stream.string(self.key)
+		stream.string(self.query)
 		stream.buffer(self.root_ca_cert)
 
 
@@ -535,6 +1084,246 @@ class DataStoreReqPostInfo(common.Structure):
 		stream.list(self.headers, stream.add)
 		stream.list(self.form, stream.add)
 		stream.buffer(self.root_ca_cert)
+
+
+class DataStoreReqPostInfoV1(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.url = None
+		self.headers = None
+		self.form = None
+		self.root_ca_cert = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'url', 'headers', 'form', 'root_ca_cert']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u32()
+		self.url = stream.string()
+		self.headers = stream.list(DataStoreKeyValue)
+		self.form = stream.list(DataStoreKeyValue)
+		self.root_ca_cert = stream.buffer()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.data_id)
+		stream.string(self.url)
+		stream.list(self.headers, stream.add)
+		stream.list(self.form, stream.add)
+		stream.buffer(self.root_ca_cert)
+
+
+class DataStoreReqUpdateInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.version = None
+		self.url = None
+		self.headers = None
+		self.form = None
+		self.root_ca_cert = None
+	
+	def check_required(self, settings):
+		for field in ['version', 'url', 'headers', 'form', 'root_ca_cert']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.version = stream.u32()
+		self.url = stream.string()
+		self.headers = stream.list(DataStoreKeyValue)
+		self.form = stream.list(DataStoreKeyValue)
+		self.root_ca_cert = stream.buffer()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.version)
+		stream.string(self.url)
+		stream.list(self.headers, stream.add)
+		stream.list(self.form, stream.add)
+		stream.buffer(self.root_ca_cert)
+
+
+class DataStoreSearchParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.search_target = None
+		self.owner_ids = None
+		self.owner_type = None
+		self.destination_ids = None
+		self.data_type = None
+		self.created_after = None
+		self.created_before = None
+		self.updated_after = None
+		self.updated_before = None
+		self.refer_data_id = None
+		self.tags = None
+		self.result_order_column = None
+		self.result_order = None
+		self.result_range = common.ResultRange()
+		self.result_option = None
+		self.minimal_rating_frequency = None
+		self.use_cache = None
+		self.total_count_enabled = None
+		self.data_types = None
+	
+	def check_required(self, settings):
+		for field in ['search_target', 'owner_ids', 'owner_type', 'destination_ids', 'data_type', 'created_after', 'created_before', 'updated_after', 'updated_before', 'refer_data_id', 'tags', 'result_order_column', 'result_order', 'result_option', 'minimal_rating_frequency', 'use_cache', 'total_count_enabled', 'data_types']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.search_target = stream.u8()
+		self.owner_ids = stream.list(stream.pid)
+		self.owner_type = stream.u8()
+		self.destination_ids = stream.list(stream.u64)
+		self.data_type = stream.u16()
+		self.created_after = stream.datetime()
+		self.created_before = stream.datetime()
+		self.updated_after = stream.datetime()
+		self.updated_before = stream.datetime()
+		self.refer_data_id = stream.u32()
+		self.tags = stream.list(stream.string)
+		self.result_order_column = stream.u8()
+		self.result_order = stream.u8()
+		self.result_range = stream.extract(common.ResultRange)
+		self.result_option = stream.u8()
+		self.minimal_rating_frequency = stream.u32()
+		self.use_cache = stream.bool()
+		self.total_count_enabled = stream.bool()
+		self.data_types = stream.list(stream.u16)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u8(self.search_target)
+		stream.list(self.owner_ids, stream.pid)
+		stream.u8(self.owner_type)
+		stream.list(self.destination_ids, stream.u64)
+		stream.u16(self.data_type)
+		stream.datetime(self.created_after)
+		stream.datetime(self.created_before)
+		stream.datetime(self.updated_after)
+		stream.datetime(self.updated_before)
+		stream.u32(self.refer_data_id)
+		stream.list(self.tags, stream.string)
+		stream.u8(self.result_order_column)
+		stream.u8(self.result_order)
+		stream.add(self.result_range)
+		stream.u8(self.result_option)
+		stream.u32(self.minimal_rating_frequency)
+		stream.bool(self.use_cache)
+		stream.bool(self.total_count_enabled)
+		stream.list(self.data_types, stream.u16)
+
+
+class DataStoreSearchResult(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.total_count = None
+		self.result = None
+		self.total_count_type = None
+	
+	def check_required(self, settings):
+		for field in ['total_count', 'result', 'total_count_type']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.total_count = stream.u32()
+		self.result = stream.list(DataStoreMetaInfo)
+		self.total_count_type = stream.u8()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.total_count)
+		stream.list(self.result, stream.add)
+		stream.u8(self.total_count_type)
+
+
+class DataStoreSpecificMetaInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.owner_id = None
+		self.size = None
+		self.data_type = None
+		self.version = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'owner_id', 'size', 'data_type', 'version']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.owner_id = stream.pid()
+		self.size = stream.u32()
+		self.data_type = stream.u16()
+		self.version = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.pid(self.owner_id)
+		stream.u32(self.size)
+		stream.u16(self.data_type)
+		stream.u32(self.version)
+
+
+class DataStoreSpecificMetaInfoV1(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.owner_id = None
+		self.size = None
+		self.data_type = None
+		self.version = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'owner_id', 'size', 'data_type', 'version']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u32()
+		self.owner_id = stream.pid()
+		self.size = stream.u32()
+		self.data_type = stream.u16()
+		self.version = stream.u16()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.data_id)
+		stream.pid(self.owner_id)
+		stream.u32(self.size)
+		stream.u16(self.data_type)
+		stream.u16(self.version)
+
+
+class DataStoreTouchObjectParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.lock_id = None
+		self.access_password = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'lock_id', 'access_password']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.lock_id = stream.u32()
+		self.access_password = stream.u64()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.u32(self.lock_id)
+		stream.u64(self.access_password)
 
 
 class DataStoreProtocol:
@@ -593,12 +1382,12 @@ class DataStoreClient(DataStoreProtocol):
 		self.settings = client.settings
 		self.client = client
 	
-	def prepare_get_object_v1(self, param):
+	async def prepare_get_object_v1(self, param):
 		logger.info("DataStoreClient.prepare_get_object_v1()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT_V1, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT_V1, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
@@ -608,12 +1397,99 @@ class DataStoreClient(DataStoreProtocol):
 		logger.info("DataStoreClient.prepare_get_object_v1 -> done")
 		return info
 	
-	def get_meta(self, param):
+	async def prepare_post_object_v1(self, param):
+		logger.info("DataStoreClient.prepare_post_object_v1()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_PREPARE_POST_OBJECT_V1, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		info = stream.extract(DataStoreReqPostInfoV1)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.prepare_post_object_v1 -> done")
+		return info
+	
+	async def complete_post_object_v1(self, param):
+		logger.info("DataStoreClient.complete_post_object_v1()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_COMPLETE_POST_OBJECT_V1, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.complete_post_object_v1 -> done")
+	
+	async def delete_object(self, param):
+		logger.info("DataStoreClient.delete_object()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_DELETE_OBJECT, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.delete_object -> done")
+	
+	async def delete_objects(self, param, transactional):
+		logger.info("DataStoreClient.delete_objects()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(param, stream.add)
+		stream.bool(transactional)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_DELETE_OBJECTS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.delete_objects -> done")
+		return results
+	
+	async def change_meta_v1(self, param):
+		logger.info("DataStoreClient.change_meta_v1()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_CHANGE_META_V1, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.change_meta_v1 -> done")
+	
+	async def change_metas_v1(self, data_ids, param, transactional):
+		logger.info("DataStoreClient.change_metas_v1()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(data_ids, stream.u64)
+		stream.list(param, stream.add)
+		stream.bool(transactional)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_CHANGE_METAS_V1, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.change_metas_v1 -> done")
+		return results
+	
+	async def get_meta(self, param):
 		logger.info("DataStoreClient.get_meta()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_META, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_META, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
@@ -623,12 +1499,247 @@ class DataStoreClient(DataStoreProtocol):
 		logger.info("DataStoreClient.get_meta -> done")
 		return info
 	
-	def prepare_post_object(self, param):
+	async def get_metas(self, data_ids, param):
+		logger.info("DataStoreClient.get_metas()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(data_ids, stream.u64)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_METAS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.info = stream.list(DataStoreMetaInfo)
+		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.get_metas -> done")
+		return obj
+	
+	async def prepare_update_object(self, param):
+		logger.info("DataStoreClient.prepare_update_object()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_PREPARE_UPDATE_OBJECT, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		info = stream.extract(DataStoreReqUpdateInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.prepare_update_object -> done")
+		return info
+	
+	async def complete_update_object(self, param):
+		logger.info("DataStoreClient.complete_update_object()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_COMPLETE_UPDATE_OBJECT, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.complete_update_object -> done")
+	
+	async def search_object(self, param):
+		logger.info("DataStoreClient.search_object()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SEARCH_OBJECT, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		result = stream.extract(DataStoreSearchResult)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.search_object -> done")
+		return result
+	
+	async def get_notification_url(self, param):
+		logger.info("DataStoreClient.get_notification_url()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_NOTIFICATION_URL, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		info = stream.extract(DataStoreReqGetNotificationUrlInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.get_notification_url -> done")
+		return info
+	
+	async def get_new_arrived_notifications_v1(self, param):
+		logger.info("DataStoreClient.get_new_arrived_notifications_v1()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_NEW_ARRIVED_NOTIFICATIONS_V1, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.result = stream.list(DataStoreNotificationV1)
+		obj.has_next = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.get_new_arrived_notifications_v1 -> done")
+		return obj
+	
+	async def rate_object(self, target, param, fetch_ratings):
+		logger.info("DataStoreClient.rate_object()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(target)
+		stream.add(param)
+		stream.bool(fetch_ratings)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_RATE_OBJECT, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		info = stream.extract(DataStoreRatingInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.rate_object -> done")
+		return info
+	
+	async def get_rating(self, target, access_password):
+		logger.info("DataStoreClient.get_rating()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(target)
+		stream.u64(access_password)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_RATING, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		rating = stream.extract(DataStoreRatingInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.get_rating -> done")
+		return rating
+	
+	async def get_ratings(self, data_ids, access_password):
+		logger.info("DataStoreClient.get_ratings()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(data_ids, stream.u64)
+		stream.u64(access_password)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_RATINGS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.ratings = stream.list(lambda: stream.list(DataStoreRatingInfoWithSlot))
+		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.get_ratings -> done")
+		return obj
+	
+	async def reset_rating(self, target, update_password):
+		logger.info("DataStoreClient.reset_rating()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(target)
+		stream.u64(update_password)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_RESET_RATING, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.reset_rating -> done")
+	
+	async def reset_ratings(self, data_ids, transactional):
+		logger.info("DataStoreClient.reset_ratings()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(data_ids, stream.u64)
+		stream.bool(transactional)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_RESET_RATINGS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.reset_ratings -> done")
+		return results
+	
+	async def get_specific_meta_v1(self, param):
+		logger.info("DataStoreClient.get_specific_meta_v1()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_SPECIFIC_META_V1, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		infos = stream.list(DataStoreSpecificMetaInfoV1)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.get_specific_meta_v1 -> done")
+		return infos
+	
+	async def post_meta_binary(self, param):
+		logger.info("DataStoreClient.post_meta_binary()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_POST_META_BINARY, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		data_id = stream.u64()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.post_meta_binary -> done")
+		return data_id
+	
+	async def touch_object(self, param):
+		logger.info("DataStoreClient.touch_object()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_TOUCH_OBJECT, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.touch_object -> done")
+	
+	async def get_rating_with_log(self, target, access_password):
+		logger.info("DataStoreClient.get_rating_with_log()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(target)
+		stream.u64(access_password)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_RATING_WITH_LOG, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.rating = stream.extract(DataStoreRatingInfo)
+		obj.log = stream.extract(DataStoreRatingLog)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.get_rating_with_log -> done")
+		return obj
+	
+	async def prepare_post_object(self, param):
 		logger.info("DataStoreClient.prepare_post_object()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_PREPARE_POST_OBJECT, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_PREPARE_POST_OBJECT, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
@@ -638,12 +1749,12 @@ class DataStoreClient(DataStoreProtocol):
 		logger.info("DataStoreClient.prepare_post_object -> done")
 		return info
 	
-	def prepare_get_object(self, param):
+	async def prepare_get_object(self, param):
 		logger.info("DataStoreClient.prepare_get_object()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
@@ -653,12 +1764,12 @@ class DataStoreClient(DataStoreProtocol):
 		logger.info("DataStoreClient.prepare_get_object -> done")
 		return info
 	
-	def complete_post_object(self, param):
+	async def complete_post_object(self, param):
 		logger.info("DataStoreClient.complete_post_object()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_COMPLETE_POST_OBJECT, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_COMPLETE_POST_OBJECT, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
@@ -666,37 +1777,331 @@ class DataStoreClient(DataStoreProtocol):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClient.complete_post_object -> done")
 	
-	def get_password_info(self, data_id):
+	async def get_new_arrived_notifications(self, param):
+		logger.info("DataStoreClient.get_new_arrived_notifications()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_NEW_ARRIVED_NOTIFICATIONS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.result = stream.list(DataStoreNotification)
+		obj.has_next = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.get_new_arrived_notifications -> done")
+		return obj
+	
+	async def get_specific_meta(self, param):
+		logger.info("DataStoreClient.get_specific_meta()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_SPECIFIC_META, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		infos = stream.list(DataStoreSpecificMetaInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.get_specific_meta -> done")
+		return infos
+	
+	async def get_persistence_info(self, owner_id, slot_id):
+		logger.info("DataStoreClient.get_persistence_info()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.pid(owner_id)
+		stream.u16(slot_id)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_PERSISTENCE_INFO, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		info = stream.extract(DataStorePersistenceInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.get_persistence_info -> done")
+		return info
+	
+	async def get_persistence_infos(self, owner_id, slot_ids):
+		logger.info("DataStoreClient.get_persistence_infos()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.pid(owner_id)
+		stream.list(slot_ids, stream.u16)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_PERSISTENCE_INFOS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.infos = stream.list(DataStorePersistenceInfo)
+		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.get_persistence_infos -> done")
+		return obj
+	
+	async def perpetuate_object(self, persistence_slot_id, data_id, delete_last_object):
+		logger.info("DataStoreClient.perpetuate_object()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u16(persistence_slot_id)
+		stream.u64(data_id)
+		stream.bool(delete_last_object)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_PERPETUATE_OBJECT, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.perpetuate_object -> done")
+	
+	async def unperpetuate_object(self, persistence_slot_id, delete_last_object):
+		logger.info("DataStoreClient.unperpetuate_object()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u16(persistence_slot_id)
+		stream.bool(delete_last_object)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_UNPERPETUATE_OBJECT, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.unperpetuate_object -> done")
+	
+	async def prepare_get_object_or_meta(self, param):
+		logger.info("DataStoreClient.prepare_get_object_or_meta()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT_OR_META, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.get_info = stream.extract(DataStoreReqGetInfo)
+		obj.additional_meta = stream.extract(DataStoreReqGetAdditionalMeta)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.prepare_get_object_or_meta -> done")
+		return obj
+	
+	async def get_password_info(self, data_id):
 		logger.info("DataStoreClient.get_password_info()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.u64(data_id)
-		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_PASSWORD_INFO, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_PASSWORD_INFO, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
-		password_info = stream.extract(DataStorePasswordInfo)
+		info = stream.extract(DataStorePasswordInfo)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClient.get_password_info -> done")
-		return password_info
+		return info
 	
-	def get_metas_multiple_param(self, params):
+	async def get_password_infos(self, data_ids):
+		logger.info("DataStoreClient.get_password_infos()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(data_ids, stream.u64)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_PASSWORD_INFOS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.infos = stream.list(DataStorePasswordInfo)
+		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.get_password_infos -> done")
+		return obj
+	
+	async def get_metas_multiple_param(self, params):
 		logger.info("DataStoreClient.get_metas_multiple_param()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(params, stream.add)
-		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_METAS_MULTIPLE_PARAM, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_METAS_MULTIPLE_PARAM, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
-		obj = common.RMCResponse()
+		obj = rmc.RMCResponse()
 		obj.infos = stream.list(DataStoreMetaInfo)
 		obj.results = stream.list(stream.result)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClient.get_metas_multiple_param -> done")
 		return obj
+	
+	async def complete_post_objects(self, data_ids):
+		logger.info("DataStoreClient.complete_post_objects()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(data_ids, stream.u64)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_COMPLETE_POST_OBJECTS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.complete_post_objects -> done")
+	
+	async def change_meta(self, param):
+		logger.info("DataStoreClient.change_meta()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_CHANGE_META, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.change_meta -> done")
+	
+	async def change_metas(self, data_ids, param, transactional):
+		logger.info("DataStoreClient.change_metas()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(data_ids, stream.u64)
+		stream.list(param, stream.add)
+		stream.bool(transactional)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_CHANGE_METAS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.change_metas -> done")
+		return results
+	
+	async def rate_objects(self, targets, param, transactional, fetch_ratings):
+		logger.info("DataStoreClient.rate_objects()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(targets, stream.add)
+		stream.list(param, stream.add)
+		stream.bool(transactional)
+		stream.bool(fetch_ratings)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_RATE_OBJECTS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.infos = stream.list(DataStoreRatingInfo)
+		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.rate_objects -> done")
+		return obj
+	
+	async def post_meta_binary_with_data_id(self, data_id, param):
+		logger.info("DataStoreClient.post_meta_binary_with_data_id()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u64(data_id)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_POST_META_BINARY_WITH_DATA_ID, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.post_meta_binary_with_data_id -> done")
+	
+	async def post_meta_binaries_with_data_id(self, data_ids, param, transactional):
+		logger.info("DataStoreClient.post_meta_binaries_with_data_id()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(data_ids, stream.u64)
+		stream.list(param, stream.add)
+		stream.bool(transactional)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_POST_META_BINARIES_WITH_DATA_ID, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.post_meta_binaries_with_data_id -> done")
+		return results
+	
+	async def rate_object_with_posting(self, target, rate_param, post_param, fetch_ratings):
+		logger.info("DataStoreClient.rate_object_with_posting()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(target)
+		stream.add(rate_param)
+		stream.add(post_param)
+		stream.bool(fetch_ratings)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_RATE_OBJECT_WITH_POSTING, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		info = stream.extract(DataStoreRatingInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.rate_object_with_posting -> done")
+		return info
+	
+	async def rate_objects_with_posting(self, targets, rate_param, post_param, transactional, fetch_ratings):
+		logger.info("DataStoreClient.rate_objects_with_posting()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(targets, stream.add)
+		stream.list(rate_param, stream.add)
+		stream.list(post_param, stream.add)
+		stream.bool(transactional)
+		stream.bool(fetch_ratings)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_RATE_OBJECTS_WITH_POSTING, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.ratings = stream.list(DataStoreRatingInfo)
+		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.rate_objects_with_posting -> done")
+		return obj
+	
+	async def get_object_infos(self, data_ids):
+		logger.info("DataStoreClient.get_object_infos()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(data_ids, stream.u64)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_OBJECT_INFOS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.infos = stream.list(DataStoreReqGetInfo)
+		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.get_object_infos -> done")
+		return obj
+	
+	async def search_object_light(self, param):
+		logger.info("DataStoreClient.search_object_light()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SEARCH_OBJECT_LIGHT, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		result = stream.extract(DataStoreSearchResult)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClient.search_object_light -> done")
+		return result
 
 
 class DataStoreServer(DataStoreProtocol):
@@ -750,198 +2155,338 @@ class DataStoreServer(DataStoreProtocol):
 			self.METHOD_SEARCH_OBJECT_LIGHT: self.handle_search_object_light,
 		}
 	
-	def handle(self, context, method_id, input, output):
+	async def handle(self, client, method_id, input, output):
 		if method_id in self.methods:
-			self.methods[method_id](context, input, output)
+			await self.methods[method_id](client, input, output)
 		else:
-			logger.warning("Unknown method called on %s: %i", self.__class__.__name__, method_id)
+			logger.warning("Unknown method called on DataStoreServer: %i", method_id)
 			raise common.RMCError("Core::NotImplemented")
 	
-	def handle_prepare_get_object_v1(self, context, input, output):
+	async def handle_prepare_get_object_v1(self, client, input, output):
 		logger.info("DataStoreServer.prepare_get_object_v1()")
 		#--- request ---
 		param = input.extract(DataStorePrepareGetParamV1)
-		response = self.prepare_get_object_v1(context, param)
+		response = await self.prepare_get_object_v1(client, param)
 		
 		#--- response ---
 		if not isinstance(response, DataStoreReqGetInfoV1):
 			raise RuntimeError("Expected DataStoreReqGetInfoV1, got %s" %response.__class__.__name__)
 		output.add(response)
 	
-	def handle_prepare_post_object_v1(self, context, input, output):
-		logger.warning("DataStoreServer.prepare_post_object_v1 is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_prepare_post_object_v1(self, client, input, output):
+		logger.info("DataStoreServer.prepare_post_object_v1()")
+		#--- request ---
+		param = input.extract(DataStorePreparePostParamV1)
+		response = await self.prepare_post_object_v1(client, param)
+		
+		#--- response ---
+		if not isinstance(response, DataStoreReqPostInfoV1):
+			raise RuntimeError("Expected DataStoreReqPostInfoV1, got %s" %response.__class__.__name__)
+		output.add(response)
 	
-	def handle_complete_post_object_v1(self, context, input, output):
-		logger.warning("DataStoreServer.complete_post_object_v1 is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_complete_post_object_v1(self, client, input, output):
+		logger.info("DataStoreServer.complete_post_object_v1()")
+		#--- request ---
+		param = input.extract(DataStoreCompletePostParamV1)
+		await self.complete_post_object_v1(client, param)
 	
-	def handle_delete_object(self, context, input, output):
-		logger.warning("DataStoreServer.delete_object is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_delete_object(self, client, input, output):
+		logger.info("DataStoreServer.delete_object()")
+		#--- request ---
+		param = input.extract(DataStoreDeleteParam)
+		await self.delete_object(client, param)
 	
-	def handle_delete_objects(self, context, input, output):
-		logger.warning("DataStoreServer.delete_objects is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_delete_objects(self, client, input, output):
+		logger.info("DataStoreServer.delete_objects()")
+		#--- request ---
+		param = input.list(DataStoreDeleteParam)
+		transactional = input.bool()
+		response = await self.delete_objects(client, param, transactional)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.result)
 	
-	def handle_change_meta_v1(self, context, input, output):
-		logger.warning("DataStoreServer.change_meta_v1 is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_change_meta_v1(self, client, input, output):
+		logger.info("DataStoreServer.change_meta_v1()")
+		#--- request ---
+		param = input.extract(DataStoreChangeMetaParamV1)
+		await self.change_meta_v1(client, param)
 	
-	def handle_change_metas_v1(self, context, input, output):
-		logger.warning("DataStoreServer.change_metas_v1 is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_change_metas_v1(self, client, input, output):
+		logger.info("DataStoreServer.change_metas_v1()")
+		#--- request ---
+		data_ids = input.list(input.u64)
+		param = input.list(DataStoreChangeMetaParamV1)
+		transactional = input.bool()
+		response = await self.change_metas_v1(client, data_ids, param, transactional)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.result)
 	
-	def handle_get_meta(self, context, input, output):
+	async def handle_get_meta(self, client, input, output):
 		logger.info("DataStoreServer.get_meta()")
 		#--- request ---
 		param = input.extract(DataStoreGetMetaParam)
-		response = self.get_meta(context, param)
+		response = await self.get_meta(client, param)
 		
 		#--- response ---
 		if not isinstance(response, DataStoreMetaInfo):
 			raise RuntimeError("Expected DataStoreMetaInfo, got %s" %response.__class__.__name__)
 		output.add(response)
 	
-	def handle_get_metas(self, context, input, output):
-		logger.warning("DataStoreServer.get_metas is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_get_metas(self, client, input, output):
+		logger.info("DataStoreServer.get_metas()")
+		#--- request ---
+		data_ids = input.list(input.u64)
+		param = input.extract(DataStoreGetMetaParam)
+		response = await self.get_metas(client, data_ids, param)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['info', 'results']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.info, output.add)
+		output.list(response.results, output.result)
 	
-	def handle_prepare_update_object(self, context, input, output):
-		logger.warning("DataStoreServer.prepare_update_object is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_prepare_update_object(self, client, input, output):
+		logger.info("DataStoreServer.prepare_update_object()")
+		#--- request ---
+		param = input.extract(DataStorePrepareUpdateParam)
+		response = await self.prepare_update_object(client, param)
+		
+		#--- response ---
+		if not isinstance(response, DataStoreReqUpdateInfo):
+			raise RuntimeError("Expected DataStoreReqUpdateInfo, got %s" %response.__class__.__name__)
+		output.add(response)
 	
-	def handle_complete_update_object(self, context, input, output):
-		logger.warning("DataStoreServer.complete_update_object is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_complete_update_object(self, client, input, output):
+		logger.info("DataStoreServer.complete_update_object()")
+		#--- request ---
+		param = input.extract(DataStoreCompleteUpdateParam)
+		await self.complete_update_object(client, param)
 	
-	def handle_search_object(self, context, input, output):
-		logger.warning("DataStoreServer.search_object is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_search_object(self, client, input, output):
+		logger.info("DataStoreServer.search_object()")
+		#--- request ---
+		param = input.extract(DataStoreSearchParam)
+		response = await self.search_object(client, param)
+		
+		#--- response ---
+		if not isinstance(response, DataStoreSearchResult):
+			raise RuntimeError("Expected DataStoreSearchResult, got %s" %response.__class__.__name__)
+		output.add(response)
 	
-	def handle_get_notification_url(self, context, input, output):
-		logger.warning("DataStoreServer.get_notification_url is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_get_notification_url(self, client, input, output):
+		logger.info("DataStoreServer.get_notification_url()")
+		#--- request ---
+		param = input.extract(DataStoreGetNotificationUrlParam)
+		response = await self.get_notification_url(client, param)
+		
+		#--- response ---
+		if not isinstance(response, DataStoreReqGetNotificationUrlInfo):
+			raise RuntimeError("Expected DataStoreReqGetNotificationUrlInfo, got %s" %response.__class__.__name__)
+		output.add(response)
 	
-	def handle_get_new_arrived_notifications_v1(self, context, input, output):
-		logger.warning("DataStoreServer.get_new_arrived_notifications_v1 is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_get_new_arrived_notifications_v1(self, client, input, output):
+		logger.info("DataStoreServer.get_new_arrived_notifications_v1()")
+		#--- request ---
+		param = input.extract(DataStoreGetNewArrivedNotificationsParam)
+		response = await self.get_new_arrived_notifications_v1(client, param)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['result', 'has_next']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.result, output.add)
+		output.bool(response.has_next)
 	
-	def handle_rate_object(self, context, input, output):
-		logger.warning("DataStoreServer.rate_object is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_rate_object(self, client, input, output):
+		logger.info("DataStoreServer.rate_object()")
+		#--- request ---
+		target = input.extract(DataStoreRatingTarget)
+		param = input.extract(DataStoreRateObjectParam)
+		fetch_ratings = input.bool()
+		response = await self.rate_object(client, target, param, fetch_ratings)
+		
+		#--- response ---
+		if not isinstance(response, DataStoreRatingInfo):
+			raise RuntimeError("Expected DataStoreRatingInfo, got %s" %response.__class__.__name__)
+		output.add(response)
 	
-	def handle_get_rating(self, context, input, output):
-		logger.warning("DataStoreServer.get_rating is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_get_rating(self, client, input, output):
+		logger.info("DataStoreServer.get_rating()")
+		#--- request ---
+		target = input.extract(DataStoreRatingTarget)
+		access_password = input.u64()
+		response = await self.get_rating(client, target, access_password)
+		
+		#--- response ---
+		if not isinstance(response, DataStoreRatingInfo):
+			raise RuntimeError("Expected DataStoreRatingInfo, got %s" %response.__class__.__name__)
+		output.add(response)
 	
-	def handle_get_ratings(self, context, input, output):
-		logger.warning("DataStoreServer.get_ratings is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_get_ratings(self, client, input, output):
+		logger.info("DataStoreServer.get_ratings()")
+		#--- request ---
+		data_ids = input.list(input.u64)
+		access_password = input.u64()
+		response = await self.get_ratings(client, data_ids, access_password)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['ratings', 'results']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.ratings, lambda x: output.list(x, output.add))
+		output.list(response.results, output.result)
 	
-	def handle_reset_rating(self, context, input, output):
-		logger.warning("DataStoreServer.reset_rating is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_reset_rating(self, client, input, output):
+		logger.info("DataStoreServer.reset_rating()")
+		#--- request ---
+		target = input.extract(DataStoreRatingTarget)
+		update_password = input.u64()
+		await self.reset_rating(client, target, update_password)
 	
-	def handle_reset_ratings(self, context, input, output):
-		logger.warning("DataStoreServer.reset_ratings is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_reset_ratings(self, client, input, output):
+		logger.info("DataStoreServer.reset_ratings()")
+		#--- request ---
+		data_ids = input.list(input.u64)
+		transactional = input.bool()
+		response = await self.reset_ratings(client, data_ids, transactional)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.result)
 	
-	def handle_get_specific_meta_v1(self, context, input, output):
-		logger.warning("DataStoreServer.get_specific_meta_v1 is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_get_specific_meta_v1(self, client, input, output):
+		logger.info("DataStoreServer.get_specific_meta_v1()")
+		#--- request ---
+		param = input.extract(DataStoreGetSpecificMetaParamV1)
+		response = await self.get_specific_meta_v1(client, param)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
 	
-	def handle_post_meta_binary(self, context, input, output):
-		logger.warning("DataStoreServer.post_meta_binary is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_post_meta_binary(self, client, input, output):
+		logger.info("DataStoreServer.post_meta_binary()")
+		#--- request ---
+		param = input.extract(DataStorePreparePostParam)
+		response = await self.post_meta_binary(client, param)
+		
+		#--- response ---
+		if not isinstance(response, int):
+			raise RuntimeError("Expected int, got %s" %response.__class__.__name__)
+		output.u64(response)
 	
-	def handle_touch_object(self, context, input, output):
-		logger.warning("DataStoreServer.touch_object is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_touch_object(self, client, input, output):
+		logger.info("DataStoreServer.touch_object()")
+		#--- request ---
+		param = input.extract(DataStoreTouchObjectParam)
+		await self.touch_object(client, param)
 	
-	def handle_get_rating_with_log(self, context, input, output):
-		logger.warning("DataStoreServer.get_rating_with_log is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_get_rating_with_log(self, client, input, output):
+		logger.info("DataStoreServer.get_rating_with_log()")
+		#--- request ---
+		target = input.extract(DataStoreRatingTarget)
+		access_password = input.u64()
+		response = await self.get_rating_with_log(client, target, access_password)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['rating', 'log']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.add(response.rating)
+		output.add(response.log)
 	
-	def handle_prepare_post_object(self, context, input, output):
+	async def handle_prepare_post_object(self, client, input, output):
 		logger.info("DataStoreServer.prepare_post_object()")
 		#--- request ---
 		param = input.extract(DataStorePreparePostParam)
-		response = self.prepare_post_object(context, param)
+		response = await self.prepare_post_object(client, param)
 		
 		#--- response ---
 		if not isinstance(response, DataStoreReqPostInfo):
 			raise RuntimeError("Expected DataStoreReqPostInfo, got %s" %response.__class__.__name__)
 		output.add(response)
 	
-	def handle_prepare_get_object(self, context, input, output):
+	async def handle_prepare_get_object(self, client, input, output):
 		logger.info("DataStoreServer.prepare_get_object()")
 		#--- request ---
 		param = input.extract(DataStorePrepareGetParam)
-		response = self.prepare_get_object(context, param)
+		response = await self.prepare_get_object(client, param)
 		
 		#--- response ---
 		if not isinstance(response, DataStoreReqGetInfo):
 			raise RuntimeError("Expected DataStoreReqGetInfo, got %s" %response.__class__.__name__)
 		output.add(response)
 	
-	def handle_complete_post_object(self, context, input, output):
+	async def handle_complete_post_object(self, client, input, output):
 		logger.info("DataStoreServer.complete_post_object()")
 		#--- request ---
 		param = input.extract(DataStoreCompletePostParam)
-		self.complete_post_object(context, param)
+		await self.complete_post_object(client, param)
 	
-	def handle_get_new_arrived_notifications(self, context, input, output):
-		logger.warning("DataStoreServer.get_new_arrived_notifications is unsupported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	def handle_get_specific_meta(self, context, input, output):
-		logger.warning("DataStoreServer.get_specific_meta is unsupported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	def handle_get_persistence_info(self, context, input, output):
-		logger.warning("DataStoreServer.get_persistence_info is unsupported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	def handle_get_persistence_infos(self, context, input, output):
-		logger.warning("DataStoreServer.get_persistence_infos is unsupported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	def handle_perpetuate_object(self, context, input, output):
-		logger.warning("DataStoreServer.perpetuate_object is unsupported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	def handle_unperpetuate_object(self, context, input, output):
-		logger.warning("DataStoreServer.unperpetuate_object is unsupported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	def handle_prepare_get_object_or_meta(self, context, input, output):
-		logger.warning("DataStoreServer.prepare_get_object_or_meta is unsupported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	def handle_get_password_info(self, context, input, output):
-		logger.info("DataStoreServer.get_password_info()")
+	async def handle_get_new_arrived_notifications(self, client, input, output):
+		logger.info("DataStoreServer.get_new_arrived_notifications()")
 		#--- request ---
-		data_id = input.u64()
-		response = self.get_password_info(context, data_id)
+		param = input.extract(DataStoreGetNewArrivedNotificationsParam)
+		response = await self.get_new_arrived_notifications(client, param)
 		
 		#--- response ---
-		if not isinstance(response, DataStorePasswordInfo):
-			raise RuntimeError("Expected DataStorePasswordInfo, got %s" %response.__class__.__name__)
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['result', 'has_next']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.result, output.add)
+		output.bool(response.has_next)
+	
+	async def handle_get_specific_meta(self, client, input, output):
+		logger.info("DataStoreServer.get_specific_meta()")
+		#--- request ---
+		param = input.extract(DataStoreGetSpecificMetaParam)
+		response = await self.get_specific_meta(client, param)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
+	
+	async def handle_get_persistence_info(self, client, input, output):
+		logger.info("DataStoreServer.get_persistence_info()")
+		#--- request ---
+		owner_id = input.pid()
+		slot_id = input.u16()
+		response = await self.get_persistence_info(client, owner_id, slot_id)
+		
+		#--- response ---
+		if not isinstance(response, DataStorePersistenceInfo):
+			raise RuntimeError("Expected DataStorePersistenceInfo, got %s" %response.__class__.__name__)
 		output.add(response)
 	
-	def handle_get_password_infos(self, context, input, output):
-		logger.warning("DataStoreServer.get_password_infos is unsupported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	def handle_get_metas_multiple_param(self, context, input, output):
-		logger.info("DataStoreServer.get_metas_multiple_param()")
+	async def handle_get_persistence_infos(self, client, input, output):
+		logger.info("DataStoreServer.get_persistence_infos()")
 		#--- request ---
-		params = input.list(DataStoreGetMetaParam)
-		response = self.get_metas_multiple_param(context, params)
+		owner_id = input.pid()
+		slot_ids = input.list(input.u16)
+		response = await self.get_persistence_infos(client, owner_id, slot_ids)
 		
 		#--- response ---
-		if not isinstance(response, common.RMCResponse):
+		if not isinstance(response, rmc.RMCResponse):
 			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
 		for field in ['infos', 'results']:
 			if not hasattr(response, field):
@@ -949,71 +2494,380 @@ class DataStoreServer(DataStoreProtocol):
 		output.list(response.infos, output.add)
 		output.list(response.results, output.result)
 	
-	def handle_complete_post_objects(self, context, input, output):
-		logger.warning("DataStoreServer.complete_post_objects is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_perpetuate_object(self, client, input, output):
+		logger.info("DataStoreServer.perpetuate_object()")
+		#--- request ---
+		persistence_slot_id = input.u16()
+		data_id = input.u64()
+		delete_last_object = input.bool()
+		await self.perpetuate_object(client, persistence_slot_id, data_id, delete_last_object)
 	
-	def handle_change_meta(self, context, input, output):
-		logger.warning("DataStoreServer.change_meta is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_unperpetuate_object(self, client, input, output):
+		logger.info("DataStoreServer.unperpetuate_object()")
+		#--- request ---
+		persistence_slot_id = input.u16()
+		delete_last_object = input.bool()
+		await self.unperpetuate_object(client, persistence_slot_id, delete_last_object)
 	
-	def handle_change_metas(self, context, input, output):
-		logger.warning("DataStoreServer.change_metas is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_prepare_get_object_or_meta(self, client, input, output):
+		logger.info("DataStoreServer.prepare_get_object_or_meta()")
+		#--- request ---
+		param = input.extract(DataStorePrepareGetParam)
+		response = await self.prepare_get_object_or_meta(client, param)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['get_info', 'additional_meta']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.add(response.get_info)
+		output.add(response.additional_meta)
 	
-	def handle_rate_objects(self, context, input, output):
-		logger.warning("DataStoreServer.rate_objects is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_get_password_info(self, client, input, output):
+		logger.info("DataStoreServer.get_password_info()")
+		#--- request ---
+		data_id = input.u64()
+		response = await self.get_password_info(client, data_id)
+		
+		#--- response ---
+		if not isinstance(response, DataStorePasswordInfo):
+			raise RuntimeError("Expected DataStorePasswordInfo, got %s" %response.__class__.__name__)
+		output.add(response)
 	
-	def handle_post_meta_binary_with_data_id(self, context, input, output):
-		logger.warning("DataStoreServer.post_meta_binary_with_data_id is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_get_password_infos(self, client, input, output):
+		logger.info("DataStoreServer.get_password_infos()")
+		#--- request ---
+		data_ids = input.list(input.u64)
+		response = await self.get_password_infos(client, data_ids)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['infos', 'results']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.infos, output.add)
+		output.list(response.results, output.result)
 	
-	def handle_post_meta_binaries_with_data_id(self, context, input, output):
-		logger.warning("DataStoreServer.post_meta_binaries_with_data_id is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_get_metas_multiple_param(self, client, input, output):
+		logger.info("DataStoreServer.get_metas_multiple_param()")
+		#--- request ---
+		params = input.list(DataStoreGetMetaParam)
+		response = await self.get_metas_multiple_param(client, params)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['infos', 'results']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.infos, output.add)
+		output.list(response.results, output.result)
 	
-	def handle_rate_object_with_posting(self, context, input, output):
-		logger.warning("DataStoreServer.rate_object_with_posting is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_complete_post_objects(self, client, input, output):
+		logger.info("DataStoreServer.complete_post_objects()")
+		#--- request ---
+		data_ids = input.list(input.u64)
+		await self.complete_post_objects(client, data_ids)
 	
-	def handle_rate_objects_with_posting(self, context, input, output):
-		logger.warning("DataStoreServer.rate_objects_with_posting is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_change_meta(self, client, input, output):
+		logger.info("DataStoreServer.change_meta()")
+		#--- request ---
+		param = input.extract(DataStoreChangeMetaParam)
+		await self.change_meta(client, param)
 	
-	def handle_get_object_infos(self, context, input, output):
-		logger.warning("DataStoreServer.get_object_infos is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_change_metas(self, client, input, output):
+		logger.info("DataStoreServer.change_metas()")
+		#--- request ---
+		data_ids = input.list(input.u64)
+		param = input.list(DataStoreChangeMetaParam)
+		transactional = input.bool()
+		response = await self.change_metas(client, data_ids, param, transactional)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.result)
 	
-	def handle_search_object_light(self, context, input, output):
-		logger.warning("DataStoreServer.search_object_light is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_rate_objects(self, client, input, output):
+		logger.info("DataStoreServer.rate_objects()")
+		#--- request ---
+		targets = input.list(DataStoreRatingTarget)
+		param = input.list(DataStoreRateObjectParam)
+		transactional = input.bool()
+		fetch_ratings = input.bool()
+		response = await self.rate_objects(client, targets, param, transactional, fetch_ratings)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['infos', 'results']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.infos, output.add)
+		output.list(response.results, output.result)
 	
-	def prepare_get_object_v1(self, *args):
+	async def handle_post_meta_binary_with_data_id(self, client, input, output):
+		logger.info("DataStoreServer.post_meta_binary_with_data_id()")
+		#--- request ---
+		data_id = input.u64()
+		param = input.extract(DataStorePreparePostParam)
+		await self.post_meta_binary_with_data_id(client, data_id, param)
+	
+	async def handle_post_meta_binaries_with_data_id(self, client, input, output):
+		logger.info("DataStoreServer.post_meta_binaries_with_data_id()")
+		#--- request ---
+		data_ids = input.list(input.u64)
+		param = input.list(DataStorePreparePostParam)
+		transactional = input.bool()
+		response = await self.post_meta_binaries_with_data_id(client, data_ids, param, transactional)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.result)
+	
+	async def handle_rate_object_with_posting(self, client, input, output):
+		logger.info("DataStoreServer.rate_object_with_posting()")
+		#--- request ---
+		target = input.extract(DataStoreRatingTarget)
+		rate_param = input.extract(DataStoreRateObjectParam)
+		post_param = input.extract(DataStorePreparePostParam)
+		fetch_ratings = input.bool()
+		response = await self.rate_object_with_posting(client, target, rate_param, post_param, fetch_ratings)
+		
+		#--- response ---
+		if not isinstance(response, DataStoreRatingInfo):
+			raise RuntimeError("Expected DataStoreRatingInfo, got %s" %response.__class__.__name__)
+		output.add(response)
+	
+	async def handle_rate_objects_with_posting(self, client, input, output):
+		logger.info("DataStoreServer.rate_objects_with_posting()")
+		#--- request ---
+		targets = input.list(DataStoreRatingTarget)
+		rate_param = input.list(DataStoreRateObjectParam)
+		post_param = input.list(DataStorePreparePostParam)
+		transactional = input.bool()
+		fetch_ratings = input.bool()
+		response = await self.rate_objects_with_posting(client, targets, rate_param, post_param, transactional, fetch_ratings)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['ratings', 'results']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.ratings, output.add)
+		output.list(response.results, output.result)
+	
+	async def handle_get_object_infos(self, client, input, output):
+		logger.info("DataStoreServer.get_object_infos()")
+		#--- request ---
+		data_ids = input.list(input.u64)
+		response = await self.get_object_infos(client, data_ids)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['infos', 'results']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.infos, output.add)
+		output.list(response.results, output.result)
+	
+	async def handle_search_object_light(self, client, input, output):
+		logger.info("DataStoreServer.search_object_light()")
+		#--- request ---
+		param = input.extract(DataStoreSearchParam)
+		response = await self.search_object_light(client, param)
+		
+		#--- response ---
+		if not isinstance(response, DataStoreSearchResult):
+			raise RuntimeError("Expected DataStoreSearchResult, got %s" %response.__class__.__name__)
+		output.add(response)
+	
+	async def prepare_get_object_v1(self, *args):
 		logger.warning("DataStoreServer.prepare_get_object_v1 not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	def get_meta(self, *args):
+	async def prepare_post_object_v1(self, *args):
+		logger.warning("DataStoreServer.prepare_post_object_v1 not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def complete_post_object_v1(self, *args):
+		logger.warning("DataStoreServer.complete_post_object_v1 not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def delete_object(self, *args):
+		logger.warning("DataStoreServer.delete_object not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def delete_objects(self, *args):
+		logger.warning("DataStoreServer.delete_objects not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def change_meta_v1(self, *args):
+		logger.warning("DataStoreServer.change_meta_v1 not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def change_metas_v1(self, *args):
+		logger.warning("DataStoreServer.change_metas_v1 not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_meta(self, *args):
 		logger.warning("DataStoreServer.get_meta not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	def prepare_post_object(self, *args):
+	async def get_metas(self, *args):
+		logger.warning("DataStoreServer.get_metas not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def prepare_update_object(self, *args):
+		logger.warning("DataStoreServer.prepare_update_object not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def complete_update_object(self, *args):
+		logger.warning("DataStoreServer.complete_update_object not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def search_object(self, *args):
+		logger.warning("DataStoreServer.search_object not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_notification_url(self, *args):
+		logger.warning("DataStoreServer.get_notification_url not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_new_arrived_notifications_v1(self, *args):
+		logger.warning("DataStoreServer.get_new_arrived_notifications_v1 not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def rate_object(self, *args):
+		logger.warning("DataStoreServer.rate_object not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_rating(self, *args):
+		logger.warning("DataStoreServer.get_rating not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_ratings(self, *args):
+		logger.warning("DataStoreServer.get_ratings not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def reset_rating(self, *args):
+		logger.warning("DataStoreServer.reset_rating not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def reset_ratings(self, *args):
+		logger.warning("DataStoreServer.reset_ratings not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_specific_meta_v1(self, *args):
+		logger.warning("DataStoreServer.get_specific_meta_v1 not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def post_meta_binary(self, *args):
+		logger.warning("DataStoreServer.post_meta_binary not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def touch_object(self, *args):
+		logger.warning("DataStoreServer.touch_object not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_rating_with_log(self, *args):
+		logger.warning("DataStoreServer.get_rating_with_log not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def prepare_post_object(self, *args):
 		logger.warning("DataStoreServer.prepare_post_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	def prepare_get_object(self, *args):
+	async def prepare_get_object(self, *args):
 		logger.warning("DataStoreServer.prepare_get_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	def complete_post_object(self, *args):
+	async def complete_post_object(self, *args):
 		logger.warning("DataStoreServer.complete_post_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	def get_password_info(self, *args):
+	async def get_new_arrived_notifications(self, *args):
+		logger.warning("DataStoreServer.get_new_arrived_notifications not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_specific_meta(self, *args):
+		logger.warning("DataStoreServer.get_specific_meta not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_persistence_info(self, *args):
+		logger.warning("DataStoreServer.get_persistence_info not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_persistence_infos(self, *args):
+		logger.warning("DataStoreServer.get_persistence_infos not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def perpetuate_object(self, *args):
+		logger.warning("DataStoreServer.perpetuate_object not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def unperpetuate_object(self, *args):
+		logger.warning("DataStoreServer.unperpetuate_object not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def prepare_get_object_or_meta(self, *args):
+		logger.warning("DataStoreServer.prepare_get_object_or_meta not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_password_info(self, *args):
 		logger.warning("DataStoreServer.get_password_info not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	def get_metas_multiple_param(self, *args):
+	async def get_password_infos(self, *args):
+		logger.warning("DataStoreServer.get_password_infos not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_metas_multiple_param(self, *args):
 		logger.warning("DataStoreServer.get_metas_multiple_param not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def complete_post_objects(self, *args):
+		logger.warning("DataStoreServer.complete_post_objects not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def change_meta(self, *args):
+		logger.warning("DataStoreServer.change_meta not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def change_metas(self, *args):
+		logger.warning("DataStoreServer.change_metas not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def rate_objects(self, *args):
+		logger.warning("DataStoreServer.rate_objects not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def post_meta_binary_with_data_id(self, *args):
+		logger.warning("DataStoreServer.post_meta_binary_with_data_id not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def post_meta_binaries_with_data_id(self, *args):
+		logger.warning("DataStoreServer.post_meta_binaries_with_data_id not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def rate_object_with_posting(self, *args):
+		logger.warning("DataStoreServer.rate_object_with_posting not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def rate_objects_with_posting(self, *args):
+		logger.warning("DataStoreServer.rate_objects_with_posting not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_object_infos(self, *args):
+		logger.warning("DataStoreServer.get_object_infos not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def search_object_light(self, *args):
+		logger.warning("DataStoreServer.search_object_light not implemented")
 		raise common.RMCError("Core::NotImplemented")
 

@@ -1,120 +1,106 @@
 
-from nintendo.common.http import HTTPClient, HTTPRequest
-from nintendo.common import xml, ssl, util
-
+from nintendo.common import http, tls
 import pkg_resources
-import collections
 import hashlib
 import struct
 import base64
-import urllib.parse
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-CERT = pkg_resources.resource_filename("nintendo", "files/cert/wiiu_common.crt")
-KEY = pkg_resources.resource_filename("nintendo", "files/cert/wiiu_common.key")
+CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CA_G3.der")
+CERT = pkg_resources.resource_filename("nintendo", "files/cert/WIIU_COMMON_1_CERT.der")
+KEY = pkg_resources.resource_filename("nintendo", "files/cert/WIIU_COMMON_1_RSA_KEY.der")
 
 
 def calc_password_hash(pid, password):
 	data = struct.pack("<I", pid) + b"\x02\x65\x43\x46" + password.encode("ascii")
 	return hashlib.sha256(data).hexdigest()
-	
 
-# Types
-NexToken = collections.namedtuple("NexToken", "host port username password token")
-Email = collections.namedtuple("Email", "address id parent primary reachable type validated validation_date")
-Mii = collections.namedtuple("Mii", "data id images name pid primary nnid")
-ProfileMii = collections.namedtuple("Mii", "data id hash images name primary")
-Account = collections.namedtuple("Account", "attributes domain type username")
-Profile = collections.namedtuple(
-	"Profile",
-	"accounts active birthday country creation_date device_attributes gender language "
-	"updated marketing off_device pid email mii region timezone nnid utc_offset"
-)
-
-# Parsers
-NexToken.parse = lambda obj: NexToken(
-	obj["host"].value,
-	int(obj["port"].value),
-	obj["pid"].value,
-	obj["nex_password"].value,
-	obj["token"].value
-)
-Email.parse = lambda obj: Email(
-	obj["address"].value,
-	int(obj["id"].value),
-	obj["parent"].value == "Y",
-	obj["primary"].value == "Y",
-	obj["reachable"].value == "Y",
-	obj["type"].value,
-	obj["validated"].value == "Y",
-	obj["validated_date"].value
-)
-Mii.parse = lambda obj: Mii(
-	base64.b64decode(obj["data"].value),
-	int(obj["id"].value),
-	{image["type"].value: image["url"].value for image in obj["images"]},
-	obj["name"].value,
-	int(obj["pid"].value),
-	obj["primary"].value == "Y",
-	obj["user_id"].value
-)
-ProfileMii.parse = lambda obj: ProfileMii(
-	base64.b64decode(obj["data"].value),
-	int(obj["id"].value),
-	obj["mii_hash"].value,
-	{image["type"].value: image["url"].value for image in obj["mii_images"]},
-	obj["name"].value,
-	obj["primary"].value == "Y",
-)
-Account.parse = lambda obj: Account(
-	obj["attributes"].value,
-	obj["domain"].value,
-	obj["type"].value,
-	obj["username"].value
-)
-Profile.parse = lambda obj: Profile(
-	[Account.parse(account) for account in obj["accounts"]],
-	obj["active_flag"].value == "Y",
-	obj["birth_date"].value,
-	obj["country"].value,
-	obj["create_date"].value,
-	{attrib["name"].value: attrib["value"].value for attrib in obj["device_attributes"]},
-	obj["gender"].value,
-	obj["language"].value,
-	obj["updated"].value,
-	obj["marketing_flag"].value == "Y",
-	obj["off_device_flag"].value == "Y",
-	int(obj["pid"].value),
-	Email.parse(obj["email"]),
-	ProfileMii.parse(obj["mii"]),
-	int(obj["region"].value),
-	obj["tz_name"].value,
-	obj["user_id"].value,
-	int(obj["utc_offset"].value)
-)
-		
 
 class NNASError(Exception):
-	def __init__(self, *, status_code, text):
+	def __init__(self, status_code, errors):
 		self.status_code = status_code
-		self.text = text
-
+		self.errors = errors
+	
 	def __str__(self):
-		return "Account request failed with status %i" %self.status_code
+		if self.errors:
+			return "Account request failed: %s" %self.errors
+		else:
+			return "Account request failed with status %i" %self.status_code
+
+
+class OAuth20:
+	def __init__(self):
+		self.token = None
+		self.refresh_token = None
+		self.expires_in = None
+	
+	@classmethod
+	def parse(cls, tree):
+		access_token = tree["access_token"]
+		
+		inst = cls()
+		inst.token = access_token["token"].text
+		inst.refresh_token = access_token["refresh_token"].text
+		inst.expires_in = int(access_token["expires_in"].text)
+		return inst
+
+
+class NexToken:
+	def __init__(self):
+		self.host = None
+		self.port = None
+		self.pid = None
+		self.password = None
+		self.token = None
+	
+	@classmethod
+	def parse(cls, tree):
+		inst = cls()
+		inst.host = tree["host"].text
+		inst.port = int(tree["port"].text)
+		inst.pid = int(tree["pid"].text)
+		inst.password = tree["nex_password"].text
+		inst.token = tree["token"].text
+		return inst
+		
+
+class Mii:
+	def __init__(self):
+		self.data = None
+		self.id = None
+		self.name = None
+		self.images = None
+		self.primary = None
+		self.pid = None
+		self.nnid = None
+	
+	@classmethod
+	def parse(cls, mii):
+		inst = cls()
+		inst.data = base64.b64decode(mii["data"].text)
+		inst.id = int(mii["id"].text)
+		inst.name = mii["name"].text
+		inst.images = {image["type"].text: image["url"].text for image in mii["images"]}
+		inst.primary = mii["primary"].text == "Y"
+		inst.pid = int(mii["pid"].text)
+		inst.nnid = mii["user_id"].text
+		return inst
 
 
 class NNASClient:
 	def __init__(self):
-		self.client = HTTPClient()
-		
-		cert = ssl.SSLCertificate.load(CERT, ssl.TYPE_PEM)
-		key = ssl.SSLPrivateKey.load(KEY, ssl.TYPE_PEM)
-		self.cert = cert, key
-		
 		self.url = "account.nintendo.net"
+		
+		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
+		cert = tls.TLSCertificate.load(CERT, tls.TYPE_DER)
+		key = tls.TLSPrivateKey.load(KEY, tls.TYPE_DER)
+		
+		self.context = tls.TLSContext()
+		self.context.set_authority(ca)
+		self.context.set_certificate(cert, key)
 		
 		self.client_id = "a2efa818a34fa16b8afbc8a74eba3eda"
 		self.client_secret = "c91cdb5658bd4954ade78533a339cf9a"
@@ -139,7 +125,8 @@ class NNASClient:
 		
 		self.auth_token = None
 		
-	def set_certificate(self, cert, key): self.cert = cert, key
+	def set_context(self, context):
+		self.context = context
 	
 	def set_url(self, url): self.url = url
 	
@@ -168,8 +155,6 @@ class NNASClient:
 		self.title_version = title_version
 	
 	def prepare(self, req, auth=None, cert=None):
-		req.certificate = self.cert
-		
 		req.headers["Host"] = self.url
 		req.headers["X-Nintendo-Platform-ID"] = self.platform_id
 		req.headers["X-Nintendo-Device-Type"] = self.device_type
@@ -202,74 +187,66 @@ class NNASClient:
 			req.headers["X-Nintendo-Device-Cert"] = cert
 			
 		if auth is not None:
-			req.headers["Authorization"] = auth
+			req.headers["Authorization"] = "Bearer " + auth
 			
-	def request(self, req):
-		response = self.client.request(req, True)
+	async def request(self, req):
+		response = await http.request(req, self.context)
 		if response.error():
-			logger.error("Account request returned status code %i\n%s", response.status, response.text)
-			raise NNASError(status_code=response.status, text=response.text)
+			logger.error("Account request returned status code %i\n%s", response.status_code, response.text)
+			raise NNASError(response.status_code, response.xml)
 		return response.xml
 		
-	def login(self, username, password, password_type=None):
-		req = HTTPRequest.post("/v1/api/oauth20/access_token/generate")
+	async def login(self, username, password, password_type=None):
+		req = http.HTTPRequest.post("/v1/api/oauth20/access_token/generate")
 		self.prepare(req, cert=self.device_cert)
 		
 		req.form["grant_type"] = "password"
-		req.form["user_id"] = urllib.parse.quote(username)
-		req.form["password"] = urllib.parse.quote(password)
+		req.form["user_id"] = username
+		req.form["password"] = password
 		if password_type is not None:
 			req.form["password_type"] = password_type
 		
-		response = self.request(req)
-		self.auth_token = "Bearer " + response["access_token"]["token"].value
-		
-	def get_emails(self):
-		req = HTTPRequest.get("/v1/api/people/@me/emails")
-		self.prepare(req, self.auth_token)
-		return [Email.parse(email) for email in self.request(req)]
-		
-	def get_profile(self):
-		req = HTTPRequest.get("/v1/api/people/@me/profile")
-		self.prepare(req, self.auth_token)
-		return Profile.parse(self.request(req))
-		
-	def get_nex_token(self, game_server_id):
-		req = HTTPRequest.get("/v1/api/provider/nex_token/@me")
+		response = await self.request(req)
+		return OAuth20.parse(response)
+	
+	async def get_nex_token(self, access_token, game_server_id):
+		req = http.HTTPRequest.get("/v1/api/provider/nex_token/@me")
 		req.params["game_server_id"] = "%08X" %game_server_id
-		self.prepare(req, self.auth_token)
-		return NexToken.parse(self.request(req))
+		self.prepare(req, access_token)
+		
+		response = await self.request(req)
+		return NexToken.parse(response)
 		
 	#The following functions can be used without logging in
 		
-	def get_miis(self, pids):
-		req = HTTPRequest.get("/v1/api/miis")
-		req.params["pids"] = urllib.parse.quote(",".join([str(pid) for pid in pids]))
+	async def get_miis(self, pids):
+		req = http.HTTPRequest.get("/v1/api/miis")
+		req.params["pids"] = ",".join([str(pid) for pid in pids])
 		self.prepare(req)
 		
-		response = self.request(req)
+		response = await self.request(req)
 		return [Mii.parse(mii) for mii in response]
-		
-	def get_pids(self, nnids):
-		req = HTTPRequest.get("/v1/api/admin/mapped_ids")
+	
+	async def get_pids(self, nnids):
+		req = http.HTTPRequest.get("/v1/api/admin/mapped_ids")
 		req.params["input_type"] = "user_id"
 		req.params["output_type"] = "pid"
-		req.params["input"] = urllib.parse.quote(",".join(nnids))
+		req.params["input"] = ",".join(nnids)
 		self.prepare(req)
 		
-		response = self.request(req)
-		return {id["in_id"].value: int(id["out_id"].value) for id in response}
+		response = await self.request(req)
+		return {id["in_id"].text: int(id["out_id"].text) for id in response if id["out_id"].text}
 		
-	def get_nnids(self, pids):
-		req = HTTPRequest.get("/v1/api/admin/mapped_ids")
+	async def get_nnids(self, pids):
+		req = http.HTTPRequest.get("/v1/api/admin/mapped_ids")
 		req.params["input_type"] = "pid"
 		req.params["output_type"] = "user_id"
-		req.params["input"] = urllib.parse.quote(",".join([str(pid) for pid in pids]))
+		req.params["input"] = ",".join([str(pid) for pid in pids])
 		self.prepare(req)
 		
-		response = self.request(req)
-		return {int(id["in_id"].value): id["out_id"].value for id in response}
+		response = await self.request(req)
+		return {int(id["in_id"].text): id["out_id"].text for id in response if id["out_id"].text}
 	
-	def get_mii(self, pid): return self.get_miis([pid])[0]
-	def get_pid(self, nnid): return self.get_pids([nnid])[nnid]
-	def get_nnid(self, pid): return self.get_nnids([pid])[pid]
+	async def get_mii(self, pid): return (await self.get_miis([pid]))[0]
+	async def get_pid(self, nnid): return (await self.get_pids([nnid]))[nnid]
+	async def get_nnid(self, pid): return (await self.get_nnids([pid]))[pid]

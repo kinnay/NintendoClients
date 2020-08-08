@@ -1,7 +1,7 @@
 
 # This file was generated automatically by generate_protocols.py
 
-from nintendo.nex import common, streams
+from nintendo.nex import notification, rmc, common, streams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -19,11 +19,11 @@ class MonitoringClient(MonitoringProtocol):
 		self.settings = client.settings
 		self.client = client
 	
-	def ping_daemon(self):
+	async def ping_daemon(self):
 		logger.info("MonitoringClient.ping_daemon()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
-		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_PING_DAEMON, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_PING_DAEMON, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
@@ -33,11 +33,11 @@ class MonitoringClient(MonitoringProtocol):
 		logger.info("MonitoringClient.ping_daemon -> done")
 		return result
 	
-	def get_cluster_members(self):
+	async def get_cluster_members(self):
 		logger.info("MonitoringClient.get_cluster_members()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
-		data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_GET_CLUSTER_MEMBERS, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_CLUSTER_MEMBERS, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
@@ -55,38 +55,38 @@ class MonitoringServer(MonitoringProtocol):
 			self.METHOD_GET_CLUSTER_MEMBERS: self.handle_get_cluster_members,
 		}
 	
-	def handle(self, context, method_id, input, output):
+	async def handle(self, client, method_id, input, output):
 		if method_id in self.methods:
-			self.methods[method_id](context, input, output)
+			await self.methods[method_id](client, input, output)
 		else:
-			logger.warning("Unknown method called on %s: %i", self.__class__.__name__, method_id)
+			logger.warning("Unknown method called on MonitoringServer: %i", method_id)
 			raise common.RMCError("Core::NotImplemented")
 	
-	def handle_ping_daemon(self, context, input, output):
+	async def handle_ping_daemon(self, client, input, output):
 		logger.info("MonitoringServer.ping_daemon()")
 		#--- request ---
-		response = self.ping_daemon(context)
+		response = await self.ping_daemon(client)
 		
 		#--- response ---
 		if not isinstance(response, bool):
 			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
 		output.bool(response)
 	
-	def handle_get_cluster_members(self, context, input, output):
+	async def handle_get_cluster_members(self, client, input, output):
 		logger.info("MonitoringServer.get_cluster_members()")
 		#--- request ---
-		response = self.get_cluster_members(context)
+		response = await self.get_cluster_members(client)
 		
 		#--- response ---
 		if not isinstance(response, list):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.string)
 	
-	def ping_daemon(self, *args):
+	async def ping_daemon(self, *args):
 		logger.warning("MonitoringServer.ping_daemon not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	def get_cluster_members(self, *args):
+	async def get_cluster_members(self, *args):
 		logger.warning("MonitoringServer.get_cluster_members not implemented")
 		raise common.RMCError("Core::NotImplemented")
 

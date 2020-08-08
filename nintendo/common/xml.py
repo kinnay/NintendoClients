@@ -25,17 +25,12 @@ def encode_entities(s):
 
 
 class XMLTree:
-	def __init__(self):
+	def __init__(self, name):
 		self.children = []
 		self.attrs = types.OrderedDict()
 		
-		self.value = None
-		self.name = None
-		
-	def set_header(self, header): self.header = header
-	def set_name(self, name): self.name = name
-	def set_value(self, value): self.value = value
-	def set_attr(self, name, value): self.attrs[name] = value
+		self.text = None
+		self.name = name
 	
 	def __str__(self):
 		return self.encode()
@@ -62,9 +57,9 @@ class XMLTree:
 				nodes.append(node)
 		return nodes
 	
-	def add(self, name, value=None, attrs={}):
-		node = XMLTree()
-		node.value = value
+	def add(self, name, text=None, attrs={}):
+		node = XMLTree(name)
+		node.text = text
 		node.attrs = types.OrderedDict(attrs)
 		self.children.append(node)
 		return node
@@ -78,8 +73,8 @@ class XMLTree:
 		for child in self.children:
 			data += child.encode()
 
-		if self.value is not None:
-			data += encode_entities(str(self.value))
+		if self.text is not None:
+			data += encode_entities(str(self.text))
 		
 		data += "</%s>" %self.name
 		return data
@@ -131,8 +126,8 @@ class XMLParser:
 			
 		stream.skip_whitespace()
 		
-		tree = XMLTree()
-		tree.name = self.parse_name(stream)
+		name = self.parse_name(stream)
+		tree = XMLTree(name)
 		
 		stream.skip_whitespace()
 		
@@ -150,18 +145,18 @@ class XMLParser:
 				raise ValueError("Unexpected character in XML document")
 			return tree
 			
-		tree.value = ""
+		tree.text = ""
 		
 		chars = stream.peek(2)
 		while chars != "</":
 			if chars[0] == "<":
 				tree.children.append(self.parse_tree(stream))
 			else:
-				tree.value += chars[0]
+				tree.text += chars[0]
 				stream.skip()
 			chars = stream.peek(2)
 			
-		tree.value = decode_entities(tree.value)
+		tree.text = decode_entities(tree.text)
 			
 		stream.skip(2)
 		stream.skip_whitespace()

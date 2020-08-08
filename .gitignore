@@ -1,2 +1,7 @@
+
 /*.egg-info/
 __pycache__/
+
+/private/
+/*.bin
+/*.jpg

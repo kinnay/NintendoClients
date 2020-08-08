@@ -1,20 +1,48 @@
 
 from Crypto.Cipher import AES
-from nintendo.common.streams import StreamIn
-import requests
+from nintendo.common import streams, http, tls
+import pkg_resources
 import hashlib
 
 
+CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CLASS2_CA_G3.der")
+
+
+JAPANESE = 0
+ENGLISH = 1
+FRENCH = 2
+GERMAN = 3
+ITALIAN = 4
+SPANISH = 5
+CHINESE_SIMPLIFIED = 6
+KOREAN = 7
+DUTCH = 8
+PORTUGUESE = 9
+RUSSIAN = 10
+CHINESE_TRADITIONAL = 11
+
+
 class IDBEStrings:
-	def __init__(self, stream):
-		self.short_name = stream.wchars(64).rstrip("\0")
-		self.long_name = stream.wchars(128).rstrip("\0")
-		self.publisher = stream.wchars(64).rstrip("\0")
+	def __init__(self):
+		self.short_name = ""
+		self.long_name = ""
+		self.publisher = ""
+	
+	@classmethod
+	def load(cls, stream):
+		inst = cls()
+		inst.short_name = stream.wchars(64).rstrip("\0")
+		inst.long_name = stream.wchars(128).rstrip("\0")
+		inst.publisher = stream.wchars(64).rstrip("\0")
+		return inst
 
 
 class IDBEFile:
-	def __init__(self, data):
-		self.load(data)
+	def __init__(self):
+		self.title_id = 0
+		self.title_version = 0
+		self.strings = [IDBEStrings() for i in range(16)]
+		self.tga = b""
 		
 	def is_wiiu(self, data):
 		if len(data) == 0x36D0: return False
@@ -30,7 +58,7 @@ class IDBEFile:
 		
 		endian = ">" if wup else "<"
 		
-		stream = StreamIn(data[32:], endian)
+		stream = streams.StreamIn(data[32:], endian)
 		
 		self.title_id = stream.u64()
 		self.title_version = stream.u32()
@@ -42,7 +70,7 @@ class IDBEFile:
 		
 		self.strings = []
 		for i in range(16):
-			self.strings.append(IDBEStrings(stream))
+			self.strings.append(IDBEStrings.load(stream))
 			
 		if wup:
 			self.tga = stream.read(0x1002C)
@@ -69,18 +97,25 @@ def get_platform(title_id):
 		return "wup"
 	raise ValueError("Invalid title id")
 
-def download(title_id, title_version=None):
+async def download(title_id, title_version=None):
 	platform = get_platform(title_id)
 	base_id = (title_id >> 8) & 0xFF
 	
-	url = "https://idbe-%s.cdn.nintendo.net/icondata/%02X/%016X" %(platform, base_id, title_id)
-	if title_version is not None:
-		url += "-%i" %title_version
-	url += ".idbe"
+	ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
+	context = tls.TLSContext()
+	context.set_authority(ca)
 	
-	r = requests.get(url, verify=False)
-	r.raise_for_status()
-	return r.content
+	path = "/icondata/%02X/%016X" %(base_id, title_id)
+	if title_version is not None:
+		path += "-%i" %title_version
+	path += ".idbe"
+	
+	req = http.HTTPRequest.get(path)
+	req.headers["Host"] = "idbe-%s.cdn.nintendo.net" %platform
+	
+	response = await http.request(req, context)
+	response.raise_if_error()
+	return r.body
 	
 def check(data):
 	if len(data) % 16 != 2: return False

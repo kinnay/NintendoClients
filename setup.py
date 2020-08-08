@@ -11,7 +11,7 @@ setup(
 	],
 	package_data={"nintendo": ["files/config/*", "files/cert/*"]},
 	install_requires=[
-		'requests',
+		'anyio',
 		'cryptography',
 		'pyopenssl',
 		'netifaces',

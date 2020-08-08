@@ -1,0 +1,61 @@
+
+struct u8KeyValue : Data {
+	uint8 key;
+	uint8 value;
+}
+
+struct u32KeyValue : Data {
+	uint8 key;
+	uint32 value;
+}
+
+struct u64KeyValue : Data {
+	uint8 key;
+	uint64 value;
+}
+
+struct StringKeyValue : Data {
+	uint8 key;
+	string value;
+}
+
+enum NintendoNotificationType {
+	LOGOUT = 10,
+	PRESENCE_CHANGE = 24,
+	UNFRIENDED = 26,
+	FRIENDED = 30,
+	STATUS_CHANGE = 33
+}
+
+struct NintendoNotificationEvent {
+	uint32 type;
+	pid pid;
+	anydata data;
+}
+
+struct NintendoNotificationEventGeneral : Data {
+	uint32 param1;
+	uint64 param2;
+	uint64 param3;
+	string text;
+}
+
+struct NintendoNotificationEventKeyValue : Data {
+	list<u8KeyValue> u8;
+	list<u32KeyValue> u32;
+	list<u64KeyValue> u64;
+	list<StringKeyValue> string;
+}
+
+struct NintendoNotificationEventProfile : Data {
+	uint8 region;
+	uint8 country;
+	uint8 area;
+	uint8 language;
+	uint8 platform;
+}
+
+protocol NintendoNotification : 100 {
+	method process_nintendo_notification_event(NintendoNotificationEvent event) {}
+	method process_nintendo_notification_event_alt(NintendoNotificationEvent event) {}
+}

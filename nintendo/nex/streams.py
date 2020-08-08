@@ -9,7 +9,7 @@ class StreamOut(streams.StreamOut):
 		self.settings = settings
 		
 	def pid(self, value):
-		if self.settings.get("common.pid_size") == 8:
+		if self.settings["nex.pid_size"] == 8:
 			self.u64(value)
 		else:
 			self.u32(value)
@@ -39,7 +39,7 @@ class StreamOut(streams.StreamOut):
 		self.string(str(url))
 	
 	def datetime(self, datetime):
-		self.u64(datetime.value)
+		self.u64(datetime.value())
 		
 	def buffer(self, data):
 		self.u32(len(data))
@@ -58,7 +58,12 @@ class StreamOut(streams.StreamOut):
 		self.add(holder)
 		
 	def variant(self, value):
+		# We have to check for bool before int,
+		# because bool is a subclass of int
 		if value is None: self.u8(0)
+		elif isinstance(value, bool):
+			self.u8(3)
+			self.bool(value)
 		elif isinstance(value, int):
 			if value < 0:
 				self.u8(1)
@@ -69,13 +74,10 @@ class StreamOut(streams.StreamOut):
 		elif isinstance(value, float):
 			self.u8(2)
 			self.double(value)
-		elif isinstance(value, bool):
-			self.u8(3)
-			self.bool(value)
 		elif isinstance(value, str):
 			self.u8(4)
 			self.string(value)
-		elif isinstnace(value, common.DateTime):
+		elif isinstance(value, common.DateTime):
 			self.u8(5)
 			self.datetime(value)
 		else:
@@ -88,7 +90,7 @@ class StreamIn(streams.StreamIn):
 		self.settings = settings
 		
 	def pid(self):
-		if self.settings.get("common.pid_size") == 8:
+		if self.settings["nex.pid_size"] == 8:
 			return self.u64()
 		return self.u32()
 		
