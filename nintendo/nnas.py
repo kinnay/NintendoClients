@@ -123,8 +123,6 @@ class NNASClient:
 		self.title_id = None
 		self.title_version = None
 		
-		self.auth_token = None
-		
 	def set_context(self, context):
 		self.context = context
 	
