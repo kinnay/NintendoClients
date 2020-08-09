@@ -3,6 +3,36 @@
 
 This package lets you communicate with various Wii U and Switch servers. For documentation about the servers and protocols go here: [https://github.com/Kinnay/NintendoClients/wiki](https://github.com/Kinnay/NintendoClients/wiki).
 
+## Features
+This package is able to do everything that's required to access a game server. It also provides a framework to host your own game servers. For example scripts, check out the [github repository](https://github.com/Kinnay/NintendoClients). The following servers are currently supported:
+
+* Wii U:
+	* Game servers (`nex`)
+	* `account.nintendo.net`
+	* `idbe-wup.cdn.nintendo.net`<br><br>
+* Switch:
+	* Game servers (`nex`)
+	* `dauth-lp1.ndas.srv.nintendo.net`
+	* `aauth-lp1.ndas.srv.nintendo.net`
+	* `e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com`
+
+## Contributing
+If you would like to contribute code or knowledge in any way, feel free to open a pull request or issue on [github](https://github.com/Kinnay/NintendoClients). If you open a pull request, please try to follow the current code style as much as possible. Some important points:
+
+* Use tabs for indentation, and spaces for alignment.
+* Use double quotes for strings, unless the string contains a double quote itself. In that case, using single quotes is ok.
+* Use the following naming convention:
+
+```python
+GLOBAL_CONSTANT = "hi"
+
+class ClassName:
+	def method_name(self):
+		self.variable_name = 0
+```
+
+* There is no hard limit on line lengths, but try to keep it somewhat reasonable.
+
 ## API Reference
 
 * nintendo
