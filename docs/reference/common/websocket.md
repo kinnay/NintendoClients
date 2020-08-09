@@ -3,6 +3,9 @@
 
 Provides a client and server for the websocket protocol.
 
+<code>**class** WSError(Exception)</code><br>
+<span class="docs">Raised when a websocket error occurs.</span>
+
 <code>**class** [WebSocketClient](#websocketclient)</code><br>
 <span class="docs">A websocket client.</span>
 

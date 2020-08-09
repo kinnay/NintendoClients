@@ -65,18 +65,10 @@ class WSPacketClient:
 		request.headers["Sec-WebSocket-Key"] = key
 		request.headers["Sec-WebSocket-Version"] = 13
 		request.headers["Sec-WebSocket-Protocol"] = self.protocol
-		await self.client.send(request.encode())
 		
-		while b"\r\n\r\n" not in self.buffer:
-			self.buffer += await self.client.recv()
-		
-		index = self.buffer.index(b"\r\n\r\n")
-		header = self.buffer[:index + 4]
-		self.buffer = self.buffer[index + 4:]
-		
-		response = http.HTTPResponse.parse(header)
+		response = await self.client.request(request)
 		if response.status_code != 101:
-			raise WSError("WS server replied with status code %i" %response.status)
+			raise WSError("WS server replied with status code %i" %response.status_code)
 		
 		if "Sec-WebSocket-Accept" not in response.headers:
 			raise WSError("Sec-WebSocket-Accept header is missing")
@@ -318,7 +310,7 @@ async def connect(protocol, host, port, context=None):
 	
 	logger.debug("Connecting WS client to %s:%i", host, port)
 	
-	async with tls.connect(host, port, context) as client:
+	async with http.connect(host, port, context) as client:
 		async with anyio.create_task_group() as group:
 			async with WebSocketClient(protocol, client, group) as client:
 				await client.start_handshake(host, path)

@@ -1,5 +1,5 @@
 
-from nintendo.common import websocket
+from nintendo.common import websocket, http
 import pytest
 
 
@@ -24,3 +24,16 @@ async def test_websocket():
 
 			assert await client.recv_text() == "test2"
 			assert await client.recv() == b"test1"
+
+
+@pytest.mark.anyio
+async def test_error():
+	async def handler(req):
+		response = http.HTTPResponse(404)
+		response.body = b"not found"
+		return response
+	
+	async with http.serve(handler, HOST, 12345):
+		with pytest.raises(websocket.WSError):
+			async with websocket.connect("TestProtocol", HOST, 12345) as client:
+				pass

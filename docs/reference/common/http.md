@@ -15,13 +15,19 @@ Provides HTTP-related classes, including a client and a server. Only basic HTTP 
 <code>**class** [HTTPResponse](#httpresponse)([HTTPMessage](#httpmessage))</code><br>
 <span class="docs">A HTTP response object.</span>
 
+<code>**class** [HTTPClient](#httpclient)</code><br>
+<span class="docs">A reusable HTTP client.</span>
+
 <code>**async def get**(url: string, *, headers: dict[str, str] = {}, context: [TLSContext](../tls#tlscontext) = None) -> [HTTPResponse](#httpresponse)</code><br>
 <span class="docs">Performs a GET request. If `context` is provided, the connection is secured with TLS.</span>
 
 <code>**async def request**(req: [HTTPRequest](#httprequest), context: [TLSContext](../tls#tlscontext) = None) -> [HTTPResponse](#httpresponse)</code><br>
-<span class="docs">Performs an HTTP request. The server address is derived from the `Host` header of the HTTP request. If `context` is provided, the connection is secured with TLS. Raises `HTTPError` if the response could not be parsed.</span>
+<span class="docs">Performs an HTTP request. The server address is derived from the `Host` header of the HTTP request. If `context` is provided, the connection is secured with TLS.</span>
 
-<code>**async with serve**(handler: Callable, host: str = "", port: int = 0, context: [TLSContext](#tlscontext) = None) -> None</code><br>
+<code>**async with connect**(host: str, port: int, context: [TLSContext](../tls#tlscontext) = None) -> [HTTPClient](#httpclient)</code><br>
+<span class="docs">Creates a reusable connection with the server. Blocks until the connection is ready. If `context` is provided, the connection is secured with TLS.</span>
+
+<code>**async with serve**(handler: Callable, host: str = "", port: int = 0, context: [TLSContext](../tls#tlscontext) = None) -> None</code><br>
 <span class="docs">Creates an HTTP server at the given address. If `host` is empty, the local address of the default interface is used. If `port` is 0, it is chosen by the operating system. If `context` is provided, the server is secured with TLS.<br><br>
 `handler` should be an `async` function that takes an [`HTTPRequest`](#httprequest) and returns an [`HTTPResponse`](#httpresponse). It's possible to call blocking functions in `handler`, because the HTTP server spawns a new task for each request. If `handler` raises an exception the server sends an empty HTTP response with status code `500` to the client.</span>
 
@@ -138,3 +144,25 @@ This class inherits [`HTTPMessage`](#httpmessage).
 
 <code>**def raise_if_error**() -> None</code><br>
 <span class="docs">Raises `HTTPError` if the status code does not indicate success.</span>
+
+## HTTPClient
+<code>**async def request**(req: [HTTPRequest](#httprequest)) -> [HTTPResponse](#httpresponse)</code><br>
+<span class="docs">Performs an HTTP request.</span>
+
+<code>**async def send**(data: bytes) -> None</code><br>
+<span class="docs">Sends data through the underlying socket.</span>
+
+<code>**async def recv**() -> bytes</code><br>
+<span class="docs">Receives data from the underlying socket.</span>
+
+<code>**async def close**() -> None</code><br>
+<span class="docs">Closes the client. If the client is wrapped in an `async with` statement it is closed automatically.</span>
+
+<code>**async def abort**() -> None</code><br>
+<span class="docs">Closes the client (same as `close`).</span>
+
+<code>**def local_address**() -> tuple[str, int]</code><br>
+<span class="docs">Returns the local address of the client.</span>
+
+<code>**def remote_address**() -> tuple[str, int]</code><br>
+<span class="docs">Returns the address that the client is connected to.</span>

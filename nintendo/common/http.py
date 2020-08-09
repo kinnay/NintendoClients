@@ -228,6 +228,8 @@ class HTTPMessage:
 		
 		if not parser.complete():
 			raise HTTPError("HTTP message is incomplete")
+		if parser.buffer:
+			raise HTTPError("Got more data than expected")
 		
 		return parser.message
 
@@ -341,8 +343,6 @@ class HTTPParser:
 			
 	def finish(self):
 		self.message.finish_parsing()
-		if self.buffer:
-			raise HTTPError("Got more data than expected")
 		self.state = None
 		return self.message
 	
@@ -430,10 +430,27 @@ class HTTPParser:
 class HTTPClient:
 	def __init__(self, sock):
 		self.sock = sock
+		self.buffer = b""
+	
+	async def send(self, data):
+		await self.sock.send(data)
+	
+	async def recv(self):
+		if self.buffer:
+			buffer = self.buffer
+			self.buffer = b""
+			return self.buffer
+		return await self.sock.recv()
+		
+	async def close(self):
+		await self.sock.close()
+	
+	async def abort(self):
+		await self.sock.abort()
 	
 	async def request(self, req):
 		logger.debug("Sending HTTP request headers")
-		await self.sock.send(req.encode_headers())
+		await self.send(req.encode_headers())
 		
 		if req.headers.get("Expect") == "100-continue":
 			response = await self.receive_response()
@@ -441,7 +458,7 @@ class HTTPClient:
 				raise HTTPError("Expected 100-continue response")
 		
 		logger.debug("Sending HTTP request body")
-		await self.sock.send(req.encode_body())
+		await self.send(req.encode_body())
 		response = await self.receive_response()
 		
 		return response
@@ -449,9 +466,15 @@ class HTTPClient:
 	async def receive_response(self):
 		parser = HTTPParser(HTTPResponse)
 		while not parser.complete():
-			data = await self.sock.recv()
+			data = await self.recv()
 			parser.update(data)
+		self.buffer += parser.buffer
 		return parser.message
+	
+	def local_address(self):
+		return self.sock.local_address()
+	def remote_address(self):
+		return self.sock.remote_address()
 		
 		
 class HTTPServerClient:
@@ -497,6 +520,11 @@ class HTTPServerClient:
 		return response
 
 
+@contextlib.asynccontextmanager
+async def connect(host, port, context=None):
+	async with tls.connect(host, port, context) as client:
+		yield HTTPClient(client)
+
 async def request(req, context = None):
 	if "Host" not in req.headers:
 		raise ValueError("HTTP request requires Host header")
@@ -514,8 +542,8 @@ async def request(req, context = None):
 		
 	logger.info("Establishing HTTP connection with %s:%i", host, port)
 	
-	async with tls.connect(host, port, context) as client:
-		response = await HTTPClient(client).request(req)
+	async with connect(host, port, context) as client:
+		response = await client.request(req)
 	
 	logger.info("Received HTTP response: %i", response.status_code)
 	return response
