@@ -13,7 +13,7 @@ The Switch examples that require application authentication only support digital
 https://github.com/Kinnay/NintendoClients/wiki
 
 ### Requirements
-* Python 3.6 or higher
+* Python 3.8 or higher
 * PyCryptodome
 * PyOpenSSL
 * netifaces
