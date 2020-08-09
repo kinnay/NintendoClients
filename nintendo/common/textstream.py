@@ -7,9 +7,13 @@ class TextStream:
 		self.pos = 0
 		
 	def peek(self, size=1):
+		if self.available() < size:
+			raise OverflowError("Buffer overflow in text stream")
 		return self.text[self.pos : self.pos + size]
 		
 	def read(self, size=1):
+		if self.available() < size:
+			raise OverflowError("Buffer overflow in text stream")
 		text = self.text[self.pos : self.pos + size]
 		self.pos += size
 		return text

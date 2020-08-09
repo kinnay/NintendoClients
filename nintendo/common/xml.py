@@ -217,4 +217,7 @@ class XMLParser:
 		
 def parse(text):
 	parser = XMLParser()
-	return parser.parse(text)
+	try:
+		return parser.parse(text)
+	except OverflowError:
+		raise ValueError("XML document is incomplete")
