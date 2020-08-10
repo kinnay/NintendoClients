@@ -55,6 +55,9 @@ Provides a client for the 3DS/Wii U [account server](https://github.com/Kinnay/N
 <code>**async def get_nex_token**(access_token: str, game_server_id: int) -> [NexToken](#nextoken)</code><br>
 <span class="docs">Requests a `nex` token for the given game server.</span>
 
+<code>**async def get_profile**(access_token: str) -> [Profile](#profile)</code><br>
+<span class="docs">Requests your profile.</span>
+
 <code>**async def get_miis**(pids: list[int]) -> list[[Mii](#mii)]</code><br>
 <span class="docs">Requests the miis for the given user ids.</span>
 
@@ -70,10 +73,40 @@ Provides a client for the 3DS/Wii U [account server](https://github.com/Kinnay/N
 <code>**async def get_nnid**(pid: int) -> str</code><br>
 <span class="docs">Requests the Nintendo Network ID for the given user id.</span>
 
-## OAuth20
-`token: str`<br>
-`refresh_token: str`<br>
-`expires_in: int`
+## Account
+`domain: str`<br>
+`type: str`<br>
+`username: str`
+
+## DeviceAttribute
+`created_date: datetime.datetime`<br>
+`name: str`<br>
+`value: str`<br>
+
+## Email
+`id: int`<br>
+`address: str`<br>
+`primary: bool`<br>
+`parent: bool`<br>
+`reachable: bool`<br>
+`type: str`<br>
+`validated: bool`<br>
+`validated_date: datetime.datetime`<br>
+
+## Mii
+`data: bytes`<br>
+`id: int`<br>
+`name: str`<br>
+`images: list[MiiImage]`<br>
+`primary: bool`<br>
+`pid: int`<br>
+`nnid: str`
+
+## MiiImage
+`id: int`<br>
+`type: str`<br>
+`url: str`<br>
+`cached_url: str`<br>
 
 ## NexToken
 `host: str`<br>
@@ -82,11 +115,38 @@ Provides a client for the 3DS/Wii U [account server](https://github.com/Kinnay/N
 `password: str`<br>
 `token: str`
 
-## Mii
-`data: bytes`<br>
+## OAuth20
+`token: str`<br>
+`refresh_token: str`<br>
+`expires_in: int`
+
+## Profile
+<code>accounts: list[[Account](#account)]</code><br>
+`active_flag: bool`<br>
+`birth_date: datetime.datetime`<br>
+`country: str`<br>
+`create_date: datetime.datetime`<br>
+<code>device_attributes: list[[DeviceAttribute](#deviceattribute)]</code><br>
+`forgot_pw_email_sent: datetime.datetime`<br>
+`gender: str`<br>
+`language: str`<br>
+`updated: datetime.datetime`<br>
+`marketing_flag: bool`<br>
+`off_device_flag: bool`<br>
+`pid: int`<br>
+<code>email: [Email](#email)</code><br>
+<code>mii: [ProfileMii](#profilemii)</code><br>
+`region: int`<br>
+`temporary_password_expiration: datetime.datetime`<br>
+`tz_name: str`<br>
+`nnid: str`<br>
+`utc_offset: int`<br>
+
+## ProfileMii
 `id: int`<br>
 `name: str`<br>
-`images: dict[str, str]`<br>
+`data: bytes`<br>
 `primary: bool`<br>
-`pid: int`<br>
-`nnid: str`
+`status: str`<br>
+`hash: str`<br>
+<code>images: list[[MiiImage](#miiimage)]</code><br>

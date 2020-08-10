@@ -1,6 +1,7 @@
 
 from nintendo.common import http, tls
 import pkg_resources
+import datetime
 import hashlib
 import struct
 import base64
@@ -66,6 +67,23 @@ class NexToken:
 		inst.token = tree["token"].text
 		return inst
 		
+		
+class MiiImage:
+	def __init__(self):
+		self.id = None
+		self.type = None
+		self.url = None
+		self.cached_url = None
+	
+	@classmethod
+	def parse(cls, image):
+		inst = cls()
+		inst.cached_url = image["cached_url"].text
+		inst.id = int(image["id"].text)
+		inst.url = image["url"].text
+		inst.type = image["type"].text
+		return inst
+		
 
 class Mii:
 	def __init__(self):
@@ -83,10 +101,139 @@ class Mii:
 		inst.data = base64.b64decode(mii["data"].text)
 		inst.id = int(mii["id"].text)
 		inst.name = mii["name"].text
-		inst.images = {image["type"].text: image["url"].text for image in mii["images"]}
+		inst.images = [MiiImage.parse(image) for image in mii["images"]]
 		inst.primary = mii["primary"].text == "Y"
 		inst.pid = int(mii["pid"].text)
 		inst.nnid = mii["user_id"].text
+		return inst
+
+
+class Account:
+	def __init__(self):
+		self.domain = None
+		self.type = None
+		self.username = None
+	
+	@classmethod
+	def parse(cls, account):
+		inst = cls()
+		inst.domain = account["domain"].text
+		inst.type = account["type"].text
+		inst.username = account["username"].text
+		return inst
+		
+		
+class DeviceAttribute:
+	def __init__(self):
+		self.created_date = None
+		self.name = None
+		self.value = None
+	
+	@classmethod
+	def parse(cls, attribute):
+		inst = cls()
+		inst.created_date = datetime.datetime.fromisoformat(attribute["created_date"].text)
+		inst.name = attribute["name"].text
+		inst.value = attribute["value"].text
+		return inst
+		
+		
+class Email:
+	def __init__(self):
+		self.address = None
+		self.id = None
+		self.parent = None
+		self.primary = None
+		self.reachable = None
+		self.type = None
+		self.validated = None
+		self.validated_date = None
+	
+	@classmethod
+	def parse(cls, email):
+		inst = cls()
+		inst.address = email["address"].text
+		inst.id = int(email["id"].text)
+		inst.parent = email["parent"].text == "Y"
+		inst.primary = email["primary"].text == "Y"
+		inst.reachable = email["reachable"].text == "Y"
+		inst.type = email["type"].text
+		inst.validated = email["validated"].text == "Y"
+		inst.validated_date = datetime.datetime.fromisoformat(email["validated_date"].text)
+		return inst
+
+
+class ProfileMii:
+	def __init__(self):
+		self.id = None
+		self.data = None
+		self.status = None
+		self.hash = None
+		self.images = None
+		self.name = None
+		self.primary = None
+	
+	@classmethod
+	def parse(cls, mii):
+		inst = cls()
+		inst.status = mii["status"].text
+		inst.data = base64.b64decode(mii["data"].text)
+		inst.id = int(mii["id"].text)
+		inst.hash = mii["mii_hash"].text
+		inst.images = [MiiImage.parse(image) for image in mii["mii_images"]]
+		inst.name = mii["name"].text
+		inst.primary = mii["primary"].text == "Y"
+		return inst
+
+
+class Profile:
+	def __init__(self):
+		self.accounts = None
+		self.active_flag = None
+		self.birth_date = None
+		self.country = None
+		self.create_date = None
+		self.device_attributes = None
+		self.forgot_pw_email_sent = None
+		self.gender = None
+		self.language = None
+		self.updated = None
+		self.marketing_flag = None
+		self.off_device_flag = None
+		self.pid = None
+		self.email = None
+		self.mii = None
+		self.region = None
+		self.temporary_password_expiration = None
+		self.tz_name = None
+		self.nnid = None
+		self.utc_offset = None
+	
+	@classmethod
+	def parse(cls, profile):
+		inst = cls()
+		inst.accounts = [Account.parse(account) for account in profile["accounts"]]
+		inst.active_flag = profile["active_flag"] == "Y"
+		inst.birth_date = datetime.date.fromisoformat(profile["birth_date"].text)
+		inst.country = profile["country"].text
+		inst.create_date = datetime.datetime.fromisoformat(profile["create_date"].text)
+		inst.device_attributes = [DeviceAttribute.parse(attrib) for attrib in profile["device_attributes"]]
+		if "forgot_pw_email_sent" in profile:
+			inst.forgot_pw_email_sent = datetime.datetime.fromisoformat(profile["forgot_pw_email_sent"].text)
+		inst.gender = profile["gender"].text
+		inst.language = profile["language"].text
+		inst.updated = datetime.datetime.fromisoformat(profile["updated"].text)
+		inst.marketing_flag = profile["marketing_flag"].text == "Y"
+		inst.off_device_flag = profile["off_device_flag"].text == "Y"
+		inst.pid = int(profile["pid"].text)
+		inst.email = Email.parse(profile["email"])
+		inst.mii = ProfileMii.parse(profile["mii"])
+		inst.region = int(profile["region"].text)
+		if "temporary_password_expiration" in profile:
+			inst.temporary_password_expiration = datetime.datetime.fromisoformat(profile["temporary_password_expiration"].text)
+		inst.tz_name = profile["tz_name"].text
+		inst.nnid = profile["user_id"].text
+		inst.utc_offset = int(profile["utc_offset"].text)
 		return inst
 
 
@@ -214,6 +361,13 @@ class NNASClient:
 		
 		response = await self.request(req)
 		return NexToken.parse(response)
+	
+	async def get_profile(self, access_token):
+		req = http.HTTPRequest.get("/v1/api/people/@me/profile")
+		self.prepare(req, access_token)
+		
+		response = await self.request(req)
+		return Profile.parse(response)
 		
 	#The following functions can be used without logging in
 		

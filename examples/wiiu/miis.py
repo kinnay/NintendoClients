@@ -75,7 +75,7 @@ async def main():
 		print("\tMole Y:", info.mole_ypos)
 
 	print("Images:")
-	for url in mii.images.values():
-		print("\t%s" %url)
+	for image in mii.images:
+		print("\t%s" %image.url)
 
 anyio.run(main)
