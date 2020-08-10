@@ -40,9 +40,9 @@ class BAASClient:
 		
 		self.context = tls.TLSContext()
 		self.context.load_default_authorities()
-		
+	
 	def set_url(self, url): self.url = url
-	def set_user_agent(self, agent): self.user_agent = agent
+	def set_user_agent(self, user_agent): self.user_agent = user_agent
 	def set_power_state(self, state): self.power_state = state
 	def set_context(self, context): self.context = context
 	

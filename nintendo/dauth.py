@@ -94,7 +94,7 @@ class DAuthClient:
 	def set_platform_region(self, region): self.region = region
 
 	def set_url(self, url): self.url = url
-	def set_user_agent(self, agent): self.user_agent = agent
+	def set_user_agent(self, user_agent): self.user_agent = user_agent
 	def set_system_digest(self, digest): self.system_digest = digest
 	def set_system_version(self, version):
 		if version not in USER_AGENT:

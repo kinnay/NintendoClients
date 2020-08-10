@@ -31,7 +31,7 @@ Provides a client for the [device authentication server](https://github.com/Kinn
 <code>**def set_url**(url: str) -> None</code><br>
 <span class="docs">Changes the server to which the HTTP requests are sent. The default is `dauth-lp1.ndas.srv.nintendo.net`.
 
-<code>**def set_user_agent**(url: str) -> None</code><br>
+<code>**def set_user_agent**(user_agent: str) -> None</code><br>
 <span class="docs">Changes the user agent of the `dauth` client. The default depends on the latest system version.
 
 <code>**def set_power_state**(state: str) -> None</code><br>

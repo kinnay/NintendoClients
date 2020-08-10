@@ -23,7 +23,7 @@ Provides a client for the [BaaS server](https://github.com/Kinnay/NintendoClient
 <code>**def set_url**(url: str) -> None</code><br>
 <span class="docs">Changes the server to which the HTTP requests are sent. The default is `e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com`.
 
-<code>**def set_user_agent**(url: str) -> None</code><br>
+<code>**def set_user_agent**(user_agent: str) -> None</code><br>
 <span class="docs">Changes the user agent of the `BaaS` client. The default depends on the latest system version.
 
 <code>**def set_power_state**(state: str) -> None</code><br>

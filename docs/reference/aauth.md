@@ -15,7 +15,7 @@ Provides a client for the [application authentication server](https://github.com
 <code>**def set_url**(url: str) -> None</code><br>
 <span class="docs">Changes the server to which the HTTP requests are sent. The default is `aauth-lp1.ndas.srv.nintendo.net`.
 
-<code>**def set_user_agent**(url: str) -> None</code><br>
+<code>**def set_user_agent**(user_agent: str) -> None</code><br>
 <span class="docs">Changes the user agent of the `aauth` client. The default depends on the latest system version.
 
 <code>**def set_power_state**(state: str) -> None</code><br>
