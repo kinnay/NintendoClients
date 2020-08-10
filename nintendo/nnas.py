@@ -314,9 +314,8 @@ class NNASClient:
 		req.headers["X-Nintendo-Country"] = self.country
 		req.headers["Accept-Language"] = self.language
 		
-		if auth is None:
-			req.headers["X-Nintendo-Client-ID"] = self.client_id
-			req.headers["X-Nintendo-Client-Secret"] = self.client_secret
+		req.headers["X-Nintendo-Client-ID"] = self.client_id
+		req.headers["X-Nintendo-Client-Secret"] = self.client_secret
 			
 		req.headers["Accept"] = "*/*"
 		req.headers["X-Nintendo-FPD-Version"] = "%04X" %self.fpd_version
@@ -361,6 +360,14 @@ class NNASClient:
 		
 		response = await self.request(req)
 		return NexToken.parse(response)
+	
+	async def get_service_token(self, access_token, client_id):
+		req = http.HTTPRequest.get("/v1/api/provider/service_token/@me")
+		req.params["client_id"] = client_id
+		self.prepare(req, access_token)
+		
+		response = await self.request(req)
+		return response["token"].text
 	
 	async def get_profile(self, access_token):
 		req = http.HTTPRequest.get("/v1/api/people/@me/profile")

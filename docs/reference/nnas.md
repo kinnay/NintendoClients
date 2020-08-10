@@ -55,6 +55,9 @@ Provides a client for the 3DS/Wii U [account server](https://github.com/Kinnay/N
 <code>**async def get_nex_token**(access_token: str, game_server_id: int) -> [NexToken](#nextoken)</code><br>
 <span class="docs">Requests a `nex` token for the given game server.</span>
 
+<code>**async def get_service_token**(access_token: str, client_id: str) -> str</code><br>
+<span class="docs">Requests an independent service token for the given client id.</span>
+
 <code>**async def get_profile**(access_token: str) -> [Profile](#profile)</code><br>
 <span class="docs">Requests your profile.</span>
 
