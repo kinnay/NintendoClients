@@ -83,7 +83,7 @@ The following fields are currently defined:
 <span class="docs">Time after which a packet is resent if no acknowledgement is received (in seconds).</span><br>
 <code>prudp.resend_limit: int = 2</code><br>
 <span class="docs">Number of retransmissions after which the connection is considered dead.</span><br>
-<code>prudp.ping_timeout: float = 4</code><br>
+<code>prudp.ping_timeout: float = 5</code><br>
 <span class="docs">Time after which a ping packet is sent to keep the connection alive (in seconds).</span>
 
 <code>prudp.fragment_size: int = 1300</code><br>
