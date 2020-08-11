@@ -218,7 +218,7 @@ class RMCClient:
 				
 				result = common.Result.error("PythonCore::Exception")
 		else:
-			logger.warning("Received RMC request with unimplemented protocol id: 0x%X", protocol_id)
+			logger.warning("Received RMC request with unimplemented protocol id: 0x%X", request.protocol)
 			result = common.Result.error("Core::NotImplemented")
 		
 		if result.is_success():
