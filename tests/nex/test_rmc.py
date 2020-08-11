@@ -25,8 +25,7 @@ async def test_simple():
 			assert result == "12345"
 
 
-#@pytest.mark.anyio
-@pytest.mark.parametrize('anyio_backend', ['trio'])
+@pytest.mark.anyio
 async def test_unimplemented_protocol(anyio_backend):
 	s = settings.default()
 	
