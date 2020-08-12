@@ -48,6 +48,10 @@ class TestXMLTree:
 		tree = xml.parse(DOCUMENT)
 		assert list(tree) == tree.children
 	
+	def test_len(sefl):
+		tree = xml.parse(DOCUMENT)
+		assert len(tree) == 2
+	
 	def test_find(self):
 		tree = xml.parse(DOCUMENT)
 		assert tree.find("key") == [tree.children[0]]

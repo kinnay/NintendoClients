@@ -31,8 +31,11 @@ Provides classes and functions to work with XML documents.
 <code>**def _\_getitem__**(name: str) -> [XMLTree](#xmltree)</code><br>
 <span class="docs">Returns the first child with the given tag name. Raises `KeyError` if no such child exists.</span>
 
-<code>**def _\_iter__**()</code><br>
+<code>**def _\_iter__**() -> Iterator</code><br>
 <span class="docs">Returns an iterator over the children.</span>
+
+<code>**def _\_len__**() -> int</code><br>
+<span class="docs">Returns the number of children.</span>
 
 <code>**def find**(name: str) -> list[[XMLTree](#xmltree)]</code><br>
 <span class="docs">Returns all children with the given tag name.</span>

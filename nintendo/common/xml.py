@@ -49,6 +49,9 @@ class XMLTree:
 		
 	def __iter__(self):
 		return iter(self.children)
+	
+	def __len__(self):
+		return len(self.children)
 		
 	def find(self, name):
 		nodes = []
