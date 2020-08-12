@@ -17,13 +17,7 @@ class Token:
 		self.value = value
 		self.row = row
 		self.col = col
-		
-		
-class FileReader:
-	def process(self, filename):
-		with open(filename) as f:
-			return f.read()
-			
+
 
 NAME_HEAD_CHARS = string.ascii_letters + "_"
 NAME_CHARS = NAME_HEAD_CHARS + string.digits
@@ -218,77 +212,68 @@ class Scope:
 		
 class File:
 	def __init__(self):
-		self.protocols = []
-		self.structs = []
-		self.struct_names = []
+		self.protocols = {}
+		self.structs = {}
 		self.enums = []
 		
 		self.scope = Scope()
+	
+	def sort(self):
+		for proto in self.protocols.values():
+			proto.sort()
+		self.structs = {k: v for k, v in sorted(self.structs.items())}
+		self.enums = sorted(self.enums, key=lambda e: e.name)
+	
+	def add_file(self, file):
+		for proto in file.protocols.values():
+			proto.imported = True
+			self.add_protocol(proto)
+		for struct in file.structs.values():
+			self.add_struct(struct)
+		for enum in file.enums:
+			self.add_enum(enum)
 		
 	def add_protocol(self, proto):
 		if self.scope.add(proto.name):
 			raise ValueError("%s is already defined" %proto.name)
-		self.protocols.append(proto)
-		
-		for struct in proto.structs:
-			if self.scope.add(struct.name):
-				raise ValueError("%s is already defined" %struct.name)
-			self.structs.append(struct)
-			self.struct_names.append(struct.name)
-		
-		for enum in proto.enums:
-			if self.scope.add(enum.name):
-				raise ValueError("%s is already defined" %enum.name)
-			self.enums.append(enum)
+		self.protocols[proto.name] = proto
+	
+	def add_struct(self, struct):
+		if self.scope.add(struct.name):
+			raise ValueError("%s is already defined" %struct.name)
+		self.structs[struct.name] = struct
+	
+	def add_enum(self, enum):
+		if self.scope.add(enum.name):
+			raise ValueError("%s is already defined" %enum.name)
+		self.enums.append(enum)
 
 	
 class Protocol:
 	id = None
 	name = None
+	imported = False
 	
 	def __init__(self):
-		self.methods = []
-		self.method_ids = []
-		self.structs = []
-		self.enums = []
+		self.methods = {}
 		
 		self.scope = Scope()
 		
 	def sort(self):
-		self.methods = sorted(self.methods, key=lambda m: m.id)
-		self.method_ids = sorted(self.method_ids)
-		self.structs = sorted(self.structs, key=lambda s: s.name)
-		self.enums = sorted(self.enums, key=lambda e: e.name)
+		self.methods = {k: v for k, v in sorted(self.methods.items())}
 		
 	def add_method(self, method):
 		if self.scope.add(method.name):
 			raise ValueError("%s is already defined in %s" %(method.name, self.name))
-		if method.id in self.method_ids:
-			raise ValueError("Method id %i is used twice in %s" %(method.id))
-		self.methods.append(method)
-		self.method_ids.append(method.id)
-		
-	def add_struct(self, struct):
-		if self.scope.add(struct.name):
-			raise ValueError("%s is already defined in %s" %(struct.name, self.name))
-		self.structs.append(struct)
-		
-	def add_enum(self, enum):
-		if self.scope.add(enum.name):
-			raise ValueError("%s is already defined in %s" %(enum.name, self.name))
-		self.enums.append(enum)
-		
+		if method.id in self.methods:
+			raise ValueError("Method id %i is used twice in %s" %(method.id, self.name))
+		self.methods[method.id] = method
+	
 	def set_parent(self, parent):
 		self.id = parent.id
-		for method in parent.methods:
-			if method.id not in self.method_ids:
+		for method in parent.methods.values():
+			if method.id not in self.methods:
 				self.add_method(method)
-		for struct in parent.structs:
-			if struct.name not in self.scope:
-				self.add_struct(struct)
-		for enum in parent.enums:
-			if enum.name not in self.scope:
-				self.add_enum(enum)
 		
 
 class Method:
@@ -315,7 +300,7 @@ class Variable:
 	name = None
 	default = None
 		
-		
+
 class Type:
 	name = None
 	template = None
@@ -391,7 +376,7 @@ TEMPLATE_TYPES = {
 NUMERIC_TYPES = [
 	"uint8", "uint16", "uint32", "uint64",
 	"sint8", "sint16", "sint32", "sint64",
-	"pid", "datetime"
+	"pid"
 ]
 
 STRING_TYPES = [
@@ -401,21 +386,23 @@ STRING_TYPES = [
 		
 class Parser:
 	def process(self, tokens):
-		self.imports = {}
-		
 		stream = TokenStream(tokens)
 		return self.parse_file(stream)
 	
 	def parse_file(self, stream):
-		file = File()
+		self.file = File()
 		while True:
 			token = stream.peek()
 			if token.type == TYPE_EOF:
-				return file
+				return self.file
 			elif token.type == TYPE_RESERVED and token.value == "import":
 				self.parse_import(stream)
 			elif token.type == TYPE_RESERVED and token.value == "protocol":
-				file.add_protocol(self.parse_protocol(stream))
+				self.file.add_protocol(self.parse_protocol(stream))
+			elif token.type == TYPE_RESERVED and token.value == "struct":
+				self.file.add_struct(self.parse_struct(stream))
+			elif token.type == TYPE_RESERVED and token.value == "enum":
+				self.file.add_enum(self.parse_enum(stream))
 			else:
 				stream.error(token)
 				
@@ -427,11 +414,12 @@ class Parser:
 		print("Importing %s.proto" %name)
 		
 		path = "nintendo/files/proto/%s.proto" %name
-		pipeline = Pipeline(FileReader, Tokenizer, Parser)
-		file = pipeline.process(path)
+		with open(path) as f:
+			text = f.read()
+		tokens = Tokenizer().process(text)
+		file = Parser().process(tokens)
 		
-		for proto in file.protocols:
-			self.imports[proto.name] = proto
+		self.file.add_file(file)
 				
 	def parse_protocol(self, stream):
 		stream.skip_reserved("protocol")
@@ -459,14 +447,11 @@ class Parser:
 				break
 			elif token.type == TYPE_RESERVED:
 				if token.value == "method": protocol.add_method(self.parse_method(stream))
-				elif token.value == "struct": protocol.add_struct(self.parse_struct(stream))
-				elif token.value == "enum": protocol.add_enum(self.parse_enum(stream))
 			else:
 				stream.error(token)
 				
 		if parent:
-			protocol.set_parent(self.imports[parent])
-		protocol.sort()
+			protocol.set_parent(self.file.protocols[parent])
 		
 		return protocol
 				
@@ -560,7 +545,7 @@ class Parser:
 		return template
 		
 	def parse_constant(self, stream, type):
-		if type.name in NUMERIC_TYPES: return stream.parse_number()
+		if type.name in NUMERIC_TYPES + ["datetime"]: return stream.parse_number()
 		elif type.name in STRING_TYPES: return stream.parse_string()
 		elif type.name == "bool":
 			token = stream.read_name()
@@ -759,7 +744,17 @@ MAPPED_TYPES = {
 	"sint32": "s32",
 	"sint64": "s64",
 }
-				
+
+EXTERNAL_TYPES = [
+	"ResultRange", "NotificationEvent"
+]
+
+def make_class_name(name, type):
+	if "_" in name:
+		name, ext = name.rsplit("_", 1)
+		return "%s%s%s" %(name, type, ext)
+	return "%s%s" %(name, type)
+
 class CodeGenerator:
 	def process(self, file):
 		self.file = file
@@ -772,20 +767,23 @@ class CodeGenerator:
 		self.generate_header(stream)
 		for enum in self.file.enums:
 			self.generate_enum(stream, enum)
-		for struct in self.file.structs:
+		for struct in self.file.structs.values():
 			self.generate_struct(stream, struct)
-		for proto in self.file.protocols:
-			self.generate_protocol(stream, proto)
-		for proto in self.file.protocols:
-			self.generate_client(stream, proto)
-		for proto in self.file.protocols:
-			self.generate_server(stream, proto)
+		for proto in self.file.protocols.values():
+			if not proto.imported:
+				self.generate_protocol(stream, proto)
+		for proto in self.file.protocols.values():
+			if not proto.imported:
+				self.generate_client(stream, proto)
+		for proto in self.file.protocols.values():
+			if not proto.imported:
+				self.generate_server(stream, proto)
 		
 	def generate_header(self, stream):
 		stream.write_line()
 		stream.write_line("# This file was generated automatically by generate_protocols.py")
 		stream.write_line()
-		stream.write_line("from nintendo.nex import common, streams")
+		stream.write_line("from nintendo.nex import notification, rmc, common, streams")
 		stream.write_line()
 		stream.write_line("import logging")
 		stream.write_line("logger = logging.getLogger(__name__)")
@@ -872,8 +870,8 @@ class CodeGenerator:
 		required = []
 		for field in body.fields:
 			if isinstance(field, Variable):
-				if field.type.name not in self.file.struct_names and \
-				   field.type.name != "ResultRange" and \
+				if field.type.name not in self.file.structs and \
+				   field.type.name not in EXTERNAL_TYPES and \
 				   field.default is None:
 					required.append(field.name)
 		if required:
@@ -930,18 +928,18 @@ class CodeGenerator:
 	
 	def generate_if_statement(self, stream, cond, prefix=""):
 		operator = OPERATORS[cond.operator]
-		stream.write_line('if %ssettings.get("%s.%s") %s %i:' %(
+		stream.write_line('if %ssettings["%s.%s"] %s %i:' %(
 			prefix, cond.group, cond.setting, operator, cond.value
 		))
 		
 	def generate_protocol(self, stream, proto):
-		name = self.make_class_name(proto.name, "Protocol")
+		name = make_class_name(proto.name, "Protocol")
 		
 		stream.write_line()
 		stream.write_line("class %s:" %name)
 		stream.indent()
 		
-		for method in proto.methods:
+		for method in proto.methods.values():
 			stream.write_line("METHOD_%s = %i" %(method.name.upper(), method.id))
 		stream.write_line()
 		stream.write_line("PROTOCOL_ID = 0x%X" %proto.id)
@@ -950,8 +948,8 @@ class CodeGenerator:
 		stream.write_line()
 		
 	def generate_client(self, stream, proto):
-		proto_name = self.make_class_name(proto.name, "Protocol")
-		client_name = self.make_class_name(proto.name, "Client")
+		proto_name = make_class_name(proto.name, "Protocol")
+		client_name = make_class_name(proto.name, "Client")
 		
 		stream.write_line()
 		stream.write_line("class %s(%s):" %(client_name, proto_name))
@@ -963,7 +961,7 @@ class CodeGenerator:
 		stream.write_line()
 			
 		first = True
-		for method in proto.methods:
+		for method in proto.methods.values():
 			if method.supported:
 				if not first:
 					stream.write_line()
@@ -975,10 +973,10 @@ class CodeGenerator:
 		stream.write_line()
 		
 	def generate_client_method(self, stream, proto, method):
-		class_name = self.make_class_name(proto.name, "Client")
+		class_name = make_class_name(proto.name, "Client")
 	
 		param = ", ".join(["self"] + [param.name for param in method.request.vars])
-		stream.write_line("def %s(%s):" %(method.name, param))
+		stream.write_line("async def %s(%s):" %(method.name, param))
 		
 		stream.indent()
 		stream.write_line('logger.info("%s.%s()")' %(class_name, method.name))
@@ -986,13 +984,13 @@ class CodeGenerator:
 		stream.write_line("stream = streams.StreamOut(self.settings)")
 		for param in method.request.vars:
 			stream.write_line(self.make_encode(param.type, param.name))
-		stream.write_line("data = self.client.send_request(self.PROTOCOL_ID, self.METHOD_%s, stream.get())" %method.name.upper())
+		stream.write_line("data = await self.client.request(self.PROTOCOL_ID, self.METHOD_%s, stream.get())" %method.name.upper())
 		
 		stream.write_line()
 		stream.write_line("#--- response ---")
 		stream.write_line("stream = streams.StreamIn(data, self.settings)")
 		if len(method.response.vars) > 1:
-			stream.write_line("obj = common.RMCResponse()")
+			stream.write_line("obj = rmc.RMCResponse()")
 			for var in method.response.vars:
 				stream.write_line("obj.%s = %s" %(var.name, self.make_extract(var.type)))
 		elif len(method.response.vars) == 1:
@@ -1008,8 +1006,8 @@ class CodeGenerator:
 		stream.unindent()
 		
 	def generate_server(self, stream, proto):
-		server_name = self.make_class_name(proto.name, "Server")
-		proto_name = self.make_class_name(proto.name, "Protocol")
+		server_name = make_class_name(proto.name, "Server")
+		proto_name = make_class_name(proto.name, "Protocol")
 	
 		stream.write_line()
 		stream.write_line("class %s(%s):" %(server_name, proto_name))
@@ -1018,23 +1016,23 @@ class CodeGenerator:
 		stream.write_line("def __init__(self):")
 		stream.indent()
 		stream.write_line("self.methods = {")
-		for method in proto.methods:
+		for method in proto.methods.values():
 			stream.write_line("\tself.METHOD_%s: self.handle_%s," %(method.name.upper(), method.name))
 		stream.write_line("}")
 		stream.unindent()
 		
 		stream.write_line()
-		stream.write_line("def handle(self, context, method_id, input, output):")
+		stream.write_line("async def handle(self, client, method_id, input, output):")
 		stream.write_line("\tif method_id in self.methods:")
-		stream.write_line("\t\tself.methods[method_id](context, input, output)")
+		stream.write_line("\t\tawait self.methods[method_id](client, input, output)")
 		stream.write_line("\telse:")
-		stream.write_line('\t\tlogger.warning("Unknown method called on %s: %i", self.__class__.__name__, method_id)')
+		stream.write_line('\t\tlogger.warning("Unknown method called on %s: %%i", method_id)' %server_name)
 		stream.write_line('\t\traise common.RMCError("Core::NotImplemented")')
 		
-		for method in proto.methods:
+		for method in proto.methods.values():
 			stream.write_line()
 			self.generate_server_method(stream, proto, method)
-		for method in proto.methods:
+		for method in proto.methods.values():
 			if method.supported:
 				stream.write_line()
 				self.generate_server_stub(stream, proto, method)
@@ -1043,9 +1041,9 @@ class CodeGenerator:
 		stream.write_line()
 		
 	def generate_server_method(self, stream, proto, method):
-		class_name = self.make_class_name(proto.name, "Server")
+		class_name = make_class_name(proto.name, "Server")
 	
-		stream.write_line("def handle_%s(self, context, input, output):" %method.name)
+		stream.write_line("async def handle_%s(self, client, input, output):" %method.name)
 		
 		if not method.supported:
 			stream.write_line('\tlogger.warning("%s.%s is unsupported")' %(class_name, method.name))
@@ -1058,14 +1056,14 @@ class CodeGenerator:
 		for param in method.request.vars:
 			stream.write_line("%s = %s" %(param.name, self.make_extract(param.type, "input")))
 		
-		params = ", ".join(["context"] + [p.name for p in method.request.vars])
+		params = ", ".join(["client"] + [p.name for p in method.request.vars])
 		
 		if len(method.response.vars) > 1:
 			names = [var.name for var in method.response.vars]
-			stream.write_line("response = self.%s(%s)" %(method.name, params))
+			stream.write_line("response = await self.%s(%s)" %(method.name, params))
 			stream.write_line()
 			stream.write_line("#--- response ---")
-			stream.write_line("if not isinstance(response, common.RMCResponse):")
+			stream.write_line("if not isinstance(response, rmc.RMCResponse):")
 			stream.write_line('\traise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)')
 			stream.write_line("for field in %s:" %names)
 			stream.write_line("\tif not hasattr(response, field):")
@@ -1075,27 +1073,21 @@ class CodeGenerator:
 		elif len(method.response.vars) == 1:
 			var = method.response.vars[0]
 			expected = self.make_python_type(var.type)
-			stream.write_line("response = self.%s(%s)" %(method.name, params))
+			stream.write_line("response = await self.%s(%s)" %(method.name, params))
 			stream.write_line()
 			stream.write_line("#--- response ---")
 			stream.write_line("if not isinstance(response, %s):" %expected)
 			stream.write_line('\traise RuntimeError("Expected %s, got %%s" %%response.__class__.__name__)' %expected)
 			stream.write_line(self.make_encode(var.type, "response", "output"))
 		else:
-			stream.write_line("self.%s(%s)" %(method.name, params))
+			stream.write_line("await self.%s(%s)" %(method.name, params))
 		stream.unindent()
 		
 	def generate_server_stub(self, stream, proto, method):
-		class_name = self.make_class_name(proto.name, "Server")
-		stream.write_line("def %s(self, *args):" %method.name)
+		class_name = make_class_name(proto.name, "Server")
+		stream.write_line("async def %s(self, *args):" %method.name)
 		stream.write_line('\tlogger.warning("%s.%s not implemented")' %(class_name, method.name))
 		stream.write_line('\traise common.RMCError("Core::NotImplemented")')
-		
-	def make_class_name(self, name, type):
-		if "_" in name:
-			name, ext = name.rsplit("_", 1)
-			return "%s%s%s" %(name, type, ext)
-		return "%s%s" %(name, type)
 		
 	def make_python_type(self, type):
 		if type.name == "bool": return "bool"
@@ -1104,18 +1096,20 @@ class CodeGenerator:
 		if type.name == "string": return "str"
 		if type.name == "variant": return "object"
 		if type.name in ["buffer", "qbuffer"]: return "bytes"
-		if type.name == "datetime": return "comon.DateTime"
+		if type.name == "datetime": return "common.DateTime"
 		if type.name == "stationurl": return "common.StationURL"
-		if type.name == "result": return "comon.Result"
+		if type.name == "result": return "common.Result"
 		if type.name == "anydata": return "common.Data"
 		if type.name == "ResultRange": return "common.ResultRange"
-		if type.name in self.file.struct_names: return type.name
+		if type.name == "NotificationEvent": return "notification.NotificationEvent"
+		if type.name in self.file.structs: return type.name
 		if type.name in NUMERIC_TYPES: return "int"
 		raise ValueError("Unknown type: %s" %type.name)
 				
 	def make_constant(self, type, value):
-		if type.name in self.file.struct_names: return "%s()" %type.name
+		if type.name in self.file.structs: return "%s()" %type.name
 		if type.name == "ResultRange": return "common.ResultRange()"
+		if type.name == "NotificationEvent": return "notification.NotificationEvent()"
 		
 		if value is None:
 			return "None"
@@ -1142,8 +1136,9 @@ class CodeGenerator:
 	def make_extract(self, type, stream="stream"):
 		if type.name in BASIC_TYPES: return "%s.%s()" %(stream, type.name)
 		if type.name in MAPPED_TYPES: return "%s.%s()" %(stream, MAPPED_TYPES[type.name])
-		if type.name in self.file.struct_names: return "%s.extract(%s)" %(stream, type.name)
+		if type.name in self.file.structs: return "%s.extract(%s)" %(stream, type.name)
 		if type.name == "ResultRange": return "%s.extract(common.ResultRange)" %stream
+		if type.name == "NotificationEvent": return "%s.extract(notification.NotificationEvent)" %stream
 		if type.name == "list":
 			func = self.make_extract_func(type.template[0], stream)
 			return "%s.list(%s)" %(stream, func)
@@ -1156,8 +1151,11 @@ class CodeGenerator:
 	def make_extract_func(self, type, stream="stream"):
 		if type.name in BASIC_TYPES: return "%s.%s" %(stream, type.name)
 		if type.name in MAPPED_TYPES: return "%s.%s" %(stream, MAPPED_TYPES[type.name])
-		if type.name in self.file.struct_names: return type.name
+		if type.name in self.file.structs: return type.name
 		if type.name == "ResultRange": return "common.ResultRange"
+		if type.name == "NotificationEvent": return "notification.NotificationEvent"
+		if type.name == "list":
+			return "lambda: %s.list(%s)" %(stream, self.make_extract_func(type.template[0], stream))
 		raise ValueError("Unknown type in list: %s" %type.name)
 		
 	def make_encode(self, type, name, stream="stream"):
@@ -1173,34 +1171,237 @@ class CodeGenerator:
 	def make_encode_func(self, type, stream="stream"):
 		if type.name in BASIC_TYPES: return "%s.%s" %(stream, type.name)
 		if type.name in MAPPED_TYPES: return "%s.%s" %(stream, MAPPED_TYPES[type.name])
-		if type.name in self.file.struct_names: return "%s.add" %stream
-		if type.name == "ResultRange": return "%s.add" %stream
+		if type.name in self.file.structs: return "%s.add" %stream
+		if type.name in EXTERNAL_TYPES: return "%s.add" %stream
+		if type.name == "list":
+			return "lambda x: %s.list(x, %s)" %(stream, self.make_encode_func(type.template[0], stream))
+		raise ValueError("Unknown type: %s" %type.name)
+
+		
+class DocsGenerator:
+	def process(self, file, name):
+		self.file = file
+		self.file.sort()
+		self.text = ""
+		self.generate_file(name)
+		return self.text
+		
+	def generate_file(self, name):
+		self.generate_header(name)
+		for proto in self.file.protocols.values():
+			if not proto.imported:
+				self.generate_client(proto)
+		for proto in self.file.protocols.values():
+			if not proto.imported:
+				self.generate_server(proto)
+		for enum in self.file.enums:
+			self.generate_enum(enum)
+		for struct in self.file.structs.values():
+			self.generate_struct(struct)
+		
+	def generate_header(self, name):
+		self.text += "\n# Module: <code>nintendo.nex.%s</code>\n\n" %name
+		self.text += "Provides a client and server for the "
+		
+		for i, proto in enumerate(self.file.protocols.values()):
+			self.text += "`%s`" %make_class_name(proto.name, "Protocol")
+			if i < len(self.file.protocols) - 2:
+				self.text += ", "
+			elif i == len(self.file.protocols) - 2:
+				self.text += " and "
+				
+		self.text += ". This page was generated automatically from `%s.proto`.\n\n" %name
+		
+		for proto in self.file.protocols.values():
+			if not proto.imported:
+				name = make_class_name(proto.name, "Client")
+				proto = make_class_name(proto.name, "Protocol")
+				self.text += "<code>**class** [%s](#%s)</code><br>\n" %(name, name.lower())
+				self.text += '<span class="docs">The client for the `%s`.</span>\n\n' %proto
+		
+		for proto in self.file.protocols.values():
+			if not proto.imported:
+				name = make_class_name(proto.name, "Server")
+				proto = make_class_name(proto.name, "Protocol")
+				self.text += "<code>**class** [%s](#%s)</code><br>\n" %(name, name.lower())
+				self.text += '<span class="docs">The server for the `%s`.</span>\n\n' %proto
+		
+		for enum in self.file.enums:
+			self.text += "<code>**class** [%s](#%s)</code><br>\n" %(enum.name, enum.name.lower())
+		if self.file.enums:
+			self.text += "\n"
+		
+		for struct in self.file.structs.values():
+			if not struct.parent:
+				parent = "[Structure](../common)"
+			elif struct.parent == "Data":
+				parent = "[Data](../common)"
+			elif struct.parent in self.file.structs:
+				parent = "[%s](#%s)" %(struct.parent, struct.parent.lower())
+			else:
+				raise ValueError("Unknown struct parent: %s" %struct.parent)
+			self.text += "<code>**class** [%s](#%s)(%s)</code><br>\n" %(struct.name, struct.name.lower(), parent)
+		if self.file.structs:
+			self.text += "\n"
+			
+	def generate_enum(self, enum):
+		self.text += "## %s\n" %enum.name
+		self.text += "This class defines the following constants:<br>\n"
+		self.text += '<span class="docs">\n'
+		for name, value in enum.values:
+			self.text += "`%s = %i`<br>\n" %(name, value)
+		self.text += "</span>\n\n"
+		
+	def generate_struct(self, struct):
+		self.text += "## %s\n" %struct.name
+		self.text += "<code>**def _\_init__**()</code><br>\n"
+		self.text += '<span class="docs">Creates a new `%s` instance.' %struct.name
+		self.text += " Required fields must be filled in manually.</span>\n\n"
+		self.text += "The following fields are defined in this class:<br>\n"
+		self.generate_struct_body(struct.body)
+		self.text += "\n"
+	
+	def generate_struct_body(self, body):
+		self.text += '<span class="docs">\n'
+		for field in body.fields:
+			if isinstance(field, Variable):
+				variable = self.format_variable(field, True)
+				self.text += "<code>%s</code><br>\n" %variable
+			elif isinstance(field, Conditional):
+				self.text += "If `%s.%s` %s %i:<br>\n" %(
+					field.group, field.setting, OPERATORS[field.operator], field.value
+				)
+				self.generate_struct_body(field.body)
+		self.text += "</span><br>\n"
+		
+	def generate_client(self, proto):
+		name = make_class_name(proto.name, "Client")
+		self.text += "## %s\n" %name
+		self.text += "<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>\n"
+		self.text += '<span class="docs">Creates a new [`%s`](#%s).</span>\n\n' %(name, name.lower())
+		
+		for method in proto.methods.values():
+			if method.supported:
+				self.generate_client_method(method)
+		
+	def generate_client_method(self, method):
+		param = ", ".join([self.format_variable(param, False) for param in method.request.vars])
+		rval = self.format_return_value(method)
+		self.text += "<code>**async def %s**(%s) -> %s</code><br>\n" %(method.name, param, rval)
+		self.text += '<span class="docs">Calls method `%i` on the server.' %method.id
+		if len(method.response.vars) > 1:
+			self.text += " The RMC response has the following attributes:<br>\n"
+			self.text += '<span class="docs">\n'
+			for var in method.response.vars:
+				self.text += "<code>%s</code><br>\n" %self.format_variable(var, False)
+			self.text += "</span>\n"
+		self.text += "</span>\n\n"
+		
+	def generate_server(self, proto):
+		name = make_class_name(proto.name, "Server")
+		self.text += "## %s\n" %name
+		self.text += "<code>**def _\_init__**()</code><br>\n"
+		self.text += '<span class="docs">Creates a new [`%s`](#%s).</span>\n\n' %(name, name.lower())
+		
+		for method in proto.methods.values():
+			if method.supported:
+				self.generate_server_method(method)
+		
+	def generate_server_method(self, method):
+		param = ["client: [RMCClient](../rmc#rmcclient)"]
+		param += [self.format_variable(param, False) for param in method.request.vars]
+		param = ", ".join(param)
+		rval = self.format_return_value(method)
+		self.text += "<code>**async def %s**(%s) -> %s</code><br>\n" %(method.name, param, rval)
+		self.text += '<span class="docs">Handler for method `%i`.' %method.id
+		self.text += " This method should be overridden by a subclass."
+		if len(method.response.vars) > 1:
+			self.text += " The RMC response must have the following attributes:<br>\n"
+			self.text += '<span class="docs">\n'
+			for var in method.response.vars:
+				self.text += "<code>%s</code><br>\n" %self.format_variable(var, False)
+			self.text += "</span>\n"
+		self.text += "</span>\n\n"
+	
+	def format_variable(self, var, defaults):
+		text = "%s: %s" %(var.name, self.format_type(var.type))
+		if defaults:
+			if var.default is not None or var.type.name in ["ResultRange", "NotificationEvent"] or var.type.name in self.file.structs:
+				text += " = %s" %self.format_constant(var.type, var.default)
+		return text
+	
+	def format_type(self, type):
+		if type.name == "bool": return "bool"
+		if type.name == "string": return "str"
+		if type.name in ["float", "double"]: return "float"
+		if type.name in ["buffer", "qbuffer"]: return "bytes"
+		if type.name == "variant": return "object"
+		if type.name == "datetime": return "[DateTime](../common#datetime)"
+		if type.name == "stationurl": return "[StationURL](../common#stationurl)"
+		if type.name == "result": return "[Result](../common#result)"
+		if type.name == "anydata": return "[Data](../common)"
+		if type.name == "ResultRange": return "[ResultRange](../common#resultrange)"
+		if type.name == "NotificationEvent": return "[NotificationEvent](../notification#notificationevent)"
+		if type.name in self.file.structs: return "[%s](#%s)" %(type.name, type.name.lower())
+		if type.name in NUMERIC_TYPES: return "int"
+		if type.name == "list": return "list[%s]" %self.format_type(type.template[0])
+		if type.name == "map": return "dict[%s, %s]" %(
+			self.format_type(type.template[0]), self.format_type(type.template[1])
+		)
+		raise ValueError("Unknown type: %s" %type.name)
+	
+	def format_return_value(self, method):
+		if len(method.response.vars) > 1:
+			return "[RMCResponse](../common)"
+		if len(method.response.vars) == 1:
+			return self.format_type(method.response.vars[0].type)
+		return "None"
+				
+	def format_constant(self, type, value):
+		if type.name in self.file.structs: return "[%s](#%s)()" %(type.name, type.name.lower())
+		if type.name == "ResultRange": return "[ResultRange](../common#resultrange)"
+		if type.name == "NotificationEvent": return "[NotificationEvent](../notification#notificationevent)"
+		
+		if type.name in NUMERIC_TYPES + ["bool"]: return str(value)
+		if type.name in ["buffer", "qbuffer"]: return 'b"%s"' %value
+		if type.name == "string": return '"%s"' %value
+		if type.name == "datetime":
+			if value == 0:
+				return "[DateTime](../common#datetime).never()"
+			return "[DateTime](../common#datetime)(%i)" %value
+		
+		if type.name == "list":
+			entries = []
+			for entry in value:
+				entries.append(self.format_constant(type.template[0], entry))
+			return "[%s]" %", ".join(entries)
+		if type.name == "map":
+			items = []
+			for key, value in value.items():
+				key = self.format_constant(type.template[0], key)
+				value = self.format_constant(type.template[1], value)
+				items.append("%s: %s" %(key, value))
+			return "{%s}" %", ".join(items)
+		
 		raise ValueError("Unknown type: %s" %type.name)
 		
-
-class Pipeline:
-	def __init__(self, *stages):
-		self.stages = []
-		for stage in stages:
-			self.stages.append(stage())
-			
-	def process(self, param):
-		for stage in self.stages:
-			param = stage.process(param)
-		return param
-		
-
-pipeline = Pipeline(FileReader, Tokenizer, Parser, CodeGenerator)
 
 def process(filename):
 	filepath = os.path.join("nintendo/files/proto", filename)
 	name = os.path.splitext(filename)[0]
 		
 	print("Parsing %s" %filename)
-	code = pipeline.process(filepath)
+	with open(filepath) as f:
+		text = f.read()
+	tokens = Tokenizer().process(text)
+	file = Parser().process(tokens)
+	code = CodeGenerator().process(file)
+	docs = DocsGenerator().process(file, name)
 	
 	with open("nintendo/nex/%s.py" %name, "wb") as f:
-		f.write(code.encode("utf8"))
+		f.write(code.encode())
+	with open("docs/reference/nex/%s.md" %name, "wb") as f:
+		f.write(docs.encode())
 
 for name in os.listdir("nintendo/files/proto"):
 	process(name)
