@@ -5,7 +5,7 @@ struct MessageRecipient {
 	uint32 gid;
 }
 
-struct UserMessage {
+struct UserMessage : Data {
 	uint32 id;
 	uint32 parent_id;
 	pid sender;
@@ -15,6 +15,14 @@ struct UserMessage {
 	string subject;
 	string sender_name;
 	MessageRecipient recipient;
+}
+
+struct TextMessage : UserMessage {
+	string body;
+}
+
+struct BinaryMessage : UserMessage {
+	qbuffer body;
 }
 
 protocol Messaging : 23 {

@@ -1,29 +1,24 @@
 
 # Module: <code>nintendo.nex.messaging</code>
 
-Provides a client and server for the `MessageDeliveryProtocol` and `MessagingProtocol`. This page was generated automatically from `messaging.proto`.
-
-<code>**class** [MessageDeliveryClient](#messagedeliveryclient)</code><br>
-<span class="docs">The client for the `MessageDeliveryProtocol`.</span>
+Provides a client and server for the `MessagingProtocol` and `MessageDeliveryProtocol`. This page was generated automatically from `messaging.proto`.
 
 <code>**class** [MessagingClient](#messagingclient)</code><br>
 <span class="docs">The client for the `MessagingProtocol`.</span>
 
-<code>**class** [MessageDeliveryServer](#messagedeliveryserver)</code><br>
-<span class="docs">The server for the `MessageDeliveryProtocol`.</span>
+<code>**class** [MessageDeliveryClient](#messagedeliveryclient)</code><br>
+<span class="docs">The client for the `MessageDeliveryProtocol`.</span>
 
 <code>**class** [MessagingServer](#messagingserver)</code><br>
 <span class="docs">The server for the `MessagingProtocol`.</span>
 
+<code>**class** [MessageDeliveryServer](#messagedeliveryserver)</code><br>
+<span class="docs">The server for the `MessageDeliveryProtocol`.</span>
+
+<code>**class** [BinaryMessage](#binarymessage)([UserMessage](#usermessage))</code><br>
 <code>**class** [MessageRecipient](#messagerecipient)([Structure](../common))</code><br>
-<code>**class** [UserMessage](#usermessage)([Structure](../common))</code><br>
-
-## MessageDeliveryClient
-<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
-<span class="docs">Creates a new [`MessageDeliveryClient`](#messagedeliveryclient).</span>
-
-<code>**async def deliver_message**(message: [Data](../common)) -> None</code><br>
-<span class="docs">Calls method `1` on the server.</span>
+<code>**class** [TextMessage](#textmessage)([UserMessage](#usermessage))</code><br>
+<code>**class** [UserMessage](#usermessage)([Data](../common))</code><br>
 
 ## MessagingClient
 <code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
@@ -56,12 +51,12 @@ Provides a client and server for the `MessageDeliveryProtocol` and `MessagingPro
 <code>**async def delete_all_messages**(recipient: [MessageRecipient](#messagerecipient)) -> int</code><br>
 <span class="docs">Calls method `7` on the server.</span>
 
-## MessageDeliveryServer
-<code>**def _\_init__**()</code><br>
-<span class="docs">Creates a new [`MessageDeliveryServer`](#messagedeliveryserver).</span>
+## MessageDeliveryClient
+<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
+<span class="docs">Creates a new [`MessageDeliveryClient`](#messagedeliveryclient).</span>
 
-<code>**async def deliver_message**(client: [RMCClient](../rmc#rmcclient), message: [Data](../common)) -> None</code><br>
-<span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
+<code>**async def deliver_message**(message: [Data](../common)) -> None</code><br>
+<span class="docs">Calls method `1` on the server.</span>
 
 ## MessagingServer
 <code>**def _\_init__**()</code><br>
@@ -94,6 +89,22 @@ Provides a client and server for the `MessageDeliveryProtocol` and `MessagingPro
 <code>**async def delete_all_messages**(client: [RMCClient](../rmc#rmcclient), recipient: [MessageRecipient](#messagerecipient)) -> int</code><br>
 <span class="docs">Handler for method `7`. This method should be overridden by a subclass.</span>
 
+## MessageDeliveryServer
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new [`MessageDeliveryServer`](#messagedeliveryserver).</span>
+
+<code>**async def deliver_message**(client: [RMCClient](../rmc#rmcclient), message: [Data](../common)) -> None</code><br>
+<span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
+
+## BinaryMessage
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `BinaryMessage` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>body: bytes</code><br>
+</span><br>
+
 ## MessageRecipient
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new `MessageRecipient` instance. Required fields must be filled in manually.</span>
@@ -103,6 +114,15 @@ The following fields are defined in this class:<br>
 <code>type: int</code><br>
 <code>pid: int</code><br>
 <code>gid: int</code><br>
+</span><br>
+
+## TextMessage
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `TextMessage` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>body: str</code><br>
 </span><br>
 
 ## UserMessage

@@ -31,7 +31,7 @@ class MessageRecipient(common.Structure):
 		stream.u32(self.gid)
 
 
-class UserMessage(common.Structure):
+class UserMessage(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.id = None
@@ -71,6 +71,45 @@ class UserMessage(common.Structure):
 		stream.string(self.subject)
 		stream.string(self.sender_name)
 		stream.add(self.recipient)
+common.DataHolder.register(UserMessage, "UserMessage")
+
+
+class TextMessage(UserMessage):
+	def __init__(self):
+		super().__init__()
+		self.body = None
+	
+	def check_required(self, settings):
+		for field in ['body']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.body = stream.string()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.body)
+common.DataHolder.register(TextMessage, "TextMessage")
+
+
+class BinaryMessage(UserMessage):
+	def __init__(self):
+		super().__init__()
+		self.body = None
+	
+	def check_required(self, settings):
+		for field in ['body']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.body = stream.qbuffer()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.qbuffer(self.body)
+common.DataHolder.register(BinaryMessage, "BinaryMessage")
 
 
 class MessagingProtocol:
