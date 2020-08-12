@@ -6,7 +6,7 @@ Provides classes to parse and build files in a stream-like fashion.
 <code>**class** [StreamOut](#streamout)</code><br>
 <span class="docs">A byte stream that writes to a memory buffer.</span>
 
-<code>**class** [StreamIn](#streamout)</code><br>
+<code>**class** [StreamIn](#streamin)</code><br>
 <span class="docs">A byte stream that reads from a memory buffer.</span>
 
 <code>**class** [BitStreamOut](#bitstreamout)([StreamOut](#streamout))</code><br>
