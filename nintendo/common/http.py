@@ -44,6 +44,7 @@ XML_TYPES = [
 TEXT_TYPES = [
 	"application/x-www-form-urlencoded",
 	"text/plain",
+	"text/html",
 	*JSON_TYPES,
 	*XML_TYPES
 ]
