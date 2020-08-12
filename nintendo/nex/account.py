@@ -646,8 +646,8 @@ class AccountServer(AccountProtocol):
 		response = await self.create_account(client, name, key, groups, email)
 		
 		#--- response ---
-		if not isinstance(response, comon.Result):
-			raise RuntimeError("Expected comon.Result, got %s" %response.__class__.__name__)
+		if not isinstance(response, common.Result):
+			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 	
 	async def handle_delete_account(self, client, input, output):
@@ -665,8 +665,8 @@ class AccountServer(AccountProtocol):
 		response = await self.disable_account(client, pid, until, message)
 		
 		#--- response ---
-		if not isinstance(response, comon.Result):
-			raise RuntimeError("Expected comon.Result, got %s" %response.__class__.__name__)
+		if not isinstance(response, common.Result):
+			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 	
 	async def handle_change_password(self, client, input, output):
@@ -767,8 +767,8 @@ class AccountServer(AccountProtocol):
 		response = await self.update_account_name(client, name)
 		
 		#--- response ---
-		if not isinstance(response, comon.Result):
-			raise RuntimeError("Expected comon.Result, got %s" %response.__class__.__name__)
+		if not isinstance(response, common.Result):
+			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 	
 	async def handle_update_account_email(self, client, input, output):
@@ -778,8 +778,8 @@ class AccountServer(AccountProtocol):
 		response = await self.update_account_email(client, email)
 		
 		#--- response ---
-		if not isinstance(response, comon.Result):
-			raise RuntimeError("Expected comon.Result, got %s" %response.__class__.__name__)
+		if not isinstance(response, common.Result):
+			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 	
 	async def handle_update_custom_data(self, client, input, output):
@@ -790,8 +790,8 @@ class AccountServer(AccountProtocol):
 		response = await self.update_custom_data(client, public_data, private_data)
 		
 		#--- response ---
-		if not isinstance(response, comon.Result):
-			raise RuntimeError("Expected comon.Result, got %s" %response.__class__.__name__)
+		if not isinstance(response, common.Result):
+			raise RuntimeError("Expected common.Result, got %s" %response.__class__.__name__)
 		output.result(response)
 	
 	async def handle_find_by_name_regex(self, client, input, output):

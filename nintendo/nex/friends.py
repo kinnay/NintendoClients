@@ -1126,8 +1126,8 @@ class FriendsServerV2(FriendsProtocolV2):
 		response = await self.update_mii(client, mii)
 		
 		#--- response ---
-		if not isinstance(response, comon.DateTime):
-			raise RuntimeError("Expected comon.DateTime, got %s" %response.__class__.__name__)
+		if not isinstance(response, common.DateTime):
+			raise RuntimeError("Expected common.DateTime, got %s" %response.__class__.__name__)
 		output.datetime(response)
 	
 	async def handle_update_comment(self, client, input, output):
@@ -1137,8 +1137,8 @@ class FriendsServerV2(FriendsProtocolV2):
 		response = await self.update_comment(client, comment)
 		
 		#--- response ---
-		if not isinstance(response, comon.DateTime):
-			raise RuntimeError("Expected comon.DateTime, got %s" %response.__class__.__name__)
+		if not isinstance(response, common.DateTime):
+			raise RuntimeError("Expected common.DateTime, got %s" %response.__class__.__name__)
 		output.datetime(response)
 	
 	async def handle_update_preference(self, client, input, output):
