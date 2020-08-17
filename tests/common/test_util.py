@@ -14,6 +14,9 @@ def test_ip_to_hex():
 	with pytest.raises(ValueError):
 		util.ip_to_hex("1.1.1.")
 
+def test_ip_from_hex():
+	assert util.ip_from_hex(0xC0A8B2BC) == "192.168.178.188"
+
 def test_is_hexadecimal():
 	assert util.is_hexadecimal("0")
 	assert util.is_hexadecimal("ABCDEF")

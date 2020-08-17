@@ -16,6 +16,9 @@ def ip_to_hex(ip):
 	except OSError:
 		raise ValueError("IP address is invalid")
 	return struct.unpack(">I", data)[0]
+
+def ip_from_hex(value):
+	return socket.inet_ntoa(struct.pack(">I", value))
 	
 def is_hexadecimal(s):
 	return s and all(c in string.hexdigits for c in s)
