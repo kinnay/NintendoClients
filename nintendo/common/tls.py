@@ -84,6 +84,10 @@ class TLSCertificate:
 	def encode(self, format):
 		return crypto.dump_certificate(TypeMap[format], self.obj)
 		
+	def save(self, filename, format):
+		with open(filename, "wb") as f:
+			f.write(self.encode(format))
+		
 	def sign(self, key, alg="sha256"):
 		self.obj.sign(key.obj, alg)
 	
@@ -115,7 +119,11 @@ class TLSPrivateKey:
 		
 	def encode(self, format):
 		return crypto.dump_privatekey(TypeMap[format], self.obj)
-		
+	
+	def save(self, filename, format):
+		with open(filename, "wb") as f:
+			f.write(self.encode(format))
+	
 	@classmethod
 	def load(cls, filename, format):
 		with open(filename, "rb") as f:

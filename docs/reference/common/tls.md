@@ -62,8 +62,11 @@ This class should not be instantiated directly. Instead, one of the static metho
 <code>**def sign**(key: [TLSPrivateKey](#tlsprivatekey), alg: str = "sha256") -> None</code><br>
 <span class="docs">Signs the certificate with the given private key and hash function.</span>
 
+<code>**def save**(filename: str, format: int) -> None</code><br>
+<span class="docs">Saves the certificate in the given `format`, which should be either [`TYPE_DER`](#global-constants) or [`TYPE_PEM`](#global-constants).
+
 <code>**def encode**(format: int) -> bytes</code><br>
-<span class="docs">Encodes the certificate in given `format`, which should be either [`TYPE_DER`](#global-constants) or [`TYPE_PEM`](#global-constants).</span>
+<span class="docs">Encodes the certificate in the given `format`, which should be either [`TYPE_DER`](#global-constants) or [`TYPE_PEM`](#global-constants).</span>
 
 <code style="color: blue">@classmethod</code><br>
 <code>**def load**(filename: str, format: int) -> [TLSCertificate](#tlscertificate)</code><br>
@@ -80,8 +83,11 @@ This class should not be instantiated directly. Instead, one of the static metho
 ## TLSPrivateKey
 This class should not be instantiated directly. Instead, one of the static methods should be used.
 
+<code>**def save**(filename: str, format: int) -> None</code><br>
+<span class="docs">Saves the private key in the given `format`, which should be either [`TYPE_DER`](#global-constants) or [`TYPE_PEM`](#global-constants).
+
 <code>**def encode**(format: int) -> bytes</code><br>
-<span class="docs">Encodes the private key in given `format`, which should be either [`TYPE_DER`](#global-constants) or [`TYPE_PEM`](#global-constants).</span>
+<span class="docs">Encodes the private key in the given `format`, which should be either [`TYPE_DER`](#global-constants) or [`TYPE_PEM`](#global-constants).</span>
 
 <code style="color: blue">@classmethod</code><br>
 <code>**def load**(filename: str, format: int) -> [TLSPrivateKey](#tlsprivatekey)</code><br>
