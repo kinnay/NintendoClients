@@ -525,11 +525,12 @@ async def browse(settings, search_criteria, key=None, timeout=1, max=0):
 		sessions = []
 		ids = []
 		async with anyio.move_on_after(timeout):
-			data, addr = await sock.recv()
-			session = parse_browse_reply(settings, data, key, challenge_key, challenge_data)
-			if session and session.session_id not in ids:
-				ids.append(session.session_id)
-				sessions.append(session)
+			while max == 0 or len(sessions) < max:
+				data, addr = await sock.recv()
+				session = parse_browse_reply(settings, data, key, challenge_key, challenge_data)
+				if session and session.session_id not in ids:
+					ids.append(session.session_id)
+					sessions.append(session)
 	return sessions
 
 @contextlib.asynccontextmanager
