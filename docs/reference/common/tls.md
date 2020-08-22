@@ -59,8 +59,8 @@ This class should not be instantiated directly. Instead, one of the static metho
 <code>**issuer**: [X509Name](#x509name) = [X509Name](#x509name)</code><br>
 <span class="docs">The issuer name.</span>
 
-<code>**def sign**(key: [TLSPrivateKey](#tlsprivatekey)) -> None</code><br>
-<span class="docs">Signs the certificate with the given private key.</span>
+<code>**def sign**(key: [TLSPrivateKey](#tlsprivatekey), alg: str = "sha256") -> None</code><br>
+<span class="docs">Signs the certificate with the given private key and hash function.</span>
 
 <code>**def encode**(format: int) -> bytes</code><br>
 <span class="docs">Encodes the certificate in given `format`, which should be either [`TYPE_DER`](#global-constants) or [`TYPE_PEM`](#global-constants).</span>

@@ -84,8 +84,8 @@ class TLSCertificate:
 	def encode(self, format):
 		return crypto.dump_certificate(TypeMap[format], self.obj)
 		
-	def sign(self, key):
-		self.obj.sign(key.obj, "sha1")
+	def sign(self, key, alg="sha256"):
+		self.obj.sign(key.obj, alg)
 	
 	@classmethod
 	def load(cls, filename, format):

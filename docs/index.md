@@ -21,9 +21,7 @@ This package is able to do everything that's required to access a game server. I
 	* `e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com`
 
 ## Contributing
-If you would like to contribute code or knowledge in any way, feel free to open a pull request or issue on [github](https://github.com/Kinnay/NintendoClients). If you open a pull request, please try to follow the current code style as much as possible.
-
-Some important points:
+If you would like to contribute code or knowledge in any way, feel free to open a pull request or issue on [github](https://github.com/Kinnay/NintendoClients). If you open a pull request, please try to follow the current code style as much as possible:
 
 * Use tabs for indentation, and spaces for alignment.
 * Use double quotes for strings, unless the string contains a double quote itself. In that case, using single quotes is ok.
