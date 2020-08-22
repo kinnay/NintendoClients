@@ -98,8 +98,8 @@ This class should not be instantiated directly. Instead, one of the static metho
 <span class="docs">Loads the private key from a buffer with the given `format`, which should be either [`TYPE_DER`](#global-constants) or [`TYPE_PEM`](#global-constants).</span>
 
 <code style="color: blue">@classmethod</code><br>
-<code>**def generate**() -> [TLSPrivateKey](#tlsprivatekey)</code><br>
-<span class="docs">Generates a random 1024-bit private key.</span>
+<code>**def generate**(size: int = 2048) -> [TLSPrivateKey](#tlsprivatekey)</code><br>
+<span class="docs">Generates a random private key with the given number of bits.</span>
 
 ## TLSContext
 <code>**def _\_init__**(version: int = VERSION_TLS)</code><br>

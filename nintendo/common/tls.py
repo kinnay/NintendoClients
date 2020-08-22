@@ -136,9 +136,9 @@ class TLSPrivateKey:
 		return cls(pkey)
 		
 	@classmethod
-	def generate(cls):
+	def generate(cls, size=2048):
 		pkey = crypto.PKey()
-		pkey.generate_key(crypto.TYPE_RSA, 1024)
+		pkey.generate_key(crypto.TYPE_RSA, size)
 		return cls(pkey)
 
 
