@@ -220,13 +220,18 @@ class TLSServer:
 		
 	async def serve(self):
 		while True:
-			client = TLSClient(await self.server.accept())
-			
-			host, port = client.remote_address()
-			logger.debug("New TLS connection: %s:%i", host, port)
-			
-			await self.group.spawn(self.handle, client)
-			
+			try:
+				sock = await self.server.accept()
+			except (OSError, ssl.SSLError) as e:
+				logger.error("Failed to accept TLS connection: %s", e)
+			else:
+				client = TLSClient(sock)
+				
+				host, port = client.remote_address()
+				logger.debug("New TLS connection: %s:%i", host, port)
+				
+				await self.group.spawn(self.handle, client)
+	
 	async def handle(self, client):
 		with util.catch_all():
 			async with client:

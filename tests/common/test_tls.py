@@ -39,3 +39,28 @@ async def test_tls():
 			
 			await client.send(b"hi")
 			assert await client.recv() == b"hello"
+
+
+@pytest.mark.anyio
+async def test_handshake_error():
+	async def handler(client):
+		assert await client.recv() == b"hi"
+		await client.send(b"hello")
+	
+	# Create a self signed certificate
+	pkey = tls.TLSPrivateKey.generate()
+	cert = tls.TLSCertificate.generate(pkey)
+	cert.subject["CN"] = NAME
+	cert.issuer["CN"] = NAME
+	cert.sign(pkey)
+	
+	context = tls.TLSContext()
+	context.set_certificate(cert, pkey)
+	async with tls.serve(handler, IP, 12345, context):
+		context = tls.TLSContext()
+		context.set_authority(cert)
+		async with tls.connect(NAME, 12345) as client:
+			pass
+		async with tls.connect(NAME, 12345, context) as client:
+			await client.send(b"hi")
+			assert await client.recv() == b"hello"
