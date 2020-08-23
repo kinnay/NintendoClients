@@ -10,8 +10,8 @@ Keep in mind that Nintendo is still banning Switch devices. This package tries t
 The Switch examples that require application authentication only support digital titles (no game cards).
 
 ### Documentation
-* [Documentation about Nintendo's servers and protocols](https://github.com/Kinnay/NintendoClients/wiki)
-* [Documentation about the classes and functions in this package](https://nintendoclients.readthedocs.io)
+* [Nintendo's servers and protocols](https://github.com/Kinnay/NintendoClients/wiki)
+* [The classes and functions in this package](https://nintendoclients.readthedocs.io)
 
 ### Requirements
 * Python 3.8 or higher
