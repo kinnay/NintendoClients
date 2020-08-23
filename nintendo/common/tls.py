@@ -5,6 +5,7 @@ import contextlib
 import tempfile
 import anyio
 import ssl
+import os
 
 import logging
 logger = logging.getLogger(__name__)
@@ -51,7 +52,6 @@ class X509Name:
 	}
 	
 	def __init__(self):
-		# Why can't we create an X509Name directly?
 		self.obj = crypto.X509().get_subject()
 	
 	def __getitem__(self, key):
@@ -111,7 +111,7 @@ class TLSCertificate:
 		cert.set_notAfter(b"29990101000000Z")
 		
 		return cls(cert)
-	
+
 	
 class TLSPrivateKey:
 	def __init__(self, obj):
@@ -147,19 +147,19 @@ class TLSContext:
 		self.context = ssl.SSLContext(VersionMap[version])
 		
 	def set_certificate(self, cert, key):
-		certfile = tempfile.NamedTemporaryFile()
-		keyfile = tempfile.NamedTemporaryFile()
+		certfile = tempfile.NamedTemporaryFile(delete=False)
+		keyfile = tempfile.NamedTemporaryFile(delete=False)
 		
 		certfile.write(cert.encode(TYPE_PEM))
 		keyfile.write(key.encode(TYPE_PEM))
 		
-		certfile.flush()
-		keyfile.flush()
+		certfile.close()
+		keyfile.close()
 		
 		self.context.load_cert_chain(certfile.name, keyfile.name)
 		
-		certfile.close()
-		keyfile.close()
+		os.remove(certfile.name)
+		os.remove(keyfile.name)
 		
 	def set_authority(self, authority):
 		data = authority.encode(TYPE_DER)
