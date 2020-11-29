@@ -18,7 +18,7 @@ The Switch examples that require application authentication only support digital
 * PyCryptodome
 * PyOpenSSL
 * netifaces
-* anyio
+* anyio (1.4.0)
 
 If you install this package with `pip install .` all requirements (except for Python itself) will be installed automatically.
 
