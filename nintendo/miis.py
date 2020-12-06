@@ -1,5 +1,5 @@
 
-from nintendo.common import streams
+from anynet import streams
 import struct
 
 

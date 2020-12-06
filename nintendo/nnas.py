@@ -1,5 +1,5 @@
 
-from nintendo.common import http, tls
+from anynet import http, tls
 import pkg_resources
 import datetime
 import hashlib
@@ -245,7 +245,7 @@ class NNASClient:
 		cert = tls.TLSCertificate.load(CERT, tls.TYPE_DER)
 		key = tls.TLSPrivateKey.load(KEY, tls.TYPE_DER)
 		
-		self.context = tls.TLSContext()
+		self.context = tls.TLSClientContext()
 		self.context.set_authority(ca)
 		self.context.set_certificate(cert, key)
 		
@@ -334,7 +334,7 @@ class NNASClient:
 			req.headers["Authorization"] = "Bearer " + auth
 			
 	async def request(self, req):
-		response = await http.request(req, self.context)
+		response = await http.request(self.url, req, self.context)
 		if response.error():
 			logger.error("Account request returned status code %i\n%s", response.status_code, response.text)
 			raise NNASError(response.status_code, response.xml)

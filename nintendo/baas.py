@@ -1,5 +1,5 @@
 
-from nintendo.common import http, tls
+from anynet import tls, http
 
 import logging
 logger = logging.getLogger(__name__)
@@ -16,10 +16,12 @@ USER_AGENT = {
 	1003: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
 	1004: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
 	1010: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
-	1011: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)"
+	1011: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
+	1020: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
+	1100: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 11.4.0.0; Add-on 11.4.0.0)"
 }
 
-LATEST_VERSION = 1011
+LATEST_VERSION = 1100
 
 
 class BAASError(Exception):
@@ -38,8 +40,7 @@ class BAASClient:
 		self.user_agent = USER_AGENT[LATEST_VERSION]
 		self.power_state = "FA"
 		
-		self.context = tls.TLSContext()
-		self.context.load_default_authorities()
+		self.context = tls.TLSClientContext()
 	
 	def set_url(self, url): self.url = url
 	def set_user_agent(self, user_agent): self.user_agent = user_agent
@@ -62,7 +63,7 @@ class BAASClient:
 		req.headers["Content-Length"] = 0
 		req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 		
-		response = await http.request(req, self.context)
+		response = await http.request(self.url, req, self.context)
 		if response.error():
 			logger.warning("BAAS request returned error: %s" %response.json)
 			raise BAASError(response.json)

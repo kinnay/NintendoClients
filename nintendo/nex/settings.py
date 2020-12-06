@@ -29,9 +29,6 @@ class Settings:
 		"prudp.compression": int,
 		"prudp.encryption": int,
 		
-		"prudp.local_stream_type": int,
-		"prudp.remote_stream_type": int,
-		
 		"prudp.resend_timeout": float,
 		"prudp.resend_limit": int,
 		"prudp.ping_timeout": float,

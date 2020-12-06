@@ -1,6 +1,6 @@
 
 # Module: <code>nintendo.baas</code>
-Provides a client for the [BaaS server](https://github.com/Kinnay/NintendoClients/wiki/BAAS-Server).
+Provides a client for the [BaaS server](https://github.com/kinnay/nintendo/wiki/BAAS-Server).
 
 <code>**class** [BAASError](#baaserror)(Exception)</code><br>
 <span class="docs">Raised when the `BaaS` server returns an error code.</span>
@@ -32,7 +32,7 @@ Provides a client for the [BaaS server](https://github.com/Kinnay/NintendoClient
 <code>**def set_system_version**(version: int) -> None</code></br>
 <span class="docs">Updates the user agent for the given system version. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` and later are supported.</span>
 
-<code>**def set_context**(context: [TLSContext](../common/tls#tlscontext)) -> None</code><br>
+<code>**def set_context**(context: [TLSClientContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlsclientcontext)) -> None</code><br>
 <span class="docs">Changes the TLS context. By default, the server certificate is verified with default authorities.</span>
 
 <code>**async def authenticate**(device_token: str) -> dict</code><br>

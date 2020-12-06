@@ -1,7 +1,7 @@
 
 from Crypto.Hash import CMAC
 from Crypto.Cipher import AES
-from nintendo.common import http, tls
+from anynet import tls, http
 from nintendo import switch
 import pkg_resources
 
@@ -25,7 +25,9 @@ SYSTEM_VERSION_DIGEST = {
 	1003: "CusHY#000a0003#4mBbTFYnE0Rtmh8NLCVq61rbvx0kJPQUxXkDpwj0V84=",
 	1004: "CusHY#000a0003#4mBbTFYnE0Rtmh8NLCVq61rbvx0kJPQUxXkDpwj0V84=",
 	1010: "CusHY#000a0100#Vlw9dIEqjxE2F5jDOQPYWXs2p7wIGyDYWXXIyQGdxcE=",
-	1011: "CusHY#000a0100#Vlw9dIEqjxE2F5jDOQPYWXs2p7wIGyDYWXXIyQGdxcE="
+	1011: "CusHY#000a0100#Vlw9dIEqjxE2F5jDOQPYWXs2p7wIGyDYWXXIyQGdxcE=",
+	1020: "CusHY#000a0200#90k0dE_eO7hRcs6ByTZMvgUm4lhEoqAlik96WkznQcQ=",
+	1100: "CusHY#000b0000#VyA0fsWi6ZBEOzVsseXIcEfFLqQMgW0tWzN2oJ7viqk="
 }
 
 USER_AGENT = {
@@ -39,7 +41,9 @@ USER_AGENT = {
 	1003: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 10.4.0.0)",
 	1004: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 10.4.0.0)",
 	1010: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 10.4.0.0)",
-	1011: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 10.4.0.0)"
+	1011: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 10.4.0.0)",
+	1020: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 10.4.0.0)",
+	1100: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 11.4.0.0)"
 }
 
 KEY_GENERATION = {
@@ -53,10 +57,12 @@ KEY_GENERATION = {
 	1003: 11,
 	1004: 11,
 	1010: 11,
-	1011: 11
+	1011: 11,
+	1020: 11,
+	1100: 11
 }
 
-LATEST_VERSION = 1011
+LATEST_VERSION = 1100
 
 
 class DAuthError(switch.NDASError): pass
@@ -74,7 +80,7 @@ class DAuthClient:
 		self.keyset = keyset
 		
 		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
-		self.context = tls.TLSContext()
+		self.context = tls.TLSClientContext()
 		self.context.set_authority(ca)
 		
 		self.region = 1
@@ -114,7 +120,7 @@ class DAuthClient:
 		req.headers["Content-Length"] = 0
 		req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 		
-		response = await http.request(req, self.context)
+		response = await http.request(self.url, req, self.context)
 		if response.error():
 			if response.json:
 				logger.error("DAuth request returned errors:")

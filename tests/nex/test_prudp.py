@@ -130,19 +130,46 @@ async def test_substreams():
 			await client.send(b"test3", 0)
 			assert await client.recv(1) == b"pong"
 			
-
+			
 @pytest.mark.anyio
-async def test_v1():
+async def test_client_transport():
 	s = settings.default()
 	
 	async def handler(client):
-		assert await client.recv() == b"ping"
-		await client.send(b"pong")
+		data = await client.recv()
+		await client.send(data[::-1])
 	
-	async with prudp.serve(handler, s, HOST, 12345, 5):
-		async with prudp.connect(s, HOST, 12345, 5) as client:
-			await client.send(b"ping")
-			assert await client.recv() == b"pong"
+	async with prudp.serve(handler, s, HOST, 12345):
+		async with prudp.connect_transport(s, HOST, 12345) as transport:
+			async with transport.connect(1) as client1:
+				async with transport.connect(1) as client2:
+					await client1.send(b"ping")
+					await client2.send(b"test")
+					assert await client1.recv() == b"gnip"
+					assert await client2.recv() == b"tset"
+			
+			
+@pytest.mark.anyio
+async def test_server_transport():
+	s = settings.default()
+	
+	async def handler1(client):
+		assert await client.recv() == b"ping1"
+		await client.send(b"pong1")
+	
+	async def handler2(client):
+		assert await client.recv() == b"ping2"
+		await client.send(b"pong2")
+	
+	async with prudp.serve_transport(s, HOST, 12345) as transport:
+		async with transport.serve(handler1, 1):
+			async with transport.serve(handler2, 2):
+				async with prudp.connect(s, HOST, 12345, 1) as client:
+					await client.send(b"ping1")
+					assert await client.recv() == b"pong1"
+				async with prudp.connect(s, HOST, 12345, 2) as client:
+					await client.send(b"ping2")
+					assert await client.recv() == b"pong2"
 
 
 @pytest.mark.anyio

@@ -77,12 +77,12 @@ class StationAddress:
 		
 	def encode(self, stream, type=InetAddress.IPV4):
 		stream.add(self.inet, type)
-		if stream.settings["pia.station_extension"]:
+		if stream.settings["pia.version"] < 500:
 			stream.u16(self.extension_id)
 			
 	def decode(self, stream, type=InetAddress.IPV4):
 		self.inet = stream.extract(InetAddress, type)
-		if stream.settings["pia.station_extension"]:
+		if stream.settings["pia.version"] < 500:
 			self.extension_id = stream.u16()
 		
 		

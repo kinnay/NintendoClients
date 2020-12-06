@@ -1,8 +1,8 @@
 
 from nintendo.nex import backend, ranking, datastore, settings
-from nintendo.common import http
 from nintendo.games import DKCTF
 from nintendo import nnas
+from anynet import http
 import anyio
 
 import logging

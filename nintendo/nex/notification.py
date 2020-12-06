@@ -16,7 +16,6 @@ class NotificationEvent(common.Structure):
 		self.param2 = None
 		self.text = None
 		self.param3 = None
-		self.map = None
 	
 	def check_required(self, settings):
 		for field in ['pid', 'type', 'param1', 'param2', 'text']:
@@ -24,10 +23,6 @@ class NotificationEvent(common.Structure):
 				raise ValueError("No value assigned to required field: %s" %field)
 		if settings["nex.version"] >= 30500:
 			for field in ['param3']:
-				if getattr(self, field) is None:
-					raise ValueError("No value assigned to required field: %s" %field)
-		if settings["nex.version"] >= 40000:
-			for field in ['map']:
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -39,8 +34,6 @@ class NotificationEvent(common.Structure):
 		self.text = stream.string()
 		if stream.settings["nex.version"] >= 30500:
 			self.param3 = stream.pid()
-		if stream.settings["nex.version"] >= 40000:
-			self.map = stream.map(stream.string, stream.variant)
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -51,8 +44,6 @@ class NotificationEvent(common.Structure):
 		stream.string(self.text)
 		if stream.settings["nex.version"] >= 30500:
 			stream.pid(self.param3)
-		if stream.settings["nex.version"] >= 40000:
-			stream.map(self.map, stream.string, stream.variant)
 
 
 class NotificationProtocol:

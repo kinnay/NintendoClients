@@ -183,6 +183,13 @@ class TokenStream:
 		token = self.read()
 		if token.type != type or token.value != value:
 			self.error(token)
+	
+	def check_token(self, type, value):
+		token = stream.peek()
+		if token.type == type and token.value == value:
+			self.index += 1
+			return True
+		return False
 			
 	def read_name(self): return self.read_token(TYPE_NAME)
 	def read_symbol(self): return self.read_token(TYPE_SYMBOL)
@@ -190,6 +197,10 @@ class TokenStream:
 	def parse_name(self): return self.parse_token(TYPE_NAME)
 	def parse_number(self): return self.parse_token(TYPE_NUMBER)
 	def parse_string(self): return self.parse_token(TYPE_STRING)
+	
+	def check_reserved(self, value): return self.check_token(TYPE_RESERVED, value)
+	def check_symbol(self, value): return self.check_token(TYPE_SYMBOL, value)
+	def check_eof(self): return self.check_token(TYPE_EOF, None)
 	
 	def skip_name(self, value): self.skip_token(TYPE_NAME, value)
 	def skip_reserved(self, value): self.skip_token(TYPE_RESERVED, value)

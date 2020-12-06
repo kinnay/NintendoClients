@@ -1,6 +1,6 @@
 
-from nintendo.common import crypto
 from nintendo.nex import streams
+from anynet import crypto
 import struct
 import secrets
 import hashlib

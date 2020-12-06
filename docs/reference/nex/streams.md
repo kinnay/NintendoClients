@@ -1,12 +1,12 @@
 
 # Module: <code>nintendo.nex.streams</code>
 
-Extends [generic memory streams](../../common/streams) with useful `nex` related methods.
+Extends [generic memory streams](https://anynet.readthedocs.io/en/latest/reference/streams) with useful `nex` related methods.
 
-<code>**class** StreamOut([common.StreamOut](../../common/streams#streamout))</code><br>
+<code>**class** StreamOut([anynet.StreamOut](https://anynet.readthedocs.io/en/latest/reference/streams/#streamout))</code><br>
 <span class="docs">An output stream that supports various `nex` structures.</span>
 
-<code>**class** StreamIn([common.StreamIn](../../common/streams#streamin))</code><br>
+<code>**class** StreamIn([anynet.StreamIn](https://anynet.readthedocs.io/en/latest/reference/streams/#streamin))</code><br>
 <span class="docs">An input stream that supports various `nex` structures.</span>
 
 ## StreamOut

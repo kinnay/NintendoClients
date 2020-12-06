@@ -1,20 +1,23 @@
 
-from distutils.core import setup
+import setuptools
 
-setup(
-	name="Nintendo",
-	description="Client for Nintendo game servers",
-	url="https://github.com/Kinnay/NintendoClients",
-	packages=[
-		"nintendo", "nintendo.common", "nintendo.enl",
-		"nintendo.nex", "nintendo.pia"
+long_description = \
+	"This library implements various network protocols made by Nintendo."
+
+setuptools.setup(
+	name = "Nintendo",
+	version = "0.0.0",
+	description = "Nintendo network library",
+	long_description = long_description,
+	author = "Yannik Marchand",
+	author_email = "ymarchand@me.com",
+	url = "https://github.com/kinnay/nintendo",
+	license = "MIT",
+	packages = [
+		"nintendo", "nintendo.enl", "nintendo.nex", "nintendo.pia"
 	],
-	package_data={"nintendo": ["files/config/*", "files/cert/*"]},
-	install_requires=[
-		'anyio==1.4.0',
-		'cryptography',
-		'pyopenssl',
-		'netifaces',
-		'pycryptodome'
-	]
+	package_data = {
+		"nintendo": ["files/config/*", "files/cert/*"]
+	},
+	install_requires = ["anynet"]
 )

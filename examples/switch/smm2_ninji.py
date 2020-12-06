@@ -5,8 +5,8 @@ from nintendo.aauth import AAuthClient
 from nintendo.switch import ProdInfo, KeySet
 from nintendo.nex import backend, authentication, \
 	datastore_smm2 as datastore, settings
-from nintendo.common import http
 from nintendo.games import SMM2
+from anynet import http
 import anyio
 import zlib
 
@@ -14,7 +14,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-SYSTEM_VERSION = 1010 #10.1.0
+SYSTEM_VERSION = 1100 #11.0.0
 
 # You can get your user id and password from
 # su/baas/<guid>.dat in save folder 8000000000000010.

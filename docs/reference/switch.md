@@ -44,8 +44,8 @@ Provides useful functions and classes related to Nintendo Switch.
 <code>**def _\_init__**(keyset: [KeySet](#keyset), filename: str)</code><br>
 <span class="docs">Creates a new [ProdInfo](#prodinfo) object from the given file with the given keyset.</span>
 
-<code>**def get_tls_cert**() -> [TLSCertificate](../common/tls#tlscertificate)</code><br>
+<code>**def get_tls_cert**() -> [TLSCertificate](https://anynet.readthedocs.io/en/latest/reference/tls#tlscertificate)</code><br>
 <span class="docs">Extracts the device certificate.</span>
 
-<code>**def get_tls_key**() -> [TLSPrivateKey](../common/tls#tlsprivatekey)</code><br>
+<code>**def get_tls_key**() -> [TLSPrivateKey](https://anynet.readthedocs.io/en/latest/reference/tls#tlsprivatekey)</code><br>
 <span class="docs">Extract the private key that belongs to the device certificate.</span>

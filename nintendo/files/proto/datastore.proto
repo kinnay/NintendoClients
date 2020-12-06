@@ -470,7 +470,7 @@ protocol DataStore : 115 {
 	method perpetuate_object(uint16 persistence_slot_id, uint64 data_id, bool delete_last_object) {}
 	method unperpetuate_object(uint16 persistence_slot_id, bool delete_last_object) {}
 	
-	method prepare_get_object_or_meta(DataStorePrepareGetParam param) {
+	method prepare_get_object_or_meta_binary(DataStorePrepareGetParam param) {
 		DataStoreReqGetInfo get_info;
 		DataStoreReqGetAdditionalMeta additional_meta;
 	}

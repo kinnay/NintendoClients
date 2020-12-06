@@ -1,5 +1,6 @@
 
 from nintendo.nex import prudp, common, streams
+from anynet import util
 import contextlib
 import struct
 import anyio
@@ -133,32 +134,18 @@ class RMCClient:
 		self.servers = {}
 		self.requests = {}
 		self.responses = {}
-	
-	async def __aenter__(self): return self
-	async def __aexit__(self, typ, val, tb):
-		if typ is None:
-			try:
-				await self.close()
-			except:
-				await self.abort()
-				raise
-		else:
-			await self.abort()
-	
-	async def close(self):
-		async with anyio.open_cancel_scope(shield=True):
-			await self.group.cancel_scope.cancel()
-			await self.client.close()
-	
-	async def abort(self):
-		async with anyio.open_cancel_scope(shield=True):
-			await self.group.cancel_scope.cancel()
-			await self.client.abort()
+		
+		self.closed = False
 		
 	def register_server(self, server):
 		if server.PROTOCOL_ID in self.servers:
 			raise ValueError("Server with protocol id 0x%X already exists" %server.PROTOCOL_ID)
 		self.servers[server.PROTOCOL_ID] = server
+	
+	async def cleanup(self):
+		self.closed = True
+		for event in self.requests.values():
+			await event.set()
 		
 	async def start(self, servers):
 		for server in servers:
@@ -167,8 +154,9 @@ class RMCClient:
 		while True:
 			try:
 				data = await self.client.recv()
-			except anyio.exceptions.ClosedResourceError:
+			except anyio.EndOfStream:
 				logger.info("Connection was closed")
+				await self.cleanup()
 				return
 			
 			message = RMCMessage.parse(self.settings, data)
@@ -208,7 +196,7 @@ class RMCClient:
 				elif isinstance(e, MemoryError): result = common.Result.error("PythonCore::MemoryError")
 				elif isinstance(e, KeyError): result = common.Result.error("PythonCore::KeyError")
 				else: result = common.Result.error("PythonCore::Exception")
-			except anyio.exceptions.ExceptionGroup as e:
+			except anyio.ExceptionGroup as e:
 				logger.exception("Multiple exceptions occurred while handling a method call")
 				
 				filtered = []
@@ -234,6 +222,9 @@ class RMCClient:
 		await self.client.send(response.encode())
 	
 	async def request(self, protocol, method, body):
+		if self.closed:
+			raise RuntimeError("RMC connection is closed")
+		
 		call_id = self.call_id
 		self.call_id = (self.call_id + 1) & 0xFFFFFFFF
 		
@@ -244,6 +235,9 @@ class RMCClient:
 		await self.client.send(message.encode())
 		
 		await event.wait()
+		
+		if self.closed:
+			raise RuntimeError("RMC connection is closed")
 		
 		message = self.responses.pop(call_id)
 		if message.error != -1:
@@ -259,11 +253,11 @@ class RMCClient:
 @contextlib.asynccontextmanager
 async def connect(settings, host, port, vport=1, context=None, credentials=None, servers=[]):
 	logger.debug("Connecting RMC client to %s:%i:%i", host, port, vport)
-	async with prudp.connect(settings, host, port, vport, context, credentials) as client:
-		async with anyio.create_task_group() as group:
-			async with RMCClient(settings, client, group) as client:
-				await group.spawn(client.start, servers)
-				yield client
+	async with prudp.connect(settings, host, port, vport, 10, context, credentials) as client:
+		async with util.create_task_group() as group:
+			client = RMCClient(settings, client, group)
+			await group.spawn(client.start, servers)
+			yield client
 	logger.debug("RMC client is closed")
 
 @contextlib.asynccontextmanager
@@ -272,11 +266,11 @@ async def serve(settings, servers, host="", port=0, vport=1, context=None, key=N
 		host, port = client.remote_address()
 		
 		logger.debug("New RMC connection: %s:%i", host, port)
-		async with anyio.create_task_group() as group:
-			async with RMCClient(settings, client, group) as client:
-				await client.start(servers)
+		async with util.create_task_group() as group:
+			client = RMCClient(settings, client, group)
+			await client.start(servers)
 	
 	logger.info("Starting RMC server at %s:%i:%i", host, port, vport)
-	async with prudp.serve(handle, settings, host, port, vport, context, key):
+	async with prudp.serve(handle, settings, host, port, vport, 10, context, key):
 		yield
 	logger.info("RMC server is closed")

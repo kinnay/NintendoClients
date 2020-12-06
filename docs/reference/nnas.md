@@ -1,7 +1,7 @@
 
 # Module: <code>nintendo.nnas</code>
 
-Provides a client for the 3DS/Wii U [account server](https://github.com/Kinnay/NintendoClients/wiki/Account-Server).
+Provides a client for the 3DS/Wii U [account server](https://github.com/kinnay/nintendo/wiki/Account-Server).
 
 <code>**class** NNASError(Exception)</code><br>
 <span class="docs">Raised when the server returns an error code.</span>
@@ -16,7 +16,7 @@ Provides a client for the 3DS/Wii U [account server](https://github.com/Kinnay/N
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new account server client.</span>
 
-<code>**def set_context**(context: [TLSContext](../common/tls#tlscontext)) -> None</code><br>
+<code>**def set_context**(context: [TLSClientContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlsclientcontext)) -> None</code><br>
 <span class="docs">Changes the TLS context. By default, the server certificate is verified with `Nintendo CA - G3`, and `Wii U Common Prod 1` is used as the client certificate.</span>
 
 <code>**def set_url**(url: str) -> None</code><br>

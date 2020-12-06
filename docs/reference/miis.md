@@ -3,7 +3,7 @@
 
 Provides a parser for FFL mii data.
 
-<code>**class** [MiiData](#miidata)</code>
+<code>**class** [MiiData](#miidata)</code><br>
 <span class="docs">The mii data class.</span>
 
 ## MiiData

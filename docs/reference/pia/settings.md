@@ -3,9 +3,12 @@
 
 Defines settings for `pia` classes.
 
-<code>**class** [Settings](#settings)</code><br>
+<code>**class** Settings</code><br>
 <span class="docs">Holds the settings.</span>
 
-## Settings
-<code>**def _\_init__**(version: int, app_version: int = -1)</code><br>
-<span class="docs">Creates a new settings object from the given pia version and application communication version.</span>
+<code>**def default**(version: int, app_version: int = -1, *, platform: int = SWITCH) -> Settings</code><br>
+<span class="docs">Creates a settings object with reasonable defaults.</span>
+
+## Global Constants
+`WIIU (0)`<br>
+`SWITCH (1)`

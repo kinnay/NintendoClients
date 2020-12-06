@@ -74,11 +74,6 @@ The following fields are currently defined:
 <code>prudp.encryption: int = ENCRYPTION_RC4</code><br>
 <span class="docs">The encryption algorithm used for data packets.</span>
 
-<code>prudp.local_stream_type: int = 10</code><br>
-<span class="docs">The local stream type of the `prudp` protocol. This should almost always be `10` (`RVSecure`)</span><br>
-<code>prudp.remote_stream_type: int = 10</code><br>
-<span class="docs">The remote stream type of the `prudp` protocol. This should almost always be `10` (`RVSecure`)</span>
-
 <code>prudp.resend_timeout: float = 1</code><br>
 <span class="docs">Time after which a packet is resent if no acknowledgement is received (in seconds).</span><br>
 <code>prudp.resend_limit: int = 2</code><br>

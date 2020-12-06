@@ -1,7 +1,7 @@
 
 # Module: <code>nintendo.nex.kerberos</code>
 
-Provides classes for Kerberos authentication. For details, click [here](https://github.com/Kinnay/NintendoClients/wiki/Kerberos-Authentication).
+Provides classes for Kerberos authentication. For details, click [here](https://github.com/kinnay/nintendo/wiki/Kerberos-Authentication).
 
 <code>**class** [KeyDerivationOld](#keyderivationold)</code><br>
 <span class="docs">Implements the old key derivation method (used by 3DS and Wii U servers).</span>

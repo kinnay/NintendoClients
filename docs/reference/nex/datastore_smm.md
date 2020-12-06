@@ -185,7 +185,7 @@ Provides a client and server for the `DataStoreProtocol` and `DataStoreProtocolS
 <code>**async def unperpetuate_object**(persistence_slot_id: int, delete_last_object: bool) -> None</code><br>
 <span class="docs">Calls method `32` on the server.</span>
 
-<code>**async def prepare_get_object_or_meta**(param: [DataStorePrepareGetParam](#datastorepreparegetparam)) -> [RMCResponse](../common)</code><br>
+<code>**async def prepare_get_object_or_meta_binary**(param: [DataStorePrepareGetParam](#datastorepreparegetparam)) -> [RMCResponse](../common)</code><br>
 <span class="docs">Calls method `33` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>get_info: [DataStoreReqGetInfo](#datastorereqgetinfo)</code><br>
@@ -393,7 +393,7 @@ Provides a client and server for the `DataStoreProtocol` and `DataStoreProtocolS
 <code>**async def unperpetuate_object**(client: [RMCClient](../rmc#rmcclient), persistence_slot_id: int, delete_last_object: bool) -> None</code><br>
 <span class="docs">Handler for method `32`. This method should be overridden by a subclass.</span>
 
-<code>**async def prepare_get_object_or_meta**(client: [RMCClient](../rmc#rmcclient), param: [DataStorePrepareGetParam](#datastorepreparegetparam)) -> [RMCResponse](../common)</code><br>
+<code>**async def prepare_get_object_or_meta_binary**(client: [RMCClient](../rmc#rmcclient), param: [DataStorePrepareGetParam](#datastorepreparegetparam)) -> [RMCResponse](../common)</code><br>
 <span class="docs">Handler for method `33`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>get_info: [DataStoreReqGetInfo](#datastorereqgetinfo)</code><br>

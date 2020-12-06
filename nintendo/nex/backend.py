@@ -1,6 +1,6 @@
 
-from nintendo.common import tls
 from nintendo.nex import rmc, authentication, kerberos
+from anynet import tls
 import contextlib
 
 import logging
@@ -77,8 +77,7 @@ class BackEndClient:
 		# Connect to secure server
 		stream_id = secure_station["sid"]
 		
-		context = tls.TLSContext()
-		context.load_default_authorities()
+		context = tls.TLSClientContext()
 		async with rmc.connect(self.settings, host, port, stream_id, context, creds, servers) as client:
 			yield client
 	
@@ -128,7 +127,6 @@ class BackEndClient:
 
 @contextlib.asynccontextmanager
 async def connect(settings, host, port):
-	context = tls.TLSContext()
-	context.load_default_authorities()
+	context = tls.TLSClientContext()
 	async with rmc.connect(settings, host, port, context=context) as client:
 		yield BackEndClient(settings, client, host, port)

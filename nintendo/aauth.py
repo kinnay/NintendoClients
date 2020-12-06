@@ -4,7 +4,7 @@ from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
-from nintendo.common import http, tls
+from anynet import tls, http
 from nintendo import switch
 import pkg_resources
 import struct
@@ -43,10 +43,12 @@ USER_AGENT = {
 	1003: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
 	1004: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
 	1010: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
-	1011: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)"
+	1011: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
+	1020: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
+	1100: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 11.4.0.0; Add-on 11.4.0.0)",
 }
 
-LATEST_VERSION = 1011
+LATEST_VERSION = 1100
 
 
 class AAuthError(switch.NDASError): pass
@@ -60,7 +62,7 @@ class AAuthClient:
 		self.power_state = "FA"
 		
 		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
-		self.context = tls.TLSContext()
+		self.context = tls.TLSClientContext()
 		self.context.set_authority(ca)
 	
 	def set_url(self, url): self.url = url
@@ -84,7 +86,7 @@ class AAuthClient:
 		req.headers["Content-Length"] = 0
 		req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 		
-		response = await http.request(req, self.context)
+		response = await http.request(self.url, req, self.context)
 		if response.error():
 			if response.json:
 				logger.error("AAuth server returned errors:")

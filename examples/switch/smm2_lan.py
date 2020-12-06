@@ -36,7 +36,7 @@ def print_session_info(info):
 async def main():
 	search_criteria = lan.LanSessionSearchCriteria()
 	
-	s = settings.Settings(SMM2.PIA_VERSION)
+	s = settings.default(SMM2.PIA_VERSION)
 	sessions = await lan.browse(s, search_criteria, SMM2.PIA_KEY)
 	if sessions:
 		print("LAN sessions found:")

@@ -1,11 +1,12 @@
 
 from Crypto.Cipher import AES
-from nintendo.common import udp, util
 from nintendo.pia import streams, types
+from anynet import udp, util
 import contextlib
 import itertools
 import secrets
 import hashlib
+import socket
 import struct
 import anyio
 import hmac
@@ -46,11 +47,11 @@ def make_browse_request(settings, search_criteria, game_key, challenge_key, chal
 	if settings["pia.lan_version"] != 0:
 		nonce_id = next(nonce_counter)
 		stream.u8(settings["pia.lan_version"])
-		stream.bool(settings["pia.crypto_enabled"])
+		stream.bool(game_key is not None)
 		stream.u64(nonce_id)
 		stream.write(challenge_key)
 		
-		if settings["pia.crypto_enabled"]:
+		if game_key is not None:
 			key = encrypt_key(game_key, challenge_key)
 			nonce = generate_nonce(nonce_id)
 			
@@ -73,8 +74,8 @@ def verify_challenge_reply(stream, game_key, challenge_key, challenge_data):
 		return False
 		
 	enabled = stream.bool()
-	if enabled != stream.settings["pia.crypto_enabled"]:
-		logger.warning("Received challenge reply with unexpected crypo setting")
+	if enabled and game_key is None:
+		logger.warning("Received encrypted challenge reply but no game key was provided")
 		return False
 	
 	if not enabled:
@@ -339,6 +340,11 @@ class LanSessionInfo:
 		self.host_location = types.StationLocation()
 		self.stations = [LanStationInfo() for i in range(16)]
 		self.session_param = bytes(32)
+	
+	def get_session_key(self, key):
+		param = self.session_param
+		param = param[:31] + bytes([(param[31] + 1) & 0xFF])
+		return hmac.digest(key, param, hashlib.sha256)
 		
 	def encode(self, stream):
 		stream.u32(self.game_mode)
@@ -347,7 +353,7 @@ class LanSessionInfo:
 		stream.u16(self.num_participants)
 		stream.u16(self.min_participants)
 		stream.u16(self.max_participants)
-		if stream.settings["pia.version"] < 50300:
+		if stream.settings["pia.version"] < 503:
 			stream.u32(self.session_type)
 		else:
 			stream.u8(self.system_version)
@@ -356,7 +362,7 @@ class LanSessionInfo:
 		stream.write(self.application_data.ljust(0x180, b"\0"))
 		stream.u32(len(self.application_data))
 		stream.bool(self.is_opened)
-		if stream.settings["pia.version"] < 51000:
+		if stream.settings["pia.version"] < 510:
 			stream.add(self.host_location)
 		else:
 			type = types.InetAddress.IPV4
@@ -376,7 +382,7 @@ class LanSessionInfo:
 		self.num_participants = stream.u16()
 		self.min_participants = stream.u16()
 		self.max_participants = stream.u16()
-		if stream.settings["pia.version"] < 50300:
+		if stream.settings["pia.version"] < 503:
 			self.session_type = stream.u32()
 		else:
 			self.system_version = stream.u8()
@@ -385,7 +391,7 @@ class LanSessionInfo:
 		self.application_data = stream.read(0x180)
 		self.application_data = self.application_data[:stream.u32()]
 		self.is_opened = stream.bool()
-		if stream.settings["pia.version"] < 51000:
+		if stream.settings["pia.version"] < 510:
 			self.host_location = stream.extract(types.StationLocation)
 		else:
 			type = types.InetAddress.IPV4
@@ -409,10 +415,6 @@ class LanServer:
 		self.game_key = key
 		self.sock = sock
 		self.group = group
-	
-	async def __aenter__(self): return self
-	async def __aexit__(self, typ, val, tr):
-		await self.group.cancel_scope.cancel()
 	
 	async def start(self):
 		await self.group.spawn(self.process)
@@ -468,7 +470,7 @@ class LanServer:
 		
 		if self.settings["pia.lan_version"] != 0:
 			stream.u8(self.settings["pia.lan_version"])
-			stream.bool(self.settings["pia.crypto_enabled"])
+			stream.bool(self.game_key is not None)
 			stream.write(challenge)
 		
 		return stream.get()
@@ -483,8 +485,8 @@ class LanServer:
 			return None
 		
 		crypto = stream.bool()
-		if crypto != self.settings["pia.crypto_enabled"]:
-			logger.warning("Browse request has unexpected crypto settings")
+		if crypto and self.game_key is None:
+			logger.warning("Received crypto challenge but no game key was provided")
 			return None
 		
 		nonce_id = stream.u64()
@@ -536,7 +538,7 @@ async def browse(settings, search_criteria, key=None, timeout=1, max=0):
 @contextlib.asynccontextmanager
 async def serve(settings, handler, key=None):
 	async with udp.bind(util.broadcast_address(), 30000) as sock:
-		async with anyio.create_task_group() as group:
-			async with LanServer(settings, handler, key, sock, group) as server:
-				await server.start()
-				yield
+		async with util.create_task_group() as group:
+			server = LanServer(settings, handler, key, sock, group)
+			await server.start()
+			yield server

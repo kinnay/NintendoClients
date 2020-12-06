@@ -9,9 +9,6 @@ struct NotificationEvent {
 	[nex.version >= 30500] {
 		pid param3;
 	}
-	[nex.version >= 40000] {
-		map<string, variant> map;
-	}
 }
 
 protocol Notification : 14 {

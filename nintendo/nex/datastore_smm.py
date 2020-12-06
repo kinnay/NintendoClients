@@ -1361,7 +1361,7 @@ class DataStoreProtocolSMM:
 	METHOD_GET_PERSISTENCE_INFOS = 30
 	METHOD_PERPETUATE_OBJECT = 31
 	METHOD_UNPERPETUATE_OBJECT = 32
-	METHOD_PREPARE_GET_OBJECT_OR_META = 33
+	METHOD_PREPARE_GET_OBJECT_OR_META_BINARY = 33
 	METHOD_GET_PASSWORD_INFO = 34
 	METHOD_GET_PASSWORD_INFOS = 35
 	METHOD_GET_METAS_MULTIPLE_PARAM = 36
@@ -1904,12 +1904,12 @@ class DataStoreClientSMM(DataStoreProtocolSMM):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM.unperpetuate_object -> done")
 	
-	async def prepare_get_object_or_meta(self, param):
-		logger.info("DataStoreClientSMM.prepare_get_object_or_meta()")
+	async def prepare_get_object_or_meta_binary(self, param):
+		logger.info("DataStoreClientSMM.prepare_get_object_or_meta_binary()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
-		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT_OR_META, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_PREPARE_GET_OBJECT_OR_META_BINARY, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
@@ -1918,7 +1918,7 @@ class DataStoreClientSMM(DataStoreProtocolSMM):
 		obj.additional_meta = stream.extract(DataStoreReqGetAdditionalMeta)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStoreClientSMM.prepare_get_object_or_meta -> done")
+		logger.info("DataStoreClientSMM.prepare_get_object_or_meta_binary -> done")
 		return obj
 	
 	async def get_password_info(self, data_id):
@@ -2173,7 +2173,7 @@ class DataStoreServerSMM(DataStoreProtocolSMM):
 			self.METHOD_GET_PERSISTENCE_INFOS: self.handle_get_persistence_infos,
 			self.METHOD_PERPETUATE_OBJECT: self.handle_perpetuate_object,
 			self.METHOD_UNPERPETUATE_OBJECT: self.handle_unperpetuate_object,
-			self.METHOD_PREPARE_GET_OBJECT_OR_META: self.handle_prepare_get_object_or_meta,
+			self.METHOD_PREPARE_GET_OBJECT_OR_META_BINARY: self.handle_prepare_get_object_or_meta_binary,
 			self.METHOD_GET_PASSWORD_INFO: self.handle_get_password_info,
 			self.METHOD_GET_PASSWORD_INFOS: self.handle_get_password_infos,
 			self.METHOD_GET_METAS_MULTIPLE_PARAM: self.handle_get_metas_multiple_param,
@@ -2565,11 +2565,11 @@ class DataStoreServerSMM(DataStoreProtocolSMM):
 		delete_last_object = input.bool()
 		await self.unperpetuate_object(client, persistence_slot_id, delete_last_object)
 	
-	async def handle_prepare_get_object_or_meta(self, client, input, output):
-		logger.info("DataStoreServerSMM.prepare_get_object_or_meta()")
+	async def handle_prepare_get_object_or_meta_binary(self, client, input, output):
+		logger.info("DataStoreServerSMM.prepare_get_object_or_meta_binary()")
 		#--- request ---
 		param = input.extract(DataStorePrepareGetParam)
-		response = await self.prepare_get_object_or_meta(client, param)
+		response = await self.prepare_get_object_or_meta_binary(client, param)
 		
 		#--- response ---
 		if not isinstance(response, rmc.RMCResponse):
@@ -2879,8 +2879,8 @@ class DataStoreServerSMM(DataStoreProtocolSMM):
 		logger.warning("DataStoreServerSMM.unperpetuate_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	async def prepare_get_object_or_meta(self, *args):
-		logger.warning("DataStoreServerSMM.prepare_get_object_or_meta not implemented")
+	async def prepare_get_object_or_meta_binary(self, *args):
+		logger.warning("DataStoreServerSMM.prepare_get_object_or_meta_binary not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_password_info(self, *args):

@@ -1,6 +1,6 @@
 
-from nintendo.common import http
 from nintendo import aauth
+from anynet import http
 import pytest
 import struct
 
@@ -8,7 +8,7 @@ import struct
 EXPECTED_REQUEST = \
 	"POST /v3/application_auth_token HTTP/1.1\r\n" \
 	"Host: 127.0.0.1:12345\r\n" \
-	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)\r\n" \
+	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 11.4.0.0; Add-on 11.4.0.0)\r\n" \
 	"Accept: */*\r\n" \
 	"X-Nintendo-PowerState: FA\r\n" \
 	"Content-Length: 1428\r\n" \
@@ -25,7 +25,7 @@ CERT += bytes(0x18)
 
 @pytest.mark.anyio
 async def test_aauth():
-	async def handler(request):
+	async def handler(client, request):
 		text = request.encode().decode()
 		assert text.startswith(EXPECTED_REQUEST)
 		assert text[1378:1388] == "&cert_key="

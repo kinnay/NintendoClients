@@ -1,6 +1,6 @@
 
-from nintendo.common import http, tls
 from nintendo.nex import kerberos, rmc
+from anynet import http, tls
 import pkg_resources
 import secrets
 import hashlib
@@ -25,7 +25,7 @@ class HppClient:
 		self.call_id = 1
 		
 		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
-		self.context = tls.TLSContext()
+		self.context = tls.TLSClientContext()
 		self.context.set_authority(ca)
 
 	def set_environment(self, env): self.environment = env

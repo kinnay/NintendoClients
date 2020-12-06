@@ -1,11 +1,11 @@
 
 from nintendo.nex import common
-from nintendo.common import streams
+from anynet import streams
 
 
 class StreamOut(streams.StreamOut):
 	def __init__(self, settings):
-		super().__init__()
+		super().__init__("<")
 		self.settings = settings
 		
 	def pid(self, value):
@@ -86,7 +86,7 @@ class StreamOut(streams.StreamOut):
 		
 class StreamIn(streams.StreamIn):
 	def __init__(self, data, settings):
-		super().__init__(data)
+		super().__init__(data, "<")
 		self.settings = settings
 		
 	def pid(self):
