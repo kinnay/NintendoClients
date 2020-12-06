@@ -15,10 +15,7 @@ The Switch examples that require application authentication only support digital
 
 ### Requirements
 * Python 3.8 or higher
-* PyCryptodome
-* PyOpenSSL
-* netifaces
-* anyio (1.4.0)
+* [anynet](https://github.com/kinnay/anynet)
 
 If you install this package with `pip install .` all requirements (except for Python itself) will be installed automatically.
 
