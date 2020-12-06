@@ -15,7 +15,7 @@ The Switch examples that require application authentication only support digital
 
 ### Requirements
 * Python 3.8 or higher
-* [anynet](https://github.com/kinnay/anynet)
+* https://github.com/kinnay/anynet
 
 If you install this package with `pip install .` all requirements (except for Python itself) will be installed automatically.
 
