@@ -62,10 +62,18 @@ The following fields are currently defined:
 <code>prudp.access_key: str = ""</code><br>
 <span class="docs">The access key of the game server.</span>
 
-<code>prudp.version: int = 1</code><br>
-<span class="docs">The major version of the `prudp` protocol: `0`, `1` or `2` (`prudp v0`, `prudp v1` or `prudp lite` respectively).</span><br>
+<code>prudp.version: int = 2</code><br>
+<span class="docs">The major version of the `prudp` protocol with UDP transport:<br>
+<span class="docs">
+`- 0`: both client and server use only `prudp v0`<br>
+`- 1`: both client and server use only `prudp v1`<br>
+`- 2`: client uses only `prudp v1`, server supports both `v0` and `v1`.
+</span><br>
+If the transport is different from UDP, the `lite` encoding is always used.
+</span><br>
 <code>prudp.minor_version: int = 4</code><br>
-<span class="docs">The minor version of the `prudp` protocol.</span>
+<span class="docs">The minor version of the `prudp` protocol. 
+This is only relevant for `prudp v1` and `lite`.</span>
 
 <code>prudp.transport: int = TRANSPORT_UDP</code><br>
 <span class="docs">The underlying transport protocol for `prudp`.</span><br>

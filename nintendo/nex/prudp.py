@@ -91,6 +91,7 @@ class PRUDPPacket:
 		self.type = type
 		self.flags = flags
 		
+		self.version = None
 		self.source_type = None
 		self.source_port = None
 		self.dest_type = None
@@ -210,6 +211,7 @@ class PRUDPMessageV0:
 			dest = stream.u8()
 			
 			packet = PRUDPPacket()
+			packet.version = 0
 			packet.source_type = source >> 4
 			packet.source_port = source & 0xF
 			packet.dest_type = dest >> 4
@@ -345,6 +347,7 @@ class PRUDPMessageV1:
 			type_flags = stream.u16()
 			
 			packet = PRUDPPacket()
+			packet.version = 1
 			packet.source_type = source >> 4
 			packet.source_port = source & 0xF
 			packet.dest_type = dest >> 4
@@ -490,34 +493,46 @@ class PRUDPLiteMessage:
 			packets.append(packet)
 		return packets
 		
-
-class PacketEncoder:
+		
+class PRUDPMessageSelector:
 	def __init__(self, settings):
-		if settings["prudp.transport"] == settings.TRANSPORT_UDP:
-			if settings["prudp.version"] == 0:
-				self.encoder = PRUDPMessageV0(settings)
-			else:
-				self.encoder = PRUDPMessageV1(settings)
-		else:
-			self.encoder = PRUDPLiteMessage(settings)
-			
-	def signature_size(self):
-		return self.encoder.signature_size()
+		self.settings = settings
+		self.v0 = PRUDPMessageV0(settings)
+		self.v1 = PRUDPMessageV1(settings)
+		self.lite = PRUDPLiteMessage(settings)
+		
+	def select(self, version):
+		if self.settings["prudp.transport"] == self.settings.TRANSPORT_UDP:
+			if version == 0:
+				return self.v0
+			return self.v1
+		return self.lite
+	
+	def analyze(self, data):
+		if self.settings["prudp.transport"] == self.settings.TRANSPORT_UDP:
+			if self.settings["prudp.version"] == 2:
+				if data[:3] == b"\xEA\xD0\x01":
+					return self.v1
+				return self.v0
+		return self.select(self.settings["prudp.version"])
+	
+	def signature_size(self, version=None):
+		return self.select(version).signature_size()
 	def calc_packet_signature(self, packet, session_key, connection_signature):
-		return self.encoder.calc_packet_signature(packet, session_key, connection_signature)
-	def calc_connection_signature(self, addr):
-		return self.encoder.calc_connection_signature(addr)
+		return self.select(packet.version).calc_packet_signature(packet, session_key, connection_signature)
+	def calc_connection_signature(self, addr, version=None):
+		return self.select(version).calc_connection_signature(addr)
 	def encode(self, packet):
-		return self.encoder.encode(packet)
+		return self.select(packet.version).encode(packet)
 	def decode(self, data):
-		return self.encoder.decode(data)
+		return self.analyze(data).decode(data)
 	
 	
 class RC4Encryption:
 	def __init__(self, key):
 		self.rc4enc = crypto.RC4(key)
 		self.rc4dec = crypto.RC4(key)
-		
+	
 	def set_key(self, key):
 		self.rc4enc.set_key(key)
 		self.rc4dec.set_key(key)
@@ -692,7 +707,7 @@ class SlidingWindow:
 
 
 class PRUDPClient:
-	def __init__(self, settings, transport):
+	def __init__(self, settings, transport, version):
 		self.fragment_size = settings["prudp.fragment_size"]
 		self.resend_timeout = settings["prudp.resend_timeout"]
 		self.resend_limit = settings["prudp.resend_limit"]
@@ -700,13 +715,13 @@ class PRUDPClient:
 		self.max_substream_id = settings["prudp.max_substream_id"]
 		self.supported_functions = settings["prudp.supported_functions"]
 		self.minor_ver = settings["prudp.minor_version"]
-		self.version = settings["prudp.version"]
 		
 		self.settings = settings
 		self.transport = transport
+		self.version = version
 		
+		self.packet_encoder = PRUDPMessageSelector(settings).select(version)
 		self.payload_encoder = PayloadEncoder(settings)
-		self.packet_encoder = PacketEncoder(settings)
 		self.sequence_mgr = SequenceMgr(settings)
 		
 		substreams = self.max_substream_id + 1
@@ -866,6 +881,7 @@ class PRUDPClient:
 			await self.send_packet(ack)
 	
 	async def send_packet(self, packet):
+		packet.version = self.version
 		packet.source_port = self.local_port
 		packet.source_type = self.local_sid
 		packet.dest_port = self.remote_port
@@ -1153,7 +1169,7 @@ class PRUDPServerStream:
 		self.key = key
 		self.group = group
 		
-		self.packet_encoder = PacketEncoder(settings)
+		self.packet_encoder = PRUDPMessageSelector(settings)
 		
 		self.supported_functions = settings["prudp.supported_functions"]
 		self.max_substream_id = settings["prudp.max_substream_id"]
@@ -1213,11 +1229,12 @@ class PRUDPServerStream:
 			raise ValueError("Received invalid SYN packet: %s" %packet)
 		
 		ack = PRUDPPacket(TYPE_SYN, FLAG_ACK)
+		ack.version = packet.version
 		ack.source_type = self.sid
 		ack.source_port = self.port
 		ack.dest_type = packet.source_type
 		ack.dest_port = packet.source_port
-		ack.connection_signature = self.packet_encoder.calc_connection_signature(addr)
+		ack.connection_signature = self.packet_encoder.calc_connection_signature(addr, ack.version)
 		ack.max_substream_id = min(self.max_substream_id, packet.max_substream_id)
 		ack.minor_version = min(self.minor_ver, packet.minor_version)
 		ack.supported_functions = self.supported_functions & packet.supported_functions
@@ -1225,7 +1242,7 @@ class PRUDPServerStream:
 		await self.transport.send(ack, addr)
 	
 	async def process_connect(self, packet, addr):
-		connection_signature = self.packet_encoder.calc_connection_signature(addr)
+		connection_signature = self.packet_encoder.calc_connection_signature(addr, packet.version)
 		if packet.signature != self.packet_encoder.calc_packet_signature(packet, b"", connection_signature):
 			raise ValueError("Received packet with invalid signature")
 		
@@ -1240,7 +1257,7 @@ class PRUDPServerStream:
 		key = (addr, packet.source_port, packet.source_type)
 		client = self.clients.get(key)
 		if client is None:
-			client = PRUDPClient(self.settings, self.transport)
+			client = PRUDPClient(self.settings, self.transport, packet.version)
 			client.bind(self.addr, self.port, self.sid)
 			client.connect(addr, packet.source_port, packet.source_type)
 			client.configure(packet.max_substream_id, packet.supported_functions, packet.minor_version)
@@ -1253,6 +1270,7 @@ class PRUDPServerStream:
 			await self.group.spawn(self.start_client, client)
 		
 		ack = PRUDPPacket(TYPE_CONNECT, FLAG_ACK | FLAG_HAS_SIZE)
+		ack.version = packet.version
 		ack.source_type = self.sid
 		ack.source_port = self.port
 		ack.dest_type = packet.source_type
@@ -1302,11 +1320,11 @@ class PRUDPClientTransport:
 		self.group = group
 		
 		self.ports = PRUDPPortTable(settings)
-		self.packet_encoder = PacketEncoder(settings)
+		self.packet_encoder = PRUDPMessageSelector(settings).select(settings["prudp.version"])
 	
 	@contextlib.asynccontextmanager
 	async def connect(self, port, sid=10, credentials=None):
-		client = PRUDPClient(self.settings, self)
+		client = PRUDPClient(self.settings, self, self.settings["prudp.version"])
 		with self.ports.bind(client, sid=sid) as local_port:
 			client.bind(self.socket.local_address(), local_port, sid)
 			client.connect(self.socket.remote_address(), port, sid)
@@ -1353,7 +1371,7 @@ class PRUDPServerTransport:
 		self.settings = settings
 		
 		self.ports = PRUDPPortTable(settings)
-		self.packet_encoder = PacketEncoder(settings)
+		self.packet_encoder = PRUDPMessageSelector(settings)
 	
 	@contextlib.asynccontextmanager
 	async def serve(self, handler, port, sid=10, key=None):
