@@ -744,11 +744,11 @@ class PRUDPClient:
 		
 		self.local_addr = None
 		self.local_port = None
-		self.local_sid = None
+		self.local_type = None
 		
 		self.remote_addr = None
 		self.remote_port = None
-		self.remote_sid = None
+		self.remote_type = None
 		
 		self.user_pid = None
 		self.user_cid = None
@@ -766,15 +766,15 @@ class PRUDPClient:
 	async def __aexit__(self, typ, val, tb):
 		await self.abort()
 		
-	def bind(self, addr, port, sid):
+	def bind(self, addr, port, type):
 		self.local_addr = addr
 		self.local_port = port
-		self.local_sid = sid
+		self.local_type = type
 	
-	def connect(self, addr, port, sid):
+	def connect(self, addr, port, type):
 		self.remote_addr = addr
 		self.remote_port = port
-		self.remote_sid = sid
+		self.remote_type = type
 	
 	def login(self, pid, cid, session_key):
 		self.user_pid = pid
@@ -883,9 +883,9 @@ class PRUDPClient:
 	async def send_packet(self, packet):
 		packet.version = self.version
 		packet.source_port = self.local_port
-		packet.source_type = self.local_sid
+		packet.source_type = self.local_type
 		packet.dest_port = self.remote_port
-		packet.dest_type = self.remote_sid
+		packet.dest_type = self.remote_type
 		if not packet.flags & FLAG_ACK:
 			packet.packet_id = self.sequence_mgr.assign(packet)
 		if packet.type != TYPE_SYN:
@@ -1133,24 +1133,24 @@ class PRUDPPortTable:
 			self.num_ports = 16
 		self.ports = {}
 	
-	def get(self, port, sid):
-		port |= sid << 8
+	def get(self, port, type):
+		port |= type << 8
 		if port not in self.ports:
 			raise ValueError("Port is not bound")
 		return self.ports[port]
 	
-	def allocate(self, sid):
+	def allocate(self, type):
 		for i in reversed(range(self.num_ports)):
-			if i | (sid << 8) not in self.ports:
+			if i | (type << 8) not in self.ports:
 				return i
 		raise ValueError("All ports are in use")
 	
 	@contextlib.contextmanager
-	def bind(self, obj, port=None, sid=10):
+	def bind(self, obj, port=None, type=10):
 		if port is None:
-			port = self.allocate(sid)
+			port = self.allocate(type)
 		
-		port |= sid << 8
+		port |= type << 8
 		if port in self.ports:
 			raise ValueError("Port is in use: %i" %port)
 		
@@ -1177,21 +1177,21 @@ class PRUDPServerStream:
 		
 		self.addr = None
 		self.port = None
-		self.sid = None
+		self.type = None
 		
 		self.clients = {}
 	
-	def bind(self, addr, port, sid):
+	def bind(self, addr, port, type):
 		self.addr = addr
 		self.port = port
-		self.sid = sid
+		self.type = type
 	
 	def get_client(self, packet, addr):
 		key = (addr, packet.source_port, packet.source_type)
 		return self.clients.get(key)
 	
 	async def start_client(self, client):
-		key = (client.remote_address(), client.remote_port, client.remote_sid)
+		key = (client.remote_address(), client.remote_port, client.remote_type)
 		try:
 			await self.serve_client(client)
 		finally:
@@ -1230,7 +1230,7 @@ class PRUDPServerStream:
 		
 		ack = PRUDPPacket(TYPE_SYN, FLAG_ACK)
 		ack.version = packet.version
-		ack.source_type = self.sid
+		ack.source_type = self.type
 		ack.source_port = self.port
 		ack.dest_type = packet.source_type
 		ack.dest_port = packet.source_port
@@ -1258,7 +1258,7 @@ class PRUDPServerStream:
 		client = self.clients.get(key)
 		if client is None:
 			client = PRUDPClient(self.settings, self.transport, packet.version)
-			client.bind(self.addr, self.port, self.sid)
+			client.bind(self.addr, self.port, self.type)
 			client.connect(addr, packet.source_port, packet.source_type)
 			client.configure(packet.max_substream_id, packet.supported_functions, packet.minor_version)
 			client.remote(packet.connection_signature, packet.session_id)
@@ -1271,7 +1271,7 @@ class PRUDPServerStream:
 		
 		ack = PRUDPPacket(TYPE_CONNECT, FLAG_ACK | FLAG_HAS_SIZE)
 		ack.version = packet.version
-		ack.source_type = self.sid
+		ack.source_type = self.type
 		ack.source_port = self.port
 		ack.dest_type = packet.source_type
 		ack.dest_port = packet.source_port
@@ -1323,11 +1323,11 @@ class PRUDPClientTransport:
 		self.packet_encoder = PRUDPMessageSelector(settings).select(settings["prudp.version"])
 	
 	@contextlib.asynccontextmanager
-	async def connect(self, port, sid=10, credentials=None):
+	async def connect(self, port, type=10, credentials=None):
 		client = PRUDPClient(self.settings, self, self.settings["prudp.version"])
-		with self.ports.bind(client, sid=sid) as local_port:
-			client.bind(self.socket.local_address(), local_port, sid)
-			client.connect(self.socket.remote_address(), port, sid)
+		with self.ports.bind(client, type=type) as local_port:
+			client.bind(self.socket.local_address(), local_port, type)
+			client.connect(self.socket.remote_address(), port, type)
 			
 			async with util.create_task_group() as group:
 				async with client:
@@ -1374,11 +1374,11 @@ class PRUDPServerTransport:
 		self.packet_encoder = PRUDPMessageSelector(settings)
 	
 	@contextlib.asynccontextmanager
-	async def serve(self, handler, port, sid=10, key=None):
+	async def serve(self, handler, port, type=10, key=None):
 		async with util.create_task_group() as group:
 			stream = PRUDPServerStream(self.settings, self, handler, key, group)
-			with self.ports.bind(stream, port, sid) as port:
-				stream.bind(self.local_address(), port, sid)
+			with self.ports.bind(stream, port, type) as port:
+				stream.bind(self.local_address(), port, type)
 				yield
 			
 	async def send(self, packet, addr):
@@ -1484,13 +1484,13 @@ async def serve_transport(settings, host="", port=0, context=None):
 			yield transport
 
 @contextlib.asynccontextmanager
-async def connect(settings, host, port, vport=1, sid=10, context=None, credentials=None):
+async def connect(settings, host, port, vport=1, type=10, context=None, credentials=None):
 	async with connect_transport(settings, host, port, context) as transport:
-		async with transport.connect(vport, sid, credentials) as client:
+		async with transport.connect(vport, type, credentials) as client:
 			yield client
 
 @contextlib.asynccontextmanager
-async def serve(handler, settings, host="", port=0, vport=1, sid=10, context=None, key=None):
+async def serve(handler, settings, host="", port=0, vport=1, type=10, context=None, key=None):
 	async with serve_transport(settings, host, port, context) as transport:
-		async with transport.serve(handler, vport, sid, key):
+		async with transport.serve(handler, vport, type, key):
 			yield
