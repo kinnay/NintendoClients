@@ -226,12 +226,12 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>main_station: [StationURL](../common#stationurl)</code><br>
-<code>special_protocols: list[int]</code><br>
-<code>special_station: [StationURL](../common#stationurl)</code><br>
+<code>main_station: [StationURL](../common#stationurl) = "prudp:/"</code><br>
+<code>special_protocols: list[int] = []</code><br>
+<code>special_station: [StationURL](../common#stationurl) = "prudp:/"</code><br>
 If `nex.version` >= 30500:<br>
 <span class="docs">
-<code>server_time: [DateTime](../common#datetime)</code><br>
+<code>server_time: [DateTime](../common#datetime) = [DateTime](../common#datetime).never()</code><br>
 </span><br>
 </span><br>
 

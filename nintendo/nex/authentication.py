@@ -38,10 +38,10 @@ common.DataHolder.register(AuthenticationInfo, "AuthenticationInfo")
 class RVConnectionData(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.main_station = None
-		self.special_protocols = None
-		self.special_station = None
-		self.server_time = None
+		self.main_station = common.StationURL.parse("prudp:/")
+		self.special_protocols = []
+		self.special_station = common.StationURL.parse("prudp:/")
+		self.server_time = common.DateTime(0)
 	
 	def get_version(self, settings):
 		version = 0
@@ -50,13 +50,8 @@ class RVConnectionData(common.Structure):
 		return version
 	
 	def check_required(self, settings):
-		for field in ['main_station', 'special_protocols', 'special_station']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
 		if settings["nex.version"] >= 30500:
-			for field in ['server_time']:
-				if getattr(self, field) is None:
-					raise ValueError("No value assigned to required field: %s" %field)
+			pass
 	
 	def load(self, stream):
 		self.main_station = stream.stationurl()

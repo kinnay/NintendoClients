@@ -9,13 +9,13 @@ struct AuthenticationInfo : Data {
 }
 
 struct RVConnectionData {
-	stationurl main_station;
-	list<uint8> special_protocols;
-	stationurl special_station;
+	stationurl main_station = "prudp:/";
+	list<uint8> special_protocols = [];
+	stationurl special_station = "prudp:/";
 
 	[nex.version >= 30500] {
 		#revision 1
-		datetime server_time;
+		datetime server_time = 0;
 	}
 }
 

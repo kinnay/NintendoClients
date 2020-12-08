@@ -391,7 +391,7 @@ NUMERIC_TYPES = [
 ]
 
 STRING_TYPES = [
-	"string", "buffer", "qbuffer"
+	"string", "buffer", "qbuffer", "stationurl"
 ]
 
 		
@@ -1127,6 +1127,7 @@ class CodeGenerator:
 		
 		if type.name == "datetime": return "common.DateTime(%i)" %value
 		if type.name == "string": return '"%s"' %value
+		if type.name == "stationurl": return 'common.StationURL.parse("%s")' %value
 		if type.name in ["buffer", "qbuffer"]: return 'b"%s"' %value
 		if type.name in NUMERIC_TYPES + ["bool"]: return str(value)
 		if type.name == "list":
@@ -1375,7 +1376,7 @@ class DocsGenerator:
 		
 		if type.name in NUMERIC_TYPES + ["bool"]: return str(value)
 		if type.name in ["buffer", "qbuffer"]: return 'b"%s"' %value
-		if type.name == "string": return '"%s"' %value
+		if type.name in ["string", "stationurl"]: return '"%s"' %value
 		if type.name == "datetime":
 			if value == 0:
 				return "[DateTime](../common#datetime).never()"
