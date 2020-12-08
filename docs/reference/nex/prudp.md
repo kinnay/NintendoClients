@@ -3,7 +3,7 @@
 
 Provides a client and server for PRUDP. Originally, PRUDP implemented reliable and secure transmission on top of UDP, but the Nintendo Switch introduced a 'Lite' mode in which PRUDP is implemented on top of TCP or WebSockets instead.
 
-<code>**class** PRUDPClient</code><br>
+<code>**class** [PRUDPClient](#prudpclient)</code><br>
 <span class="docs">A PRUDP client.</span>
 
 <code>**async with connect**(settings: [Settings](../settings#settings), host: str, port: int, vport: int = 1, sid: int = 10, context: [TLSClientContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlsclientcontext) = None, credentials: [Credentials](../kerberos#credentials) = None) -> [PRUDPClient](#prudpclient)</code><br>

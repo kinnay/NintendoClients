@@ -19,11 +19,8 @@ Provides a client and server for the RMC protocol. An alternative client that ca
 <code>**async def request**(protocol: int, method: int, body: bytes) -> bytes</code><br>
 <span class="docs">Performs a remote method call. Blocks until the RMC is complete. Returns the body of the RMC response on success. Raises [`RMCError`](../common#rmcerror) if the server returns an error code.</span>
 
-<code>**async def close**() -> None</code><br>
-<span class="docs">Closes the connection gracefully. Blocks until the disconnection handshake is complete. If the client is wrapped in an `async with` statement it is closed automatically.</span>
-
-<code>**async def abort**() -> None</code><br>
-<span class="docs">Aborts the connection by closing the underlying transport.</span>
+<code>**def pid**() -> int</code><br>
+<span class="docs">Returns the user id of the connected client. Returns `None` if the client is connected without credentials.</span>
 
 <code>**def local_address**() -> tuple[str, int]</code><br>
 <span class="docs">Returns the local address of the client.</span>

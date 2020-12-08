@@ -244,6 +244,8 @@ class RMCClient:
 			raise common.RMCError(message.error)
 		return message.body
 	
+	def pid(self): return self.client.pid()
+	
 	def local_address(self):
 		return self.client.local_address()
 	def remote_address(self):
