@@ -24,7 +24,7 @@ Provides a client for the [application authentication server](https://github.com
 <code>**def set_system_version**(version: int) -> None</code></br>
 <span class="docs">Updates the user agent for the given system version. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` and later are supported.</span>
 
-<code>**def set_context**(context: [TLSClientContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlsclientcontext)) -> None</code><br>
+<code>**def set_context**(context: [TLSContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscontext)) -> None</code><br>
 <span class="docs">Changes the TLS context. By default, the server certificate is verified with `Nintendo CA - G3`.</span>
 
 <code>**async def auth_system**(title_id: int, title_version: int, device_token: str) -> dict</code><br>

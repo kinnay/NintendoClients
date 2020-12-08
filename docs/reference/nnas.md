@@ -16,7 +16,7 @@ Provides a client for the 3DS/Wii U [account server](https://github.com/kinnay/n
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new account server client.</span>
 
-<code>**def set_context**(context: [TLSClientContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlsclientcontext)) -> None</code><br>
+<code>**def set_context**(context: [TLSContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscontext)) -> None</code><br>
 <span class="docs">Changes the TLS context. By default, the server certificate is verified with `Nintendo CA - G3`, and `Wii U Common Prod 1` is used as the client certificate.</span>
 
 <code>**def set_url**(url: str) -> None</code><br>

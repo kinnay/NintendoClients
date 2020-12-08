@@ -22,7 +22,7 @@ Provides a client for the [device authentication server](https://github.com/kinn
 <code>**def set_certificate**(cert: [TLSCertificate](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscertificate), key: [TLSPrivateKey](https://anynet.readthedocs.io/en/latest/reference/tls/#tlsprivatekey)) -> None</code>
 <span class="docs">Changes the client certificate of the current TLS context. The server rejects all requests without a valid client certificate.</span>
 
-<code>**def set_context**(context: [TLSClientContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlsclientcontext)) -> None</code><br>
+<code>**def set_context**(context: [TLSContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscontext)) -> None</code><br>
 <span class="docs">Changes the TLS context. By default, the server certificate is verified with `Nintendo CA - G3` and no client certificate is used.</span>
 
 <code>**def set_platform_region**(region: int) -> None</code><br>

@@ -62,7 +62,7 @@ class AAuthClient:
 		self.power_state = "FA"
 		
 		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
-		self.context = tls.TLSClientContext()
+		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
 	
 	def set_url(self, url): self.url = url

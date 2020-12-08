@@ -245,7 +245,7 @@ class NNASClient:
 		cert = tls.TLSCertificate.load(CERT, tls.TYPE_DER)
 		key = tls.TLSPrivateKey.load(KEY, tls.TYPE_DER)
 		
-		self.context = tls.TLSClientContext()
+		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
 		self.context.set_certificate(cert, key)
 		

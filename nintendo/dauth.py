@@ -80,7 +80,7 @@ class DAuthClient:
 		self.keyset = keyset
 		
 		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
-		self.context = tls.TLSClientContext()
+		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
 		
 		self.region = 1

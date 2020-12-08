@@ -40,7 +40,7 @@ class BAASClient:
 		self.user_agent = USER_AGENT[LATEST_VERSION]
 		self.power_state = "FA"
 		
-		self.context = tls.TLSClientContext()
+		self.context = tls.TLSContext()
 	
 	def set_url(self, url): self.url = url
 	def set_user_agent(self, user_agent): self.user_agent = user_agent
