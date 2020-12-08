@@ -331,6 +331,7 @@ class AuthenticationClientNX(AuthenticationProtocolNX):
 		obj = rmc.RMCResponse()
 		obj.result = stream.result()
 		obj.ticket = stream.buffer()
+		obj.key = stream.string()
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("AuthenticationClientNX.request_ticket -> done")
@@ -583,11 +584,12 @@ class AuthenticationServerNX(AuthenticationProtocolNX):
 		#--- response ---
 		if not isinstance(response, rmc.RMCResponse):
 			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
-		for field in ['result', 'ticket']:
+		for field in ['result', 'ticket', 'key']:
 			if not hasattr(response, field):
 				raise RuntimeError("Missing field in RMCResponse: %s" %field)
 		output.result(response.result)
 		output.buffer(response.ticket)
+		output.string(response.key)
 	
 	async def handle_get_pid(self, client, input, output):
 		logger.info("AuthenticationServerNX.get_pid()")

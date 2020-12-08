@@ -96,6 +96,7 @@ protocol Authentication_NX : 10 {
 	method request_ticket(pid source, pid target) {
 		result result;
 		buffer ticket;
+		string key;
 	}
 	
 	method get_pid(string username) {

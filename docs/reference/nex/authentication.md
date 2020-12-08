@@ -102,6 +102,7 @@ Provides a client and server for the `AuthenticationProtocol` and `Authenticatio
 <span class="docs">
 <code>result: [Result](../common#result)</code><br>
 <code>ticket: bytes</code><br>
+<code>key: str</code><br>
 </span>
 </span>
 
@@ -196,6 +197,7 @@ Provides a client and server for the `AuthenticationProtocol` and `Authenticatio
 <span class="docs">
 <code>result: [Result](../common#result)</code><br>
 <code>ticket: bytes</code><br>
+<code>key: str</code><br>
 </span>
 </span>
 
