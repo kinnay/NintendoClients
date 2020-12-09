@@ -134,7 +134,10 @@ class ServerTicket:
 			stream.buffer(ticket_key)
 			stream.buffer(encrypted)
 			return stream.get()
-		return data
+		
+		kerberos = KerberosEncryption(key)
+		encrypted = kerberos.encrypt(data)
+		return encrypted
 
 
 class Credentials:

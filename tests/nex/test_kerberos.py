@@ -45,6 +45,23 @@ def test_server_ticket():
 	s = settings.default()
 	data = ticket.encrypt(b"key", s)
 	ticket = kerberos.ServerTicket.decrypt(data, b"key", s)
+	
+	assert ticket.timestamp.timestamp() == 1596279690
+	assert ticket.session_key == bytes(range(32))
+	assert ticket.source == 123456
+
+def test_server_ticket_old():
+	ticket = kerberos.ServerTicket()
+	ticket.timestamp = common.DateTime.fromtimestamp(1596279690)
+	ticket.session_key = bytes(range(32))
+	ticket.source = 123456
+	
+	s = settings.default()
+	s["kerberos.ticket_version"] = 0
+	
+	data = ticket.encrypt(b"key", s)
+	ticket = kerberos.ServerTicket.decrypt(data, b"key", s)
+	
 	assert ticket.timestamp.timestamp() == 1596279690
 	assert ticket.session_key == bytes(range(32))
 	assert ticket.source == 123456
