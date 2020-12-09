@@ -1192,10 +1192,11 @@ class PRUDPServerStream:
 	
 	async def start_client(self, client):
 		key = (client.remote_address(), client.remote_port, client.remote_type)
-		try:
-			await self.serve_client(client)
-		finally:
-			del self.clients[key]
+		with util.catch(Exception):
+			try:
+				await self.serve_client(client)
+			finally:
+				del self.clients[key]
 	
 	async def serve_client(self, client):
 		async with util.create_task_group() as group:
