@@ -24,8 +24,8 @@ TOKEN_REQUEST = \
 	"Content-Type: application/x-www-form-urlencoded\r\n\r\n" \
 	"challenge=vaNgVZZH7gUse0y3t8Cksuln-TAVtvBmcD-ow59qp0E=&" \
 	"client_id=8f849b5d34778d8e&ist=false&key_generation=11&" \
-	"system_version=CusHY#000b0000#VyA0fsWi6ZBEOzVsseXIcEfFLqQMgW0tWzN2oJ7viqk=&" \
-	"mac=PA1uGJAwtC9IvqQ95F77Wg"
+	"system_version=CusHY#000b0001#iI0rZ0Q2dg3Evhd-8GoYmp-KTE8malKe0GOJgXa-XG8=&" \
+	"mac=i9ZnhrO4xn6VxB1b_89AAg"
 
 
 @pytest.mark.anyio
