@@ -458,6 +458,8 @@ class Parser:
 				break
 			elif token.type == TYPE_RESERVED:
 				if token.value == "method": protocol.add_method(self.parse_method(stream))
+				else:
+					stream.error(token)
 			else:
 				stream.error(token)
 				
