@@ -237,7 +237,6 @@ class File:
 	
 	def add_file(self, file):
 		for proto in file.protocols.values():
-			proto.imported = True
 			self.add_protocol(proto)
 		for struct in file.structs.values():
 			self.add_struct(struct)
@@ -263,7 +262,7 @@ class File:
 class Protocol:
 	id = None
 	name = None
-	imported = False
+	overridden = False
 	
 	def __init__(self):
 		self.methods = {}
@@ -281,6 +280,8 @@ class Protocol:
 		self.methods[method.id] = method
 	
 	def set_parent(self, parent):
+		parent.overridden = True
+		
 		self.id = parent.id
 		for method in parent.methods.values():
 			if method.id not in self.methods:
@@ -783,13 +784,13 @@ class CodeGenerator:
 		for struct in self.file.structs.values():
 			self.generate_struct(stream, struct)
 		for proto in self.file.protocols.values():
-			if not proto.imported:
+			if not proto.overridden:
 				self.generate_protocol(stream, proto)
 		for proto in self.file.protocols.values():
-			if not proto.imported:
+			if not proto.overridden:
 				self.generate_client(stream, proto)
 		for proto in self.file.protocols.values():
-			if not proto.imported:
+			if not proto.overridden:
 				self.generate_server(stream, proto)
 		
 	def generate_header(self, stream):
@@ -1203,10 +1204,10 @@ class DocsGenerator:
 	def generate_file(self, name):
 		self.generate_header(name)
 		for proto in self.file.protocols.values():
-			if not proto.imported:
+			if not proto.overridden:
 				self.generate_client(proto)
 		for proto in self.file.protocols.values():
-			if not proto.imported:
+			if not proto.overridden:
 				self.generate_server(proto)
 		for enum in self.file.enums:
 			self.generate_enum(enum)
@@ -1217,24 +1218,29 @@ class DocsGenerator:
 		self.text += "\n# Module: <code>nintendo.nex.%s</code>\n\n" %name
 		self.text += "Provides a client and server for the "
 		
-		for i, proto in enumerate(self.file.protocols.values()):
+		protocols = []
+		for proto in self.file.protocols.values():
+			if not proto.overridden:
+				protocols.append(proto)
+		
+		for i, proto in enumerate(protocols):
 			self.text += "`%s`" %make_class_name(proto.name, "Protocol")
-			if i < len(self.file.protocols) - 2:
+			if i < len(protocols) - 2:
 				self.text += ", "
-			elif i == len(self.file.protocols) - 2:
+			elif i == len(protocols) - 2:
 				self.text += " and "
 				
 		self.text += ". This page was generated automatically from `%s.proto`.\n\n" %name
 		
 		for proto in self.file.protocols.values():
-			if not proto.imported:
+			if not proto.overridden:
 				name = make_class_name(proto.name, "Client")
 				proto = make_class_name(proto.name, "Protocol")
 				self.text += "<code>**class** [%s](#%s)</code><br>\n" %(name, name.lower())
 				self.text += '<span class="docs">The client for the `%s`.</span>\n\n' %proto
 		
 		for proto in self.file.protocols.values():
-			if not proto.imported:
+			if not proto.overridden:
 				name = make_class_name(proto.name, "Server")
 				proto = make_class_name(proto.name, "Protocol")
 				self.text += "<code>**class** [%s](#%s)</code><br>\n" %(name, name.lower())

@@ -1,7 +1,7 @@
 
 # Module: <code>nintendo.nex.datastore_smm2</code>
 
-Provides a client and server for the `DataStoreProtocol` and `DataStoreProtocolSMM2`. This page was generated automatically from `datastore_smm2.proto`.
+Provides a client and server for the `DataStoreProtocolSMM2`. This page was generated automatically from `datastore_smm2.proto`.
 
 <code>**class** [DataStoreClientSMM2](#datastoreclientsmm2)</code><br>
 <span class="docs">The client for the `DataStoreProtocolSMM2`.</span>
