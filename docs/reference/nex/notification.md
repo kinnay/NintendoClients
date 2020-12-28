@@ -40,5 +40,9 @@ If `nex.version` >= 30500:<br>
 <span class="docs">
 <code>param3: int</code><br>
 </span><br>
+If `nex.version` >= 40000:<br>
+<span class="docs">
+<code>map: dict[str, object]</code><br>
+</span><br>
 </span><br>
 
