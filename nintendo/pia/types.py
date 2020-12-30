@@ -167,12 +167,12 @@ class StationLocation:
 		return url
 		
 	def encode(self, stream):
-		if stream.settings["pia.version"] < 51000:
+		if stream.settings["pia.version"] < 510:
 			stream.add(self.public)
 		else:
 			type_public = InetAddress.IPV4
 			type_local = InetAddress.IPV4
-			if stream.settings["pia.version"] >= 51100:
+			if stream.settings["pia.version"] >= 511:
 				type_public = self.public.inet.get_type()
 				type_local = self.local.inet.get_type()
 				stream.u8(type_public)
@@ -183,7 +183,7 @@ class StationLocation:
 		stream.pid(self.pid)
 		stream.u32(self.cid)
 		stream.u32(self.rvcid)
-		if stream.settings["pia.version"] < 51000:
+		if stream.settings["pia.version"] < 510:
 			stream.u8(self.scheme)
 			stream.u8(self.sid)
 			stream.u8(self.stream_type)
@@ -191,7 +191,7 @@ class StationLocation:
 			stream.u8(self.natf)
 			stream.u8(self.type)
 			stream.u8(self.probeinit)
-			if stream.settings["pia.version"] >= 50000:
+			if stream.settings["pia.version"] >= 500:
 				stream.add(self.relay)
 		else:
 			stream.u8((self.natm << 2) | self.natf)
@@ -200,10 +200,10 @@ class StationLocation:
 			stream.bool(self.type == 0)
 		
 	def decode(self, stream):
-		if stream.settings["pia.version"] < 51000:
+		if stream.settings["pia.version"] < 510:
 			self.public = stream.extract(StationAddress)
 		else:
-			if stream.settings["pia.version"] >= 51100:
+			if stream.settings["pia.version"] >= 511:
 				type_public = stream.u8()
 				type_local = stream.u8()
 			else:
@@ -215,7 +215,7 @@ class StationLocation:
 		self.pid = stream.pid()
 		self.cid = stream.u32()
 		self.rvcid = stream.u32()
-		if stream.settings["pia.version"] < 51000:
+		if stream.settings["pia.version"] < 510:
 			self.scheme = stream.u8()
 			self.sid = stream.u8()
 			self.stream_type = stream.u8()
@@ -223,7 +223,7 @@ class StationLocation:
 			self.natf = stream.u8()
 			self.type = stream.u8()
 			self.probeinit = stream.u8()
-			if stream.settings["pia.version"] >= 50000:
+			if stream.settings["pia.version"] >= 500:
 				self.relay = stream.extract(InetAddress)
 		else:
 			natinfo = stream.u8()

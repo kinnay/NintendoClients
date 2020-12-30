@@ -36,6 +36,9 @@ class Settings:
 	
 	def system_version(self, version):
 		if version <= 503: return 0
+		if version == 506: return 2
+		if version == 507: return 3
+		if version == 508: return 4
 		if version == 509: return 5
 		if version == 510: return 6
 		if 511 <= version <= 518: return 7
@@ -43,9 +46,9 @@ class Settings:
 		raise ValueError("Unsupported pia version")
 	
 	def lan_version(self, version):
-		if version < 509: return 0
-		if version < 511: return 1
-		return 2
+		if version < 509: return 0 # No crypto challenge
+		if version < 511: return 1 # Crypto challenge
+		return 2 # Crypto challenge and IPv6 support
 
 def default(version, app_version=-1, *, platform=SWITCH):
 	return Settings(version, app_version, platform=platform)

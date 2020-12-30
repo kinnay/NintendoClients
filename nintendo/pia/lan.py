@@ -373,7 +373,8 @@ class LanSessionInfo:
 			stream.u32(self.host_location.cid)
 			stream.u32(self.host_location.rvcid)
 		stream.repeat(self.stations, stream.add)
-		stream.write(self.session_param)
+		if stream.settings["pia.lan_version"] >= 1:
+			stream.write(self.session_param)
 		
 	def decode(self, stream):
 		self.game_mode = stream.u32()
@@ -405,7 +406,8 @@ class LanSessionInfo:
 		self.players = stream.repeat(
 			lambda: stream.extract(LanStationInfo), 16
 		)
-		self.session_param = stream.read(32)
+		if stream.settings["pia.lan_version"] >= 1:
+			self.session_param = stream.read(32)
 
 
 class LanServer:
