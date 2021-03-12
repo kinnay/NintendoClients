@@ -257,7 +257,7 @@ class NNASClient:
 		
 		self.device_id = None
 		self.serial_number = None
-		self.system_version = 0x250
+		self.system_version = 0x260
 		self.device_cert = None
 		
 		self.region = 4

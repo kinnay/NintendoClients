@@ -41,7 +41,7 @@ Provides a client for the 3DS/Wii U [account server](https://github.com/kinnay/n
 <span class="docs">Changes the content of the `X-Nintendo-Environment` header. The default is `"L1"` (production).</span>
 
 <code>**def set_device**(device_id: int, serial_number: str, system_version: int, cert: str = None) -> None</code><br>
-<span class="docs">Changes the `X-Nintendo-Device-ID`, `X-Nintendo-Serial-Number`, `X-Nintendo-System-Version` and `X-Nintendo-Device-Cert` headers. By default, the system version is set to `0x250` and the other headers are omitted.</span>
+<span class="docs">Changes the `X-Nintendo-Device-ID`, `X-Nintendo-Serial-Number`, `X-Nintendo-System-Version` and `X-Nintendo-Device-Cert` headers. By default, the system version is set to `0x260` and the other headers are omitted.</span>
 
 <code>**def set_locale**(region: int, country: str, language: str) -> None</code><br>
 <span class="docs">Changes the `X-Nintendo-Region`, `X-Nintendo-Country` and `Accept-Language` headers. By default, the region is `4` (Europe), the country is `"NL"` (Netherlands) and the language is `"en"` (English).</span>

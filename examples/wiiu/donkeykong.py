@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 
 DEVICE_ID = 12345678 #From MCP_GetDeviceId
 SERIAL_NUMBER = "..."
-SYSTEM_VERSION = 0x250
+SYSTEM_VERSION = 0x260
 REGION = 4 #EUR
 COUNTRY = "NL"
 LANGUAGE = "en"
