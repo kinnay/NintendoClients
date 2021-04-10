@@ -30,3 +30,9 @@ Provides a client and server for the RMC protocol. An alternative client that ca
 
 <code>**def remote_address**() -> tuple[str, int]</code><br>
 <span class="docs">Returns the address that the client is connected to.</span>
+
+<code>**def local_sid**() -> int</code><br>
+<span class="docs">Returns the local stream id (PRUDP port).</span>
+
+<code>**def remote_sid**() -> int</code><br>
+<span class="docs">Returns the remote stream id (PRUDP port).</span>

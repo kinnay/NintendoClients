@@ -250,6 +250,11 @@ class RMCClient:
 		return self.client.local_address()
 	def remote_address(self):
 		return self.client.remote_address()
+	
+	def local_sid(self):
+		return self.client.local_sid()
+	def remote_sid(self):
+		return self.client.remote_sid()
 
 
 @contextlib.asynccontextmanager

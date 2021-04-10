@@ -43,6 +43,12 @@ Provides a client and server for PRUDP. Originally, PRUDP implemented reliable a
 <code>**def remote_address**() -> tuple[str, int]</code><br>
 <span class="docs">Returns the address that the client is connected to.</span>
 
+<code>**def local_sid**() -> int</code><br>
+<span class="docs">Returns the local stream id (PRUDP port).</span>
+
+<code>**def remote_sid**() -> int</code><br>
+<span class="docs">Returns the remote stream id (PRUDP port).</span>
+
 ## PRUDPClientTransport
 <code>**async with connect**(port: int, type: int = 10, credentials: credentials: [Credentials](../kerberos#credentials) = None) -> [PRUDPClient](#prudpclient)</code><br>
 <span class="docs">Establishes a new PRUDP connection with the given PRUDP port.</span>

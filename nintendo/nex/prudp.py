@@ -1124,6 +1124,11 @@ class PRUDPClient:
 		return self.local_addr
 	def remote_address(self):
 		return self.remote_addr
+		
+	def local_sid(self):
+		return self.local_port
+	def remote_sid(self):
+		return self.remote_port
 
 
 class PRUDPPortTable:
