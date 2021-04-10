@@ -139,7 +139,7 @@ class RMCClient:
 		
 	def register_server(self, server):
 		if server.PROTOCOL_ID in self.servers:
-			raise ValueError("Server with protocol id 0x%X already exists" %server.PROTOCOL_ID)
+			raise ValueError("Server with protocol id %i already exists" %server.PROTOCOL_ID)
 		self.servers[server.PROTOCOL_ID] = server
 	
 	async def cleanup(self):
@@ -187,6 +187,7 @@ class RMCClient:
 			try:
 				await self.servers[request.protocol].handle(self, request.method, input, output)
 			except common.RMCError as e:
+				logger.warning("RMC failed: %s" %e)
 				result = e.result()
 			except Exception as e:
 				logger.exception("Exception occurred while handling a method call")
@@ -206,7 +207,7 @@ class RMCClient:
 				
 				result = common.Result.error("PythonCore::Exception")
 		else:
-			logger.warning("Received RMC request with unimplemented protocol id: 0x%X", request.protocol)
+			logger.warning("Received RMC request with unimplemented protocol id: %i", request.protocol)
 			result = common.Result.error("Core::NotImplemented")
 		
 		if result.is_success():
