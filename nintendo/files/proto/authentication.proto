@@ -23,7 +23,7 @@ struct ValidateAndRequestTicketParam {
 	uint32 platform = 3;
 	string username;
 	anydata data;
-	bool unk = false;
+	bool skip_version_check = false;
 	uint32 nex_version;
 	uint32 client_version;
 }

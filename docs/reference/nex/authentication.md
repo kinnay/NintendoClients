@@ -246,7 +246,7 @@ The following fields are defined in this class:<br>
 <code>platform: int = 3</code><br>
 <code>username: str</code><br>
 <code>data: [Data](../common)</code><br>
-<code>unk: bool = False</code><br>
+<code>skip_version_check: bool = False</code><br>
 <code>nex_version: int</code><br>
 <code>client_version: int</code><br>
 </span><br>

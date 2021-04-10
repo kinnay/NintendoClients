@@ -75,7 +75,7 @@ class ValidateAndRequestTicketParam(common.Structure):
 		self.platform = 3
 		self.username = None
 		self.data = None
-		self.unk = False
+		self.skip_version_check = False
 		self.nex_version = None
 		self.client_version = None
 	
@@ -88,7 +88,7 @@ class ValidateAndRequestTicketParam(common.Structure):
 		self.platform = stream.u32()
 		self.username = stream.string()
 		self.data = stream.anydata()
-		self.unk = stream.bool()
+		self.skip_version_check = stream.bool()
 		self.nex_version = stream.u32()
 		self.client_version = stream.u32()
 	
@@ -97,7 +97,7 @@ class ValidateAndRequestTicketParam(common.Structure):
 		stream.u32(self.platform)
 		stream.string(self.username)
 		stream.anydata(self.data)
-		stream.bool(self.unk)
+		stream.bool(self.skip_version_check)
 		stream.u32(self.nex_version)
 		stream.u32(self.client_version)
 
