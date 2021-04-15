@@ -122,10 +122,9 @@ class RMCMessage:
 
 
 class RMCClient:
-	def __init__(self, settings, client, group):
+	def __init__(self, settings, client):
 		self.settings = settings.copy()
 		self.client = client
-		self.group = group
 		self.call_id = 1
 		
 		if self.client.minor_version() >= 3:
@@ -136,7 +135,7 @@ class RMCClient:
 		self.responses = {}
 		
 		self.closed = False
-		
+	
 	def register_server(self, server):
 		if server.PROTOCOL_ID in self.servers:
 			raise ValueError("Server with protocol id %i already exists" %server.PROTOCOL_ID)
@@ -165,7 +164,7 @@ class RMCClient:
 					"Received RMC request: protocol=%i method=%i call=%i",
 					message.protocol, message.method, message.call_id
 				)
-				await self.group.spawn(self.handle_request, message)
+				await self.handle_request(message)
 			else:
 				logger.debug(
 					"Received RMC response: protocol=%i method=%i call=%i",
@@ -263,7 +262,7 @@ async def connect(settings, host, port, vport=1, context=None, credentials=None,
 	logger.debug("Connecting RMC client to %s:%i:%i", host, port, vport)
 	async with prudp.connect(settings, host, port, vport, 10, context, credentials) as client:
 		async with util.create_task_group() as group:
-			client = RMCClient(settings, client, group)
+			client = RMCClient(settings, client)
 			await group.spawn(client.start, servers)
 			yield client
 	logger.debug("RMC client is closed")
@@ -272,11 +271,10 @@ async def connect(settings, host, port, vport=1, context=None, credentials=None,
 async def serve(settings, servers, host="", port=0, vport=1, context=None, key=None):
 	async def handle(client):
 		host, port = client.remote_address()
-		
 		logger.debug("New RMC connection: %s:%i", host, port)
-		async with util.create_task_group() as group:
-			client = RMCClient(settings, client, group)
-			await client.start(servers)
+		
+		client = RMCClient(settings, client)
+		await client.start(servers)
 	
 	logger.info("Starting RMC server at %s:%i:%i", host, port, vport)
 	async with prudp.serve(handle, settings, host, port, vport, 10, context, key):
@@ -287,11 +285,10 @@ async def serve(settings, servers, host="", port=0, vport=1, context=None, key=N
 async def serve_prudp(settings, servers, transport, port, key=None):
 	async def handle(client):
 		host, port = client.remote_address()
-		
 		logger.debug("New RMC connection: %s:%i", host, port)
-		async with util.create_task_group() as group:
-			client = RMCClient(settings, client, group)
-			await client.start(servers)
+		
+		client = RMCClient(settings, client)
+		await client.start(servers)
 	
 	logger.info("Starting RMC server at PRUDP port %i", port)
 	async with transport.serve(handle, port, 10, key):
