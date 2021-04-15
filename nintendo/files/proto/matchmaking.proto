@@ -161,7 +161,7 @@ struct AutoMatchmakeParam {
 	uint32 options;
 	string join_message;
 	uint16 participation_count;
-	list<MatchmakeSessionSearchCriteria> search_criterias;
+	list<MatchmakeSessionSearchCriteria> search_criteria;
 	list<uint32> target_gids;
 	MatchmakeBlockListParam block_list;
 }

@@ -831,7 +831,7 @@ The following fields are defined in this class:<br>
 <code>options: int</code><br>
 <code>join_message: str</code><br>
 <code>participation_count: int</code><br>
-<code>search_criterias: list[[MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)]</code><br>
+<code>search_criteria: list[[MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)]</code><br>
 <code>target_gids: list[int]</code><br>
 <code>block_list: [MatchmakeBlockListParam](#matchmakeblocklistparam) = [MatchmakeBlockListParam](#matchmakeblocklistparam)()</code><br>
 </span><br>

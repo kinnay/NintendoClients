@@ -21,12 +21,12 @@ class AutoMatchmakeParam(common.Structure):
 		self.options = None
 		self.join_message = None
 		self.participation_count = None
-		self.search_criterias = None
+		self.search_criteria = None
 		self.target_gids = None
 		self.block_list = MatchmakeBlockListParam()
 	
 	def check_required(self, settings):
-		for field in ['participants', 'gid_for_participation_check', 'options', 'join_message', 'participation_count', 'search_criterias', 'target_gids']:
+		for field in ['participants', 'gid_for_participation_check', 'options', 'join_message', 'participation_count', 'search_criteria', 'target_gids']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -37,7 +37,7 @@ class AutoMatchmakeParam(common.Structure):
 		self.options = stream.u32()
 		self.join_message = stream.string()
 		self.participation_count = stream.u16()
-		self.search_criterias = stream.list(MatchmakeSessionSearchCriteria)
+		self.search_criteria = stream.list(MatchmakeSessionSearchCriteria)
 		self.target_gids = stream.list(stream.u32)
 		self.block_list = stream.extract(MatchmakeBlockListParam)
 	
@@ -49,7 +49,7 @@ class AutoMatchmakeParam(common.Structure):
 		stream.u32(self.options)
 		stream.string(self.join_message)
 		stream.u16(self.participation_count)
-		stream.list(self.search_criterias, stream.add)
+		stream.list(self.search_criteria, stream.add)
 		stream.list(self.target_gids, stream.u32)
 		stream.add(self.block_list)
 
