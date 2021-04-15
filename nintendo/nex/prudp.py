@@ -1441,7 +1441,12 @@ class PRUDPSocketTransport(PRUDPServerTransport):
 	
 	async def process(self, client, addr):
 		while True:
-			data = await client.recv()
+			try:
+				data = await client.recv()
+			except util.StreamError:
+				logger.debug("[SRV] underlying connection was closed")
+				return
+			
 			await self.process_data(data, addr)
 	
 	async def sendto(self, data, addr):
