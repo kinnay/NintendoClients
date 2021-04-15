@@ -82,7 +82,7 @@ struct MatchmakeSession : Gathering {
 	bool open_participation = true;
 	uint32 matchmake_system = 0;
 	buffer application_data = "";
-	uint32 participation_count = 0;
+	uint32 num_participants = 0;
 	
 	[nex.version >= 30500] {
 		uint8 progress_score = 100;
@@ -117,7 +117,7 @@ struct CreateMatchmakeSessionParam {
 	uint32 gid_for_participation_check;
 	uint32 options;
 	string join_message;
-	uint16 participation_count;
+	uint16 num_participants;
 }
 
 struct JoinMatchmakeSessionParam {
@@ -129,7 +129,7 @@ struct JoinMatchmakeSessionParam {
 	string user_password;
 	string system_password;
 	string join_message;
-	uint16 participation_count;
+	uint16 num_participants;
 	uint16 extra_participants;
 	MatchmakeBlockListParam block_list;
 }
@@ -160,7 +160,7 @@ struct AutoMatchmakeParam {
 	uint32 gid_for_participation_check;
 	uint32 options;
 	string join_message;
-	uint16 participation_count;
+	uint16 num_participants;
 	list<MatchmakeSessionSearchCriteria> search_criteria;
 	list<uint32> target_gids;
 	MatchmakeBlockListParam block_list;
@@ -185,7 +185,7 @@ struct PersistentGathering : Gathering {
 	datetime participation_start;
 	datetime participation_end;
 	uint32 matchmake_session_count;
-	uint32 participation_count;
+	uint32 num_participants;
 }
 
 struct SimpleCommunity {
@@ -417,7 +417,7 @@ protocol MatchmakeExtension : 109 {
 		list<GatheringURLs> urls;
 	}
 	
-	method create_matchmake_session(anydata gathering, string description, uint16 participation_count) {
+	method create_matchmake_session(anydata gathering, string description, uint16 num_participants) {
 		uint32 gid;
 		buffer session_key;
 	}
@@ -485,7 +485,7 @@ protocol MatchmakeExtension : 109 {
 		uint32 score;
 	}
 	
-	method join_matchmake_session_ex(uint32 gid, string gmessage, bool ignore_block_list, uint16 participation_count) {
+	method join_matchmake_session_ex(uint32 gid, string gmessage, bool ignore_block_list, uint16 num_participants) {
 		buffer session_key;
 	}
 	

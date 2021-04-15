@@ -257,7 +257,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 </span>
 </span>
 
-<code>**async def create_matchmake_session**(gathering: [Data](../common), description: str, participation_count: int) -> [RMCResponse](../common)</code><br>
+<code>**async def create_matchmake_session**(gathering: [Data](../common), description: str, num_participants: int) -> [RMCResponse](../common)</code><br>
 <span class="docs">Calls method `6` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>gid: int</code><br>
@@ -339,7 +339,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 </span>
 </span>
 
-<code>**async def join_matchmake_session_ex**(gid: int, gmessage: str, ignore_block_list: bool, participation_count: int) -> bytes</code><br>
+<code>**async def join_matchmake_session_ex**(gid: int, gmessage: str, ignore_block_list: bool, num_participants: int) -> bytes</code><br>
 <span class="docs">Calls method `30` on the server.</span>
 
 <code>**async def get_simple_playing_session**(pids: list[int], include_login_user: bool) -> list[[SimplePlayingSession](#simpleplayingsession)]</code><br>
@@ -641,7 +641,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 </span>
 </span>
 
-<code>**async def create_matchmake_session**(client: [RMCClient](../rmc#rmcclient), gathering: [Data](../common), description: str, participation_count: int) -> [RMCResponse](../common)</code><br>
+<code>**async def create_matchmake_session**(client: [RMCClient](../rmc#rmcclient), gathering: [Data](../common), description: str, num_participants: int) -> [RMCResponse](../common)</code><br>
 <span class="docs">Handler for method `6`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>gid: int</code><br>
@@ -723,7 +723,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 </span>
 </span>
 
-<code>**async def join_matchmake_session_ex**(client: [RMCClient](../rmc#rmcclient), gid: int, gmessage: str, ignore_block_list: bool, participation_count: int) -> bytes</code><br>
+<code>**async def join_matchmake_session_ex**(client: [RMCClient](../rmc#rmcclient), gid: int, gmessage: str, ignore_block_list: bool, num_participants: int) -> bytes</code><br>
 <span class="docs">Handler for method `30`. This method should be overridden by a subclass.</span>
 
 <code>**async def get_simple_playing_session**(client: [RMCClient](../rmc#rmcclient), pids: list[int], include_login_user: bool) -> list[[SimplePlayingSession](#simpleplayingsession)]</code><br>
@@ -830,7 +830,7 @@ The following fields are defined in this class:<br>
 <code>gid_for_participation_check: int</code><br>
 <code>options: int</code><br>
 <code>join_message: str</code><br>
-<code>participation_count: int</code><br>
+<code>num_participants: int</code><br>
 <code>search_criteria: list[[MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)]</code><br>
 <code>target_gids: list[int]</code><br>
 <code>block_list: [MatchmakeBlockListParam](#matchmakeblocklistparam) = [MatchmakeBlockListParam](#matchmakeblocklistparam)()</code><br>
@@ -847,7 +847,7 @@ The following fields are defined in this class:<br>
 <code>gid_for_participation_check: int</code><br>
 <code>options: int</code><br>
 <code>join_message: str</code><br>
-<code>participation_count: int</code><br>
+<code>num_participants: int</code><br>
 </span><br>
 
 ## DeletionEntry
@@ -946,7 +946,7 @@ The following fields are defined in this class:<br>
 <code>user_password: str</code><br>
 <code>system_password: str</code><br>
 <code>join_message: str</code><br>
-<code>participation_count: int</code><br>
+<code>num_participants: int</code><br>
 <code>extra_participants: int</code><br>
 <code>block_list: [MatchmakeBlockListParam](#matchmakeblocklistparam) = [MatchmakeBlockListParam](#matchmakeblocklistparam)()</code><br>
 </span><br>
@@ -980,7 +980,7 @@ The following fields are defined in this class:<br>
 <code>open_participation: bool = True</code><br>
 <code>matchmake_system: int = 0</code><br>
 <code>application_data: bytes = b""</code><br>
-<code>participation_count: int = 0</code><br>
+<code>num_participants: int = 0</code><br>
 If `nex.version` >= 30500:<br>
 <span class="docs">
 <code>progress_score: int = 100</code><br>
@@ -1060,7 +1060,7 @@ The following fields are defined in this class:<br>
 <code>participation_start: [DateTime](../common#datetime)</code><br>
 <code>participation_end: [DateTime](../common#datetime)</code><br>
 <code>matchmake_session_count: int</code><br>
-<code>participation_count: int</code><br>
+<code>num_participants: int</code><br>
 </span><br>
 
 ## PlayingSession

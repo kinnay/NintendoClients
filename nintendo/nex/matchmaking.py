@@ -20,13 +20,13 @@ class AutoMatchmakeParam(common.Structure):
 		self.gid_for_participation_check = None
 		self.options = None
 		self.join_message = None
-		self.participation_count = None
+		self.num_participants = None
 		self.search_criteria = None
 		self.target_gids = None
 		self.block_list = MatchmakeBlockListParam()
 	
 	def check_required(self, settings):
-		for field in ['participants', 'gid_for_participation_check', 'options', 'join_message', 'participation_count', 'search_criteria', 'target_gids']:
+		for field in ['participants', 'gid_for_participation_check', 'options', 'join_message', 'num_participants', 'search_criteria', 'target_gids']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -36,7 +36,7 @@ class AutoMatchmakeParam(common.Structure):
 		self.gid_for_participation_check = stream.u32()
 		self.options = stream.u32()
 		self.join_message = stream.string()
-		self.participation_count = stream.u16()
+		self.num_participants = stream.u16()
 		self.search_criteria = stream.list(MatchmakeSessionSearchCriteria)
 		self.target_gids = stream.list(stream.u32)
 		self.block_list = stream.extract(MatchmakeBlockListParam)
@@ -48,7 +48,7 @@ class AutoMatchmakeParam(common.Structure):
 		stream.u32(self.gid_for_participation_check)
 		stream.u32(self.options)
 		stream.string(self.join_message)
-		stream.u16(self.participation_count)
+		stream.u16(self.num_participants)
 		stream.list(self.search_criteria, stream.add)
 		stream.list(self.target_gids, stream.u32)
 		stream.add(self.block_list)
@@ -62,10 +62,10 @@ class CreateMatchmakeSessionParam(common.Structure):
 		self.gid_for_participation_check = None
 		self.options = None
 		self.join_message = None
-		self.participation_count = None
+		self.num_participants = None
 	
 	def check_required(self, settings):
-		for field in ['additional_participants', 'gid_for_participation_check', 'options', 'join_message', 'participation_count']:
+		for field in ['additional_participants', 'gid_for_participation_check', 'options', 'join_message', 'num_participants']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -75,7 +75,7 @@ class CreateMatchmakeSessionParam(common.Structure):
 		self.gid_for_participation_check = stream.u32()
 		self.options = stream.u32()
 		self.join_message = stream.string()
-		self.participation_count = stream.u16()
+		self.num_participants = stream.u16()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -84,7 +84,7 @@ class CreateMatchmakeSessionParam(common.Structure):
 		stream.u32(self.gid_for_participation_check)
 		stream.u32(self.options)
 		stream.string(self.join_message)
-		stream.u16(self.participation_count)
+		stream.u16(self.num_participants)
 
 
 class DeletionEntry(common.Structure):
@@ -279,12 +279,12 @@ class JoinMatchmakeSessionParam(common.Structure):
 		self.user_password = None
 		self.system_password = None
 		self.join_message = None
-		self.participation_count = None
+		self.num_participants = None
 		self.extra_participants = None
 		self.block_list = MatchmakeBlockListParam()
 	
 	def check_required(self, settings):
-		for field in ['gid', 'participants', 'gid_for_participation_check', 'options', 'behavior', 'user_password', 'system_password', 'join_message', 'participation_count', 'extra_participants']:
+		for field in ['gid', 'participants', 'gid_for_participation_check', 'options', 'behavior', 'user_password', 'system_password', 'join_message', 'num_participants', 'extra_participants']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -297,7 +297,7 @@ class JoinMatchmakeSessionParam(common.Structure):
 		self.user_password = stream.string()
 		self.system_password = stream.string()
 		self.join_message = stream.string()
-		self.participation_count = stream.u16()
+		self.num_participants = stream.u16()
 		self.extra_participants = stream.u16()
 		self.block_list = stream.extract(MatchmakeBlockListParam)
 	
@@ -311,7 +311,7 @@ class JoinMatchmakeSessionParam(common.Structure):
 		stream.string(self.user_password)
 		stream.string(self.system_password)
 		stream.string(self.join_message)
-		stream.u16(self.participation_count)
+		stream.u16(self.num_participants)
 		stream.u16(self.extra_participants)
 		stream.add(self.block_list)
 
@@ -358,7 +358,7 @@ class MatchmakeSession(Gathering):
 		self.open_participation = True
 		self.matchmake_system = 0
 		self.application_data = b""
-		self.participation_count = 0
+		self.num_participants = 0
 		self.progress_score = 100
 		self.session_key = b""
 		self.option = 0
@@ -386,7 +386,7 @@ class MatchmakeSession(Gathering):
 		self.open_participation = stream.bool()
 		self.matchmake_system = stream.u32()
 		self.application_data = stream.buffer()
-		self.participation_count = stream.u32()
+		self.num_participants = stream.u32()
 		if stream.settings["nex.version"] >= 30500:
 			self.progress_score = stream.u8()
 		if stream.settings["nex.version"] >= 30000:
@@ -409,7 +409,7 @@ class MatchmakeSession(Gathering):
 		stream.bool(self.open_participation)
 		stream.u32(self.matchmake_system)
 		stream.buffer(self.application_data)
-		stream.u32(self.participation_count)
+		stream.u32(self.num_participants)
 		if stream.settings["nex.version"] >= 30500:
 			stream.u8(self.progress_score)
 		if stream.settings["nex.version"] >= 30000:
@@ -539,10 +539,10 @@ class PersistentGathering(Gathering):
 		self.participation_start = None
 		self.participation_end = None
 		self.matchmake_session_count = None
-		self.participation_count = None
+		self.num_participants = None
 	
 	def check_required(self, settings):
-		for field in ['type', 'password', 'attribs', 'application_buffer', 'participation_start', 'participation_end', 'matchmake_session_count', 'participation_count']:
+		for field in ['type', 'password', 'attribs', 'application_buffer', 'participation_start', 'participation_end', 'matchmake_session_count', 'num_participants']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -554,7 +554,7 @@ class PersistentGathering(Gathering):
 		self.participation_start = stream.datetime()
 		self.participation_end = stream.datetime()
 		self.matchmake_session_count = stream.u32()
-		self.participation_count = stream.u32()
+		self.num_participants = stream.u32()
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
@@ -565,7 +565,7 @@ class PersistentGathering(Gathering):
 		stream.datetime(self.participation_start)
 		stream.datetime(self.participation_end)
 		stream.u32(self.matchmake_session_count)
-		stream.u32(self.participation_count)
+		stream.u32(self.num_participants)
 common.DataHolder.register(PersistentGathering, "PersistentGathering")
 
 
@@ -1714,13 +1714,13 @@ class MatchmakeExtensionClient(MatchmakeExtensionProtocol):
 		logger.info("MatchmakeExtensionClient.browse_matchmake_session_with_host_urls -> done")
 		return obj
 	
-	async def create_matchmake_session(self, gathering, description, participation_count):
+	async def create_matchmake_session(self, gathering, description, num_participants):
 		logger.info("MatchmakeExtensionClient.create_matchmake_session()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.anydata(gathering)
 		stream.string(description)
-		stream.u16(participation_count)
+		stream.u16(num_participants)
 		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_CREATE_MATCHMAKE_SESSION, stream.get())
 		
 		#--- response ---
@@ -2071,14 +2071,14 @@ class MatchmakeExtensionClient(MatchmakeExtensionProtocol):
 		logger.info("MatchmakeExtensionClient.is_violation_user -> done")
 		return obj
 	
-	async def join_matchmake_session_ex(self, gid, gmessage, ignore_block_list, participation_count):
+	async def join_matchmake_session_ex(self, gid, gmessage, ignore_block_list, num_participants):
 		logger.info("MatchmakeExtensionClient.join_matchmake_session_ex()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.u32(gid)
 		stream.string(gmessage)
 		stream.bool(ignore_block_list)
-		stream.u16(participation_count)
+		stream.u16(num_participants)
 		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_JOIN_MATCHMAKE_SESSION_EX, stream.get())
 		
 		#--- response ---
@@ -3426,8 +3426,8 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 		#--- request ---
 		gathering = input.anydata()
 		description = input.string()
-		participation_count = input.u16()
-		response = await self.create_matchmake_session(client, gathering, description, participation_count)
+		num_participants = input.u16()
+		response = await self.create_matchmake_session(client, gathering, description, num_participants)
 		
 		#--- response ---
 		if not isinstance(response, rmc.RMCResponse):
@@ -3656,8 +3656,8 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 		gid = input.u32()
 		gmessage = input.string()
 		ignore_block_list = input.bool()
-		participation_count = input.u16()
-		response = await self.join_matchmake_session_ex(client, gid, gmessage, ignore_block_list, participation_count)
+		num_participants = input.u16()
+		response = await self.join_matchmake_session_ex(client, gid, gmessage, ignore_block_list, num_participants)
 		
 		#--- response ---
 		if not isinstance(response, bytes):

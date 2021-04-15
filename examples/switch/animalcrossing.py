@@ -113,7 +113,7 @@ async def main():
 				data = session.application_data
 				print("\nFound island:")
 				print("\tId:", session.id)
-				print("\tActive players:", session.participation_count)
+				print("\tActive players:", session.num_participants)
 				print("\tIsland name:", data[12:32].decode("utf16").rstrip("\0"))
 				print("\tHost name:", data[40:60].decode("utf16").rstrip("\0"))
 				print()
