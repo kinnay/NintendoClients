@@ -31,6 +31,9 @@ Provides a client and server for the `AAUserProtocol`. This page was generated a
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`AAUserServer`](#aauserserver).</span>
 
+<code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. Maybe be overridden by a subclass.</span>
+
 <code>**async def register_application**(client: [RMCClient](../rmc#rmcclient), title_id: int) -> None</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
 

@@ -831,6 +831,9 @@ class FriendsServerV1(FriendsProtocolV1):
 			self.METHOD_SEND_INVITATION: self.handle_send_invitation,
 		}
 	
+	async def process_event(self, type, client):
+		pass
+	
 	async def handle(self, client, method_id, input, output):
 		if method_id in self.methods:
 			await self.methods[method_id](client, input, output)
@@ -967,6 +970,9 @@ class FriendsServerV2(FriendsProtocolV2):
 			self.METHOD_CHECK_SETTING_STATUS: self.handle_check_setting_status,
 			self.METHOD_GET_REQUEST_BLOCK_SETTINGS: self.handle_get_request_block_settings,
 		}
+	
+	async def process_event(self, type, client):
+		pass
 	
 	async def handle(self, client, method_id, input, output):
 		if method_id in self.methods:

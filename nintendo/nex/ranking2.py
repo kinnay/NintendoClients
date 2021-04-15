@@ -567,6 +567,9 @@ class Ranking2Server(Ranking2Protocol):
 			self.METHOD_GET_ESTIMATE_SCORE_RANK: self.handle_get_estimate_score_rank,
 		}
 	
+	async def process_event(self, type, client):
+		pass
+	
 	async def handle(self, client, method_id, input, output):
 		if method_id in self.methods:
 			await self.methods[method_id](client, input, output)

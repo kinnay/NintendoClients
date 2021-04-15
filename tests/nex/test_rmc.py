@@ -1,12 +1,21 @@
 
 from nintendo.nex import rmc, common, authentication, settings
 import pytest
+import anyio
 
 
 HOST = "127.0.0.1"
 
 
 class AuthenticationServer(authentication.AuthenticationServer):
+	def __init__(self):
+		super().__init__()
+		self.logout = False
+	
+	async def process_event(self, type, client):
+		if type == rmc.RMCEvent.LOGOUT:
+			self.logout = True
+	
 	async def get_name(self, client, pid):
 		return str(pid)
 
@@ -26,7 +35,7 @@ async def test_simple():
 
 
 @pytest.mark.anyio
-async def test_unimplemented_protocol(anyio_backend):
+async def test_unimplemented_protocol():
 	s = settings.default()
 	
 	servers = []
@@ -39,3 +48,15 @@ async def test_unimplemented_protocol(anyio_backend):
 				result = await auth.get_name(12345)
 			except common.RMCError as e:
 				assert e.result().name() == "Core::NotImplemented"
+				
+				
+@pytest.mark.anyio
+async def test_logout_event():
+	s = settings.default()
+	
+	server = AuthenticationServer()
+	async with rmc.serve(s, [server], HOST, 12345):
+		async with rmc.connect(s, HOST, 12345) as client:
+			assert not server.logout
+		await anyio.sleep(.1) # Wait a bit
+		assert server.logout

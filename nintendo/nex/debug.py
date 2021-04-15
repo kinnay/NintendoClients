@@ -116,6 +116,9 @@ class DebugServer(DebugProtocol):
 			self.METHOD_GET_API_CALL_SUMMARY: self.handle_get_api_call_summary,
 		}
 	
+	async def process_event(self, type, client):
+		pass
+	
 	async def handle(self, client, method_id, input, output):
 		if method_id in self.methods:
 			await self.methods[method_id](client, input, output)

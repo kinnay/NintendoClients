@@ -1327,8 +1327,6 @@ class DataStoreTouchObjectParam(common.Structure):
 
 
 class DataStoreProtocolSMM:
-	METHOD_GET_APPLICATION_CONFIG = 61
-	METHOD_GET_APPLICATION_CONFIG_STRING = 74
 	METHOD_PREPARE_GET_OBJECT_V1 = 1
 	METHOD_PREPARE_POST_OBJECT_V1 = 2
 	METHOD_COMPLETE_POST_OBJECT_V1 = 3
@@ -1375,6 +1373,8 @@ class DataStoreProtocolSMM:
 	METHOD_RATE_OBJECTS_WITH_POSTING = 44
 	METHOD_GET_OBJECT_INFOS = 45
 	METHOD_SEARCH_OBJECT_LIGHT = 46
+	METHOD_GET_APPLICATION_CONFIG = 61
+	METHOD_GET_APPLICATION_CONFIG_STRING = 74
 	
 	PROTOCOL_ID = 0x73
 
@@ -1383,36 +1383,6 @@ class DataStoreClientSMM(DataStoreProtocolSMM):
 	def __init__(self, client):
 		self.settings = client.settings
 		self.client = client
-	
-	async def get_application_config(self, id):
-		logger.info("DataStoreClientSMM.get_application_config()")
-		#--- request ---
-		stream = streams.StreamOut(self.settings)
-		stream.u32(id)
-		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_APPLICATION_CONFIG, stream.get())
-		
-		#--- response ---
-		stream = streams.StreamIn(data, self.settings)
-		config = stream.list(stream.u32)
-		if not stream.eof():
-			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStoreClientSMM.get_application_config -> done")
-		return config
-	
-	async def get_application_config_string(self, id):
-		logger.info("DataStoreClientSMM.get_application_config_string()")
-		#--- request ---
-		stream = streams.StreamOut(self.settings)
-		stream.u32(id)
-		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_APPLICATION_CONFIG_STRING, stream.get())
-		
-		#--- response ---
-		stream = streams.StreamIn(data, self.settings)
-		config = stream.list(stream.string)
-		if not stream.eof():
-			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStoreClientSMM.get_application_config_string -> done")
-		return config
 	
 	async def prepare_get_object_v1(self, param):
 		logger.info("DataStoreClientSMM.prepare_get_object_v1()")
@@ -2134,13 +2104,41 @@ class DataStoreClientSMM(DataStoreProtocolSMM):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM.search_object_light -> done")
 		return result
+	
+	async def get_application_config(self, id):
+		logger.info("DataStoreClientSMM.get_application_config()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u32(id)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_APPLICATION_CONFIG, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		config = stream.list(stream.u32)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM.get_application_config -> done")
+		return config
+	
+	async def get_application_config_string(self, id):
+		logger.info("DataStoreClientSMM.get_application_config_string()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u32(id)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_APPLICATION_CONFIG_STRING, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		config = stream.list(stream.string)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM.get_application_config_string -> done")
+		return config
 
 
 class DataStoreServerSMM(DataStoreProtocolSMM):
 	def __init__(self):
 		self.methods = {
-			self.METHOD_GET_APPLICATION_CONFIG: self.handle_get_application_config,
-			self.METHOD_GET_APPLICATION_CONFIG_STRING: self.handle_get_application_config_string,
 			self.METHOD_PREPARE_GET_OBJECT_V1: self.handle_prepare_get_object_v1,
 			self.METHOD_PREPARE_POST_OBJECT_V1: self.handle_prepare_post_object_v1,
 			self.METHOD_COMPLETE_POST_OBJECT_V1: self.handle_complete_post_object_v1,
@@ -2187,7 +2185,12 @@ class DataStoreServerSMM(DataStoreProtocolSMM):
 			self.METHOD_RATE_OBJECTS_WITH_POSTING: self.handle_rate_objects_with_posting,
 			self.METHOD_GET_OBJECT_INFOS: self.handle_get_object_infos,
 			self.METHOD_SEARCH_OBJECT_LIGHT: self.handle_search_object_light,
+			self.METHOD_GET_APPLICATION_CONFIG: self.handle_get_application_config,
+			self.METHOD_GET_APPLICATION_CONFIG_STRING: self.handle_get_application_config_string,
 		}
+	
+	async def process_event(self, type, client):
+		pass
 	
 	async def handle(self, client, method_id, input, output):
 		if method_id in self.methods:
@@ -2195,28 +2198,6 @@ class DataStoreServerSMM(DataStoreProtocolSMM):
 		else:
 			logger.warning("Unknown method called on DataStoreServerSMM: %i", method_id)
 			raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_get_application_config(self, client, input, output):
-		logger.info("DataStoreServerSMM.get_application_config()")
-		#--- request ---
-		id = input.u32()
-		response = await self.get_application_config(client, id)
-		
-		#--- response ---
-		if not isinstance(response, list):
-			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
-		output.list(response, output.u32)
-	
-	async def handle_get_application_config_string(self, client, input, output):
-		logger.info("DataStoreServerSMM.get_application_config_string()")
-		#--- request ---
-		id = input.u32()
-		response = await self.get_application_config_string(client, id)
-		
-		#--- response ---
-		if not isinstance(response, list):
-			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
-		output.list(response, output.string)
 	
 	async def handle_prepare_get_object_v1(self, client, input, output):
 		logger.info("DataStoreServerSMM.prepare_get_object_v1()")
@@ -2743,13 +2724,27 @@ class DataStoreServerSMM(DataStoreProtocolSMM):
 			raise RuntimeError("Expected DataStoreSearchResult, got %s" %response.__class__.__name__)
 		output.add(response)
 	
-	async def get_application_config(self, *args):
-		logger.warning("DataStoreServerSMM.get_application_config not implemented")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_get_application_config(self, client, input, output):
+		logger.info("DataStoreServerSMM.get_application_config()")
+		#--- request ---
+		id = input.u32()
+		response = await self.get_application_config(client, id)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.u32)
 	
-	async def get_application_config_string(self, *args):
-		logger.warning("DataStoreServerSMM.get_application_config_string not implemented")
-		raise common.RMCError("Core::NotImplemented")
+	async def handle_get_application_config_string(self, client, input, output):
+		logger.info("DataStoreServerSMM.get_application_config_string()")
+		#--- request ---
+		id = input.u32()
+		response = await self.get_application_config_string(client, id)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.string)
 	
 	async def prepare_get_object_v1(self, *args):
 		logger.warning("DataStoreServerSMM.prepare_get_object_v1 not implemented")
@@ -2933,5 +2928,13 @@ class DataStoreServerSMM(DataStoreProtocolSMM):
 	
 	async def search_object_light(self, *args):
 		logger.warning("DataStoreServerSMM.search_object_light not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_application_config(self, *args):
+		logger.warning("DataStoreServerSMM.get_application_config not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_application_config_string(self, *args):
+		logger.warning("DataStoreServerSMM.get_application_config_string not implemented")
 		raise common.RMCError("Core::NotImplemented")
 

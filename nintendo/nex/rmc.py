@@ -11,6 +11,10 @@ logger = logging.getLogger(__name__)
 
 class RMCResponse:
 	pass
+	
+	
+class RMCEvent:
+	LOGOUT = 0
 
 
 class RMCMessage:
@@ -135,6 +139,11 @@ class RMCClient:
 		self.responses = {}
 		
 		self.closed = False
+
+	async def __aenter__(self): return self
+	async def __aexit__(self, typ, val, tb):
+		for server in self.servers.values():
+			await server.process_event(RMCEvent.LOGOUT, self)
 	
 	def register_server(self, server):
 		if server.PROTOCOL_ID in self.servers:
@@ -261,10 +270,11 @@ class RMCClient:
 async def connect(settings, host, port, vport=1, context=None, credentials=None, servers=[]):
 	logger.debug("Connecting RMC client to %s:%i:%i", host, port, vport)
 	async with prudp.connect(settings, host, port, vport, 10, context, credentials) as client:
-		async with util.create_task_group() as group:
-			client = RMCClient(settings, client)
-			await group.spawn(client.start, servers)
-			yield client
+		client = RMCClient(settings, client)
+		async with client:
+			async with util.create_task_group() as group:
+				await group.spawn(client.start, servers)
+				yield client
 	logger.debug("RMC client is closed")
 
 @contextlib.asynccontextmanager
@@ -274,7 +284,8 @@ async def serve(settings, servers, host="", port=0, vport=1, context=None, key=N
 		logger.debug("New RMC connection: %s:%i", host, port)
 		
 		client = RMCClient(settings, client)
-		await client.start(servers)
+		async with client:
+			await client.start(servers)
 	
 	logger.info("Starting RMC server at %s:%i:%i", host, port, vport)
 	async with prudp.serve(handle, settings, host, port, vport, 10, context, key):
@@ -288,7 +299,8 @@ async def serve_prudp(settings, servers, transport, port, key=None):
 		logger.debug("New RMC connection: %s:%i", host, port)
 		
 		client = RMCClient(settings, client)
-		await client.start(servers)
+		async with client:
+			await client.start(servers)
 	
 	logger.info("Starting RMC server at PRUDP port %i", port)
 	async with transport.serve(handle, port, 10, key):

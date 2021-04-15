@@ -772,6 +772,7 @@ def make_class_name(name, type):
 class CodeGenerator:
 	def process(self, file):
 		self.file = file
+		self.file.sort()
 		
 		stream = CodeStream()
 		self.generate_file(stream)
@@ -1022,7 +1023,7 @@ class CodeGenerator:
 	def generate_server(self, stream, proto):
 		server_name = make_class_name(proto.name, "Server")
 		proto_name = make_class_name(proto.name, "Protocol")
-	
+		
 		stream.write_line()
 		stream.write_line("class %s(%s):" %(server_name, proto_name))
 		stream.indent()
@@ -1035,6 +1036,9 @@ class CodeGenerator:
 		stream.write_line("}")
 		stream.unindent()
 		
+		stream.write_line()
+		stream.write_line("async def process_event(self, type, client):")
+		stream.write_line("\tpass")
 		stream.write_line()
 		stream.write_line("async def handle(self, client, method_id, input, output):")
 		stream.write_line("\tif method_id in self.methods:")
@@ -1196,7 +1200,6 @@ class CodeGenerator:
 class DocsGenerator:
 	def process(self, file, name):
 		self.file = file
-		self.file.sort()
 		self.text = ""
 		self.generate_file(name)
 		return self.text
@@ -1322,6 +1325,8 @@ class DocsGenerator:
 		self.text += "## %s\n" %name
 		self.text += "<code>**def _\_init__**()</code><br>\n"
 		self.text += '<span class="docs">Creates a new [`%s`](#%s).</span>\n\n' %(name, name.lower())
+		self.text += "<code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>\n"
+		self.text += '<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. Maybe be overridden by a subclass.</span>\n\n'
 		
 		for method in proto.methods.values():
 			if method.supported:

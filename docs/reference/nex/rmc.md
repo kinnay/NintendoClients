@@ -9,6 +9,9 @@ Provides a client and server for the RMC protocol. An alternative client that ca
 <code>**class** [RMCClient](#rmcclient)</code><br>
 <span class="docs">RMC client that uses a PRUDP connection.</span>
 
+<code>**class** [RMCEvent](#rmcevent)</code><br>
+<span class="docs">RMC event types.</span>
+
 <code>**async with connect**(settings: [Settings](../settings#settings), host: str, port: int, vport: int = 1, context: [TLSContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscontext) = None, credentials: [Credentials](../kerberos#credentials) = None, servers: list[object] = []) -> [RMCClient](#rmcclient)</code><br>
 <span class="docs">Creates an RMC client based on PRUDP and connects it to the given address. If `context` is provided, and the underlying transport supports this, the connections is secured with TLS. If credentials are provided they are sent to the server in the connection request. Blocks until the connection is ready and handshake has been performed. `servers` must be a list of service implementations.</span>
 
@@ -17,6 +20,9 @@ Provides a client and server for the RMC protocol. An alternative client that ca
 
 <code>**async with serve_prudp**(settings: [Settings](../settings#settings), servers: list[object], transport: [PRUDPServerTransport](../prudp#prudpservertransport), port: int, key: bytes = None) -> None</code><br>
 <span class="docs">Creates an RMC server on top of the given transport server. If `key` is provided it is used to decrypt the Kerberos tickets in connection requests. If `key` is `None`, the payload of connection requests is ignored and all client connections are accepted. `servers` must be a list of service implementations.</span>
+
+## RMCEvent
+`LOGOUT = 0`
 
 ## RMCClient
 <code>**async def request**(protocol: int, method: int, body: bytes) -> bytes</code><br>

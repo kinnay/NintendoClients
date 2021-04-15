@@ -629,6 +629,9 @@ class AccountServer(AccountProtocol):
 			self.METHOD_DISCONNECT_ALL_PRINCIPALS: self.handle_disconnect_all_principals,
 		}
 	
+	async def process_event(self, type, client):
+		pass
+	
 	async def handle(self, client, method_id, input, output):
 		if method_id in self.methods:
 			await self.methods[method_id](client, input, output)

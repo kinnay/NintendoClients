@@ -17,3 +17,6 @@ Provides a client and server for the `ScreeningProtocol`. This page was generate
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`ScreeningServer`](#screeningserver).</span>
 
+<code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. Maybe be overridden by a subclass.</span>
+

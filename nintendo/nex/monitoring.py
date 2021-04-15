@@ -55,6 +55,9 @@ class MonitoringServer(MonitoringProtocol):
 			self.METHOD_GET_CLUSTER_MEMBERS: self.handle_get_cluster_members,
 		}
 	
+	async def process_event(self, type, client):
+		pass
+	
 	async def handle(self, client, method_id, input, output):
 		if method_id in self.methods:
 			await self.methods[method_id](client, input, output)

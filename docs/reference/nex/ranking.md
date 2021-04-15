@@ -74,6 +74,9 @@ Provides a client and server for the `RankingProtocol`. This page was generated 
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`RankingServer`](#rankingserver).</span>
 
+<code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. Maybe be overridden by a subclass.</span>
+
 <code>**async def upload_score**(client: [RMCClient](../rmc#rmcclient), score_data: [RankingScoreData](#rankingscoredata), unique_id: int) -> None</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
 

@@ -7,15 +7,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class RankingOrderCalc:
-	STANDARD = 0
-	ORDINAL = 1
-
-
 class RankingMode:
 	GLOBAL = 0
 	GLOBAL_AROUND_SELF = 1
 	SELF = 4
+
+
+class RankingOrderCalc:
+	STANDARD = 0
+	ORDINAL = 1
 
 
 class RankingStatFlags:
@@ -25,6 +25,55 @@ class RankingStatFlags:
 	HIGHEST_SCORE = 8
 	AVERAGE_SCORE = 16
 	ALL = 31
+
+
+class RankingCachedResult(RankingResult):
+	def __init__(self):
+		super().__init__()
+		self.created_time = None
+		self.expired_time = None
+		self.max_length = None
+	
+	def check_required(self, settings):
+		for field in ['created_time', 'expired_time', 'max_length']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.created_time = stream.datetime()
+		self.expired_time = stream.datetime()
+		self.max_length = stream.u8()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.datetime(self.created_time)
+		stream.datetime(self.expired_time)
+		stream.u8(self.max_length)
+common.DataHolder.register(RankingCachedResult, "RankingCachedResult")
+
+
+class RankingChangeAttributesParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.flags = None
+		self.groups = None
+		self.param = None
+	
+	def check_required(self, settings):
+		for field in ['flags', 'groups', 'param']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.flags = stream.u8()
+		self.groups = stream.list(stream.u8)
+		self.param = stream.u64()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u8(self.flags)
+		stream.list(self.groups, stream.u8)
+		stream.u64(self.param)
 
 
 class RankingOrderParam(common.Structure):
@@ -132,49 +181,6 @@ class RankingResult(common.Structure):
 		stream.datetime(self.since_time)
 
 
-class RankingCachedResult(RankingResult):
-	def __init__(self):
-		super().__init__()
-		self.created_time = None
-		self.expired_time = None
-		self.max_length = None
-	
-	def check_required(self, settings):
-		for field in ['created_time', 'expired_time', 'max_length']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.created_time = stream.datetime()
-		self.expired_time = stream.datetime()
-		self.max_length = stream.u8()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.datetime(self.created_time)
-		stream.datetime(self.expired_time)
-		stream.u8(self.max_length)
-common.DataHolder.register(RankingCachedResult, "RankingCachedResult")
-
-
-class RankingStats(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.stats = None
-	
-	def check_required(self, settings):
-		for field in ['stats']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.stats = stream.list(stream.double)
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.list(self.stats, stream.double)
-
-
 class RankingScoreData(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -208,28 +214,22 @@ class RankingScoreData(common.Structure):
 		stream.u64(self.param)
 
 
-class RankingChangeAttributesParam(common.Structure):
+class RankingStats(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.flags = None
-		self.groups = None
-		self.param = None
+		self.stats = None
 	
 	def check_required(self, settings):
-		for field in ['flags', 'groups', 'param']:
+		for field in ['stats']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream):
-		self.flags = stream.u8()
-		self.groups = stream.list(stream.u8)
-		self.param = stream.u64()
+		self.stats = stream.list(stream.double)
 	
 	def save(self, stream):
 		self.check_required(stream.settings)
-		stream.u8(self.flags)
-		stream.list(self.groups, stream.u8)
-		stream.u64(self.param)
+		stream.list(self.stats, stream.double)
 
 
 class RankingProtocol:
@@ -514,6 +514,9 @@ class RankingServer(RankingProtocol):
 			self.METHOD_GET_CACHED_TOPX_RANKING: self.handle_get_cached_topx_ranking,
 			self.METHOD_GET_CACHED_TOPX_RANKINGS: self.handle_get_cached_topx_rankings,
 		}
+	
+	async def process_event(self, type, client):
+		pass
 	
 	async def handle(self, client, method_id, input, output):
 		if method_id in self.methods:

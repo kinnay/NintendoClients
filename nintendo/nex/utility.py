@@ -172,6 +172,9 @@ class UtilityServer(UtilityProtocol):
 			self.METHOD_GET_STRING_SETTINGS: self.handle_get_string_settings,
 		}
 	
+	async def process_event(self, type, client):
+		pass
+	
 	async def handle(self, client, method_id, input, output):
 		if method_id in self.methods:
 			await self.methods[method_id](client, input, output)
