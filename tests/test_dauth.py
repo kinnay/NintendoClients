@@ -7,7 +7,7 @@ import pytest
 CHALLENGE_REQUEST = \
 	"POST /v6/challenge HTTP/1.1\r\n" \
 	"Host: 127.0.0.1:12345\r\n" \
-	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 11.4.0.0)\r\n" \
+	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 12.3.0.0)\r\n" \
 	"Accept: */*\r\n" \
 	"X-Nintendo-PowerState: FA\r\n" \
 	"Content-Length: 17\r\n" \
@@ -17,15 +17,15 @@ CHALLENGE_REQUEST = \
 TOKEN_REQUEST = \
 	"POST /v6/device_auth_token HTTP/1.1\r\n" \
 	"Host: 127.0.0.1:12345\r\n" \
-	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 11.4.0.0)\r\n" \
+	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 12.3.0.0)\r\n" \
 	"Accept: */*\r\n" \
 	"X-Nintendo-PowerState: FA\r\n" \
 	"Content-Length: 211\r\n" \
 	"Content-Type: application/x-www-form-urlencoded\r\n\r\n" \
 	"challenge=vaNgVZZH7gUse0y3t8Cksuln-TAVtvBmcD-ow59qp0E=&" \
 	"client_id=8f849b5d34778d8e&ist=false&key_generation=11&" \
-	"system_version=CusHY#000b0001#iI0rZ0Q2dg3Evhd-8GoYmp-KTE8malKe0GOJgXa-XG8=&" \
-	"mac=i9ZnhrO4xn6VxB1b_89AAg"
+	"system_version=CusHY#000c0000#C-BynYNPXdQJNBZjx02Hizi8lRUSIKLwPGa5p8EY1uo=&" \
+	"mac=xRB_6mgnNqrnF9DRsEpYMg"
 
 
 @pytest.mark.anyio

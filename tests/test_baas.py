@@ -8,7 +8,7 @@ import struct
 ACCESS_REQUEST = \
 	"POST /1.0.0/application/token HTTP/1.1\r\n" \
 	"Host: 127.0.0.1:12345\r\n" \
-	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 11.4.0.0; Add-on 11.4.0.0)\r\n" \
+	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 12.3.0.0; Add-on 12.3.0.0)\r\n" \
 	"Accept: */*\r\n" \
 	"X-Nintendo-PowerState: FA\r\n" \
 	"Content-Length: 46\r\n" \
@@ -18,7 +18,7 @@ ACCESS_REQUEST = \
 LOGIN_REQUEST = \
 	"POST /1.0.0/login HTTP/1.1\r\n" \
 	"Host: 127.0.0.1:12345\r\n" \
-	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 11.4.0.0; Add-on 11.4.0.0)\r\n" \
+	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 12.3.0.0; Add-on 12.3.0.0)\r\n" \
 	"Accept: */*\r\n" \
 	"Authorization: Bearer access.token\r\n" \
 	"X-Nintendo-PowerState: FA\r\n" \
