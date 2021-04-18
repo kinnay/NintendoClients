@@ -268,7 +268,7 @@ Provides a client and server for the `DataStoreProtocolSMM`. This page was gener
 <span class="docs">Creates a new [`DataStoreServerSMM`](#datastoreserversmm).</span>
 
 <code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
-<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. Maybe be overridden by a subclass.</span>
+<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. May be overridden by a subclass.</span>
 
 <code>**async def prepare_get_object_v1**(client: [RMCClient](../rmc#rmcclient), param: [DataStorePrepareGetParamV1](#datastorepreparegetparamv1)) -> [DataStoreReqGetInfoV1](#datastorereqgetinfov1)</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>

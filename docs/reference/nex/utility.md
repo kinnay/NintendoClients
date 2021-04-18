@@ -44,7 +44,7 @@ Provides a client and server for the `UtilityProtocol`. This page was generated 
 <span class="docs">Creates a new [`UtilityServer`](#utilityserver).</span>
 
 <code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
-<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. Maybe be overridden by a subclass.</span>
+<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. May be overridden by a subclass.</span>
 
 <code>**async def acquire_nex_unique_id**(client: [RMCClient](../rmc#rmcclient)) -> int</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>

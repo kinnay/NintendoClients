@@ -1326,7 +1326,7 @@ class DocsGenerator:
 		self.text += "<code>**def _\_init__**()</code><br>\n"
 		self.text += '<span class="docs">Creates a new [`%s`](#%s).</span>\n\n' %(name, name.lower())
 		self.text += "<code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>\n"
-		self.text += '<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. Maybe be overridden by a subclass.</span>\n\n'
+		self.text += '<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. May be overridden by a subclass.</span>\n\n'
 		
 		for method in proto.methods.values():
 			if method.supported:
