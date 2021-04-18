@@ -12,11 +12,11 @@ class NotificationEvent(common.Structure):
 		super().__init__()
 		self.pid = None
 		self.type = None
-		self.param1 = None
-		self.param2 = None
-		self.text = None
-		self.param3 = None
-		self.map = None
+		self.param1 = 0
+		self.param2 = 0
+		self.text = ""
+		self.param3 = 0
+		self.map = {}
 	
 	def get_version(self, settings):
 		version = 0
@@ -25,17 +25,13 @@ class NotificationEvent(common.Structure):
 		return version
 	
 	def check_required(self, settings):
-		for field in ['pid', 'type', 'param1', 'param2', 'text']:
+		for field in ['pid', 'type']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 		if settings["nex.version"] >= 30500:
-			for field in ['param3']:
-				if getattr(self, field) is None:
-					raise ValueError("No value assigned to required field: %s" %field)
+			pass
 		if settings["nex.version"] >= 40000:
-			for field in ['map']:
-				if getattr(self, field) is None:
-					raise ValueError("No value assigned to required field: %s" %field)
+			pass
 	
 	def load(self, stream):
 		self.pid = stream.pid()

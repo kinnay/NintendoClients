@@ -36,16 +36,16 @@ The following fields are defined in this class:<br>
 <span class="docs">
 <code>pid: int</code><br>
 <code>type: int</code><br>
-<code>param1: int</code><br>
-<code>param2: int</code><br>
-<code>text: str</code><br>
+<code>param1: int = 0</code><br>
+<code>param2: int = 0</code><br>
+<code>text: str = ""</code><br>
 If `nex.version` >= 30500:<br>
 <span class="docs">
-<code>param3: int</code><br>
+<code>param3: int = 0</code><br>
 </span><br>
 If `nex.version` >= 40000:<br>
 <span class="docs">
-<code>map: dict[str, object]</code><br>
+<code>map: dict[str, object] = {}</code><br>
 </span><br>
 </span><br>
 

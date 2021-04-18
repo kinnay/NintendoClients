@@ -2,17 +2,17 @@
 struct NotificationEvent {
 	pid pid;
 	uint32 type;
-	pid param1;
-	pid param2;
-	string text;
+	pid param1 = 0;
+	pid param2 = 0;
+	string text = "";
 	
 	[nex.version >= 30500] {
-		pid param3;
+		pid param3 = 0;
 	}
 	
 	[nex.version >= 40000] {
 		#revision 1
-		map<string, variant> map;
+		map<string, variant> map = {};
 	}
 }
 
