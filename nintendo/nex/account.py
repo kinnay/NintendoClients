@@ -629,7 +629,7 @@ class AccountServer(AccountProtocol):
 			self.METHOD_DISCONNECT_ALL_PRINCIPALS: self.handle_disconnect_all_principals,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):

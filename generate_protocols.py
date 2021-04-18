@@ -1037,7 +1037,7 @@ class CodeGenerator:
 		stream.unindent()
 		
 		stream.write_line()
-		stream.write_line("async def process_event(self, type, client):")
+		stream.write_line("async def logout(self, client):")
 		stream.write_line("\tpass")
 		stream.write_line()
 		stream.write_line("async def handle(self, client, method_id, input, output):")
@@ -1325,8 +1325,8 @@ class DocsGenerator:
 		self.text += "## %s\n" %name
 		self.text += "<code>**def _\_init__**()</code><br>\n"
 		self.text += '<span class="docs">Creates a new [`%s`](#%s).</span>\n\n' %(name, name.lower())
-		self.text += "<code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>\n"
-		self.text += '<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. May be overridden by a subclass.</span>\n\n'
+		self.text += "<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>\n"
+		self.text += '<span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>\n\n'
 		
 		for method in proto.methods.values():
 			if method.supported:

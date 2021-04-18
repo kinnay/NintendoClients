@@ -11,10 +11,6 @@ logger = logging.getLogger(__name__)
 
 class RMCResponse:
 	pass
-	
-	
-class RMCEvent:
-	LOGOUT = 0
 
 
 class RMCMessage:
@@ -143,7 +139,7 @@ class RMCClient:
 	async def __aenter__(self): return self
 	async def __aexit__(self, typ, val, tb):
 		for server in self.servers.values():
-			await server.process_event(RMCEvent.LOGOUT, self)
+			await server.logout(self)
 	
 	def register_server(self, server):
 		if server.PROTOCOL_ID in self.servers:

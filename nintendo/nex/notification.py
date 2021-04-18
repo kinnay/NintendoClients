@@ -88,7 +88,7 @@ class NotificationServer(NotificationProtocol):
 			self.METHOD_PROCESS_NOTIFICATION_EVENT: self.handle_process_notification_event,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):

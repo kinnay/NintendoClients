@@ -2155,7 +2155,7 @@ class DataStoreServer(DataStoreProtocol):
 			self.METHOD_SEARCH_OBJECT_LIGHT: self.handle_search_object_light,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):

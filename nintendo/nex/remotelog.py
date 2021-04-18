@@ -38,7 +38,7 @@ class RemoteLogDeviceServer(RemoteLogDeviceProtocol):
 			self.METHOD_LOG: self.handle_log,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):

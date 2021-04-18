@@ -116,7 +116,7 @@ class DebugServer(DebugProtocol):
 			self.METHOD_GET_API_CALL_SUMMARY: self.handle_get_api_call_summary,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):

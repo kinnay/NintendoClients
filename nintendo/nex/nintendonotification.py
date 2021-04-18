@@ -260,7 +260,7 @@ class NintendoNotificationServer(NintendoNotificationProtocol):
 			self.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT_ALT: self.handle_process_nintendo_notification_event_alt,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):

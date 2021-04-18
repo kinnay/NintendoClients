@@ -61,8 +61,8 @@ Provides a client and server for the `Ranking2Protocol`. This page was generated
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`Ranking2Server`](#ranking2server).</span>
 
-<code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
-<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. May be overridden by a subclass.</span>
+<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
 <code>**async def put_score**(client: [RMCClient](../rmc#rmcclient), socres: list[[Ranking2ScoreData](#ranking2scoredata)], unique_id: int) -> None</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>

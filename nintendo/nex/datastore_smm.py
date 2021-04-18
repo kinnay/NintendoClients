@@ -2189,7 +2189,7 @@ class DataStoreServerSMM(DataStoreProtocolSMM):
 			self.METHOD_GET_APPLICATION_CONFIG_STRING: self.handle_get_application_config_string,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):

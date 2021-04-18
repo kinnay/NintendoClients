@@ -278,7 +278,7 @@ class MessagingServer(MessagingProtocol):
 			self.METHOD_DELETE_ALL_MESSAGES: self.handle_delete_all_messages,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):
@@ -405,7 +405,7 @@ class MessageDeliveryServer(MessageDeliveryProtocol):
 			self.METHOD_DELIVER_MESSAGE: self.handle_deliver_message,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):

@@ -3606,7 +3606,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_GET_EVENT_COURSE_GHOST: self.handle_get_event_course_ghost,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):

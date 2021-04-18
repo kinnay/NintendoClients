@@ -172,7 +172,7 @@ class UtilityServer(UtilityProtocol):
 			self.METHOD_GET_STRING_SETTINGS: self.handle_get_string_settings,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):

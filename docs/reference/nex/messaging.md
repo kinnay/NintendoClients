@@ -62,8 +62,8 @@ Provides a client and server for the `MessagingProtocol` and `MessageDeliveryPro
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`MessagingServer`](#messagingserver).</span>
 
-<code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
-<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. May be overridden by a subclass.</span>
+<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
 <code>**async def deliver_message**(client: [RMCClient](../rmc#rmcclient), message: [Data](../common)) -> [RMCResponse](../common)</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
@@ -96,8 +96,8 @@ Provides a client and server for the `MessagingProtocol` and `MessageDeliveryPro
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`MessageDeliveryServer`](#messagedeliveryserver).</span>
 
-<code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
-<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. May be overridden by a subclass.</span>
+<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
 <code>**async def deliver_message**(client: [RMCClient](../rmc#rmcclient), message: [Data](../common)) -> None</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>

@@ -142,7 +142,7 @@ class NATTraversalServer(NATTraversalProtocol):
 			self.METHOD_REPORT_NAT_TRAVERSAL_RESULT_DETAIL: self.handle_report_nat_traversal_result_detail,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):

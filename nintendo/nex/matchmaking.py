@@ -2494,7 +2494,7 @@ class MatchMakingServer(MatchMakingProtocol):
 			self.METHOD_MIGRATE_GATHERING_OWNERSHIP: self.handle_migrate_gathering_ownership,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):
@@ -3200,7 +3200,7 @@ class MatchMakingServerExt(MatchMakingProtocolExt):
 			self.METHOD_DELETE_FROM_DELETIONS: self.handle_delete_from_deletions,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):
@@ -3359,7 +3359,7 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 			self.METHOD_BROWSE_MATCHMAKE_SESSION_WITH_HOST_URLS_NO_HOLDER_NO_RESULT_RANGE: self.handle_browse_matchmake_session_with_host_urls_no_holder_no_result_range,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):
@@ -4136,7 +4136,7 @@ class MatchmakeRefereeServer(MatchmakeRefereeProtocol):
 			self.METHOD_GET_OR_CREATE_STATS: self.handle_get_or_create_stats,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):

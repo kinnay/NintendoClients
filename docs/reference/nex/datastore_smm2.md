@@ -396,8 +396,8 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`DataStoreServerSMM2`](#datastoreserversmm2).</span>
 
-<code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
-<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. May be overridden by a subclass.</span>
+<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
 <code>**async def prepare_get_object_v1**(client: [RMCClient](../rmc#rmcclient), param: [DataStorePrepareGetParamV1](#datastorepreparegetparamv1)) -> [DataStoreReqGetInfoV1](#datastorereqgetinfov1)</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>

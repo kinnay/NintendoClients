@@ -10,11 +10,10 @@ HOST = "127.0.0.1"
 class AuthenticationServer(authentication.AuthenticationServer):
 	def __init__(self):
 		super().__init__()
-		self.logout = False
+		self.flag = False
 	
-	async def process_event(self, type, client):
-		if type == rmc.RMCEvent.LOGOUT:
-			self.logout = True
+	async def logout(self, client):
+		self.flag = True
 	
 	async def get_name(self, client, pid):
 		return str(pid)
@@ -57,6 +56,6 @@ async def test_logout_event():
 	server = AuthenticationServer()
 	async with rmc.serve(s, [server], HOST, 12345):
 		async with rmc.connect(s, HOST, 12345) as client:
-			assert not server.logout
+			assert not server.flag
 		await anyio.sleep(.1) # Wait a bit
-		assert server.logout
+		assert server.flag

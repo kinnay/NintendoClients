@@ -429,8 +429,8 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`MatchMakingServer`](#matchmakingserver).</span>
 
-<code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
-<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. May be overridden by a subclass.</span>
+<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
 <code>**async def register_gathering**(client: [RMCClient](../rmc#rmcclient), gathering: [Data](../common)) -> int</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
@@ -593,8 +593,8 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`MatchMakingServerExt`](#matchmakingserverext).</span>
 
-<code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
-<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. May be overridden by a subclass.</span>
+<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
 <code>**async def end_participation**(client: [RMCClient](../rmc#rmcclient), gid: int, message: str) -> bool</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
@@ -618,8 +618,8 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`MatchmakeExtensionServer`](#matchmakeextensionserver).</span>
 
-<code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
-<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. May be overridden by a subclass.</span>
+<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
 <code>**async def close_participation**(client: [RMCClient](../rmc#rmcclient), gid: int) -> None</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
@@ -809,8 +809,8 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`MatchmakeRefereeServer`](#matchmakerefereeserver).</span>
 
-<code>**def process_event**(type: int, client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
-<span class="docs">Called when a [client event](../rmc#rmcevent) occurs. May be overridden by a subclass.</span>
+<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
 ## MatchmakeSystem
 This class defines the following constants:<br>

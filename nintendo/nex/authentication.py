@@ -394,7 +394,7 @@ class AuthenticationServer(AuthenticationProtocol):
 			self.METHOD_LOGIN_WITH_CONTEXT: self.handle_login_with_context,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):
@@ -532,7 +532,7 @@ class AuthenticationServerNX(AuthenticationProtocolNX):
 			self.METHOD_VALIDATE_AND_REQUEST_TICKET_WITH_PARAM: self.handle_validate_and_request_ticket_with_param,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):

@@ -105,7 +105,7 @@ class AAUserServer(AAUserProtocol):
 			self.METHOD_GET_APPLICATION_INFO: self.handle_get_application_info,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):

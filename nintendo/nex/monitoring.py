@@ -55,7 +55,7 @@ class MonitoringServer(MonitoringProtocol):
 			self.METHOD_GET_CLUSTER_MEMBERS: self.handle_get_cluster_members,
 		}
 	
-	async def process_event(self, type, client):
+	async def logout(self, client):
 		pass
 	
 	async def handle(self, client, method_id, input, output):
