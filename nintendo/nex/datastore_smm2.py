@@ -20,19 +20,6 @@ class CourseDifficulty:
 	SUPER_EXPERT = 3
 
 
-class CourseOption:
-	PLAY_STATS = 1
-	RATINGS = 2
-	TIME_STATS = 4
-	COMMENT_STATS = 8
-	UNK9 = 16
-	UNK10 = 32
-	UNK8 = 64
-	ONE_SCREEN_THUMBNAIL = 128
-	ENTIRE_THUMBNAIL = 256
-	ALL = 511
-
-
 class CourseTag:
 	NONE = 0
 	STANDARD = 1
@@ -59,18 +46,6 @@ class CourseTheme:
 	FOREST = 9
 
 
-class EventCourseOption:
-	UNK3 = 1
-	GET_INFO = 2
-	BEST_TIME = 8
-	ONE_SCREEN_THUMBNAIL = 16
-	ENTIRE_THUMBNAIL = 32
-	UNK1 = 64
-	MEDAL_TIME = 256
-	GHOST = 512
-	ALL = 1023
-
-
 class GameStyle:
 	SMB1 = 0
 	SMB3 = 1
@@ -94,6 +69,31 @@ class PlayStatsKeys:
 	DEATHS = 3
 
 
+class CourseOption:
+	PLAY_STATS = 1
+	RATINGS = 2
+	TIME_STATS = 4
+	COMMENT_STATS = 8
+	UNK9 = 16
+	UNK10 = 32
+	UNK8 = 64
+	ONE_SCREEN_THUMBNAIL = 128
+	ENTIRE_THUMBNAIL = 256
+	ALL = 511
+
+
+class EventCourseOption:
+	UNK3 = 1
+	GET_INFO = 2
+	BEST_TIME = 8
+	ONE_SCREEN_THUMBNAIL = 16
+	ENTIRE_THUMBNAIL = 32
+	UNK1 = 64
+	MEDAL_TIME = 256
+	GHOST = 512
+	ALL = 1023
+
+
 class UserOption:
 	PLAY_STATS = 1
 	MAKER_STATS = 2
@@ -109,249 +109,6 @@ class UserOption:
 	UNK13 = 8192
 	UNK15 = 32768
 	ALL = 65535
-
-
-class BadgeInfo(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
-	
-	def check_required(self, settings):
-		for field in ['unk1', 'unk2']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.unk1 = stream.u16()
-		self.unk2 = stream.u8()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u16(self.unk1)
-		stream.u8(self.unk2)
-
-
-class CommentInfo(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
-		self.unk3 = None
-		self.unk4 = None
-		self.unk5 = None
-		self.unk6 = None
-		self.unk7 = None
-		self.unk8 = None
-		self.unk9 = None
-		self.unk10 = None
-		self.unk11 = None
-		self.unk12 = None
-		self.unk13 = None
-		self.unk14 = None
-		self.unk15 = None
-		self.picture = CommentPictureReqGetInfoWithoutHeaders()
-		self.unk16 = None
-		self.unk17 = None
-	
-	def check_required(self, settings):
-		for field in ['unk1', 'unk2', 'unk3', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9', 'unk10', 'unk11', 'unk12', 'unk13', 'unk14', 'unk15', 'unk16', 'unk17']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.unk1 = stream.u64()
-		self.unk2 = stream.string()
-		self.unk3 = stream.u8()
-		self.unk4 = stream.u8()
-		self.unk5 = stream.u64()
-		self.unk6 = stream.u16()
-		self.unk7 = stream.u16()
-		self.unk8 = stream.u8()
-		self.unk9 = stream.u8()
-		self.unk10 = stream.u8()
-		self.unk11 = stream.bool()
-		self.unk12 = stream.bool()
-		self.unk13 = stream.datetime()
-		self.unk14 = stream.qbuffer()
-		self.unk15 = stream.string()
-		self.picture = stream.extract(CommentPictureReqGetInfoWithoutHeaders)
-		self.unk16 = stream.u16()
-		self.unk17 = stream.u8()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u64(self.unk1)
-		stream.string(self.unk2)
-		stream.u8(self.unk3)
-		stream.u8(self.unk4)
-		stream.u64(self.unk5)
-		stream.u16(self.unk6)
-		stream.u16(self.unk7)
-		stream.u8(self.unk8)
-		stream.u8(self.unk9)
-		stream.u8(self.unk10)
-		stream.bool(self.unk11)
-		stream.bool(self.unk12)
-		stream.datetime(self.unk13)
-		stream.qbuffer(self.unk14)
-		stream.string(self.unk15)
-		stream.add(self.picture)
-		stream.u16(self.unk16)
-		stream.u8(self.unk17)
-
-
-class CommentPictureReqGetInfoWithoutHeaders(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.url = None
-		self.data_type = None
-		self.unk1 = None
-		self.unk2 = None
-		self.filename = None
-	
-	def check_required(self, settings):
-		for field in ['url', 'data_type', 'unk1', 'unk2', 'filename']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.url = stream.string()
-		self.data_type = stream.u8()
-		self.unk1 = stream.u32()
-		self.unk2 = stream.buffer()
-		self.filename = stream.string()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.string(self.url)
-		stream.u8(self.data_type)
-		stream.u32(self.unk1)
-		stream.buffer(self.unk2)
-		stream.string(self.filename)
-
-
-class CourseInfo(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.data_id = None
-		self.code = None
-		self.owner_id = None
-		self.name = None
-		self.description = None
-		self.game_style = None
-		self.course_theme = None
-		self.upload_time = None
-		self.difficulty = None
-		self.tag1 = None
-		self.tag2 = None
-		self.unk1 = None
-		self.clear_condition = None
-		self.clear_condition_magnitude = None
-		self.unk2 = None
-		self.unk3 = None
-		self.play_stats = None
-		self.ratings = None
-		self.unk4 = None
-		self.time_stats = CourseTimeStats()
-		self.comment_stats = None
-		self.unk9 = None
-		self.unk10 = None
-		self.unk11 = None
-		self.unk12 = None
-		self.one_screen_thumbnail = RelationObjectReqGetInfo()
-		self.entire_thumbnail = RelationObjectReqGetInfo()
-	
-	def check_required(self, settings):
-		for field in ['data_id', 'code', 'owner_id', 'name', 'description', 'game_style', 'course_theme', 'upload_time', 'difficulty', 'tag1', 'tag2', 'unk1', 'clear_condition', 'clear_condition_magnitude', 'unk2', 'unk3', 'play_stats', 'ratings', 'unk4', 'comment_stats', 'unk9', 'unk10', 'unk11', 'unk12']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.data_id = stream.u64()
-		self.code = stream.string()
-		self.owner_id = stream.pid()
-		self.name = stream.string()
-		self.description = stream.string()
-		self.game_style = stream.u8()
-		self.course_theme = stream.u8()
-		self.upload_time = stream.datetime()
-		self.difficulty = stream.u8()
-		self.tag1 = stream.u8()
-		self.tag2 = stream.u8()
-		self.unk1 = stream.u8()
-		self.clear_condition = stream.u32()
-		self.clear_condition_magnitude = stream.u16()
-		self.unk2 = stream.u16()
-		self.unk3 = stream.qbuffer()
-		self.play_stats = stream.map(stream.u8, stream.u32)
-		self.ratings = stream.map(stream.u8, stream.u32)
-		self.unk4 = stream.map(stream.u8, stream.u32)
-		self.time_stats = stream.extract(CourseTimeStats)
-		self.comment_stats = stream.map(stream.u8, stream.u32)
-		self.unk9 = stream.u8()
-		self.unk10 = stream.u8()
-		self.unk11 = stream.u8()
-		self.unk12 = stream.u8()
-		self.one_screen_thumbnail = stream.extract(RelationObjectReqGetInfo)
-		self.entire_thumbnail = stream.extract(RelationObjectReqGetInfo)
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u64(self.data_id)
-		stream.string(self.code)
-		stream.pid(self.owner_id)
-		stream.string(self.name)
-		stream.string(self.description)
-		stream.u8(self.game_style)
-		stream.u8(self.course_theme)
-		stream.datetime(self.upload_time)
-		stream.u8(self.difficulty)
-		stream.u8(self.tag1)
-		stream.u8(self.tag2)
-		stream.u8(self.unk1)
-		stream.u32(self.clear_condition)
-		stream.u16(self.clear_condition_magnitude)
-		stream.u16(self.unk2)
-		stream.qbuffer(self.unk3)
-		stream.map(self.play_stats, stream.u8, stream.u32)
-		stream.map(self.ratings, stream.u8, stream.u32)
-		stream.map(self.unk4, stream.u8, stream.u32)
-		stream.add(self.time_stats)
-		stream.map(self.comment_stats, stream.u8, stream.u32)
-		stream.u8(self.unk9)
-		stream.u8(self.unk10)
-		stream.u8(self.unk11)
-		stream.u8(self.unk12)
-		stream.add(self.one_screen_thumbnail)
-		stream.add(self.entire_thumbnail)
-
-
-class CourseTimeStats(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.first_completion = None
-		self.world_record_holder = None
-		self.world_record = None
-		self.upload_time = None
-	
-	def check_required(self, settings):
-		for field in ['first_completion', 'world_record_holder', 'world_record', 'upload_time']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.first_completion = stream.pid()
-		self.world_record_holder = stream.pid()
-		self.world_record = stream.u32()
-		self.upload_time = stream.u32()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.pid(self.first_completion)
-		stream.pid(self.world_record_holder)
-		stream.u32(self.world_record)
-		stream.u32(self.upload_time)
 
 
 class DataStoreChangeMetaCompareParam(common.Structure):
@@ -1673,6 +1430,556 @@ class DataStoreTouchObjectParam(common.Structure):
 		stream.u64(self.access_password)
 
 
+class GetCoursesParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_ids = None
+		self.option = 0
+	
+	def check_required(self, settings):
+		for field in ['data_ids']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_ids = stream.list(stream.u64)
+		self.option = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.list(self.data_ids, stream.u64)
+		stream.u32(self.option)
+
+
+class GetCoursesEventParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+	
+	def check_required(self, settings):
+		pass
+	
+	def load(self, stream):
+		pass
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+
+
+class GetEventCourseGhostParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.time = None
+		self.count = None
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'time', 'count']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.time = stream.u32()
+		self.count = stream.u8()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.u32(self.time)
+		stream.u8(self.count)
+
+
+class GetEventCourseHistogramParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+	
+	def check_required(self, settings):
+		for field in ['data_id']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+
+
+class GetUserOrCourseParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.code = None
+		self.user_option = 0
+		self.course_option = 0
+	
+	def check_required(self, settings):
+		for field in ['code']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.code = stream.string()
+		self.user_option = stream.u32()
+		self.course_option = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.code)
+		stream.u32(self.user_option)
+		stream.u32(self.course_option)
+
+
+class GetUsersParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.pids = None
+		self.option = 0
+	
+	def check_required(self, settings):
+		for field in ['pids']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.pids = stream.list(stream.pid)
+		self.option = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.list(self.pids, stream.pid)
+		stream.u32(self.option)
+
+
+class RegisterUserParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.name = None
+		self.unk1 = UnknownStruct1()
+		self.unk2 = None
+		self.language = None
+		self.country = None
+		self.device_id = None
+	
+	def check_required(self, settings):
+		for field in ['name', 'unk2', 'language', 'country', 'device_id']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.name = stream.string()
+		self.unk1 = stream.extract(UnknownStruct1)
+		self.unk2 = stream.qbuffer()
+		self.language = stream.u8()
+		self.country = stream.string()
+		self.device_id = stream.string()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.name)
+		stream.add(self.unk1)
+		stream.qbuffer(self.unk2)
+		stream.u8(self.language)
+		stream.string(self.country)
+		stream.string(self.device_id)
+
+
+class SearchCoursesEndlessModeParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.option = 0
+		self.count = None
+		self.difficulty = None
+	
+	def check_required(self, settings):
+		for field in ['count', 'difficulty']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.option = stream.u32()
+		self.count = stream.u32()
+		self.difficulty = stream.u8()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.option)
+		stream.u32(self.count)
+		stream.u8(self.difficulty)
+
+
+class SearchCoursesEventParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.option = 0
+	
+	def check_required(self, settings):
+		pass
+	
+	def load(self, stream):
+		self.option = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.option)
+
+
+class SearchCoursesLatestParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.option = 0
+		self.range = common.ResultRange()
+	
+	def check_required(self, settings):
+		pass
+	
+	def load(self, stream):
+		self.option = stream.u32()
+		self.range = stream.extract(common.ResultRange)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.option)
+		stream.add(self.range)
+
+
+class SearchCoursesPointRankingParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.option = 0
+		self.range = common.ResultRange()
+		self.difficulty = None
+		self.reject_regions = []
+	
+	def check_required(self, settings):
+		for field in ['difficulty']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.option = stream.u32()
+		self.range = stream.extract(common.ResultRange)
+		self.difficulty = stream.u8()
+		self.reject_regions = stream.list(stream.u8)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.option)
+		stream.add(self.range)
+		stream.u8(self.difficulty)
+		stream.list(self.reject_regions, stream.u8)
+
+
+class SearchUsersUserPointParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.option = 0
+		self.buffer = None
+		self.range = common.ResultRange()
+	
+	def check_required(self, settings):
+		for field in ['buffer']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.option = stream.u32()
+		self.buffer = stream.buffer()
+		self.range = stream.extract(common.ResultRange)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u32(self.option)
+		stream.buffer(self.buffer)
+		stream.add(self.range)
+
+
+class SyncUserProfileParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.username = None
+		self.unk1 = UnknownStruct1()
+		self.unk2 = None
+		self.unk3 = None
+		self.country = None
+		self.unk4 = None
+		self.unk5 = None
+		self.unk_guid = None
+		self.unk6 = None
+	
+	def check_required(self, settings):
+		for field in ['username', 'unk2', 'unk3', 'country', 'unk4', 'unk5', 'unk_guid', 'unk6']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.username = stream.string()
+		self.unk1 = stream.extract(UnknownStruct1)
+		self.unk2 = stream.qbuffer()
+		self.unk3 = stream.u8()
+		self.country = stream.string()
+		self.unk4 = stream.bool()
+		self.unk5 = stream.bool()
+		self.unk_guid = stream.string()
+		self.unk6 = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.username)
+		stream.add(self.unk1)
+		stream.qbuffer(self.unk2)
+		stream.u8(self.unk3)
+		stream.string(self.country)
+		stream.bool(self.unk4)
+		stream.bool(self.unk5)
+		stream.string(self.unk_guid)
+		stream.u32(self.unk6)
+
+
+class BadgeInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+	
+	def check_required(self, settings):
+		for field in ['unk1', 'unk2']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk1 = stream.u16()
+		self.unk2 = stream.u8()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u16(self.unk1)
+		stream.u8(self.unk2)
+
+
+class CommentInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+		self.unk3 = None
+		self.unk4 = None
+		self.unk5 = None
+		self.unk6 = None
+		self.unk7 = None
+		self.unk8 = None
+		self.unk9 = None
+		self.unk10 = None
+		self.unk11 = None
+		self.unk12 = None
+		self.unk13 = None
+		self.unk14 = None
+		self.unk15 = None
+		self.picture = CommentPictureReqGetInfoWithoutHeaders()
+		self.unk16 = None
+		self.unk17 = None
+	
+	def check_required(self, settings):
+		for field in ['unk1', 'unk2', 'unk3', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9', 'unk10', 'unk11', 'unk12', 'unk13', 'unk14', 'unk15', 'unk16', 'unk17']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk1 = stream.u64()
+		self.unk2 = stream.string()
+		self.unk3 = stream.u8()
+		self.unk4 = stream.u8()
+		self.unk5 = stream.u64()
+		self.unk6 = stream.u16()
+		self.unk7 = stream.u16()
+		self.unk8 = stream.u8()
+		self.unk9 = stream.u8()
+		self.unk10 = stream.u8()
+		self.unk11 = stream.bool()
+		self.unk12 = stream.bool()
+		self.unk13 = stream.datetime()
+		self.unk14 = stream.qbuffer()
+		self.unk15 = stream.string()
+		self.picture = stream.extract(CommentPictureReqGetInfoWithoutHeaders)
+		self.unk16 = stream.u16()
+		self.unk17 = stream.u8()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.unk1)
+		stream.string(self.unk2)
+		stream.u8(self.unk3)
+		stream.u8(self.unk4)
+		stream.u64(self.unk5)
+		stream.u16(self.unk6)
+		stream.u16(self.unk7)
+		stream.u8(self.unk8)
+		stream.u8(self.unk9)
+		stream.u8(self.unk10)
+		stream.bool(self.unk11)
+		stream.bool(self.unk12)
+		stream.datetime(self.unk13)
+		stream.qbuffer(self.unk14)
+		stream.string(self.unk15)
+		stream.add(self.picture)
+		stream.u16(self.unk16)
+		stream.u8(self.unk17)
+
+
+class CommentPictureReqGetInfoWithoutHeaders(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.url = None
+		self.data_type = None
+		self.unk1 = None
+		self.unk2 = None
+		self.filename = None
+	
+	def check_required(self, settings):
+		for field in ['url', 'data_type', 'unk1', 'unk2', 'filename']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.url = stream.string()
+		self.data_type = stream.u8()
+		self.unk1 = stream.u32()
+		self.unk2 = stream.buffer()
+		self.filename = stream.string()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.url)
+		stream.u8(self.data_type)
+		stream.u32(self.unk1)
+		stream.buffer(self.unk2)
+		stream.string(self.filename)
+
+
+class CourseInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.code = None
+		self.owner_id = None
+		self.name = None
+		self.description = None
+		self.game_style = None
+		self.course_theme = None
+		self.upload_time = None
+		self.difficulty = None
+		self.tag1 = None
+		self.tag2 = None
+		self.unk1 = None
+		self.clear_condition = None
+		self.clear_condition_magnitude = None
+		self.unk2 = None
+		self.unk3 = None
+		self.play_stats = None
+		self.ratings = None
+		self.unk4 = None
+		self.time_stats = CourseTimeStats()
+		self.comment_stats = None
+		self.unk9 = None
+		self.unk10 = None
+		self.unk11 = None
+		self.unk12 = None
+		self.one_screen_thumbnail = RelationObjectReqGetInfo()
+		self.entire_thumbnail = RelationObjectReqGetInfo()
+	
+	def check_required(self, settings):
+		for field in ['data_id', 'code', 'owner_id', 'name', 'description', 'game_style', 'course_theme', 'upload_time', 'difficulty', 'tag1', 'tag2', 'unk1', 'clear_condition', 'clear_condition_magnitude', 'unk2', 'unk3', 'play_stats', 'ratings', 'unk4', 'comment_stats', 'unk9', 'unk10', 'unk11', 'unk12']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.data_id = stream.u64()
+		self.code = stream.string()
+		self.owner_id = stream.pid()
+		self.name = stream.string()
+		self.description = stream.string()
+		self.game_style = stream.u8()
+		self.course_theme = stream.u8()
+		self.upload_time = stream.datetime()
+		self.difficulty = stream.u8()
+		self.tag1 = stream.u8()
+		self.tag2 = stream.u8()
+		self.unk1 = stream.u8()
+		self.clear_condition = stream.u32()
+		self.clear_condition_magnitude = stream.u16()
+		self.unk2 = stream.u16()
+		self.unk3 = stream.qbuffer()
+		self.play_stats = stream.map(stream.u8, stream.u32)
+		self.ratings = stream.map(stream.u8, stream.u32)
+		self.unk4 = stream.map(stream.u8, stream.u32)
+		self.time_stats = stream.extract(CourseTimeStats)
+		self.comment_stats = stream.map(stream.u8, stream.u32)
+		self.unk9 = stream.u8()
+		self.unk10 = stream.u8()
+		self.unk11 = stream.u8()
+		self.unk12 = stream.u8()
+		self.one_screen_thumbnail = stream.extract(RelationObjectReqGetInfo)
+		self.entire_thumbnail = stream.extract(RelationObjectReqGetInfo)
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.data_id)
+		stream.string(self.code)
+		stream.pid(self.owner_id)
+		stream.string(self.name)
+		stream.string(self.description)
+		stream.u8(self.game_style)
+		stream.u8(self.course_theme)
+		stream.datetime(self.upload_time)
+		stream.u8(self.difficulty)
+		stream.u8(self.tag1)
+		stream.u8(self.tag2)
+		stream.u8(self.unk1)
+		stream.u32(self.clear_condition)
+		stream.u16(self.clear_condition_magnitude)
+		stream.u16(self.unk2)
+		stream.qbuffer(self.unk3)
+		stream.map(self.play_stats, stream.u8, stream.u32)
+		stream.map(self.ratings, stream.u8, stream.u32)
+		stream.map(self.unk4, stream.u8, stream.u32)
+		stream.add(self.time_stats)
+		stream.map(self.comment_stats, stream.u8, stream.u32)
+		stream.u8(self.unk9)
+		stream.u8(self.unk10)
+		stream.u8(self.unk11)
+		stream.u8(self.unk12)
+		stream.add(self.one_screen_thumbnail)
+		stream.add(self.entire_thumbnail)
+
+
+class CourseTimeStats(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.first_completion = None
+		self.world_record_holder = None
+		self.world_record = None
+		self.upload_time = None
+	
+	def check_required(self, settings):
+		for field in ['first_completion', 'world_record_holder', 'world_record', 'upload_time']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.first_completion = stream.pid()
+		self.world_record_holder = stream.pid()
+		self.world_record = stream.u32()
+		self.upload_time = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.pid(self.first_completion)
+		stream.pid(self.world_record_holder)
+		stream.u32(self.world_record)
+		stream.u32(self.upload_time)
+
+
 class EventCourseGhostInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -1876,161 +2183,6 @@ class EventCourseThumbnail(common.Structure):
 		stream.string(self.filename)
 
 
-class GetCoursesEventParam(common.Structure):
-	def __init__(self):
-		super().__init__()
-	
-	def check_required(self, settings):
-		pass
-	
-	def load(self, stream):
-		pass
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-
-
-class GetCoursesParam(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.data_ids = None
-		self.option = 0
-	
-	def check_required(self, settings):
-		for field in ['data_ids']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.data_ids = stream.list(stream.u64)
-		self.option = stream.u32()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.list(self.data_ids, stream.u64)
-		stream.u32(self.option)
-
-
-class GetEventCourseGhostParam(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.data_id = None
-		self.time = None
-		self.count = None
-	
-	def check_required(self, settings):
-		for field in ['data_id', 'time', 'count']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.data_id = stream.u64()
-		self.time = stream.u32()
-		self.count = stream.u8()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u64(self.data_id)
-		stream.u32(self.time)
-		stream.u8(self.count)
-
-
-class GetEventCourseHistogramParam(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.data_id = None
-	
-	def check_required(self, settings):
-		for field in ['data_id']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.data_id = stream.u64()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u64(self.data_id)
-
-
-class GetUserOrCourseParam(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.code = None
-		self.user_option = 0
-		self.course_option = 0
-	
-	def check_required(self, settings):
-		for field in ['code']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.code = stream.string()
-		self.user_option = stream.u32()
-		self.course_option = stream.u32()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.string(self.code)
-		stream.u32(self.user_option)
-		stream.u32(self.course_option)
-
-
-class GetUsersParam(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.pids = None
-		self.option = 0
-	
-	def check_required(self, settings):
-		for field in ['pids']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.pids = stream.list(stream.pid)
-		self.option = stream.u32()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.list(self.pids, stream.pid)
-		stream.u32(self.option)
-
-
-class RegisterUserParam(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.name = None
-		self.unk1 = UnknownStruct1()
-		self.unk2 = None
-		self.language = None
-		self.country = None
-		self.device_id = None
-	
-	def check_required(self, settings):
-		for field in ['name', 'unk2', 'language', 'country', 'device_id']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.name = stream.string()
-		self.unk1 = stream.extract(UnknownStruct1)
-		self.unk2 = stream.qbuffer()
-		self.language = stream.u8()
-		self.country = stream.string()
-		self.device_id = stream.string()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.string(self.name)
-		stream.add(self.unk1)
-		stream.qbuffer(self.unk2)
-		stream.u8(self.language)
-		stream.string(self.country)
-		stream.string(self.device_id)
-
-
 class RelationObjectReqGetInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -2082,158 +2234,6 @@ class ReqGetInfoHeadersInfo(common.Structure):
 		stream.u32(self.expiration)
 
 
-class SearchCoursesEndlessModeParam(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.option = 0
-		self.count = None
-		self.difficulty = None
-	
-	def check_required(self, settings):
-		for field in ['count', 'difficulty']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.option = stream.u32()
-		self.count = stream.u32()
-		self.difficulty = stream.u8()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u32(self.option)
-		stream.u32(self.count)
-		stream.u8(self.difficulty)
-
-
-class SearchCoursesEventParam(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.option = 0
-	
-	def check_required(self, settings):
-		pass
-	
-	def load(self, stream):
-		self.option = stream.u32()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u32(self.option)
-
-
-class SearchCoursesLatestParam(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.option = 0
-		self.range = common.ResultRange()
-	
-	def check_required(self, settings):
-		pass
-	
-	def load(self, stream):
-		self.option = stream.u32()
-		self.range = stream.extract(common.ResultRange)
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u32(self.option)
-		stream.add(self.range)
-
-
-class SearchCoursesPointRankingParam(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.option = 0
-		self.range = common.ResultRange()
-		self.difficulty = None
-		self.reject_regions = []
-	
-	def check_required(self, settings):
-		for field in ['difficulty']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.option = stream.u32()
-		self.range = stream.extract(common.ResultRange)
-		self.difficulty = stream.u8()
-		self.reject_regions = stream.list(stream.u8)
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u32(self.option)
-		stream.add(self.range)
-		stream.u8(self.difficulty)
-		stream.list(self.reject_regions, stream.u8)
-
-
-class SearchUsersUserPointParam(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.option = 0
-		self.buffer = None
-		self.range = common.ResultRange()
-	
-	def check_required(self, settings):
-		for field in ['buffer']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.option = stream.u32()
-		self.buffer = stream.buffer()
-		self.range = stream.extract(common.ResultRange)
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u32(self.option)
-		stream.buffer(self.buffer)
-		stream.add(self.range)
-
-
-class SyncUserProfileParam(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.username = None
-		self.unk1 = UnknownStruct1()
-		self.unk2 = None
-		self.unk3 = None
-		self.country = None
-		self.unk4 = None
-		self.unk5 = None
-		self.unk_guid = None
-		self.unk6 = None
-	
-	def check_required(self, settings):
-		for field in ['username', 'unk2', 'unk3', 'country', 'unk4', 'unk5', 'unk_guid', 'unk6']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.username = stream.string()
-		self.unk1 = stream.extract(UnknownStruct1)
-		self.unk2 = stream.qbuffer()
-		self.unk3 = stream.u8()
-		self.country = stream.string()
-		self.unk4 = stream.bool()
-		self.unk5 = stream.bool()
-		self.unk_guid = stream.string()
-		self.unk6 = stream.u32()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.string(self.username)
-		stream.add(self.unk1)
-		stream.qbuffer(self.unk2)
-		stream.u8(self.unk3)
-		stream.string(self.country)
-		stream.bool(self.unk4)
-		stream.bool(self.unk5)
-		stream.string(self.unk_guid)
-		stream.u32(self.unk6)
-
-
 class SyncUserProfileResult(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -2274,75 +2274,6 @@ class SyncUserProfileResult(common.Structure):
 		stream.u8(self.unk4)
 		stream.bool(self.unk5)
 		stream.bool(self.unk6)
-
-
-class UnknownStruct1(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
-		self.unk3 = None
-		self.unk4 = None
-	
-	def check_required(self, settings):
-		for field in ['unk1', 'unk2', 'unk3', 'unk4']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.unk1 = stream.u16()
-		self.unk2 = stream.u16()
-		self.unk3 = stream.u16()
-		self.unk4 = stream.u16()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u16(self.unk1)
-		stream.u16(self.unk2)
-		stream.u16(self.unk3)
-		stream.u16(self.unk4)
-
-
-class UnknownStruct3(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
-	
-	def check_required(self, settings):
-		for field in ['unk1', 'unk2']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.unk1 = stream.bool()
-		self.unk2 = stream.datetime()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.bool(self.unk1)
-		stream.datetime(self.unk2)
-
-
-class UnknownStruct6(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
-	
-	def check_required(self, settings):
-		for field in ['unk1', 'unk2']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.unk1 = stream.u64()
-		self.unk2 = stream.u32()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.u64(self.unk1)
-		stream.u32(self.unk2)
 
 
 class UserInfo(common.Structure):
@@ -2443,6 +2374,75 @@ class UserInfo(common.Structure):
 		stream.string(self.unk14)
 		stream.map(self.unk15, stream.u8, stream.u32)
 		stream.bool(self.unk16)
+
+
+class UnknownStruct1(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+		self.unk3 = None
+		self.unk4 = None
+	
+	def check_required(self, settings):
+		for field in ['unk1', 'unk2', 'unk3', 'unk4']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk1 = stream.u16()
+		self.unk2 = stream.u16()
+		self.unk3 = stream.u16()
+		self.unk4 = stream.u16()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u16(self.unk1)
+		stream.u16(self.unk2)
+		stream.u16(self.unk3)
+		stream.u16(self.unk4)
+
+
+class UnknownStruct3(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+	
+	def check_required(self, settings):
+		for field in ['unk1', 'unk2']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk1 = stream.bool()
+		self.unk2 = stream.datetime()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.bool(self.unk1)
+		stream.datetime(self.unk2)
+
+
+class UnknownStruct6(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+	
+	def check_required(self, settings):
+		for field in ['unk1', 'unk2']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.unk1 = stream.u64()
+		self.unk2 = stream.u32()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.u64(self.unk1)
+		stream.u32(self.unk2)
 
 
 class DataStoreProtocolSMM2:

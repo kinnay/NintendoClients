@@ -7,25 +7,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class BinaryMessage(UserMessage):
-	def __init__(self):
-		super().__init__()
-		self.body = None
-	
-	def check_required(self, settings):
-		for field in ['body']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.body = stream.qbuffer()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.qbuffer(self.body)
-common.DataHolder.register(BinaryMessage, "BinaryMessage")
-
-
 class MessageRecipient(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -48,25 +29,6 @@ class MessageRecipient(common.Structure):
 		stream.u32(self.type)
 		stream.pid(self.pid)
 		stream.u32(self.gid)
-
-
-class TextMessage(UserMessage):
-	def __init__(self):
-		super().__init__()
-		self.body = None
-	
-	def check_required(self, settings):
-		for field in ['body']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream):
-		self.body = stream.string()
-	
-	def save(self, stream):
-		self.check_required(stream.settings)
-		stream.string(self.body)
-common.DataHolder.register(TextMessage, "TextMessage")
 
 
 class UserMessage(common.Data):
@@ -110,6 +72,44 @@ class UserMessage(common.Data):
 		stream.string(self.sender_name)
 		stream.add(self.recipient)
 common.DataHolder.register(UserMessage, "UserMessage")
+
+
+class TextMessage(UserMessage):
+	def __init__(self):
+		super().__init__()
+		self.body = None
+	
+	def check_required(self, settings):
+		for field in ['body']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.body = stream.string()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.string(self.body)
+common.DataHolder.register(TextMessage, "TextMessage")
+
+
+class BinaryMessage(UserMessage):
+	def __init__(self):
+		super().__init__()
+		self.body = None
+	
+	def check_required(self, settings):
+		for field in ['body']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream):
+		self.body = stream.qbuffer()
+	
+	def save(self, stream):
+		self.check_required(stream.settings)
+		stream.qbuffer(self.body)
+common.DataHolder.register(BinaryMessage, "BinaryMessage")
 
 
 class MessagingProtocol:

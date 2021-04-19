@@ -229,9 +229,11 @@ class File:
 		
 		self.scope = Scope()
 	
-	def sort(self):
+	def sort_protocols(self):
 		for proto in self.protocols.values():
 			proto.sort()
+	
+	def sort_types(self):
 		self.structs = {k: v for k, v in sorted(self.structs.items())}
 		self.enums = sorted(self.enums, key=lambda e: e.name)
 	
@@ -782,7 +784,7 @@ def make_class_name(name, type):
 class CodeGenerator:
 	def process(self, file):
 		self.file = file
-		self.file.sort()
+		self.file.sort_protocols()
 		
 		stream = CodeStream()
 		self.generate_file(stream)
@@ -1215,6 +1217,8 @@ class CodeGenerator:
 class DocsGenerator:
 	def process(self, file, name):
 		self.file = file
+		self.file.sort_types()
+		
 		self.text = ""
 		self.generate_file(name)
 		return self.text
