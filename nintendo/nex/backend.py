@@ -1,5 +1,5 @@
 
-from nintendo.nex import rmc, authentication, kerberos
+from nintendo.nex import rmc, authentication, kerberos, common
 from anynet import tls
 import contextlib
 
