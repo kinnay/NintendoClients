@@ -1138,6 +1138,9 @@ class PRUDPPortTable:
 			self.num_ports = 16
 		self.ports = {}
 	
+	def __iter__(self):
+		return iter(self.ports.values())
+	
 	def get(self, port, type):
 		port |= type << 8
 		if port not in self.ports:
@@ -1209,6 +1212,11 @@ class PRUDPServerStream:
 				await client.serve(group)
 				await self.handler(client)
 				await client.close()
+	
+	async def kill_all(self, address):
+		keys = [k for k in self.clients if k[0] == address]
+		for key in keys:
+			await self.clients.pop(key).abort()
 	
 	async def handle(self, packet, addr):
 		if packet.type == TYPE_SYN and not packet.flags & FLAG_ACK:
@@ -1402,6 +1410,10 @@ class PRUDPServerTransport:
 	async def process_packet(self, packet, addr):
 		logger.debug("[SRV] Received packet from %s: %s" %(addr, packet))
 		await self.ports.get(packet.dest_port, packet.dest_type).handle(packet, addr)
+		
+	async def kill_all(self, addr):
+		for port in self.ports:
+			await port.kill_all(addr)
 
 
 class PRUDPDatagramTransport(PRUDPServerTransport):
@@ -1437,6 +1449,7 @@ class PRUDPSocketTransport(PRUDPServerTransport):
 		try:
 			await self.process(client, address)
 		finally:
+			await self.kill_all(address)
 			del self.clients[address]
 	
 	async def process(self, client, addr):
