@@ -226,28 +226,30 @@ class RMCClient:
 			)
 		await self.client.send(response.encode())
 	
-	async def request(self, protocol, method, body):
+	async def request(self, protocol, method, body, respond=True):
 		if self.closed:
 			raise RuntimeError("RMC connection is closed")
 		
 		call_id = self.call_id
 		self.call_id = (self.call_id + 1) & 0xFFFFFFFF
 		
-		event = anyio.create_event()
-		self.requests[call_id] = event
+		if respond:
+			event = anyio.create_event()
+			self.requests[call_id] = event
 		
 		message = RMCMessage.request(self.settings, protocol, method, call_id, body)
 		await self.client.send(message.encode())
 		
-		await event.wait()
-		
-		if self.closed:
-			raise RuntimeError("RMC connection is closed")
-		
-		message = self.responses.pop(call_id)
-		if message.error != -1:
-			raise common.RMCError(message.error)
-		return message.body
+		if respond:
+			await event.wait()
+			
+			if self.closed:
+				raise RuntimeError("RMC connection is closed")
+			
+			message = self.responses.pop(call_id)
+			if message.error != -1:
+				raise common.RMCError(message.error)
+			return message.body
 	
 	def pid(self): return self.client.pid()
 	

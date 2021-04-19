@@ -73,13 +73,7 @@ class NotificationClient(NotificationProtocol):
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(event)
-		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_PROCESS_NOTIFICATION_EVENT, stream.get())
-		
-		#--- response ---
-		stream = streams.StreamIn(data, self.settings)
-		if not stream.eof():
-			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("NotificationClient.process_notification_event -> done")
+		await self.client.request(self.PROTOCOL_ID, self.METHOD_PROCESS_NOTIFICATION_EVENT, stream.get(), False)
 
 
 class NotificationServer(NotificationProtocol):

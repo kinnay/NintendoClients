@@ -294,6 +294,7 @@ class Method:
 	request = None
 	response = None
 	supported = None
+	noresponse = False
 		
 		
 class VariableList:
@@ -488,8 +489,17 @@ class Parser:
 		token = stream.read_symbol()
 		if token.value == "(":
 			method.request = self.parse_parameter_list(stream)
-			stream.skip_symbol("{")
-			method.response = self.parse_variable_list(stream)
+			
+			token = stream.read()
+			if token.type == TYPE_NAME and token.value == "NORESPONSE":
+				method.response = VariableList()
+				method.noresponse = True
+				stream.skip_symbol(";")
+			elif token.type == TYPE_SYMBOL and token.value == "{":
+				method.response = self.parse_variable_list(stream)
+			else:
+				stream.error(token)
+			
 			method.supported = True
 		elif token.value == ";":
 			method.supported = False
@@ -999,25 +1009,30 @@ class CodeGenerator:
 		stream.write_line("stream = streams.StreamOut(self.settings)")
 		for param in method.request.vars:
 			stream.write_line(self.make_encode(param.type, param.name))
-		stream.write_line("data = await self.client.request(self.PROTOCOL_ID, self.METHOD_%s, stream.get())" %method.name.upper())
 		
-		stream.write_line()
-		stream.write_line("#--- response ---")
-		stream.write_line("stream = streams.StreamIn(data, self.settings)")
-		if len(method.response.vars) > 1:
-			stream.write_line("obj = rmc.RMCResponse()")
-			for var in method.response.vars:
-				stream.write_line("obj.%s = %s" %(var.name, self.make_extract(var.type)))
-		elif len(method.response.vars) == 1:
-			value = method.response.vars[0]
-			stream.write_line("%s = %s" %(value.name, self.make_extract(value.type)))
-		stream.write_line("if not stream.eof():")
-		stream.write_line('\traise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))')
-		stream.write_line('logger.info("%s.%s -> done")' %(class_name, method.name))
-		if len(method.response.vars) > 1:
-			stream.write_line("return obj")
-		elif len(method.response.vars) == 1:
-			stream.write_line("return %s"  %(method.response.vars[0].name))
+		if method.noresponse:
+			stream.write_line("await self.client.request(self.PROTOCOL_ID, self.METHOD_%s, stream.get(), False)" %method.name.upper())
+		else:
+			stream.write_line("data = await self.client.request(self.PROTOCOL_ID, self.METHOD_%s, stream.get())" %method.name.upper())
+			
+			stream.write_line()
+			stream.write_line("#--- response ---")
+			stream.write_line("stream = streams.StreamIn(data, self.settings)")
+			if len(method.response.vars) > 1:
+				stream.write_line("obj = rmc.RMCResponse()")
+				for var in method.response.vars:
+					stream.write_line("obj.%s = %s" %(var.name, self.make_extract(var.type)))
+			elif len(method.response.vars) == 1:
+				value = method.response.vars[0]
+				stream.write_line("%s = %s" %(value.name, self.make_extract(value.type)))
+			stream.write_line("if not stream.eof():")
+			stream.write_line('\traise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))')
+			stream.write_line('logger.info("%s.%s -> done")' %(class_name, method.name))
+			if len(method.response.vars) > 1:
+				stream.write_line("return obj")
+			elif len(method.response.vars) == 1:
+				stream.write_line("return %s"  %(method.response.vars[0].name))
+			
 		stream.unindent()
 		
 	def generate_server(self, stream, proto):

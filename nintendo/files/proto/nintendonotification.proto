@@ -56,6 +56,6 @@ struct NintendoNotificationEventProfile : Data {
 }
 
 protocol NintendoNotification : 100 {
-	method process_nintendo_notification_event(NintendoNotificationEvent event) {}
-	method process_nintendo_notification_event_alt(NintendoNotificationEvent event) {}
+	method process_nintendo_notification_event(NintendoNotificationEvent event) NORESPONSE;
+	method process_nintendo_notification_event_alt(NintendoNotificationEvent event) NORESPONSE;
 }
