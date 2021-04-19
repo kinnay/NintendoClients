@@ -957,7 +957,7 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>options: int</code><br>
+<code>options: int = 0</code><br>
 </span><br>
 
 ## MatchmakeParam
@@ -1011,26 +1011,26 @@ If `nex.version` >= 40000:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>attribs: list[str]</code><br>
-<code>game_mode: str</code><br>
-<code>min_participants: str</code><br>
-<code>max_participants: str</code><br>
-<code>matchmake_system: str</code><br>
-<code>vacant_only: bool</code><br>
-<code>exclude_locked: bool</code><br>
-<code>exclude_non_host_pid: bool</code><br>
-<code>selection_method: int</code><br>
+<code>attribs: list[str] = ["", "", "", "", "", ""]</code><br>
+<code>game_mode: str = ""</code><br>
+<code>min_participants: str = ""</code><br>
+<code>max_participants: str = ""</code><br>
+<code>matchmake_system: str = ""</code><br>
+<code>vacant_only: bool = True</code><br>
+<code>exclude_locked: bool = True</code><br>
+<code>exclude_non_host_pid: bool = False</code><br>
+<code>selection_method: int = 0</code><br>
 If `nex.version` >= 30500:<br>
 <span class="docs">
-<code>vacant_participants: int</code><br>
+<code>vacant_participants: int = 1</code><br>
 </span><br>
 If `nex.version` >= 40000:<br>
 <span class="docs">
 <code>param: [MatchmakeParam](#matchmakeparam) = [MatchmakeParam](#matchmakeparam)()</code><br>
-<code>exclude_user_password: bool</code><br>
-<code>exclude_system_password: bool</code><br>
-<code>refer_gid: int</code><br>
-<code>codeword: str</code><br>
+<code>exclude_user_password: bool = False</code><br>
+<code>exclude_system_password: bool = False</code><br>
+<code>refer_gid: int = 0</code><br>
+<code>codeword: str = ""</code><br>
 <code>range: [ResultRange](../common#resultrange) = [ResultRange](../common#resultrange)</code><br>
 </span><br>
 </span><br>

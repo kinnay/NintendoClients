@@ -52,26 +52,26 @@ struct MatchmakeParam {
 }
 
 struct MatchmakeSessionSearchCriteria {
-	list<string> attribs;
-	string game_mode;
-	string min_participants;
-	string max_participants;
-	string matchmake_system;
-	bool vacant_only;
-	bool exclude_locked;
-	bool exclude_non_host_pid;
-	uint32 selection_method;
+	list<string> attribs = ["", "", "", "", "", ""];
+	string game_mode = "";
+	string min_participants = "";
+	string max_participants = "";
+	string matchmake_system = "";
+	bool vacant_only = true;
+	bool exclude_locked = true;
+	bool exclude_non_host_pid = false;
+	uint32 selection_method = 0;
 	
 	[nex.version >= 30500] {
-		uint16 vacant_participants;
+		uint16 vacant_participants = 1;
 	}
 	
 	[nex.version >= 40000] {
 		MatchmakeParam param;
-		bool exclude_user_password;
-		bool exclude_system_password;
-		uint32 refer_gid;
-		string codeword;
+		bool exclude_user_password = false;
+		bool exclude_system_password = false;
+		uint32 refer_gid = 0;
+		string codeword = "";
 		ResultRange range;
 	}
 }
@@ -108,7 +108,7 @@ struct MatchmakeSession : Gathering {
 }
 
 struct MatchmakeBlockListParam {
-	uint32 options;
+	uint32 options = 0;
 }
 
 struct CreateMatchmakeSessionParam {

@@ -194,35 +194,28 @@ class MatchmakeParam(common.Structure):
 class MatchmakeSessionSearchCriteria(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.attribs = None
-		self.game_mode = None
-		self.min_participants = None
-		self.max_participants = None
-		self.matchmake_system = None
-		self.vacant_only = None
-		self.exclude_locked = None
-		self.exclude_non_host_pid = None
-		self.selection_method = None
-		self.vacant_participants = None
+		self.attribs = ["", "", "", "", "", ""]
+		self.game_mode = ""
+		self.min_participants = ""
+		self.max_participants = ""
+		self.matchmake_system = ""
+		self.vacant_only = True
+		self.exclude_locked = True
+		self.exclude_non_host_pid = False
+		self.selection_method = 0
+		self.vacant_participants = 1
 		self.param = MatchmakeParam()
-		self.exclude_user_password = None
-		self.exclude_system_password = None
-		self.refer_gid = None
-		self.codeword = None
+		self.exclude_user_password = False
+		self.exclude_system_password = False
+		self.refer_gid = 0
+		self.codeword = ""
 		self.range = common.ResultRange()
 	
 	def check_required(self, settings):
-		for field in ['attribs', 'game_mode', 'min_participants', 'max_participants', 'matchmake_system', 'vacant_only', 'exclude_locked', 'exclude_non_host_pid', 'selection_method']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
 		if settings["nex.version"] >= 30500:
-			for field in ['vacant_participants']:
-				if getattr(self, field) is None:
-					raise ValueError("No value assigned to required field: %s" %field)
+			pass
 		if settings["nex.version"] >= 40000:
-			for field in ['exclude_user_password', 'exclude_system_password', 'refer_gid', 'codeword']:
-				if getattr(self, field) is None:
-					raise ValueError("No value assigned to required field: %s" %field)
+			pass
 	
 	def load(self, stream):
 		self.attribs = stream.list(stream.string)
@@ -346,12 +339,10 @@ common.DataHolder.register(MatchmakeSession, "MatchmakeSession")
 class MatchmakeBlockListParam(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.options = None
+		self.options = 0
 	
 	def check_required(self, settings):
-		for field in ['options']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
+		pass
 	
 	def load(self, stream):
 		self.options = stream.u32()
