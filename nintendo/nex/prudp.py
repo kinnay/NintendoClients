@@ -901,7 +901,11 @@ class PRUDPClient:
 		else:
 			packet.signature = self.packet_encoder.calc_packet_signature(packet, self.session_key, self.remote_signature)
 		
-		await self.transport.send(packet, self.remote_addr)
+		try:
+			await self.transport.send(packet, self.remote_addr)
+		except util.StreamError:
+			await self.abort()
+			return
 		
 		if (packet.flags & FLAG_RELIABLE or packet.type == TYPE_SYN) and packet.flags & FLAG_NEED_ACK:
 			await self.schedule_timeout(packet)
@@ -911,7 +915,11 @@ class PRUDPClient:
 		if counter < self.resend_limit:
 			logger.debug("[%i] Resending packet: %s", self.local_session_id, packet)
 			
-			await self.transport.send(packet, self.remote_addr)
+			try:
+				await self.transport.send(packet, self.remote_addr)
+			except util.StreamError:
+				await self.abort()
+				return
 			
 			handle = await self.scheduler.schedule(self.resend_packet, self.resend_timeout, packet, counter + 1)
 			self.ack_events[key] = handle
@@ -1213,11 +1221,6 @@ class PRUDPServerStream:
 				await self.handler(client)
 				await client.close()
 	
-	async def kill_all(self, address):
-		keys = [k for k in self.clients if k[0] == address]
-		for key in keys:
-			await self.clients.pop(key).abort()
-	
 	async def handle(self, packet, addr):
 		if packet.type == TYPE_SYN and not packet.flags & FLAG_ACK:
 			await self.process_syn(packet, addr)
@@ -1411,10 +1414,6 @@ class PRUDPServerTransport:
 		logger.debug("[SRV] Received packet from %s: %s" %(addr, packet))
 		await self.ports.get(packet.dest_port, packet.dest_type).handle(packet, addr)
 		
-	async def kill_all(self, addr):
-		for port in self.ports:
-			await port.kill_all(addr)
-
 
 class PRUDPDatagramTransport(PRUDPServerTransport):
 	def __init__(self, settings, socket, group):
@@ -1449,7 +1448,6 @@ class PRUDPSocketTransport(PRUDPServerTransport):
 		try:
 			await self.process(client, address)
 		finally:
-			await self.kill_all(address)
 			del self.clients[address]
 	
 	async def process(self, client, addr):
@@ -1463,6 +1461,8 @@ class PRUDPSocketTransport(PRUDPServerTransport):
 			await self.process_data(data, addr)
 	
 	async def sendto(self, data, addr):
+		if addr not in self.clients:
+			raise anyio.BrokenResourceError("Transport connection is closed")
 		await self.clients[addr].send(data)
 	
 	def local_address(self):
