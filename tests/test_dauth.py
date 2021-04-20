@@ -53,6 +53,7 @@ async def test_dauth():
 		keys["master_key_0a"] = bytes.fromhex("37eed242e0f2ce6f8371e783c1a6a0ae")
 		client = dauth.DAuthClient(keys)
 		client.set_url("127.0.0.1:12345")
+		client.set_system_version(1200)
 		client.set_context(None)
 		response = await client.device_token(client.BAAS)
 		token = response["device_auth_token"]
