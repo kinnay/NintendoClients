@@ -257,13 +257,7 @@ class MessageDeliveryClient(MessageDeliveryProtocol):
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.anydata(message)
-		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_DELIVER_MESSAGE, stream.get())
-		
-		#--- response ---
-		stream = streams.StreamIn(data, self.settings)
-		if not stream.eof():
-			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("MessageDeliveryClient.deliver_message -> done")
+		await self.client.request(self.PROTOCOL_ID, self.METHOD_DELIVER_MESSAGE, stream.get(), False)
 
 
 class MessagingServer(MessagingProtocol):
