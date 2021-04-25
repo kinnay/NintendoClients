@@ -14,18 +14,18 @@ class BlacklistedPrincipal(common.Data):
 		self.game_key = GameKey()
 		self.since = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['since']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.principal_info = stream.extract(PrincipalBasicInfo)
 		self.game_key = stream.extract(GameKey)
 		self.since = stream.datetime()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.add(self.principal_info)
 		stream.add(self.game_key)
 		stream.datetime(self.since)
@@ -39,18 +39,18 @@ class Comment(common.Data):
 		self.text = None
 		self.changed = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['unk', 'text', 'changed']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.unk = stream.u8()
 		self.text = stream.string()
 		self.changed = stream.datetime()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u8(self.unk)
 		stream.string(self.text)
 		stream.datetime(self.changed)
@@ -67,12 +67,12 @@ class FriendInfo(common.Data):
 		self.last_online = None
 		self.unk = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['befriended', 'last_online', 'unk']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.nna_info = stream.extract(NNAInfo)
 		self.presence = stream.extract(NintendoPresenceV2)
 		self.comment = stream.extract(Comment)
@@ -80,8 +80,8 @@ class FriendInfo(common.Data):
 		self.last_online = stream.datetime()
 		self.unk = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.add(self.nna_info)
 		stream.add(self.presence)
 		stream.add(self.comment)
@@ -98,18 +98,18 @@ class FriendRequest(common.Data):
 		self.message = FriendRequestMessage()
 		self.sent = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['sent']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.principal_info = stream.extract(PrincipalBasicInfo)
 		self.message = stream.extract(FriendRequestMessage)
 		self.sent = stream.datetime()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.add(self.principal_info)
 		stream.add(self.message)
 		stream.datetime(self.sent)
@@ -129,12 +129,12 @@ class FriendRequestMessage(common.Data):
 		self.datetime = None
 		self.expires = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['unk1', 'unk2', 'unk3', 'message', 'unk4', 'string', 'datetime', 'expires']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.unk1 = stream.u64()
 		self.unk2 = stream.u8()
 		self.unk3 = stream.u8()
@@ -145,8 +145,8 @@ class FriendRequestMessage(common.Data):
 		self.datetime = stream.datetime()
 		self.expires = stream.datetime()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.unk1)
 		stream.u8(self.unk2)
 		stream.u8(self.unk3)
@@ -165,15 +165,15 @@ class GameKey(common.Data):
 		self.title_id = 0
 		self.title_version = 0
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.title_id = stream.u64()
 		self.title_version = stream.u16()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.title_id)
 		stream.u16(self.title_version)
 common.DataHolder.register(GameKey, "GameKey")
@@ -188,20 +188,20 @@ class MiiV2(common.Data):
 		self.data = None
 		self.datetime = common.DateTime(0)
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['name', 'data']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.name = stream.string()
 		self.unk1 = stream.u8()
 		self.unk2 = stream.u8()
 		self.data = stream.buffer()
 		self.datetime = stream.datetime()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.string(self.name)
 		stream.u8(self.unk1)
 		stream.u8(self.unk2)
@@ -217,16 +217,16 @@ class NNAInfo(common.Data):
 		self.unk1 = 94
 		self.unk2 = 11
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.principal_info = stream.extract(PrincipalBasicInfo)
 		self.unk1 = stream.u8()
 		self.unk2 = stream.u8()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.add(self.principal_info)
 		stream.u8(self.unk1)
 		stream.u8(self.unk2)
@@ -241,19 +241,19 @@ class NintendoCreateAccountData(common.Data):
 		self.birthday = None
 		self.unk = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['token', 'birthday', 'unk']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.info = stream.extract(NNAInfo)
 		self.token = stream.string()
 		self.birthday = stream.datetime()
 		self.unk = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.add(self.info)
 		stream.string(self.token)
 		stream.datetime(self.birthday)
@@ -280,10 +280,10 @@ class NintendoPresenceV2(common.Data):
 		self.unk6 = 3
 		self.unk7 = 3
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.flags = stream.u32()
 		self.is_online = stream.bool()
 		self.game_key = stream.extract(GameKey)
@@ -300,8 +300,8 @@ class NintendoPresenceV2(common.Data):
 		self.unk6 = stream.u8()
 		self.unk7 = stream.u8()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.flags)
 		stream.bool(self.is_online)
 		stream.add(self.game_key)
@@ -329,20 +329,20 @@ class PersistentNotification(common.Data):
 		self.unk4 = None
 		self.string = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['unk1', 'unk2', 'unk3', 'unk4', 'string']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.unk1 = stream.u64()
 		self.unk2 = stream.u32()
 		self.unk3 = stream.u32()
 		self.unk4 = stream.u32()
 		self.string = stream.string()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.unk1)
 		stream.u32(self.unk2)
 		stream.u32(self.unk3)
@@ -359,19 +359,19 @@ class PrincipalBasicInfo(common.Data):
 		self.mii = MiiV2()
 		self.unk = 2
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['pid', 'nnid']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.pid = stream.pid()
 		self.nnid = stream.string()
 		self.mii = stream.extract(MiiV2)
 		self.unk = stream.u8()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.pid(self.pid)
 		stream.string(self.nnid)
 		stream.add(self.mii)
@@ -386,18 +386,18 @@ class PrincipalPreference(common.Data):
 		self.unk2 = None
 		self.unk3 = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['unk1', 'unk2', 'unk3']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.unk1 = stream.bool()
 		self.unk2 = stream.bool()
 		self.unk3 = stream.bool()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.bool(self.unk1)
 		stream.bool(self.unk2)
 		stream.bool(self.unk3)
@@ -410,17 +410,17 @@ class PrincipalRequestBlockSetting(common.Structure):
 		self.unk1 = None
 		self.unk2 = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['unk1', 'unk2']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.unk1 = stream.u32()
 		self.unk2 = stream.bool()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.unk1)
 		stream.bool(self.unk2)
 

@@ -13,17 +13,17 @@ class ConnectionData(common.Structure):
 		self.station = None
 		self.connection_id = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['station', 'connection_id']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.station = stream.stationurl()
 		self.connection_id = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.stationurl(self.station)
 		stream.u32(self.connection_id)
 
@@ -33,16 +33,16 @@ class NintendoLoginData(common.Structure):
 		super().__init__()
 		self.token = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['token']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.token = stream.string()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.string(self.token)
 
 

@@ -26,7 +26,10 @@ NUMBER_CHARS = string.digits + string.ascii_lowercase
 
 SPECIAL_CHARS = "{}()[]<>:;,.=!#"
 
-RESERVED_WORDS = ["import", "protocol", "method", "struct", "enum"]
+RESERVED_WORDS = [
+	"import", "protocol", "method", "struct", "enum",
+	"nex", "revision"
+]
 			
 CHAR_EOF = "EOF"
 
@@ -190,7 +193,8 @@ class TokenStream:
 			self.index += 1
 			return True
 		return False
-			
+	
+	def read_reserved(self): return self.read_token(TYPE_RESERVED)
 	def read_name(self): return self.read_token(TYPE_NAME)
 	def read_symbol(self): return self.read_token(TYPE_SYMBOL)
 		
@@ -325,18 +329,30 @@ class Struct:
 	name = None
 	parent = None
 	body = None
-		
-		
+	
+	
+class Condition:
+	VERSION = 0
+	REVISION = 1
+	
+	type = None
+	value = None
+	body = None
+
+
 class StructBody:
-	def __init__(self):
+	def __init__(self, scope=None):
 		self.fields = []
 		
-		self.scope = Scope()
-		
+		self.scope = scope
+		if self.scope is None:
+			self.scope = Scope()
+	
 	def has_revision(self):
 		for field in self.fields:
-			if isinstance(field, Revision): return True
-			if isinstance(field, Conditional):
+			if isinstance(field, Condition):
+				if field.type == Condition.REVISION:
+					return True
 				if field.body.has_revision():
 					return True
 		return False
@@ -346,27 +362,6 @@ class StructBody:
 			if self.scope.add(field.name):
 				raise ValueError("Duplicate variable name in struct: %s" %field.name)
 		self.fields.append(field)
-
-		
-OPERATOR_EQ = 0
-OPERATOR_NE = 1
-OPERATOR_LE = 2
-OPERATOR_LT = 3
-OPERATOR_GE = 4
-OPERATOR_GT = 5
-
-OPERATORS = ["==", "!=", "<=", "<", ">=", ">"]
-
-class Conditional:
-	group = None
-	setting = None
-	comparison = None
-	value = None
-	body = None
-
-		
-class Revision:
-	revision = None
 
 
 class Enum:
@@ -637,8 +632,8 @@ class Parser:
 		struct.body = self.parse_struct_body(stream)
 		return struct
 		
-	def parse_struct_body(self, stream):
-		body = StructBody()
+	def parse_struct_body(self, stream, scope=None):
+		body = StructBody(scope)
 		
 		stream.skip_symbol("{")
 		while True:
@@ -647,64 +642,29 @@ class Parser:
 				stream.skip_symbol("}")
 				return body
 			
-			body.add(self.parse_struct_item(stream))
-			
-	def parse_struct_item(self, stream):
+			body.add(self.parse_struct_item(stream, body.scope))
+	
+	def parse_struct_item(self, stream, scope):
 		token = stream.peek()
-		if token.type == TYPE_SYMBOL:
-			if token.value == "[": return self.parse_conditional(stream)
-			elif token.value == "#": return self.parse_revision(stream)
-			else:
-				stream.error(token)
-		else:
-			var = self.parse_variable(stream)
-			stream.skip_symbol(";")
-			return var
+		if token.type == TYPE_RESERVED:
+			return self.parse_condition(stream, scope)
+		
+		var = self.parse_variable(stream)
+		stream.skip_symbol(";")
+		return var
 			
-	def parse_conditional(self, stream):
-		stream.skip_symbol("[")
+	def parse_condition(self, stream, scope):
+		cond = Condition()
 		
-		cond = Conditional()
-		cond.group = stream.parse_name()
-		stream.skip_symbol(".")
-		cond.setting = stream.parse_name()
-		cond.operator = self.parse_operator(stream)
-		cond.value = stream.parse_number()
-		
-		stream.skip_symbol("]")
-		
-		cond.body = self.parse_struct_body(stream)
-		return cond
-		
-	def parse_operator(self, stream):
-		token = stream.read_symbol()
-		if token.value == ">":
-			token = stream.peek()
-			if token.type == TYPE_SYMBOL and token.value == "=":
-				stream.skip_symbol("=")
-				return OPERATOR_GE
-			return OPERATOR_GT
-		elif token.value == "<":
-			token = stream.peek()
-			if token.type == TYPE_SYMBOL and token.value == "=":
-				stream.skip_symbol("=")
-				return OPERATOR_LE
-			return OPERATOR_LT
-		elif token.value == "!":
-			stream.skip_symbol("=")
-			return OPERATOR_NE
-		elif token.value == "=":
-			stream.skip_symbol("=")
-			return OPERATOR_EQ
+		token = stream.read_reserved()
+		if token.value == "nex": cond.type = Condition.VERSION
+		elif token.value == "revision": cond.type = Condition.REVISION
 		else:
-			return self.error(token)
+			stream.error(token)
 		
-	def parse_revision(self, stream):
-		revision = Revision()
-		stream.skip_symbol("#")
-		stream.skip_name("revision")
-		revision.revision = stream.parse_number()
-		return revision
+		cond.value = stream.parse_number()
+		cond.body = self.parse_struct_body(stream, scope)
+		return cond
 		
 	def parse_enum(self, stream):
 		stream.skip_reserved("enum")
@@ -862,12 +822,18 @@ class CodeGenerator:
 		for field in body.fields:
 			if isinstance(field, Variable):
 				stream.write_line("self.%s = %s" %(field.name, self.make_constant(field.type, field.default)))
-			elif isinstance(field, Conditional):
+			elif isinstance(field, Condition):
 				self.generate_struct_init_body(stream, field.body)
-			
+	
+	def generate_if_statement(self, stream, cond, prefix=""):
+		if cond.type == Condition.VERSION:
+			stream.write_line('if %ssettings["nex.version"] >= %i:' %(prefix, cond.value))
+		else:
+			stream.write_line("if version >= %i:" %cond.value)
+	
 	def generate_struct_version(self, stream, struct):
 		if struct.body.has_revision():
-			stream.write_line("def get_version(self, settings):")
+			stream.write_line("def max_version(self, settings):")
 			stream.indent()
 			stream.write_line("version = 0")
 			self.generate_struct_version_body(stream, struct.body)
@@ -877,17 +843,18 @@ class CodeGenerator:
 			
 	def generate_struct_version_body(self, stream, body):
 		for field in body.fields:
-			if isinstance(field, Revision):
-				stream.write_line("version = %i" %field.revision)
-			elif isinstance(field, Conditional):
-				if field.body.has_revision():
-					self.generate_if_statement(stream, field)
-					stream.indent()
-					self.generate_struct_version_body(stream, field.body)
-					stream.unindent()
+			if isinstance(field, Condition):
+				if field.type == Condition.REVISION:
+					stream.write_line("version = %i" %field.value)
+				elif field.type == Condition.VERSION:
+					if field.body.has_revision():
+						self.generate_if_statement(stream, field)
+						stream.indent()
+						self.generate_struct_version_body(stream, field.body)
+						stream.unindent()
 					
 	def generate_struct_check(self, stream, struct):
-		stream.write_line("def check_required(self, settings):")
+		stream.write_line("def check_required(self, settings, version):")
 		stream.indent()
 		self.generate_struct_check_body(stream, struct.body)
 		stream.unindent()
@@ -905,19 +872,19 @@ class CodeGenerator:
 			stream.write_line("for field in %s:" %required)
 			stream.write_line("\tif getattr(self, field) is None:")
 			stream.write_line('\t\traise ValueError("No value assigned to required field: %s" %field)')
-			
-		conditional = [f for f in body.fields if isinstance(f, Conditional)]
-		for cond in conditional:
+		
+		conditions = [f for f in body.fields if isinstance(f, Condition)]
+		for cond in conditions:
 			self.generate_if_statement(stream, cond)
 			stream.indent()
 			self.generate_struct_check_body(stream, cond.body)
 			stream.unindent()
 			
-		if not required and not conditional:
+		if not required and not conditions:
 			stream.write_line("pass")
 		
 	def generate_struct_load(self, stream, struct):
-		stream.write_line("def load(self, stream):")
+		stream.write_line("def load(self, stream, version):")
 		stream.indent()
 		self.generate_struct_load_body(stream, struct.body)
 		stream.unindent()
@@ -930,16 +897,16 @@ class CodeGenerator:
 		for field in body.fields:
 			if isinstance(field, Variable):
 				stream.write_line("self.%s = %s" %(field.name, self.make_extract(field.type)))
-			elif isinstance(field, Conditional):
+			elif isinstance(field, Condition):
 				self.generate_if_statement(stream, field, "stream.")
 				stream.indent()
 				self.generate_struct_load_body(stream, field.body)
 				stream.unindent()
 		
 	def generate_struct_save(self, stream, struct):
-		stream.write_line("def save(self, stream):")
+		stream.write_line("def save(self, stream, version):")
 		stream.indent()
-		stream.write_line("self.check_required(stream.settings)")
+		stream.write_line("self.check_required(stream.settings, version)")
 		self.generate_struct_save_body(stream, struct.body)
 		stream.unindent()
 	
@@ -947,17 +914,11 @@ class CodeGenerator:
 		for field in body.fields:
 			if isinstance(field, Variable):
 				stream.write_line(self.make_encode(field.type, "self.%s" %field.name))
-			elif isinstance(field, Conditional):
+			elif isinstance(field, Condition):
 				self.generate_if_statement(stream, field, "stream.")
 				stream.indent()
 				self.generate_struct_save_body(stream, field.body)
 				stream.unindent()
-	
-	def generate_if_statement(self, stream, cond, prefix=""):
-		operator = OPERATORS[cond.operator]
-		stream.write_line('if %ssettings["%s.%s"] %s %i:' %(
-			prefix, cond.group, cond.setting, operator, cond.value
-		))
 		
 	def generate_protocol(self, stream, proto):
 		name = make_class_name(proto.name, "Protocol")
@@ -1309,10 +1270,12 @@ class DocsGenerator:
 			if isinstance(field, Variable):
 				variable = self.format_variable(field, True)
 				self.text += "<code>%s</code><br>\n" %variable
-			elif isinstance(field, Conditional):
-				self.text += "If `%s.%s` %s %i:<br>\n" %(
-					field.group, field.setting, OPERATORS[field.operator], field.value
-				)
+			elif isinstance(field, Condition):
+				type = {
+					Condition.VERSION: "nex.version",
+					Condition.REVISION: "revision"
+				}[field.type]
+				self.text += "If `%s` >= %i:<br>\n" %(type, field.value)
 				self.generate_struct_body(field.body)
 		self.text += "</span><br>\n"
 		

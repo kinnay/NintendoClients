@@ -13,17 +13,17 @@ class ApplicationInfo(common.Structure):
 		self.title_id = None
 		self.title_version = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['title_id', 'title_version']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.title_id = stream.u64()
 		self.title_version = stream.u16()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.title_id)
 		stream.u16(self.title_version)
 

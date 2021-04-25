@@ -239,7 +239,10 @@ The following fields are defined in this class:<br>
 <code>special_station: [StationURL](../common#stationurl) = "prudp:/"</code><br>
 If `nex.version` >= 30500:<br>
 <span class="docs">
+If `revision` >= 1:<br>
+<span class="docs">
 <code>server_time: [DateTime](../common#datetime) = [DateTime](../common#datetime).never()</code><br>
+</span><br>
 </span><br>
 </span><br>
 

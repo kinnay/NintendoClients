@@ -21,12 +21,12 @@ class DataStoreChangeMetaCompareParam(common.Structure):
 		self.data_type = None
 		self.status = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['comparison_flag', 'name', 'period', 'meta_binary', 'tags', 'referred_count', 'data_type', 'status']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.comparison_flag = stream.u32()
 		self.name = stream.string()
 		self.permission = stream.extract(DataStorePermission)
@@ -38,8 +38,8 @@ class DataStoreChangeMetaCompareParam(common.Structure):
 		self.data_type = stream.u16()
 		self.status = stream.u8()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.comparison_flag)
 		stream.string(self.name)
 		stream.add(self.permission)
@@ -70,12 +70,12 @@ class DataStoreChangeMetaParam(common.Structure):
 		self.compare_param = DataStoreChangeMetaCompareParam()
 		self.persistence_target = DataStorePersistenceTarget()
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'modifies_flag', 'name', 'period', 'meta_binary', 'tags', 'update_password', 'referred_count', 'data_type', 'status']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u64()
 		self.modifies_flag = stream.u32()
 		self.name = stream.string()
@@ -91,8 +91,8 @@ class DataStoreChangeMetaParam(common.Structure):
 		self.compare_param = stream.extract(DataStoreChangeMetaCompareParam)
 		self.persistence_target = stream.extract(DataStorePersistenceTarget)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.data_id)
 		stream.u32(self.modifies_flag)
 		stream.string(self.name)
@@ -122,12 +122,12 @@ class DataStoreChangeMetaParamV1(common.Structure):
 		self.tags = None
 		self.update_password = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'modifies_flag', 'name', 'period', 'meta_binary', 'tags', 'update_password']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u64()
 		self.modifies_flag = stream.u32()
 		self.name = stream.string()
@@ -138,8 +138,8 @@ class DataStoreChangeMetaParamV1(common.Structure):
 		self.tags = stream.list(stream.string)
 		self.update_password = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.data_id)
 		stream.u32(self.modifies_flag)
 		stream.string(self.name)
@@ -157,17 +157,17 @@ class DataStoreCompletePostParam(common.Structure):
 		self.data_id = None
 		self.success = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'success']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u64()
 		self.success = stream.bool()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.data_id)
 		stream.bool(self.success)
 
@@ -178,17 +178,17 @@ class DataStoreCompletePostParamV1(common.Structure):
 		self.data_id = None
 		self.success = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'success']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u32()
 		self.success = stream.bool()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.data_id)
 		stream.bool(self.success)
 
@@ -200,18 +200,18 @@ class DataStoreCompleteUpdateParam(common.Structure):
 		self.version = None
 		self.success = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'version', 'success']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u64()
 		self.version = stream.u32()
 		self.success = stream.bool()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.data_id)
 		stream.u32(self.version)
 		stream.bool(self.success)
@@ -223,17 +223,17 @@ class DataStoreDeleteParam(common.Structure):
 		self.data_id = None
 		self.update_password = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'update_password']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u64()
 		self.update_password = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.data_id)
 		stream.u64(self.update_password)
 
@@ -246,17 +246,17 @@ class DataStoreGetMetaParam(common.Structure):
 		self.result_option = 0
 		self.access_password = 0
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u64()
 		self.persistence_target = stream.extract(DataStorePersistenceTarget)
 		self.result_option = stream.u8()
 		self.access_password = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.data_id)
 		stream.add(self.persistence_target)
 		stream.u8(self.result_option)
@@ -269,17 +269,17 @@ class DataStoreGetNewArrivedNotificationsParam(common.Structure):
 		self.last_notification_id = None
 		self.limit = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['last_notification_id', 'limit']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.last_notification_id = stream.u64()
 		self.limit = stream.u16()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.last_notification_id)
 		stream.u16(self.limit)
 
@@ -289,16 +289,16 @@ class DataStoreGetNotificationUrlParam(common.Structure):
 		super().__init__()
 		self.previous_url = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['previous_url']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.previous_url = stream.string()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.string(self.previous_url)
 
 
@@ -307,16 +307,16 @@ class DataStoreGetSpecificMetaParam(common.Structure):
 		super().__init__()
 		self.data_ids = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_ids']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_ids = stream.list(stream.u64)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.list(self.data_ids, stream.u64)
 
 
@@ -325,16 +325,16 @@ class DataStoreGetSpecificMetaParamV1(common.Structure):
 		super().__init__()
 		self.data_ids = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_ids']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_ids = stream.list(stream.u32)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.list(self.data_ids, stream.u32)
 
 
@@ -344,17 +344,17 @@ class DataStoreKeyValue(common.Structure):
 		self.key = None
 		self.value = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['key', 'value']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.key = stream.string()
 		self.value = stream.string()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.string(self.key)
 		stream.string(self.value)
 
@@ -382,12 +382,12 @@ class DataStoreMetaInfo(common.Structure):
 		self.tags = None
 		self.ratings = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'owner_id', 'size', 'name', 'data_type', 'meta_binary', 'create_time', 'update_time', 'period', 'status', 'referred_count', 'refer_data_id', 'flag', 'referred_time', 'expire_time', 'tags', 'ratings']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u64()
 		self.owner_id = stream.pid()
 		self.size = stream.u32()
@@ -408,8 +408,8 @@ class DataStoreMetaInfo(common.Structure):
 		self.tags = stream.list(stream.string)
 		self.ratings = stream.list(DataStoreRatingInfoWithSlot)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.data_id)
 		stream.pid(self.owner_id)
 		stream.u32(self.size)
@@ -437,17 +437,17 @@ class DataStoreNotification(common.Structure):
 		self.notification_id = None
 		self.data_id = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['notification_id', 'data_id']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.notification_id = stream.u64()
 		self.data_id = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.notification_id)
 		stream.u64(self.data_id)
 
@@ -458,17 +458,17 @@ class DataStoreNotificationV1(common.Structure):
 		self.notification_id = None
 		self.data_id = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['notification_id', 'data_id']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.notification_id = stream.u64()
 		self.data_id = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.notification_id)
 		stream.u32(self.data_id)
 
@@ -480,18 +480,18 @@ class DataStorePasswordInfo(common.Structure):
 		self.access_password = None
 		self.update_password = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'access_password', 'update_password']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u64()
 		self.access_password = stream.u64()
 		self.update_password = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.data_id)
 		stream.u64(self.access_password)
 		stream.u64(self.update_password)
@@ -503,15 +503,15 @@ class DataStorePermission(common.Structure):
 		self.permission = 3
 		self.recipients = []
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.permission = stream.u8()
 		self.recipients = stream.list(stream.pid)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u8(self.permission)
 		stream.list(self.recipients, stream.pid)
 
@@ -523,18 +523,18 @@ class DataStorePersistenceInfo(common.Structure):
 		self.slot_id = None
 		self.data_id = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['owner_id', 'slot_id', 'data_id']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.owner_id = stream.pid()
 		self.slot_id = stream.u16()
 		self.data_id = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.pid(self.owner_id)
 		stream.u16(self.slot_id)
 		stream.u64(self.data_id)
@@ -546,15 +546,15 @@ class DataStorePersistenceInitParam(common.Structure):
 		self.persistence_id = 65535
 		self.delete_last_object = True
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.persistence_id = stream.u16()
 		self.delete_last_object = stream.bool()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u16(self.persistence_id)
 		stream.bool(self.delete_last_object)
 
@@ -565,15 +565,15 @@ class DataStorePersistenceTarget(common.Structure):
 		self.owner_id = 0
 		self.persistence_id = 65535
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.owner_id = stream.pid()
 		self.persistence_id = stream.u16()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.pid(self.owner_id)
 		stream.u16(self.persistence_id)
 
@@ -587,11 +587,11 @@ class DataStorePrepareGetParam(common.Structure):
 		self.access_password = 0
 		self.extra_data = []
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		if settings["nex.version"] >= 30500:
 			pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u64()
 		self.lock_id = stream.u32()
 		self.persistence_target = stream.extract(DataStorePersistenceTarget)
@@ -599,8 +599,8 @@ class DataStorePrepareGetParam(common.Structure):
 		if stream.settings["nex.version"] >= 30500:
 			self.extra_data = stream.list(stream.string)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.data_id)
 		stream.u32(self.lock_id)
 		stream.add(self.persistence_target)
@@ -615,17 +615,17 @@ class DataStorePrepareGetParamV1(common.Structure):
 		self.data_id = None
 		self.lock_id = 0
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u32()
 		self.lock_id = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.data_id)
 		stream.u32(self.lock_id)
 
@@ -647,7 +647,7 @@ class DataStorePreparePostParam(common.Structure):
 		self.persistence_init_param = DataStorePersistenceInitParam()
 		self.extra_data = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['size', 'name', 'data_type', 'meta_binary', 'flag', 'period']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
@@ -656,7 +656,7 @@ class DataStorePreparePostParam(common.Structure):
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.size = stream.u32()
 		self.name = stream.string()
 		self.data_type = stream.u16()
@@ -672,8 +672,8 @@ class DataStorePreparePostParam(common.Structure):
 		if stream.settings["nex.version"] >= 30500:
 			self.extra_data = stream.list(stream.string)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.size)
 		stream.string(self.name)
 		stream.u16(self.data_type)
@@ -705,12 +705,12 @@ class DataStorePreparePostParamV1(common.Structure):
 		self.tags = None
 		self.rating_init_param = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['size', 'name', 'flag', 'period', 'tags', 'rating_init_param']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.size = stream.u32()
 		self.name = stream.string()
 		self.data_type = stream.u16()
@@ -723,8 +723,8 @@ class DataStorePreparePostParamV1(common.Structure):
 		self.tags = stream.list(stream.string)
 		self.rating_init_param = stream.list(DataStoreRatingInitParamWithSlot)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.size)
 		stream.string(self.name)
 		stream.u16(self.data_type)
@@ -746,19 +746,19 @@ class DataStorePrepareUpdateParam(common.Structure):
 		self.update_password = None
 		self.extra_data = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'size', 'update_password', 'extra_data']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u64()
 		self.size = stream.u32()
 		self.update_password = stream.u64()
 		self.extra_data = stream.list(stream.string)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.data_id)
 		stream.u32(self.size)
 		stream.u64(self.update_password)
@@ -771,17 +771,17 @@ class DataStoreRateObjectParam(common.Structure):
 		self.rating_value = None
 		self.access_password = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['rating_value', 'access_password']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.rating_value = stream.s32()
 		self.access_password = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.s32(self.rating_value)
 		stream.u64(self.access_password)
 
@@ -793,18 +793,18 @@ class DataStoreRatingInfo(common.Structure):
 		self.count = None
 		self.initial_value = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['total_value', 'count', 'initial_value']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.total_value = stream.s64()
 		self.count = stream.u32()
 		self.initial_value = stream.s64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.s64(self.total_value)
 		stream.u32(self.count)
 		stream.s64(self.initial_value)
@@ -816,17 +816,17 @@ class DataStoreRatingInfoWithSlot(common.Structure):
 		self.slot = None
 		self.info = DataStoreRatingInfo()
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['slot']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.slot = stream.u8()
 		self.info = stream.extract(DataStoreRatingInfo)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u8(self.slot)
 		stream.add(self.info)
 
@@ -843,12 +843,12 @@ class DataStoreRatingInitParam(common.Structure):
 		self.period_hour = None
 		self.period_duration = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['flag', 'internal_flag', 'lock_type', 'initial_value', 'range_min', 'range_max', 'period_hour', 'period_duration']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.flag = stream.u8()
 		self.internal_flag = stream.u8()
 		self.lock_type = stream.u8()
@@ -858,8 +858,8 @@ class DataStoreRatingInitParam(common.Structure):
 		self.period_hour = stream.s8()
 		self.period_duration = stream.s16()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u8(self.flag)
 		stream.u8(self.internal_flag)
 		stream.u8(self.lock_type)
@@ -876,17 +876,17 @@ class DataStoreRatingInitParamWithSlot(common.Structure):
 		self.slot = None
 		self.param = DataStoreRatingInitParam()
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['slot']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.slot = stream.s8()
 		self.param = stream.extract(DataStoreRatingInitParam)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.s8(self.slot)
 		stream.add(self.param)
 
@@ -899,19 +899,19 @@ class DataStoreRatingLog(common.Structure):
 		self.rating_value = None
 		self.lock_expiration_time = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['is_rated', 'pid', 'rating_value', 'lock_expiration_time']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.is_rated = stream.bool()
 		self.pid = stream.pid()
 		self.rating_value = stream.s32()
 		self.lock_expiration_time = stream.datetime()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.bool(self.is_rated)
 		stream.pid(self.pid)
 		stream.s32(self.rating_value)
@@ -924,17 +924,17 @@ class DataStoreRatingTarget(common.Structure):
 		self.data_id = None
 		self.slot = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'slot']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u64()
 		self.slot = stream.s8()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.data_id)
 		stream.s8(self.slot)
 
@@ -947,19 +947,19 @@ class DataStoreReqGetAdditionalMeta(common.Structure):
 		self.version = None
 		self.meta_binary = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['owner_id', 'data_type', 'version', 'meta_binary']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.owner_id = stream.pid()
 		self.data_type = stream.u16()
 		self.version = stream.u16()
 		self.meta_binary = stream.qbuffer()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.pid(self.owner_id)
 		stream.u16(self.data_type)
 		stream.u16(self.version)
@@ -975,7 +975,7 @@ class DataStoreReqGetInfo(common.Structure):
 		self.root_ca_cert = None
 		self.data_id = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['url', 'headers', 'size', 'root_ca_cert']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
@@ -984,7 +984,7 @@ class DataStoreReqGetInfo(common.Structure):
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.url = stream.string()
 		self.headers = stream.list(DataStoreKeyValue)
 		self.size = stream.u32()
@@ -992,8 +992,8 @@ class DataStoreReqGetInfo(common.Structure):
 		if stream.settings["nex.version"] >= 30500:
 			self.data_id = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.string(self.url)
 		stream.list(self.headers, stream.add)
 		stream.u32(self.size)
@@ -1010,19 +1010,19 @@ class DataStoreReqGetInfoV1(common.Structure):
 		self.size = None
 		self.root_ca_cert = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['url', 'headers', 'size', 'root_ca_cert']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.url = stream.string()
 		self.headers = stream.list(DataStoreKeyValue)
 		self.size = stream.u32()
 		self.root_ca_cert = stream.buffer()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.string(self.url)
 		stream.list(self.headers, stream.add)
 		stream.u32(self.size)
@@ -1037,19 +1037,19 @@ class DataStoreReqGetNotificationUrlInfo(common.Structure):
 		self.query = None
 		self.root_ca_cert = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['url', 'key', 'query', 'root_ca_cert']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.url = stream.string()
 		self.key = stream.string()
 		self.query = stream.string()
 		self.root_ca_cert = stream.buffer()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.string(self.url)
 		stream.string(self.key)
 		stream.string(self.query)
@@ -1065,20 +1065,20 @@ class DataStoreReqPostInfo(common.Structure):
 		self.form = None
 		self.root_ca_cert = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'url', 'headers', 'form', 'root_ca_cert']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u64()
 		self.url = stream.string()
 		self.headers = stream.list(DataStoreKeyValue)
 		self.form = stream.list(DataStoreKeyValue)
 		self.root_ca_cert = stream.buffer()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.data_id)
 		stream.string(self.url)
 		stream.list(self.headers, stream.add)
@@ -1095,20 +1095,20 @@ class DataStoreReqPostInfoV1(common.Structure):
 		self.form = None
 		self.root_ca_cert = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'url', 'headers', 'form', 'root_ca_cert']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u32()
 		self.url = stream.string()
 		self.headers = stream.list(DataStoreKeyValue)
 		self.form = stream.list(DataStoreKeyValue)
 		self.root_ca_cert = stream.buffer()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.data_id)
 		stream.string(self.url)
 		stream.list(self.headers, stream.add)
@@ -1125,20 +1125,20 @@ class DataStoreReqUpdateInfo(common.Structure):
 		self.form = None
 		self.root_ca_cert = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['version', 'url', 'headers', 'form', 'root_ca_cert']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.version = stream.u32()
 		self.url = stream.string()
 		self.headers = stream.list(DataStoreKeyValue)
 		self.form = stream.list(DataStoreKeyValue)
 		self.root_ca_cert = stream.buffer()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.version)
 		stream.string(self.url)
 		stream.list(self.headers, stream.add)
@@ -1169,12 +1169,12 @@ class DataStoreSearchParam(common.Structure):
 		self.total_count_enabled = None
 		self.data_types = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['search_target', 'owner_ids', 'owner_type', 'destination_ids', 'data_type', 'created_after', 'created_before', 'updated_after', 'updated_before', 'refer_data_id', 'tags', 'result_order_column', 'result_order', 'result_option', 'minimal_rating_frequency', 'use_cache', 'total_count_enabled', 'data_types']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.search_target = stream.u8()
 		self.owner_ids = stream.list(stream.pid)
 		self.owner_type = stream.u8()
@@ -1195,8 +1195,8 @@ class DataStoreSearchParam(common.Structure):
 		self.total_count_enabled = stream.bool()
 		self.data_types = stream.list(stream.u16)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u8(self.search_target)
 		stream.list(self.owner_ids, stream.pid)
 		stream.u8(self.owner_type)
@@ -1225,18 +1225,18 @@ class DataStoreSearchResult(common.Structure):
 		self.result = None
 		self.total_count_type = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['total_count', 'result', 'total_count_type']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.total_count = stream.u32()
 		self.result = stream.list(DataStoreMetaInfo)
 		self.total_count_type = stream.u8()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.total_count)
 		stream.list(self.result, stream.add)
 		stream.u8(self.total_count_type)
@@ -1251,20 +1251,20 @@ class DataStoreSpecificMetaInfo(common.Structure):
 		self.data_type = None
 		self.version = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'owner_id', 'size', 'data_type', 'version']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u64()
 		self.owner_id = stream.pid()
 		self.size = stream.u32()
 		self.data_type = stream.u16()
 		self.version = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.data_id)
 		stream.pid(self.owner_id)
 		stream.u32(self.size)
@@ -1281,20 +1281,20 @@ class DataStoreSpecificMetaInfoV1(common.Structure):
 		self.data_type = None
 		self.version = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'owner_id', 'size', 'data_type', 'version']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u32()
 		self.owner_id = stream.pid()
 		self.size = stream.u32()
 		self.data_type = stream.u16()
 		self.version = stream.u16()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.data_id)
 		stream.pid(self.owner_id)
 		stream.u32(self.size)
@@ -1309,18 +1309,18 @@ class DataStoreTouchObjectParam(common.Structure):
 		self.lock_id = None
 		self.access_password = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data_id', 'lock_id', 'access_password']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data_id = stream.u64()
 		self.lock_id = stream.u32()
 		self.access_password = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.data_id)
 		stream.u32(self.lock_id)
 		stream.u64(self.access_password)

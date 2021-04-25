@@ -301,16 +301,17 @@ struct EventCourseInfo {
 	EventCourseThumbnail one_screen_thumbnail;
 	EventCourseThumbnail entire_thumbnail;
 	
-	#revision 1
-	datetime end_time;
-	uint8 unk6;
-	uint32 unk7;
-	uint16 unk8;
-	uint16 unk9;
-	uint32 best_time;
-	uint32 unk10;
-	uint32 medal_time;
-	RelationObjectReqGetInfo personal_ghost;
+	revision 1 {
+		datetime end_time;
+		uint8 unk6;
+		uint32 unk7;
+		uint16 unk8;
+		uint16 unk9;
+		uint32 best_time;
+		uint32 unk10;
+		uint32 medal_time;
+		RelationObjectReqGetInfo personal_ghost;
+	}
 }
 
 struct EventCourseStatusInfo {
@@ -373,18 +374,21 @@ struct UserInfo {
 	map<uint8, uint32> unk8;
 	map<uint8, uint32> unk9;
 	
-	#revision 1
-	bool unk10;
-	datetime unk11;
-	bool unk12;
+	revision 1 {
+		bool unk10;
+		datetime unk11;
+		bool unk12;
+	}
 	
-	#revision 2
-	UnknownStruct3 unk13;
+	revision 2 {
+		UnknownStruct3 unk13;
+	}
 	
-	#revision 3
-	string unk14;
-	map<uint8, uint32> unk15;
-	bool unk16;
+	revision 3 {
+		string unk14;
+		map<uint8, uint32> unk15;
+		bool unk16;
+	}
 }
 
 /*** Unknown structures ***/

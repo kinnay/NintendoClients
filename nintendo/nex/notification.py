@@ -18,22 +18,23 @@ class NotificationEvent(common.Structure):
 		self.param3 = 0
 		self.map = {}
 	
-	def get_version(self, settings):
+	def max_version(self, settings):
 		version = 0
 		if settings["nex.version"] >= 40000:
 			version = 1
 		return version
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['pid', 'type']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 		if settings["nex.version"] >= 30500:
 			pass
 		if settings["nex.version"] >= 40000:
-			pass
+			if version >= 1:
+				pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.pid = stream.pid()
 		self.type = stream.u32()
 		self.param1 = stream.pid()
@@ -42,10 +43,11 @@ class NotificationEvent(common.Structure):
 		if stream.settings["nex.version"] >= 30500:
 			self.param3 = stream.pid()
 		if stream.settings["nex.version"] >= 40000:
-			self.map = stream.map(stream.string, stream.variant)
+			if version >= 1:
+				self.map = stream.map(stream.string, stream.variant)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.pid(self.pid)
 		stream.u32(self.type)
 		stream.pid(self.param1)
@@ -54,7 +56,8 @@ class NotificationEvent(common.Structure):
 		if stream.settings["nex.version"] >= 30500:
 			stream.pid(self.param3)
 		if stream.settings["nex.version"] >= 40000:
-			stream.map(self.map, stream.string, stream.variant)
+			if version >= 1:
+				stream.map(self.map, stream.string, stream.variant)
 
 
 class NotificationProtocol:

@@ -156,7 +156,7 @@ struct DataStorePrepareGetParam {
 	DataStorePersistenceTarget persistence_target;
 	uint64 access_password = 0;
 	
-	[nex.version >= 30500] {
+	nex 30500 {
 		list<string> extra_data = [];
 	}
 }
@@ -180,7 +180,7 @@ struct DataStorePreparePostParam {
 	list<DataStoreRatingInitParamWithSlot> rating_init_param = [];
 	DataStorePersistenceInitParam persistence_init_param;
 	
-	[nex.version >= 30500] {
+	nex 30500 {
 		list<string> extra_data;
 	}
 }
@@ -263,7 +263,7 @@ struct DataStoreReqGetInfo {
 	uint32 size;
 	buffer root_ca_cert;
 	
-	[nex.version >= 30500] {
+	nex 30500 {
 		uint64 data_id;
 	}
 }

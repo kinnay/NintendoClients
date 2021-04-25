@@ -56,16 +56,11 @@ class Result:
 	def raise_if_error(self):
 		if self.is_error():
 			raise RMCError(self.error_code)
-	
+
 
 # Black magic going on here
 class Structure:
-	def init_version(self, cls, settings):
-		if settings["nex.struct_header"]:
-			return cls.get_version(self, settings)
-		return -1
-			
-	def get_version(self, settings): return 0
+	def max_version(self, settings): return 0
 			
 	def get_hierarchy(self):
 		hierarchy = []
@@ -78,50 +73,48 @@ class Structure:
 	def encode(self, stream):
 		hierarchy = self.get_hierarchy()
 		for cls in hierarchy:
-			version = self.init_version(cls, stream.settings)
-			if version == -1:
-				cls.save(self, stream)
-			else:
+			if stream.settings["nex.struct_header"]:
+				version = cls.max_version(self, stream.settings)
+				
 				substream = streams.StreamOut(stream.settings)
-				cls.save(self, substream)
+				cls.save(self, substream, version)
 				
 				stream.u8(version)
 				stream.buffer(substream.get())
+			else:
+				cls.save(self, stream, 0)
 
 	def decode(self, stream):
 		hierarchy = self.get_hierarchy()
 		for cls in hierarchy:
-			expected_version = self.init_version(cls, stream.settings)
-			if expected_version == -1:
-				cls.load(self, stream)
-			else:
+			if stream.settings["nex.struct_header"]:
+				max_version = cls.max_version(self, stream.settings)
+				
 				version = stream.u8()
-				if stream.settings["debug.check_struct_version"]:
-					if version != expected_version:
-						raise ValueError(
-							"Struct %s version (%i) doesn't match expected version (%i)" %(
-								cls.__name__, version, expected_version
-							)
-						)
+				if version > max_version:
+					logger.warning(
+						"Struct %s version is higher than expected (%i > %i)",
+						cls.__name__, version, max_version
+					)
 					
 				substream = stream.substream()
-				cls.load(self, substream)
+				cls.load(self, substream, 0)
 				
-				if stream.settings["debug.check_struct_size"]:
-					if not substream.eof():
-						raise TypeError(
-							"Struct %s has unexpected size (got %i bytes, but only %i were read)" %(
-								cls.__name__, substream.size(), substream.tell()
-							)
-						)
+				if not substream.eof():
+					logger.warning(
+						"Struct %s has unexpected size (got %i bytes, but only %i were read)",
+						cls.__name__, substream.size(), substream.tell()
+					)
+			else:
+				cls.load(self, stream, 0)
 				
-	def load(self, stream): raise NotImplementedError("%s.load()" %self.__class__.__name__)
-	def save(self, stream): raise NotImplementedError("%s.save()" %self.__class__.__name__)
+	def load(self, stream, version): raise NotImplementedError("%s.load()" %self.__class__.__name__)
+	def save(self, stream, version): raise NotImplementedError("%s.save()" %self.__class__.__name__)
 	
 	
 class Data(Structure):
-	def save(self, stream): pass
-	def load(self, stream): pass
+	def save(self, stream, version): pass
+	def load(self, stream, version): pass
 
 
 class DataHolder:
@@ -151,8 +144,8 @@ class DataHolder:
 		
 		
 class NullData(Data):
-	def save(self, stream): pass
-	def load(self, stream): pass
+	def save(self, stream, version): pass
+	def load(self, stream, version): pass
 DataHolder.register(NullData, "NullData")
 		
 		
@@ -262,10 +255,10 @@ class ResultRange(Structure):
 		self.offset = offset
 		self.size = size
 
-	def load(self, stream):
+	def load(self, stream, version):
 		self.offset = stream.u32()
 		self.size = stream.u32()
 	
-	def save(self, stream):
+	def save(self, stream, version):
 		stream.u32(self.offset)
 		stream.u32(self.size)

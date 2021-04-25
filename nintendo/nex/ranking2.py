@@ -26,12 +26,12 @@ class Ranking2CategorySetting(common.Structure):
 		self.max_seasons_to_go_back = None
 		self.score_order = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['min_score', 'max_score', 'lowest_rank', 'reset_month', 'reset_day', 'reset_hour', 'reset_mode', 'max_seasons_to_go_back', 'score_order']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.min_score = stream.u32()
 		self.max_score = stream.u32()
 		self.lowest_rank = stream.u32()
@@ -42,8 +42,8 @@ class Ranking2CategorySetting(common.Structure):
 		self.max_seasons_to_go_back = stream.u8()
 		self.score_order = stream.bool()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.min_score)
 		stream.u32(self.max_score)
 		stream.u32(self.lowest_rank)
@@ -77,12 +77,12 @@ class Ranking2ChartInfo(common.Structure):
 		self.attribute2 = None
 		self.quantities = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['create_time', 'index', 'category', 'season', 'bins_size', 'sampling_rate', 'score_order', 'estimate_length', 'estimate_highest_score', 'estimate_lowest_score', 'estimate_median_score', 'estimate_average_score', 'highest_bins_score', 'lowest_bins_score', 'bins_width', 'attribute1', 'attribute2', 'quantities']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.create_time = stream.datetime()
 		self.index = stream.u32()
 		self.category = stream.u32()
@@ -102,8 +102,8 @@ class Ranking2ChartInfo(common.Structure):
 		self.attribute2 = stream.u32()
 		self.quantities = stream.list(stream.u32)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.datetime(self.create_time)
 		stream.u32(self.index)
 		stream.u32(self.category)
@@ -130,17 +130,17 @@ class Ranking2ChartInfoInput(common.Structure):
 		self.chart_index = None
 		self.seasons_to_go_back = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['chart_index', 'seasons_to_go_back']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.chart_index = stream.u32()
 		self.seasons_to_go_back = stream.u8()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.chart_index)
 		stream.u8(self.seasons_to_go_back)
 
@@ -152,18 +152,18 @@ class Ranking2CommonData(common.Structure):
 		self.mii = None
 		self.binary_data = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['username', 'mii', 'binary_data']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.username = stream.string()
 		self.mii = stream.qbuffer()
 		self.binary_data = stream.qbuffer()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.string(self.username)
 		stream.qbuffer(self.mii)
 		stream.qbuffer(self.binary_data)
@@ -176,18 +176,18 @@ class Ranking2EstimateScoreRankInput(common.Structure):
 		self.seasons_to_go_back = None
 		self.score = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['category', 'seasons_to_go_back', 'score']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.category = stream.u32()
 		self.seasons_to_go_back = stream.u8()
 		self.score = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.category)
 		stream.u8(self.seasons_to_go_back)
 		stream.u32(self.score)
@@ -202,20 +202,20 @@ class Ranking2EstimateScoreRankOutput(common.Structure):
 		self.category = None
 		self.season = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['rank', 'length', 'score', 'category', 'season']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.rank = stream.u32()
 		self.length = stream.u32()
 		self.score = stream.u32()
 		self.category = stream.u32()
 		self.season = stream.s32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.rank)
 		stream.u32(self.length)
 		stream.u32(self.score)
@@ -233,12 +233,12 @@ class Ranking2GetByListParam(common.Structure):
 		self.option_flags = None
 		self.seasons_to_go_back = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['category', 'offset', 'length', 'sort_flags', 'option_flags', 'seasons_to_go_back']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.category = stream.u32()
 		self.offset = stream.u32()
 		self.length = stream.u32()
@@ -246,8 +246,8 @@ class Ranking2GetByListParam(common.Structure):
 		self.option_flags = stream.u32()
 		self.seasons_to_go_back = stream.u8()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.category)
 		stream.u32(self.offset)
 		stream.u32(self.length)
@@ -269,12 +269,12 @@ class Ranking2GetParam(common.Structure):
 		self.mode = 2
 		self.seasons_to_go_back = 0
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['category']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.unique_id = stream.u64()
 		self.pid = stream.pid()
 		self.category = stream.u32()
@@ -285,8 +285,8 @@ class Ranking2GetParam(common.Structure):
 		self.mode = stream.u8()
 		self.seasons_to_go_back = stream.u8()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.unique_id)
 		stream.pid(self.pid)
 		stream.u32(self.category)
@@ -306,19 +306,19 @@ class Ranking2Info(common.Structure):
 		self.num_entries = None
 		self.season = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data', 'lowest_rank', 'num_entries', 'season']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data = stream.list(Ranking2RankData)
 		self.lowest_rank = stream.u32()
 		self.num_entries = stream.u32()
 		self.season = stream.s32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.list(self.data, stream.add)
 		stream.u32(self.lowest_rank)
 		stream.u32(self.num_entries)
@@ -335,12 +335,12 @@ class Ranking2RankData(common.Structure):
 		self.score = None
 		self.common_data = Ranking2CommonData()
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['misc', 'unique_id', 'pid', 'rank', 'score']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.misc = stream.u64()
 		self.unique_id = stream.u64()
 		self.pid = stream.pid()
@@ -348,8 +348,8 @@ class Ranking2RankData(common.Structure):
 		self.score = stream.u32()
 		self.common_data = stream.extract(Ranking2CommonData)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.misc)
 		stream.u64(self.unique_id)
 		stream.pid(self.pid)
@@ -365,18 +365,18 @@ class Ranking2ScoreData(common.Structure):
 		self.category = None
 		self.score = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['misc', 'category', 'score']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.misc = stream.u64()
 		self.category = stream.u32()
 		self.score = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.misc)
 		stream.u32(self.category)
 		stream.u32(self.score)

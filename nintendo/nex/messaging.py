@@ -14,18 +14,18 @@ class MessageRecipient(common.Structure):
 		self.pid = None
 		self.gid = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['type', 'pid', 'gid']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.type = stream.u32()
 		self.pid = stream.pid()
 		self.gid = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.type)
 		stream.pid(self.pid)
 		stream.u32(self.gid)
@@ -44,12 +44,12 @@ class UserMessage(common.Data):
 		self.sender_name = None
 		self.recipient = MessageRecipient()
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['id', 'parent_id', 'sender', 'reception_time', 'life_time', 'flags', 'subject', 'sender_name']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.id = stream.u32()
 		self.parent_id = stream.u32()
 		self.sender = stream.pid()
@@ -60,8 +60,8 @@ class UserMessage(common.Data):
 		self.sender_name = stream.string()
 		self.recipient = stream.extract(MessageRecipient)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.id)
 		stream.u32(self.parent_id)
 		stream.pid(self.sender)
@@ -79,16 +79,16 @@ class TextMessage(UserMessage):
 		super().__init__()
 		self.body = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['body']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.body = stream.string()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.string(self.body)
 common.DataHolder.register(TextMessage, "TextMessage")
 
@@ -98,16 +98,16 @@ class BinaryMessage(UserMessage):
 		super().__init__()
 		self.body = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['body']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.body = stream.qbuffer()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.qbuffer(self.body)
 common.DataHolder.register(BinaryMessage, "BinaryMessage")
 

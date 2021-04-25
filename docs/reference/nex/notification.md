@@ -45,7 +45,10 @@ If `nex.version` >= 30500:<br>
 </span><br>
 If `nex.version` >= 40000:<br>
 <span class="docs">
+If `revision` >= 1:<br>
+<span class="docs">
 <code>map: dict[str, object] = {}</code><br>
+</span><br>
 </span><br>
 </span><br>
 

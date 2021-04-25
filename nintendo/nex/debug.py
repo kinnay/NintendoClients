@@ -14,18 +14,18 @@ class ApiCall(common.Structure):
 		self.time = None
 		self.pid = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['name', 'time', 'pid']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.name = stream.string()
 		self.time = stream.datetime()
 		self.pid = stream.pid()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.string(self.name)
 		stream.datetime(self.time)
 		stream.pid(self.pid)

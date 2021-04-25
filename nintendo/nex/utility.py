@@ -13,17 +13,17 @@ class UniqueIdInfo(common.Structure):
 		self.unique_id = None
 		self.password = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['unique_id', 'password']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.unique_id = stream.u64()
 		self.password = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u64(self.unique_id)
 		stream.u64(self.password)
 

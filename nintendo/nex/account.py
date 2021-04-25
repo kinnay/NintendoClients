@@ -20,12 +20,12 @@ class AccountData(common.Structure):
 		self.expiry_date = None
 		self.expired_message = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['pid', 'name', 'groups', 'email', 'creation_date', 'effective_date', 'not_effective_message', 'expiry_date', 'expired_message']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.pid = stream.pid()
 		self.name = stream.string()
 		self.groups = stream.u32()
@@ -36,8 +36,8 @@ class AccountData(common.Structure):
 		self.expiry_date = stream.datetime()
 		self.expired_message = stream.string()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.pid(self.pid)
 		stream.string(self.name)
 		stream.u32(self.groups)
@@ -55,17 +55,17 @@ class BasicAccountInfo(common.Structure):
 		self.pid = None
 		self.name = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['pid', 'name']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.pid = stream.pid()
 		self.name = stream.string()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.pid(self.pid)
 		stream.string(self.name)
 

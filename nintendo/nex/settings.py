@@ -42,10 +42,7 @@ class Settings:
 
 		"kerberos.key_size": int,
 		"kerberos.key_derivation": int,
-		"kerberos.ticket_version": int,
-		
-		"debug.check_struct_version": int,
-		"debug.check_struct_size": int
+		"kerberos.ticket_version": int
 	}
 	
 	def __init__(self, filename=None):

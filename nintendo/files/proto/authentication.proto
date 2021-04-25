@@ -13,9 +13,10 @@ struct RVConnectionData {
 	list<uint8> special_protocols = [];
 	stationurl special_station = "prudp:/";
 
-	[nex.version >= 30500] {
-		#revision 1
-		datetime server_time = 0;
+	nex 30500 {
+		revision 1 {
+			datetime server_time = 0;
+		}
 	}
 }
 

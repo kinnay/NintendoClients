@@ -6,13 +6,14 @@ struct NotificationEvent {
 	pid param2 = 0;
 	string text = "";
 	
-	[nex.version >= 30500] {
+	nex 30500 {
 		pid param3 = 0;
 	}
 	
-	[nex.version >= 40000] {
-		#revision 1
-		map<string, variant> map = {};
+	nex 40000 {
+		revision 1 {
+			map<string, variant> map = {};
+		}
 	}
 }
 

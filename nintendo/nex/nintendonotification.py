@@ -21,17 +21,17 @@ class u8KeyValue(common.Data):
 		self.key = None
 		self.value = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['key', 'value']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.key = stream.u8()
 		self.value = stream.u8()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u8(self.key)
 		stream.u8(self.value)
 common.DataHolder.register(u8KeyValue, "u8KeyValue")
@@ -43,17 +43,17 @@ class u32KeyValue(common.Data):
 		self.key = None
 		self.value = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['key', 'value']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.key = stream.u8()
 		self.value = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u8(self.key)
 		stream.u32(self.value)
 common.DataHolder.register(u32KeyValue, "u32KeyValue")
@@ -65,17 +65,17 @@ class u64KeyValue(common.Data):
 		self.key = None
 		self.value = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['key', 'value']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.key = stream.u8()
 		self.value = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u8(self.key)
 		stream.u64(self.value)
 common.DataHolder.register(u64KeyValue, "u64KeyValue")
@@ -87,17 +87,17 @@ class StringKeyValue(common.Data):
 		self.key = None
 		self.value = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['key', 'value']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.key = stream.u8()
 		self.value = stream.string()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u8(self.key)
 		stream.string(self.value)
 common.DataHolder.register(StringKeyValue, "StringKeyValue")
@@ -110,18 +110,18 @@ class NintendoNotificationEvent(common.Structure):
 		self.pid = None
 		self.data = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['type', 'pid', 'data']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.type = stream.u32()
 		self.pid = stream.pid()
 		self.data = stream.anydata()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.type)
 		stream.pid(self.pid)
 		stream.anydata(self.data)
@@ -135,19 +135,19 @@ class NintendoNotificationEventGeneral(common.Data):
 		self.param3 = None
 		self.text = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['param1', 'param2', 'param3', 'text']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.param1 = stream.u32()
 		self.param2 = stream.u64()
 		self.param3 = stream.u64()
 		self.text = stream.string()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.param1)
 		stream.u64(self.param2)
 		stream.u64(self.param3)
@@ -163,19 +163,19 @@ class NintendoNotificationEventKeyValue(common.Data):
 		self.u64 = None
 		self.string = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['u8', 'u32', 'u64', 'string']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.u8 = stream.list(u8KeyValue)
 		self.u32 = stream.list(u32KeyValue)
 		self.u64 = stream.list(u64KeyValue)
 		self.string = stream.list(StringKeyValue)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.list(self.u8, stream.add)
 		stream.list(self.u32, stream.add)
 		stream.list(self.u64, stream.add)
@@ -192,20 +192,20 @@ class NintendoNotificationEventProfile(common.Data):
 		self.language = None
 		self.platform = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['region', 'country', 'area', 'language', 'platform']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.region = stream.u8()
 		self.country = stream.u8()
 		self.area = stream.u8()
 		self.language = stream.u8()
 		self.platform = stream.u8()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u8(self.region)
 		stream.u8(self.country)
 		stream.u8(self.area)

@@ -26,10 +26,10 @@ class Gathering(common.Structure):
 		self.state = 0
 		self.description = ""
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.id = stream.u32()
 		self.owner_pid = stream.pid()
 		self.host_pid = stream.pid()
@@ -41,8 +41,8 @@ class Gathering(common.Structure):
 		self.state = stream.u32()
 		self.description = stream.string()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.id)
 		stream.pid(self.owner_pid)
 		stream.pid(self.host_pid)
@@ -61,17 +61,17 @@ class GatheringURLs(common.Structure):
 		self.gid = None
 		self.urls = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['gid', 'urls']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.gid = stream.u32()
 		self.urls = stream.list(stream.stationurl)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.gid)
 		stream.list(self.urls, stream.stationurl)
 
@@ -83,18 +83,18 @@ class GatheringStats(common.Structure):
 		self.flags = None
 		self.values = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['pid', 'flags', 'values']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.pid = stream.pid()
 		self.flags = stream.u32()
 		self.values = stream.list(stream.float)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.pid(self.pid)
 		stream.u32(self.flags)
 		stream.list(self.values, stream.float)
@@ -107,18 +107,18 @@ class Invitation(common.Structure):
 		self.guest = None
 		self.message = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['gid', 'guest', 'message']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.gid = stream.u32()
 		self.guest = stream.u32()
 		self.message = stream.string()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.gid)
 		stream.u32(self.guest)
 		stream.string(self.message)
@@ -132,19 +132,19 @@ class ParticipantDetails(common.Structure):
 		self.message = None
 		self.participants = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['pid', 'name', 'message', 'participants']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.pid = stream.pid()
 		self.name = stream.string()
 		self.message = stream.string()
 		self.participants = stream.u16()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.pid(self.pid)
 		stream.string(self.name)
 		stream.string(self.message)
@@ -158,18 +158,18 @@ class DeletionEntry(common.Structure):
 		self.pid = None
 		self.reason = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['gid', 'pid', 'reason']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.gid = stream.u32()
 		self.pid = stream.pid()
 		self.reason = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.gid)
 		stream.pid(self.pid)
 		stream.u32(self.reason)
@@ -180,14 +180,14 @@ class MatchmakeParam(common.Structure):
 		super().__init__()
 		self.param = {}
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.param = stream.map(stream.string, stream.variant)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.map(self.param, stream.string, stream.variant)
 
 
@@ -211,13 +211,13 @@ class MatchmakeSessionSearchCriteria(common.Structure):
 		self.codeword = ""
 		self.range = common.ResultRange()
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		if settings["nex.version"] >= 30500:
 			pass
 		if settings["nex.version"] >= 40000:
 			pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.attribs = stream.list(stream.string)
 		self.game_mode = stream.string()
 		self.min_participants = stream.string()
@@ -237,8 +237,8 @@ class MatchmakeSessionSearchCriteria(common.Structure):
 			self.codeword = stream.string()
 			self.range = stream.extract(common.ResultRange)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.list(self.attribs, stream.string)
 		stream.string(self.game_mode)
 		stream.string(self.min_participants)
@@ -279,7 +279,7 @@ class MatchmakeSession(Gathering):
 		self.system_password_enabled = False
 		self.codeword = ""
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		if settings["nex.version"] >= 30500:
 			pass
 		if settings["nex.version"] >= 30000:
@@ -289,7 +289,7 @@ class MatchmakeSession(Gathering):
 		if settings["nex.version"] >= 40000:
 			pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.game_mode = stream.u32()
 		self.attribs = stream.list(stream.u32)
 		self.open_participation = stream.bool()
@@ -311,8 +311,8 @@ class MatchmakeSession(Gathering):
 			self.system_password_enabled = stream.bool()
 			self.codeword = stream.string()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.game_mode)
 		stream.list(self.attribs, stream.u32)
 		stream.bool(self.open_participation)
@@ -341,14 +341,14 @@ class MatchmakeBlockListParam(common.Structure):
 		super().__init__()
 		self.options = 0
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.options = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.options)
 
 
@@ -362,12 +362,12 @@ class CreateMatchmakeSessionParam(common.Structure):
 		self.join_message = None
 		self.num_participants = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['additional_participants', 'gid_for_participation_check', 'options', 'join_message', 'num_participants']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.session = stream.extract(MatchmakeSession)
 		self.additional_participants = stream.list(stream.pid)
 		self.gid_for_participation_check = stream.u32()
@@ -375,8 +375,8 @@ class CreateMatchmakeSessionParam(common.Structure):
 		self.join_message = stream.string()
 		self.num_participants = stream.u16()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.add(self.session)
 		stream.list(self.additional_participants, stream.pid)
 		stream.u32(self.gid_for_participation_check)
@@ -400,12 +400,12 @@ class JoinMatchmakeSessionParam(common.Structure):
 		self.extra_participants = None
 		self.block_list = MatchmakeBlockListParam()
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['gid', 'participants', 'gid_for_participation_check', 'options', 'behavior', 'user_password', 'system_password', 'join_message', 'num_participants', 'extra_participants']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.gid = stream.u32()
 		self.participants = stream.list(stream.pid)
 		self.gid_for_participation_check = stream.u32()
@@ -418,8 +418,8 @@ class JoinMatchmakeSessionParam(common.Structure):
 		self.extra_participants = stream.u16()
 		self.block_list = stream.extract(MatchmakeBlockListParam)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.gid)
 		stream.list(self.participants, stream.pid)
 		stream.u32(self.gid_for_participation_check)
@@ -454,12 +454,12 @@ class UpdateMatchmakeSessionParam(common.Structure):
 		self.policy_argument = None
 		self.codeword = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['gid', 'modification_flags', 'attributes', 'open_participation', 'application_buffer', 'progress_score', 'started_time', 'user_password', 'game_mode', 'description', 'min_participants', 'max_participants', 'matchmake_system', 'participation_policy', 'policy_argument', 'codeword']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.gid = stream.u32()
 		self.modification_flags = stream.u32()
 		self.attributes = stream.list(stream.u32)
@@ -478,8 +478,8 @@ class UpdateMatchmakeSessionParam(common.Structure):
 		self.policy_argument = stream.u32()
 		self.codeword = stream.string()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.gid)
 		stream.u32(self.modification_flags)
 		stream.list(self.attributes, stream.u32)
@@ -512,12 +512,12 @@ class AutoMatchmakeParam(common.Structure):
 		self.target_gids = None
 		self.block_list = MatchmakeBlockListParam()
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['participants', 'gid_for_participation_check', 'options', 'join_message', 'num_participants', 'search_criteria', 'target_gids']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.session = stream.extract(MatchmakeSession)
 		self.participants = stream.list(stream.pid)
 		self.gid_for_participation_check = stream.u32()
@@ -528,8 +528,8 @@ class AutoMatchmakeParam(common.Structure):
 		self.target_gids = stream.list(stream.u32)
 		self.block_list = stream.extract(MatchmakeBlockListParam)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.add(self.session)
 		stream.list(self.participants, stream.pid)
 		stream.u32(self.gid_for_participation_check)
@@ -548,18 +548,18 @@ class FindMatchmakeSessionByParticipantParam(common.Structure):
 		self.options = None
 		self.block_list = MatchmakeBlockListParam()
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['pids', 'options']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.pids = stream.list(stream.pid)
 		self.options = stream.u32()
 		self.block_list = stream.extract(MatchmakeBlockListParam)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.list(self.pids, stream.pid)
 		stream.u32(self.options)
 		stream.add(self.block_list)
@@ -571,17 +571,17 @@ class FindMatchmakeSessionByParticipantResult(common.Structure):
 		self.pid = None
 		self.session = MatchmakeSession()
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['pid']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.pid = stream.pid()
 		self.session = stream.extract(MatchmakeSession)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.pid(self.pid)
 		stream.add(self.session)
 
@@ -598,12 +598,12 @@ class PersistentGathering(Gathering):
 		self.matchmake_session_count = None
 		self.num_participants = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['type', 'password', 'attribs', 'application_buffer', 'participation_start', 'participation_end', 'matchmake_session_count', 'num_participants']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.type = stream.u32()
 		self.password = stream.string()
 		self.attribs = stream.list(stream.u32)
@@ -613,8 +613,8 @@ class PersistentGathering(Gathering):
 		self.matchmake_session_count = stream.u32()
 		self.num_participants = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.type)
 		stream.string(self.password)
 		stream.list(self.attribs, stream.u32)
@@ -632,17 +632,17 @@ class SimpleCommunity(common.Structure):
 		self.gid = None
 		self.matchmake_session_count = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['gid', 'matchmake_session_count']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.gid = stream.u32()
 		self.matchmake_session_count = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.gid)
 		stream.u32(self.matchmake_session_count)
 
@@ -653,17 +653,17 @@ class PlayingSession(common.Structure):
 		self.pid = None
 		self.gathering = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['pid', 'gathering']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.pid = stream.pid()
 		self.gathering = stream.anydata()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.pid(self.pid)
 		stream.anydata(self.gathering)
 
@@ -676,19 +676,19 @@ class SimplePlayingSession(common.Structure):
 		self.game_mode = None
 		self.attribute = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['pid', 'gid', 'game_mode', 'attribute']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.pid = stream.pid()
 		self.gid = stream.u32()
 		self.game_mode = stream.u32()
 		self.attribute = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.pid(self.pid)
 		stream.u32(self.gid)
 		stream.u32(self.game_mode)

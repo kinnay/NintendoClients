@@ -15,19 +15,19 @@ class AuthenticationInfo(common.Data):
 		self.token_type = 1
 		self.server_version = 0
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['token']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.token = stream.string()
 		self.ngs_version = stream.u32()
 		self.token_type = stream.u8()
 		self.server_version = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.string(self.token)
 		stream.u32(self.ngs_version)
 		stream.u8(self.token_type)
@@ -43,30 +43,33 @@ class RVConnectionData(common.Structure):
 		self.special_station = common.StationURL.parse("prudp:/")
 		self.server_time = common.DateTime(0)
 	
-	def get_version(self, settings):
+	def max_version(self, settings):
 		version = 0
 		if settings["nex.version"] >= 30500:
 			version = 1
 		return version
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		if settings["nex.version"] >= 30500:
-			pass
+			if version >= 1:
+				pass
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.main_station = stream.stationurl()
 		self.special_protocols = stream.list(stream.u8)
 		self.special_station = stream.stationurl()
 		if stream.settings["nex.version"] >= 30500:
-			self.server_time = stream.datetime()
+			if version >= 1:
+				self.server_time = stream.datetime()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.stationurl(self.main_station)
 		stream.list(self.special_protocols, stream.u8)
 		stream.stationurl(self.special_station)
 		if stream.settings["nex.version"] >= 30500:
-			stream.datetime(self.server_time)
+			if version >= 1:
+				stream.datetime(self.server_time)
 
 
 class ValidateAndRequestTicketParam(common.Structure):
@@ -79,12 +82,12 @@ class ValidateAndRequestTicketParam(common.Structure):
 		self.nex_version = None
 		self.client_version = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['username', 'data', 'nex_version', 'client_version']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.platform = stream.u32()
 		self.username = stream.string()
 		self.data = stream.anydata()
@@ -92,8 +95,8 @@ class ValidateAndRequestTicketParam(common.Structure):
 		self.nex_version = stream.u32()
 		self.client_version = stream.u32()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.platform)
 		stream.string(self.username)
 		stream.anydata(self.data)
@@ -112,12 +115,12 @@ class ValidateAndRequestTicketResult(common.Structure):
 		self.server_name = None
 		self.source_key = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['pid', 'ticket', 'server_url', 'server_time', 'server_name', 'source_key']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.pid = stream.pid()
 		self.ticket = stream.buffer()
 		self.server_url = stream.stationurl()
@@ -125,8 +128,8 @@ class ValidateAndRequestTicketResult(common.Structure):
 		self.server_name = stream.string()
 		self.source_key = stream.string()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.pid(self.pid)
 		stream.buffer(self.ticket)
 		stream.stationurl(self.server_url)

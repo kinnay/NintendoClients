@@ -62,11 +62,11 @@ struct MatchmakeSessionSearchCriteria {
 	bool exclude_non_host_pid = false;
 	uint32 selection_method = 0;
 	
-	[nex.version >= 30500] {
+	nex 30500 {
 		uint16 vacant_participants = 1;
 	}
 	
-	[nex.version >= 40000] {
+	nex 40000 {
 		MatchmakeParam param;
 		bool exclude_user_password = false;
 		bool exclude_system_password = false;
@@ -84,19 +84,19 @@ struct MatchmakeSession : Gathering {
 	buffer application_data = "";
 	uint32 num_participants = 0;
 	
-	[nex.version >= 30500] {
+	nex 30500 {
 		uint8 progress_score = 100;
 	}
 	
-	[nex.version >= 30000] {
+	nex 30000 {
 		buffer session_key = "";
 	}
 	
-	[nex.version >= 30500] {
+	nex 30500 {
 		uint32 option = 0;
 	}
 	
-	[nex.version >= 40000] {
+	nex 40000 {
 		MatchmakeParam param;
 		datetime started_time = 0;
 		string user_password = "";

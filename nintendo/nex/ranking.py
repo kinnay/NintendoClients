@@ -37,12 +37,12 @@ class RankingOrderParam(common.Structure):
 		self.offset = None
 		self.count = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['offset', 'count']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.order_calc = stream.u8()
 		self.group_index = stream.u8()
 		self.group_num = stream.u8()
@@ -50,8 +50,8 @@ class RankingOrderParam(common.Structure):
 		self.offset = stream.u32()
 		self.count = stream.u8()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u8(self.order_calc)
 		stream.u8(self.group_index)
 		stream.u8(self.group_num)
@@ -73,7 +73,7 @@ class RankingRankData(common.Structure):
 		self.common_data = None
 		self.update_time = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['pid', 'unique_id', 'rank', 'category', 'score', 'groups', 'param', 'common_data']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
@@ -82,7 +82,7 @@ class RankingRankData(common.Structure):
 				if getattr(self, field) is None:
 					raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.pid = stream.pid()
 		self.unique_id = stream.u64()
 		self.rank = stream.u32()
@@ -94,8 +94,8 @@ class RankingRankData(common.Structure):
 		if stream.settings["nex.version"] >= 40000:
 			self.update_time = stream.datetime()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.pid(self.pid)
 		stream.u64(self.unique_id)
 		stream.u32(self.rank)
@@ -115,18 +115,18 @@ class RankingResult(common.Structure):
 		self.total = None
 		self.since_time = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['data', 'total', 'since_time']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.data = stream.list(RankingRankData)
 		self.total = stream.u32()
 		self.since_time = stream.datetime()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.list(self.data, stream.add)
 		stream.u32(self.total)
 		stream.datetime(self.since_time)
@@ -139,18 +139,18 @@ class RankingCachedResult(RankingResult):
 		self.expired_time = None
 		self.max_length = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['created_time', 'expired_time', 'max_length']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.created_time = stream.datetime()
 		self.expired_time = stream.datetime()
 		self.max_length = stream.u8()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.datetime(self.created_time)
 		stream.datetime(self.expired_time)
 		stream.u8(self.max_length)
@@ -162,16 +162,16 @@ class RankingStats(common.Structure):
 		super().__init__()
 		self.stats = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['stats']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.stats = stream.list(stream.double)
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.list(self.stats, stream.double)
 
 
@@ -185,12 +185,12 @@ class RankingScoreData(common.Structure):
 		self.groups = None
 		self.param = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['category', 'score', 'order', 'update_mode', 'groups', 'param']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.category = stream.u32()
 		self.score = stream.u32()
 		self.order = stream.u8()
@@ -198,8 +198,8 @@ class RankingScoreData(common.Structure):
 		self.groups = stream.list(stream.u8)
 		self.param = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u32(self.category)
 		stream.u32(self.score)
 		stream.u8(self.order)
@@ -215,18 +215,18 @@ class RankingChangeAttributesParam(common.Structure):
 		self.groups = None
 		self.param = None
 	
-	def check_required(self, settings):
+	def check_required(self, settings, version):
 		for field in ['flags', 'groups', 'param']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
-	def load(self, stream):
+	def load(self, stream, version):
 		self.flags = stream.u8()
 		self.groups = stream.list(stream.u8)
 		self.param = stream.u64()
 	
-	def save(self, stream):
-		self.check_required(stream.settings)
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
 		stream.u8(self.flags)
 		stream.list(self.groups, stream.u8)
 		stream.u64(self.param)

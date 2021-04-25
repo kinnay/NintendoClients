@@ -1539,6 +1539,8 @@ The following fields are defined in this class:<br>
 <code>unk5: int</code><br>
 <code>one_screen_thumbnail: [EventCourseThumbnail](#eventcoursethumbnail) = [EventCourseThumbnail](#eventcoursethumbnail)()</code><br>
 <code>entire_thumbnail: [EventCourseThumbnail](#eventcoursethumbnail) = [EventCourseThumbnail](#eventcoursethumbnail)()</code><br>
+If `revision` >= 1:<br>
+<span class="docs">
 <code>end_time: [DateTime](../common#datetime)</code><br>
 <code>unk6: int</code><br>
 <code>unk7: int</code><br>
@@ -1548,6 +1550,7 @@ The following fields are defined in this class:<br>
 <code>unk10: int</code><br>
 <code>medal_time: int</code><br>
 <code>personal_ghost: [RelationObjectReqGetInfo](#relationobjectreqgetinfo) = [RelationObjectReqGetInfo](#relationobjectreqgetinfo)()</code><br>
+</span><br>
 </span><br>
 
 ## EventCourseStatusInfo
@@ -1814,12 +1817,21 @@ The following fields are defined in this class:<br>
 <code>badges: list[[BadgeInfo](#badgeinfo)]</code><br>
 <code>unk8: dict[int, int]</code><br>
 <code>unk9: dict[int, int]</code><br>
+If `revision` >= 1:<br>
+<span class="docs">
 <code>unk10: bool</code><br>
 <code>unk11: [DateTime](../common#datetime)</code><br>
 <code>unk12: bool</code><br>
+</span><br>
+If `revision` >= 2:<br>
+<span class="docs">
 <code>unk13: [UnknownStruct3](#unknownstruct3) = [UnknownStruct3](#unknownstruct3)()</code><br>
+</span><br>
+If `revision` >= 3:<br>
+<span class="docs">
 <code>unk14: str</code><br>
 <code>unk15: dict[int, int]</code><br>
 <code>unk16: bool</code><br>
+</span><br>
 </span><br>
 

@@ -38,7 +38,7 @@ struct RankingRankData {
 	uint64 param;
 	buffer common_data;
 	
-	[nex.version >= 40000] {
+	nex 40000 {
 		datetime update_time;
 	}
 }

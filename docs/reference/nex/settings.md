@@ -107,8 +107,3 @@ This is only relevant for `prudp v1` and `lite`.</span>
 <span class="docs">The version of the key derivation algorithm for kerberos tickets.</span><br>
 <code>kerberos.ticket_version: int = 1</code><br>
 <span class="docs">The version of the internal data in kerberos tickets.
-
-<code>debug.check_struct_version: int = 1</code><br>
-<span class="docs">Checks if the version number in received structures match the expected version.</span><br>
-<code>debug.check_struct_size: int = 1</code><br>
-<span class="docs">Checks if received structures are parsed completely. If this check is disabled, the remaining data is ignored.</span>
