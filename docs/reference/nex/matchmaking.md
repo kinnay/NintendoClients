@@ -93,7 +93,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def get_participants**(gid: int) -> list[int]</code><br>
 <span class="docs">Calls method `13` on the server.</span>
 
-<code>**async def add_partitipants**(gid: int, pids: list[int], message: str) -> bool</code><br>
+<code>**async def add_participants**(gid: int, pids: list[int], message: str) -> bool</code><br>
 <span class="docs">Calls method `14` on the server.</span>
 
 <code>**async def get_detailed_participants**(gid: int) -> list[[ParticipantDetails](#participantdetails)]</code><br>
@@ -471,7 +471,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def get_participants**(client: [RMCClient](../rmc#rmcclient), gid: int) -> list[int]</code><br>
 <span class="docs">Handler for method `13`. This method should be overridden by a subclass.</span>
 
-<code>**async def add_partitipants**(client: [RMCClient](../rmc#rmcclient), gid: int, pids: list[int], message: str) -> bool</code><br>
+<code>**async def add_participants**(client: [RMCClient](../rmc#rmcclient), gid: int, pids: list[int], message: str) -> bool</code><br>
 <span class="docs">Handler for method `14`. This method should be overridden by a subclass.</span>
 
 <code>**async def get_detailed_participants**(client: [RMCClient](../rmc#rmcclient), gid: int) -> list[[ParticipantDetails](#participantdetails)]</code><br>

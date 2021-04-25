@@ -709,7 +709,7 @@ class MatchMakingProtocol:
 	METHOD_PARTICIPATE = 11
 	METHOD_CANCEL_PARTICIPATION = 12
 	METHOD_GET_PARTICIPANTS = 13
-	METHOD_ADD_PARTITIPANTS = 14
+	METHOD_ADD_PARTICIPANTS = 14
 	METHOD_GET_DETAILED_PARTICIPANTS = 15
 	METHOD_GET_PARTICIPANTS_URLS = 16
 	METHOD_FIND_BY_TYPE = 17
@@ -1037,21 +1037,21 @@ class MatchMakingClient(MatchMakingProtocol):
 		logger.info("MatchMakingClient.get_participants -> done")
 		return participants
 	
-	async def add_partitipants(self, gid, pids, message):
-		logger.info("MatchMakingClient.add_partitipants()")
+	async def add_participants(self, gid, pids, message):
+		logger.info("MatchMakingClient.add_participants()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.u32(gid)
 		stream.list(pids, stream.pid)
 		stream.string(message)
-		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_ADD_PARTITIPANTS, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_ADD_PARTICIPANTS, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
 		result = stream.bool()
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("MatchMakingClient.add_partitipants -> done")
+		logger.info("MatchMakingClient.add_participants -> done")
 		return result
 	
 	async def get_detailed_participants(self, gid):
@@ -2452,7 +2452,7 @@ class MatchMakingServer(MatchMakingProtocol):
 			self.METHOD_PARTICIPATE: self.handle_participate,
 			self.METHOD_CANCEL_PARTICIPATION: self.handle_cancel_participation,
 			self.METHOD_GET_PARTICIPANTS: self.handle_get_participants,
-			self.METHOD_ADD_PARTITIPANTS: self.handle_add_partitipants,
+			self.METHOD_ADD_PARTICIPANTS: self.handle_add_participants,
 			self.METHOD_GET_DETAILED_PARTICIPANTS: self.handle_get_detailed_participants,
 			self.METHOD_GET_PARTICIPANTS_URLS: self.handle_get_participants_urls,
 			self.METHOD_FIND_BY_TYPE: self.handle_find_by_type,
@@ -2645,13 +2645,13 @@ class MatchMakingServer(MatchMakingProtocol):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.pid)
 	
-	async def handle_add_partitipants(self, client, input, output):
-		logger.info("MatchMakingServer.add_partitipants()")
+	async def handle_add_participants(self, client, input, output):
+		logger.info("MatchMakingServer.add_participants()")
 		#--- request ---
 		gid = input.u32()
 		pids = input.list(input.pid)
 		message = input.string()
-		response = await self.add_partitipants(client, gid, pids, message)
+		response = await self.add_participants(client, gid, pids, message)
 		
 		#--- response ---
 		if not isinstance(response, bool):
@@ -3055,8 +3055,8 @@ class MatchMakingServer(MatchMakingProtocol):
 		logger.warning("MatchMakingServer.get_participants not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	async def add_partitipants(self, *args):
-		logger.warning("MatchMakingServer.add_partitipants not implemented")
+	async def add_participants(self, *args):
+		logger.warning("MatchMakingServer.add_participants not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_detailed_participants(self, *args):

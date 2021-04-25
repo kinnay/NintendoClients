@@ -258,7 +258,7 @@ protocol MatchMaking : 21 {
 		list<pid> participants;
 	}
 	
-	method add_partitipants(uint32 gid, list<pid> pids, string message) {
+	method add_participants(uint32 gid, list<pid> pids, string message) {
 		bool result;
 	}
 	
