@@ -16,8 +16,8 @@ class Gathering(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.id = 0
-		self.owner_pid = 0
-		self.host_pid = 0
+		self.owner = 0
+		self.host = 0
 		self.min_participants = 0
 		self.max_participants = 0
 		self.participation_policy = 1
@@ -31,8 +31,8 @@ class Gathering(common.Structure):
 	
 	def load(self, stream, version):
 		self.id = stream.u32()
-		self.owner_pid = stream.pid()
-		self.host_pid = stream.pid()
+		self.owner = stream.pid()
+		self.host = stream.pid()
 		self.min_participants = stream.u16()
 		self.max_participants = stream.u16()
 		self.participation_policy = stream.u32()
@@ -44,8 +44,8 @@ class Gathering(common.Structure):
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
 		stream.u32(self.id)
-		stream.pid(self.owner_pid)
-		stream.pid(self.host_pid)
+		stream.pid(self.owner)
+		stream.pid(self.host)
 		stream.u16(self.min_participants)
 		stream.u16(self.max_participants)
 		stream.u32(self.participation_policy)

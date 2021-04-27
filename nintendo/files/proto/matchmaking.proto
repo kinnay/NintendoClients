@@ -6,8 +6,8 @@ enum MatchmakeSystem {
 
 struct Gathering {
 	uint32 id = 0;
-	pid owner_pid = 0;
-	pid host_pid = 0;
+	pid owner = 0;
+	pid host = 0;
 	uint16 min_participants = 0;
 	uint16 max_participants = 0;
 	uint32 participation_policy = 1;

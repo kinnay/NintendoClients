@@ -889,8 +889,8 @@ The following fields are defined in this class:<br>
 The following fields are defined in this class:<br>
 <span class="docs">
 <code>id: int = 0</code><br>
-<code>owner_pid: int = 0</code><br>
-<code>host_pid: int = 0</code><br>
+<code>owner: int = 0</code><br>
+<code>host: int = 0</code><br>
 <code>min_participants: int = 0</code><br>
 <code>max_participants: int = 0</code><br>
 <code>participation_policy: int = 1</code><br>
