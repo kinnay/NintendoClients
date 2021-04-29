@@ -1,7 +1,7 @@
 
 struct UniqueIdInfo {
-	uint64 unique_id;
-	uint64 password;
+	uint64 unique_id = 0;
+	uint64 password = 0;
 }
 
 protocol Utility : 110 {

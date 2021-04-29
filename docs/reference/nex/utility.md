@@ -76,7 +76,7 @@ Provides a client and server for the `UtilityProtocol`. This page was generated 
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unique_id: int</code><br>
-<code>password: int</code><br>
+<code>unique_id: int = 0</code><br>
+<code>password: int = 0</code><br>
 </span><br>
 

@@ -10,13 +10,11 @@ logger = logging.getLogger(__name__)
 class UniqueIdInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.unique_id = None
-		self.password = None
+		self.unique_id = 0
+		self.password = 0
 	
 	def check_required(self, settings, version):
-		for field in ['unique_id', 'password']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
+		pass
 	
 	def load(self, stream, version):
 		self.unique_id = stream.u64()
