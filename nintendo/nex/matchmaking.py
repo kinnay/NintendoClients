@@ -1027,7 +1027,7 @@ class MatchmakeRefereeProtocol:
 	METHOD_START_ROUND = 1
 	METHOD_GET_START_ROUND_PARAM = 2
 	METHOD_END_ROUND = 3
-	METHOD_END_ROUND_WITH_REPORT = 4
+	METHOD_END_ROUND_WITHOUT_REPORT = 4
 	METHOD_GET_ROUND_PARTICIPANTS = 5
 	METHOD_GET_NOT_SUMMARIZED_ROUND = 6
 	METHOD_GET_ROUND = 7
@@ -2688,18 +2688,18 @@ class MatchmakeRefereeClient(MatchmakeRefereeProtocol):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MatchmakeRefereeClient.end_round -> done")
 	
-	async def end_round_with_report(self, round_id):
-		logger.info("MatchmakeRefereeClient.end_round_with_report()")
+	async def end_round_without_report(self, round_id):
+		logger.info("MatchmakeRefereeClient.end_round_without_report()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.u64(round_id)
-		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_END_ROUND_WITH_REPORT, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_END_ROUND_WITHOUT_REPORT, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("MatchmakeRefereeClient.end_round_with_report -> done")
+		logger.info("MatchmakeRefereeClient.end_round_without_report -> done")
 	
 	async def get_round_participants(self, round_id):
 		logger.info("MatchmakeRefereeClient.get_round_participants()")
@@ -4515,7 +4515,7 @@ class MatchmakeRefereeServer(MatchmakeRefereeProtocol):
 			self.METHOD_START_ROUND: self.handle_start_round,
 			self.METHOD_GET_START_ROUND_PARAM: self.handle_get_start_round_param,
 			self.METHOD_END_ROUND: self.handle_end_round,
-			self.METHOD_END_ROUND_WITH_REPORT: self.handle_end_round_with_report,
+			self.METHOD_END_ROUND_WITHOUT_REPORT: self.handle_end_round_without_report,
 			self.METHOD_GET_ROUND_PARTICIPANTS: self.handle_get_round_participants,
 			self.METHOD_GET_NOT_SUMMARIZED_ROUND: self.handle_get_not_summarized_round,
 			self.METHOD_GET_ROUND: self.handle_get_round,
@@ -4565,11 +4565,11 @@ class MatchmakeRefereeServer(MatchmakeRefereeProtocol):
 		param = input.extract(MatchmakeRefereeEndRoundParam)
 		await self.end_round(client, param)
 	
-	async def handle_end_round_with_report(self, client, input, output):
-		logger.info("MatchmakeRefereeServer.end_round_with_report()")
+	async def handle_end_round_without_report(self, client, input, output):
+		logger.info("MatchmakeRefereeServer.end_round_without_report()")
 		#--- request ---
 		round_id = input.u64()
-		await self.end_round_with_report(client, round_id)
+		await self.end_round_without_report(client, round_id)
 	
 	async def handle_get_round_participants(self, client, input, output):
 		logger.info("MatchmakeRefereeServer.get_round_participants()")
@@ -4679,8 +4679,8 @@ class MatchmakeRefereeServer(MatchmakeRefereeProtocol):
 		logger.warning("MatchmakeRefereeServer.end_round not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	async def end_round_with_report(self, *args):
-		logger.warning("MatchmakeRefereeServer.end_round_with_report not implemented")
+	async def end_round_without_report(self, *args):
+		logger.warning("MatchmakeRefereeServer.end_round_without_report not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_round_participants(self, *args):

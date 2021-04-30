@@ -642,7 +642,7 @@ protocol MatchmakeReferee : 120 {
 	}
 	
 	method end_round(MatchmakeRefereeEndRoundParam param) {}
-	method end_round_with_report(uint64 round_id) {}
+	method end_round_without_report(uint64 round_id) {}
 	
 	method get_round_participants(uint64 round_id) {
 		list<pid> pids;

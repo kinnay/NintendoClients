@@ -441,7 +441,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def end_round**(param: [MatchmakeRefereeEndRoundParam](#matchmakerefereeendroundparam)) -> None</code><br>
 <span class="docs">Calls method `3` on the server.</span>
 
-<code>**async def end_round_with_report**(round_id: int) -> None</code><br>
+<code>**async def end_round_without_report**(round_id: int) -> None</code><br>
 <span class="docs">Calls method `4` on the server.</span>
 
 <code>**async def get_round_participants**(round_id: int) -> list[int]</code><br>
@@ -872,7 +872,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def end_round**(client: [RMCClient](../rmc#rmcclient), param: [MatchmakeRefereeEndRoundParam](#matchmakerefereeendroundparam)) -> None</code><br>
 <span class="docs">Handler for method `3`. This method should be overridden by a subclass.</span>
 
-<code>**async def end_round_with_report**(client: [RMCClient](../rmc#rmcclient), round_id: int) -> None</code><br>
+<code>**async def end_round_without_report**(client: [RMCClient](../rmc#rmcclient), round_id: int) -> None</code><br>
 <span class="docs">Handler for method `4`. This method should be overridden by a subclass.</span>
 
 <code>**async def get_round_participants**(client: [RMCClient](../rmc#rmcclient), round_id: int) -> list[int]</code><br>
