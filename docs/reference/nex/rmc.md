@@ -19,8 +19,8 @@ Provides a client and server for the RMC protocol. An alternative client that ca
 <span class="docs">Creates an RMC server on top of the given transport server. If `key` is provided it is used to decrypt the Kerberos tickets in connection requests. If `key` is `None`, the payload of connection requests is ignored and all client connections are accepted. `servers` must be a list of service implementations.</span>
 
 ## RMCClient
-<code>**async def request**(protocol: int, method: int, body: bytes) -> bytes</code><br>
-<span class="docs">Performs a remote method call. Blocks until the RMC is complete. Returns the body of the RMC response on success. Raises [`RMCError`](../common#rmcerror) if the server returns an error code.</span>
+<code>**async def request**(protocol: int, method: int, body: bytes, noresponse: bool = False) -> bytes</code><br>
+<span class="docs">Performs a remote method call. Blocks until the RMC is complete. Returns the body of the RMC response on success. Raises [`RMCError`](../common#rmcerror) if the server returns an error code.<br><br>If `noresponse` is `True`, this method does not wait for a response and returns `None` immediately.</span>
 
 <code>**def pid**() -> int</code><br>
 <span class="docs">Returns the user id of the connected client. Returns `None` if the client is connected without credentials.</span>

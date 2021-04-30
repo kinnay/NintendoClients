@@ -61,6 +61,8 @@ class NotificationEvent(common.Structure):
 
 
 class NotificationProtocol:
+	NORESPONSE = True
+	
 	METHOD_PROCESS_NOTIFICATION_EVENT = 1
 	
 	PROTOCOL_ID = 0xE
@@ -76,7 +78,7 @@ class NotificationClient(NotificationProtocol):
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(event)
-		await self.client.request(self.PROTOCOL_ID, self.METHOD_PROCESS_NOTIFICATION_EVENT, stream.get(), False)
+		await self.client.request(self.PROTOCOL_ID, self.METHOD_PROCESS_NOTIFICATION_EVENT, stream.get(), True)
 
 
 class NotificationServer(NotificationProtocol):

@@ -215,6 +215,8 @@ common.DataHolder.register(NintendoNotificationEventProfile, "NintendoNotificati
 
 
 class NintendoNotificationProtocol:
+	NORESPONSE = True
+	
 	METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT = 1
 	METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT_ALT = 2
 	
@@ -231,14 +233,14 @@ class NintendoNotificationClient(NintendoNotificationProtocol):
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(event)
-		await self.client.request(self.PROTOCOL_ID, self.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT, stream.get(), False)
+		await self.client.request(self.PROTOCOL_ID, self.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT, stream.get(), True)
 	
 	async def process_nintendo_notification_event_alt(self, event):
 		logger.info("NintendoNotificationClient.process_nintendo_notification_event_alt()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(event)
-		await self.client.request(self.PROTOCOL_ID, self.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT_ALT, stream.get(), False)
+		await self.client.request(self.PROTOCOL_ID, self.METHOD_PROCESS_NINTENDO_NOTIFICATION_EVENT_ALT, stream.get(), True)
 
 
 class NintendoNotificationServer(NintendoNotificationProtocol):

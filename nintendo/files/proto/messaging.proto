@@ -56,5 +56,7 @@ protocol Messaging : 23 {
 }
 
 protocol MessageDelivery : 27 {
-	method deliver_message(anydata message) NORESPONSE;
+	set noresponse;
+	
+	method deliver_message(anydata message) {}
 }

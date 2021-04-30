@@ -18,5 +18,7 @@ struct NotificationEvent {
 }
 
 protocol Notification : 14 {
-	method process_notification_event(NotificationEvent event) NORESPONSE;
+	set noresponse;
+	
+	method process_notification_event(NotificationEvent event) {}
 }

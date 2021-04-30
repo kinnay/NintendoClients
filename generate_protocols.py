@@ -28,7 +28,7 @@ SPECIAL_CHARS = "{}()[]<>:;,.=!#"
 
 RESERVED_WORDS = [
 	"import", "protocol", "method", "struct", "enum",
-	"nex", "revision"
+	"nex", "revision", "set"
 ]
 			
 CHAR_EOF = "EOF"
@@ -233,6 +233,10 @@ class File:
 		
 		self.scope = Scope()
 	
+	def check_protocols(self):
+		for proto in self.protocols.values():
+			proto.check()
+	
 	def sort_protocols(self):
 		for proto in self.protocols.values():
 			proto.sort()
@@ -273,6 +277,7 @@ class Protocol:
 	id = None
 	name = None
 	overridden = False
+	noresponse = False
 	
 	def __init__(self):
 		self.methods = {}
@@ -281,7 +286,11 @@ class Protocol:
 		
 	def sort(self):
 		self.methods = {k: v for k, v in sorted(self.methods.items())}
-		
+	
+	def check(self):
+		if self.noresponse and any(method.response.vars for method in self.methods.values()):
+			raise ValueError("%s is marked noresponse but at least one method returns a non-empty response" %self.name)
+	
 	def add_method(self, method):
 		if self.scope.add(method.name):
 			raise ValueError("%s is already defined in %s" %(method.name, self.name))
@@ -304,7 +313,6 @@ class Method:
 	request = None
 	response = None
 	supported = None
-	noresponse = False
 		
 		
 class VariableList:
@@ -462,6 +470,11 @@ class Parser:
 				break
 			elif token.type == TYPE_RESERVED:
 				if token.value == "method": protocol.add_method(self.parse_method(stream))
+				elif token.value == "set":
+					stream.skip_reserved("set")
+					stream.skip_name("noresponse")
+					stream.skip_symbol(";")
+					protocol.noresponse = True
 				else:
 					stream.error(token)
 			else:
@@ -492,15 +505,8 @@ class Parser:
 		if token.value == "(":
 			method.request = self.parse_parameter_list(stream)
 			
-			token = stream.read()
-			if token.type == TYPE_NAME and token.value == "NORESPONSE":
-				method.response = VariableList()
-				method.noresponse = True
-				stream.skip_symbol(";")
-			elif token.type == TYPE_SYMBOL and token.value == "{":
-				method.response = self.parse_variable_list(stream)
-			else:
-				stream.error(token)
+			stream.skip_symbol("{")
+			method.response = self.parse_variable_list(stream)
 			
 			method.supported = True
 		elif token.value == ";":
@@ -750,6 +756,7 @@ def make_class_name(name, type):
 class CodeGenerator:
 	def process(self, file):
 		self.file = file
+		self.file.check_protocols()
 		self.file.sort_protocols()
 		
 		stream = CodeStream()
@@ -933,6 +940,10 @@ class CodeGenerator:
 		stream.write_line("class %s:" %name)
 		stream.indent()
 		
+		if proto.noresponse:
+			stream.write_line("NORESPONSE = True")
+			stream.write_line()
+		
 		for method in proto.methods.values():
 			stream.write_line("METHOD_%s = %i" %(method.name.upper(), method.id))
 		stream.write_line()
@@ -979,8 +990,8 @@ class CodeGenerator:
 		for param in method.request.vars:
 			stream.write_line(self.make_encode(param.type, param.name))
 		
-		if method.noresponse:
-			stream.write_line("await self.client.request(self.PROTOCOL_ID, self.METHOD_%s, stream.get(), False)" %method.name.upper())
+		if proto.noresponse:
+			stream.write_line("await self.client.request(self.PROTOCOL_ID, self.METHOD_%s, stream.get(), True)" %method.name.upper())
 		else:
 			stream.write_line("data = await self.client.request(self.PROTOCOL_ID, self.METHOD_%s, stream.get())" %method.name.upper())
 			

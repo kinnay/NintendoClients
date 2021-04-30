@@ -125,6 +125,8 @@ class MessagingProtocol:
 
 
 class MessageDeliveryProtocol:
+	NORESPONSE = True
+	
 	METHOD_DELIVER_MESSAGE = 1
 	
 	PROTOCOL_ID = 0x1B
@@ -257,7 +259,7 @@ class MessageDeliveryClient(MessageDeliveryProtocol):
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.anydata(message)
-		await self.client.request(self.PROTOCOL_ID, self.METHOD_DELIVER_MESSAGE, stream.get(), False)
+		await self.client.request(self.PROTOCOL_ID, self.METHOD_DELIVER_MESSAGE, stream.get(), True)
 
 
 class MessagingServer(MessagingProtocol):

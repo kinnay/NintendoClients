@@ -210,6 +210,9 @@ class RMCClient:
 						raise
 				
 				result = common.Result.error("PythonCore::Exception")
+			
+			if getattr(self.servers[request.protocol], "NORESPONSE", False):
+				return
 		else:
 			logger.warning("Received RMC request with unimplemented protocol id: %i", request.protocol)
 			result = common.Result.error("Core::NotImplemented")
@@ -226,21 +229,21 @@ class RMCClient:
 			)
 		await self.client.send(response.encode())
 	
-	async def request(self, protocol, method, body, respond=True):
+	async def request(self, protocol, method, body, noresponse=False):
 		if self.closed:
 			raise RuntimeError("RMC connection is closed")
 		
 		call_id = self.call_id
 		self.call_id = (self.call_id + 1) & 0xFFFFFFFF
 		
-		if respond:
+		if not noresponse:
 			event = anyio.create_event()
 			self.requests[call_id] = event
 		
 		message = RMCMessage.request(self.settings, protocol, method, call_id, body)
 		await self.client.send(message.encode())
 		
-		if respond:
+		if not noresponse:
 			await event.wait()
 			
 			if self.closed:
