@@ -41,6 +41,13 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**class** [JoinMatchmakeSessionParam](#joinmatchmakesessionparam)([Structure](../common))</code><br>
 <code>**class** [MatchmakeBlockListParam](#matchmakeblocklistparam)([Structure](../common))</code><br>
 <code>**class** [MatchmakeParam](#matchmakeparam)([Structure](../common))</code><br>
+<code>**class** [MatchmakeRefereeEndRoundParam](#matchmakerefereeendroundparam)([Structure](../common))</code><br>
+<code>**class** [MatchmakeRefereePersonalRoundResult](#matchmakerefereepersonalroundresult)([Structure](../common))</code><br>
+<code>**class** [MatchmakeRefereeRound](#matchmakerefereeround)([Structure](../common))</code><br>
+<code>**class** [MatchmakeRefereeStartRoundParam](#matchmakerefereestartroundparam)([Structure](../common))</code><br>
+<code>**class** [MatchmakeRefereeStats](#matchmakerefereestats)([Structure](../common))</code><br>
+<code>**class** [MatchmakeRefereeStatsInitParam](#matchmakerefereestatsinitparam)([Structure](../common))</code><br>
+<code>**class** [MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)([Structure](../common))</code><br>
 <code>**class** [MatchmakeSession](#matchmakesession)([Gathering](#gathering))</code><br>
 <code>**class** [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)([Structure](../common))</code><br>
 <code>**class** [ParticipantDetails](#participantdetails)([Structure](../common))</code><br>
@@ -424,6 +431,50 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 ## MatchmakeRefereeClient
 <code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
 <span class="docs">Creates a new [`MatchmakeRefereeClient`](#matchmakerefereeclient).</span>
+
+<code>**async def start_round**(param: [MatchmakeRefereeStartRoundParam](#matchmakerefereestartroundparam)) -> int</code><br>
+<span class="docs">Calls method `1` on the server.</span>
+
+<code>**async def get_start_round_param**(round_id: int) -> [MatchmakeRefereeStartRoundParam](#matchmakerefereestartroundparam)</code><br>
+<span class="docs">Calls method `2` on the server.</span>
+
+<code>**async def end_round**(param: [MatchmakeRefereeEndRoundParam](#matchmakerefereeendroundparam)) -> None</code><br>
+<span class="docs">Calls method `3` on the server.</span>
+
+<code>**async def end_round_with_report**(round_id: int) -> None</code><br>
+<span class="docs">Calls method `4` on the server.</span>
+
+<code>**async def get_round_participants**(round_id: int) -> list[int]</code><br>
+<span class="docs">Calls method `5` on the server.</span>
+
+<code>**async def get_not_summarized_round**() -> list[[MatchmakeRefereeRound](#matchmakerefereeround)]</code><br>
+<span class="docs">Calls method `6` on the server.</span>
+
+<code>**async def get_round**(round: int) -> [MatchmakeRefereeRound](#matchmakerefereeround)</code><br>
+<span class="docs">Calls method `7` on the server.</span>
+
+<code>**async def get_stats_primary**(target: [MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)) -> [MatchmakeRefereeStats](#matchmakerefereestats)</code><br>
+<span class="docs">Calls method `8` on the server.</span>
+
+<code>**async def get_stats_primaries**(targets: list[[MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)]) -> [RMCResponse](../common)</code><br>
+<span class="docs">Calls method `9` on the server. The RMC response has the following attributes:<br>
+<span class="docs">
+<code>stats: list[[MatchmakeRefereeStats](#matchmakerefereestats)]</code><br>
+<code>results: list[[Result](../common#result)]</code><br>
+</span>
+</span>
+
+<code>**async def get_stats_all**(target: [MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)) -> list[[MatchmakeRefereeStats](#matchmakerefereestats)]</code><br>
+<span class="docs">Calls method `10` on the server.</span>
+
+<code>**async def create_stats**(param: [MatchmakeRefereeStatsInitParam](#matchmakerefereestatsinitparam)) -> [MatchmakeRefereeStats](#matchmakerefereestats)</code><br>
+<span class="docs">Calls method `11` on the server.</span>
+
+<code>**async def get_or_create_stats**(param: [MatchmakeRefereeStatsInitParam](#matchmakerefereestatsinitparam)) -> [MatchmakeRefereeStats](#matchmakerefereestats)</code><br>
+<span class="docs">Calls method `12` on the server.</span>
+
+<code>**async def reset_stats**() -> None</code><br>
+<span class="docs">Calls method `13` on the server.</span>
 
 ## MatchMakingServer
 <code>**def _\_init__**()</code><br>
@@ -812,6 +863,50 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
 <span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
+<code>**async def start_round**(client: [RMCClient](../rmc#rmcclient), param: [MatchmakeRefereeStartRoundParam](#matchmakerefereestartroundparam)) -> int</code><br>
+<span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
+
+<code>**async def get_start_round_param**(client: [RMCClient](../rmc#rmcclient), round_id: int) -> [MatchmakeRefereeStartRoundParam](#matchmakerefereestartroundparam)</code><br>
+<span class="docs">Handler for method `2`. This method should be overridden by a subclass.</span>
+
+<code>**async def end_round**(client: [RMCClient](../rmc#rmcclient), param: [MatchmakeRefereeEndRoundParam](#matchmakerefereeendroundparam)) -> None</code><br>
+<span class="docs">Handler for method `3`. This method should be overridden by a subclass.</span>
+
+<code>**async def end_round_with_report**(client: [RMCClient](../rmc#rmcclient), round_id: int) -> None</code><br>
+<span class="docs">Handler for method `4`. This method should be overridden by a subclass.</span>
+
+<code>**async def get_round_participants**(client: [RMCClient](../rmc#rmcclient), round_id: int) -> list[int]</code><br>
+<span class="docs">Handler for method `5`. This method should be overridden by a subclass.</span>
+
+<code>**async def get_not_summarized_round**(client: [RMCClient](../rmc#rmcclient)) -> list[[MatchmakeRefereeRound](#matchmakerefereeround)]</code><br>
+<span class="docs">Handler for method `6`. This method should be overridden by a subclass.</span>
+
+<code>**async def get_round**(client: [RMCClient](../rmc#rmcclient), round: int) -> [MatchmakeRefereeRound](#matchmakerefereeround)</code><br>
+<span class="docs">Handler for method `7`. This method should be overridden by a subclass.</span>
+
+<code>**async def get_stats_primary**(client: [RMCClient](../rmc#rmcclient), target: [MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)) -> [MatchmakeRefereeStats](#matchmakerefereestats)</code><br>
+<span class="docs">Handler for method `8`. This method should be overridden by a subclass.</span>
+
+<code>**async def get_stats_primaries**(client: [RMCClient](../rmc#rmcclient), targets: list[[MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)]) -> [RMCResponse](../common)</code><br>
+<span class="docs">Handler for method `9`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
+<span class="docs">
+<code>stats: list[[MatchmakeRefereeStats](#matchmakerefereestats)]</code><br>
+<code>results: list[[Result](../common#result)]</code><br>
+</span>
+</span>
+
+<code>**async def get_stats_all**(client: [RMCClient](../rmc#rmcclient), target: [MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)) -> list[[MatchmakeRefereeStats](#matchmakerefereestats)]</code><br>
+<span class="docs">Handler for method `10`. This method should be overridden by a subclass.</span>
+
+<code>**async def create_stats**(client: [RMCClient](../rmc#rmcclient), param: [MatchmakeRefereeStatsInitParam](#matchmakerefereestatsinitparam)) -> [MatchmakeRefereeStats](#matchmakerefereestats)</code><br>
+<span class="docs">Handler for method `11`. This method should be overridden by a subclass.</span>
+
+<code>**async def get_or_create_stats**(client: [RMCClient](../rmc#rmcclient), param: [MatchmakeRefereeStatsInitParam](#matchmakerefereestatsinitparam)) -> [MatchmakeRefereeStats](#matchmakerefereestats)</code><br>
+<span class="docs">Handler for method `12`. This method should be overridden by a subclass.</span>
+
+<code>**async def reset_stats**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<span class="docs">Handler for method `13`. This method should be overridden by a subclass.</span>
+
 ## MatchmakeSystem
 This class defines the following constants:<br>
 <span class="docs">
@@ -967,6 +1062,97 @@ The following fields are defined in this class:<br>
 The following fields are defined in this class:<br>
 <span class="docs">
 <code>param: dict[str, object] = {}</code><br>
+</span><br>
+
+## MatchmakeRefereeEndRoundParam
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `MatchmakeRefereeEndRoundParam` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>id: int</code><br>
+<code>results: list[[MatchmakeRefereePersonalRoundResult](#matchmakerefereepersonalroundresult)]</code><br>
+</span><br>
+
+## MatchmakeRefereePersonalRoundResult
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `MatchmakeRefereePersonalRoundResult` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>pid: int</code><br>
+<code>personal_round_result_flag: int</code><br>
+<code>round_win_loss: int</code><br>
+<code>rating_change: int</code><br>
+<code>buffer: bytes</code><br>
+</span><br>
+
+## MatchmakeRefereeRound
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `MatchmakeRefereeRound` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>id: int</code><br>
+<code>gid: int</code><br>
+<code>state: int</code><br>
+<code>personal_data_category: int</code><br>
+<code>results: list[[MatchmakeRefereePersonalRoundResult](#matchmakerefereepersonalroundresult)]</code><br>
+</span><br>
+
+## MatchmakeRefereeStartRoundParam
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `MatchmakeRefereeStartRoundParam` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>personal_data_category: int</code><br>
+<code>gid: int</code><br>
+<code>pids: list[int]</code><br>
+</span><br>
+
+## MatchmakeRefereeStats
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `MatchmakeRefereeStats` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>unique_id: int</code><br>
+<code>category: int</code><br>
+<code>pid: int</code><br>
+<code>recent_disconnection: int</code><br>
+<code>recent_violation: int</code><br>
+<code>recent_mismatch: int</code><br>
+<code>recent_win: int</code><br>
+<code>recent_loss: int</code><br>
+<code>recent_draw: int</code><br>
+<code>total_disconnect: int</code><br>
+<code>total_violation: int</code><br>
+<code>total_mismatch: int</code><br>
+<code>total_win: int</code><br>
+<code>total_loss: int</code><br>
+<code>total_draw: int</code><br>
+<code>rating_value: int</code><br>
+</span><br>
+
+## MatchmakeRefereeStatsInitParam
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `MatchmakeRefereeStatsInitParam` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>category: int</code><br>
+<code>initial_rating: int</code><br>
+</span><br>
+
+## MatchmakeRefereeStatsTarget
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `MatchmakeRefereeStatsTarget` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>pid: int</code><br>
+<code>category: int</code><br>
 </span><br>
 
 ## MatchmakeSession

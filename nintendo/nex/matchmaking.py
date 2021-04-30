@@ -695,6 +695,216 @@ class SimplePlayingSession(common.Structure):
 		stream.u32(self.attribute)
 
 
+class MatchmakeRefereeRound(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.id = None
+		self.gid = None
+		self.state = None
+		self.personal_data_category = None
+		self.results = None
+	
+	def check_required(self, settings, version):
+		for field in ['id', 'gid', 'state', 'personal_data_category', 'results']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.id = stream.u64()
+		self.gid = stream.u32()
+		self.state = stream.u32()
+		self.personal_data_category = stream.u32()
+		self.results = stream.list(MatchmakeRefereePersonalRoundResult)
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u64(self.id)
+		stream.u32(self.gid)
+		stream.u32(self.state)
+		stream.u32(self.personal_data_category)
+		stream.list(self.results, stream.add)
+
+
+class MatchmakeRefereeStartRoundParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.personal_data_category = None
+		self.gid = None
+		self.pids = None
+	
+	def check_required(self, settings, version):
+		for field in ['personal_data_category', 'gid', 'pids']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.personal_data_category = stream.u32()
+		self.gid = stream.u32()
+		self.pids = stream.list(stream.pid)
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u32(self.personal_data_category)
+		stream.u32(self.gid)
+		stream.list(self.pids, stream.pid)
+
+
+class MatchmakeRefereeEndRoundParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.id = None
+		self.results = None
+	
+	def check_required(self, settings, version):
+		for field in ['id', 'results']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.id = stream.u64()
+		self.results = stream.list(MatchmakeRefereePersonalRoundResult)
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u64(self.id)
+		stream.list(self.results, stream.add)
+
+
+class MatchmakeRefereePersonalRoundResult(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.pid = None
+		self.personal_round_result_flag = None
+		self.round_win_loss = None
+		self.rating_change = None
+		self.buffer = None
+	
+	def check_required(self, settings, version):
+		for field in ['pid', 'personal_round_result_flag', 'round_win_loss', 'rating_change', 'buffer']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.pid = stream.pid()
+		self.personal_round_result_flag = stream.u32()
+		self.round_win_loss = stream.u32()
+		self.rating_change = stream.s32()
+		self.buffer = stream.qbuffer()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.pid(self.pid)
+		stream.u32(self.personal_round_result_flag)
+		stream.u32(self.round_win_loss)
+		stream.s32(self.rating_change)
+		stream.qbuffer(self.buffer)
+
+
+class MatchmakeRefereeStats(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unique_id = None
+		self.category = None
+		self.pid = None
+		self.recent_disconnection = None
+		self.recent_violation = None
+		self.recent_mismatch = None
+		self.recent_win = None
+		self.recent_loss = None
+		self.recent_draw = None
+		self.total_disconnect = None
+		self.total_violation = None
+		self.total_mismatch = None
+		self.total_win = None
+		self.total_loss = None
+		self.total_draw = None
+		self.rating_value = None
+	
+	def check_required(self, settings, version):
+		for field in ['unique_id', 'category', 'pid', 'recent_disconnection', 'recent_violation', 'recent_mismatch', 'recent_win', 'recent_loss', 'recent_draw', 'total_disconnect', 'total_violation', 'total_mismatch', 'total_win', 'total_loss', 'total_draw', 'rating_value']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.unique_id = stream.u64()
+		self.category = stream.u32()
+		self.pid = stream.pid()
+		self.recent_disconnection = stream.u32()
+		self.recent_violation = stream.u32()
+		self.recent_mismatch = stream.u32()
+		self.recent_win = stream.u32()
+		self.recent_loss = stream.u32()
+		self.recent_draw = stream.u32()
+		self.total_disconnect = stream.u32()
+		self.total_violation = stream.u32()
+		self.total_mismatch = stream.u32()
+		self.total_win = stream.u32()
+		self.total_loss = stream.u32()
+		self.total_draw = stream.u32()
+		self.rating_value = stream.u32()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u64(self.unique_id)
+		stream.u32(self.category)
+		stream.pid(self.pid)
+		stream.u32(self.recent_disconnection)
+		stream.u32(self.recent_violation)
+		stream.u32(self.recent_mismatch)
+		stream.u32(self.recent_win)
+		stream.u32(self.recent_loss)
+		stream.u32(self.recent_draw)
+		stream.u32(self.total_disconnect)
+		stream.u32(self.total_violation)
+		stream.u32(self.total_mismatch)
+		stream.u32(self.total_win)
+		stream.u32(self.total_loss)
+		stream.u32(self.total_draw)
+		stream.u32(self.rating_value)
+
+
+class MatchmakeRefereeStatsTarget(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.pid = None
+		self.category = None
+	
+	def check_required(self, settings, version):
+		for field in ['pid', 'category']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.pid = stream.pid()
+		self.category = stream.u32()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.pid(self.pid)
+		stream.u32(self.category)
+
+
+class MatchmakeRefereeStatsInitParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.category = None
+		self.initial_rating = None
+	
+	def check_required(self, settings, version):
+		for field in ['category', 'initial_rating']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.category = stream.u32()
+		self.initial_rating = stream.u32()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u32(self.category)
+		stream.u32(self.initial_rating)
+
+
 class MatchMakingProtocol:
 	METHOD_REGISTER_GATHERING = 1
 	METHOD_UNREGISTER_GATHERING = 2
@@ -826,6 +1036,7 @@ class MatchmakeRefereeProtocol:
 	METHOD_GET_STATS_ALL = 10
 	METHOD_CREATE_STATS = 11
 	METHOD_GET_OR_CREATE_STATS = 12
+	METHOD_RESET_STATS = 13
 	
 	PROTOCOL_ID = 0x78
 
@@ -2434,6 +2645,194 @@ class MatchmakeRefereeClient(MatchmakeRefereeProtocol):
 		self.settings = client.settings
 		self.client = client
 	
+	async def start_round(self, param):
+		logger.info("MatchmakeRefereeClient.start_round()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_START_ROUND, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		round_id = stream.u64()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeRefereeClient.start_round -> done")
+		return round_id
+	
+	async def get_start_round_param(self, round_id):
+		logger.info("MatchmakeRefereeClient.get_start_round_param()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u64(round_id)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_START_ROUND_PARAM, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		param = stream.extract(MatchmakeRefereeStartRoundParam)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeRefereeClient.get_start_round_param -> done")
+		return param
+	
+	async def end_round(self, param):
+		logger.info("MatchmakeRefereeClient.end_round()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_END_ROUND, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeRefereeClient.end_round -> done")
+	
+	async def end_round_with_report(self, round_id):
+		logger.info("MatchmakeRefereeClient.end_round_with_report()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u64(round_id)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_END_ROUND_WITH_REPORT, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeRefereeClient.end_round_with_report -> done")
+	
+	async def get_round_participants(self, round_id):
+		logger.info("MatchmakeRefereeClient.get_round_participants()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u64(round_id)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_ROUND_PARTICIPANTS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		pids = stream.list(stream.pid)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeRefereeClient.get_round_participants -> done")
+		return pids
+	
+	async def get_not_summarized_round(self):
+		logger.info("MatchmakeRefereeClient.get_not_summarized_round()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_NOT_SUMMARIZED_ROUND, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		rounds = stream.list(MatchmakeRefereeRound)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeRefereeClient.get_not_summarized_round -> done")
+		return rounds
+	
+	async def get_round(self, round):
+		logger.info("MatchmakeRefereeClient.get_round()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u64(round)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_ROUND, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		round = stream.extract(MatchmakeRefereeRound)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeRefereeClient.get_round -> done")
+		return round
+	
+	async def get_stats_primary(self, target):
+		logger.info("MatchmakeRefereeClient.get_stats_primary()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(target)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_STATS_PRIMARY, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		stats = stream.extract(MatchmakeRefereeStats)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeRefereeClient.get_stats_primary -> done")
+		return stats
+	
+	async def get_stats_primaries(self, targets):
+		logger.info("MatchmakeRefereeClient.get_stats_primaries()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(targets, stream.add)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_STATS_PRIMARIES, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.stats = stream.list(MatchmakeRefereeStats)
+		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeRefereeClient.get_stats_primaries -> done")
+		return obj
+	
+	async def get_stats_all(self, target):
+		logger.info("MatchmakeRefereeClient.get_stats_all()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(target)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_STATS_ALL, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		stats = stream.list(MatchmakeRefereeStats)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeRefereeClient.get_stats_all -> done")
+		return stats
+	
+	async def create_stats(self, param):
+		logger.info("MatchmakeRefereeClient.create_stats()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_CREATE_STATS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		stats = stream.extract(MatchmakeRefereeStats)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeRefereeClient.create_stats -> done")
+		return stats
+	
+	async def get_or_create_stats(self, param):
+		logger.info("MatchmakeRefereeClient.get_or_create_stats()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_OR_CREATE_STATS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		stats = stream.extract(MatchmakeRefereeStats)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeRefereeClient.get_or_create_stats -> done")
+		return stats
+	
+	async def reset_stats(self):
+		logger.info("MatchmakeRefereeClient.reset_stats()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_RESET_STATS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeRefereeClient.reset_stats -> done")
 
 
 class MatchMakingServer(MatchMakingProtocol):
@@ -4125,6 +4524,7 @@ class MatchmakeRefereeServer(MatchmakeRefereeProtocol):
 			self.METHOD_GET_STATS_ALL: self.handle_get_stats_all,
 			self.METHOD_CREATE_STATS: self.handle_create_stats,
 			self.METHOD_GET_OR_CREATE_STATS: self.handle_get_or_create_stats,
+			self.METHOD_RESET_STATS: self.handle_reset_stats,
 		}
 	
 	async def logout(self, client):
@@ -4138,50 +4538,184 @@ class MatchmakeRefereeServer(MatchmakeRefereeProtocol):
 			raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_start_round(self, client, input, output):
-		logger.warning("MatchmakeRefereeServer.start_round is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("MatchmakeRefereeServer.start_round()")
+		#--- request ---
+		param = input.extract(MatchmakeRefereeStartRoundParam)
+		response = await self.start_round(client, param)
+		
+		#--- response ---
+		if not isinstance(response, int):
+			raise RuntimeError("Expected int, got %s" %response.__class__.__name__)
+		output.u64(response)
 	
 	async def handle_get_start_round_param(self, client, input, output):
-		logger.warning("MatchmakeRefereeServer.get_start_round_param is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("MatchmakeRefereeServer.get_start_round_param()")
+		#--- request ---
+		round_id = input.u64()
+		response = await self.get_start_round_param(client, round_id)
+		
+		#--- response ---
+		if not isinstance(response, MatchmakeRefereeStartRoundParam):
+			raise RuntimeError("Expected MatchmakeRefereeStartRoundParam, got %s" %response.__class__.__name__)
+		output.add(response)
 	
 	async def handle_end_round(self, client, input, output):
-		logger.warning("MatchmakeRefereeServer.end_round is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("MatchmakeRefereeServer.end_round()")
+		#--- request ---
+		param = input.extract(MatchmakeRefereeEndRoundParam)
+		await self.end_round(client, param)
 	
 	async def handle_end_round_with_report(self, client, input, output):
-		logger.warning("MatchmakeRefereeServer.end_round_with_report is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("MatchmakeRefereeServer.end_round_with_report()")
+		#--- request ---
+		round_id = input.u64()
+		await self.end_round_with_report(client, round_id)
 	
 	async def handle_get_round_participants(self, client, input, output):
-		logger.warning("MatchmakeRefereeServer.get_round_participants is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("MatchmakeRefereeServer.get_round_participants()")
+		#--- request ---
+		round_id = input.u64()
+		response = await self.get_round_participants(client, round_id)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.pid)
 	
 	async def handle_get_not_summarized_round(self, client, input, output):
-		logger.warning("MatchmakeRefereeServer.get_not_summarized_round is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("MatchmakeRefereeServer.get_not_summarized_round()")
+		#--- request ---
+		response = await self.get_not_summarized_round(client)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
 	
 	async def handle_get_round(self, client, input, output):
-		logger.warning("MatchmakeRefereeServer.get_round is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("MatchmakeRefereeServer.get_round()")
+		#--- request ---
+		round = input.u64()
+		response = await self.get_round(client, round)
+		
+		#--- response ---
+		if not isinstance(response, MatchmakeRefereeRound):
+			raise RuntimeError("Expected MatchmakeRefereeRound, got %s" %response.__class__.__name__)
+		output.add(response)
 	
 	async def handle_get_stats_primary(self, client, input, output):
-		logger.warning("MatchmakeRefereeServer.get_stats_primary is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("MatchmakeRefereeServer.get_stats_primary()")
+		#--- request ---
+		target = input.extract(MatchmakeRefereeStatsTarget)
+		response = await self.get_stats_primary(client, target)
+		
+		#--- response ---
+		if not isinstance(response, MatchmakeRefereeStats):
+			raise RuntimeError("Expected MatchmakeRefereeStats, got %s" %response.__class__.__name__)
+		output.add(response)
 	
 	async def handle_get_stats_primaries(self, client, input, output):
-		logger.warning("MatchmakeRefereeServer.get_stats_primaries is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("MatchmakeRefereeServer.get_stats_primaries()")
+		#--- request ---
+		targets = input.list(MatchmakeRefereeStatsTarget)
+		response = await self.get_stats_primaries(client, targets)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['stats', 'results']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.stats, output.add)
+		output.list(response.results, output.result)
 	
 	async def handle_get_stats_all(self, client, input, output):
-		logger.warning("MatchmakeRefereeServer.get_stats_all is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("MatchmakeRefereeServer.get_stats_all()")
+		#--- request ---
+		target = input.extract(MatchmakeRefereeStatsTarget)
+		response = await self.get_stats_all(client, target)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
 	
 	async def handle_create_stats(self, client, input, output):
-		logger.warning("MatchmakeRefereeServer.create_stats is unsupported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("MatchmakeRefereeServer.create_stats()")
+		#--- request ---
+		param = input.extract(MatchmakeRefereeStatsInitParam)
+		response = await self.create_stats(client, param)
+		
+		#--- response ---
+		if not isinstance(response, MatchmakeRefereeStats):
+			raise RuntimeError("Expected MatchmakeRefereeStats, got %s" %response.__class__.__name__)
+		output.add(response)
 	
 	async def handle_get_or_create_stats(self, client, input, output):
-		logger.warning("MatchmakeRefereeServer.get_or_create_stats is unsupported")
+		logger.info("MatchmakeRefereeServer.get_or_create_stats()")
+		#--- request ---
+		param = input.extract(MatchmakeRefereeStatsInitParam)
+		response = await self.get_or_create_stats(client, param)
+		
+		#--- response ---
+		if not isinstance(response, MatchmakeRefereeStats):
+			raise RuntimeError("Expected MatchmakeRefereeStats, got %s" %response.__class__.__name__)
+		output.add(response)
+	
+	async def handle_reset_stats(self, client, input, output):
+		logger.info("MatchmakeRefereeServer.reset_stats()")
+		#--- request ---
+		await self.reset_stats(client)
+	
+	async def start_round(self, *args):
+		logger.warning("MatchmakeRefereeServer.start_round not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_start_round_param(self, *args):
+		logger.warning("MatchmakeRefereeServer.get_start_round_param not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def end_round(self, *args):
+		logger.warning("MatchmakeRefereeServer.end_round not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def end_round_with_report(self, *args):
+		logger.warning("MatchmakeRefereeServer.end_round_with_report not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_round_participants(self, *args):
+		logger.warning("MatchmakeRefereeServer.get_round_participants not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_not_summarized_round(self, *args):
+		logger.warning("MatchmakeRefereeServer.get_not_summarized_round not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_round(self, *args):
+		logger.warning("MatchmakeRefereeServer.get_round not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_stats_primary(self, *args):
+		logger.warning("MatchmakeRefereeServer.get_stats_primary not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_stats_primaries(self, *args):
+		logger.warning("MatchmakeRefereeServer.get_stats_primaries not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_stats_all(self, *args):
+		logger.warning("MatchmakeRefereeServer.get_stats_all not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def create_stats(self, *args):
+		logger.warning("MatchmakeRefereeServer.create_stats not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_or_create_stats(self, *args):
+		logger.warning("MatchmakeRefereeServer.get_or_create_stats not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def reset_stats(self, *args):
+		logger.warning("MatchmakeRefereeServer.reset_stats not implemented")
 		raise common.RMCError("Core::NotImplemented")
 
