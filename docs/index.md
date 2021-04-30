@@ -42,7 +42,7 @@ Feel free to open a pull request or issue on [github](https://github.com/kinnay/
 	* [hpp](reference/nex/hpp)
 	* [kerberos](reference/nex/kerberos)
 	* [matchmaking](reference/nex/matchmaking)
-	* [matchmaking_ms2](reference/nex/matchmaking_ms2)
+	* [matchmaking_eagle](reference/nex/matchmaking_eagle)
 	* [messaging](reference/nex/messaging)
 	* [monitoring](reference/nex/monitoring)
 	* [nattraversal](reference/nex/nattraversal)
