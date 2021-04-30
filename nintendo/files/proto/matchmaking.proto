@@ -222,7 +222,7 @@ struct MatchmakeRefereeStartRoundParam {
 }
 
 struct MatchmakeRefereeEndRoundParam {
-	uint64 id;
+	uint64 round_id;
 	list<MatchmakeRefereePersonalRoundResult> results;
 }
 

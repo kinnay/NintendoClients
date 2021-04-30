@@ -758,21 +758,21 @@ class MatchmakeRefereeStartRoundParam(common.Structure):
 class MatchmakeRefereeEndRoundParam(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.id = None
+		self.round_id = None
 		self.results = None
 	
 	def check_required(self, settings, version):
-		for field in ['id', 'results']:
+		for field in ['round_id', 'results']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.id = stream.u64()
+		self.round_id = stream.u64()
 		self.results = stream.list(MatchmakeRefereePersonalRoundResult)
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.u64(self.id)
+		stream.u64(self.round_id)
 		stream.list(self.results, stream.add)
 
 

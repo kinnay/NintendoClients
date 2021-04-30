@@ -1070,7 +1070,7 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>id: int</code><br>
+<code>round_id: int</code><br>
 <code>results: list[[MatchmakeRefereePersonalRoundResult](#matchmakerefereepersonalroundresult)]</code><br>
 </span><br>
 
