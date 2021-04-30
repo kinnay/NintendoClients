@@ -160,15 +160,15 @@ class DebugServer(DebugProtocol):
 		output.list(response, output.add)
 	
 	async def handle_set_exclude_joined_matchmake_session(self, client, input, output):
-		logger.warning("DebugServer.set_exclude_joined_matchmake_session is unsupported")
+		logger.warning("DebugServer.set_exclude_joined_matchmake_session is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_exclude_joined_matchmake_session(self, client, input, output):
-		logger.warning("DebugServer.get_exclude_joined_matchmake_session is unsupported")
+		logger.warning("DebugServer.get_exclude_joined_matchmake_session is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_api_call_summary(self, client, input, output):
-		logger.warning("DebugServer.get_api_call_summary is unsupported")
+		logger.warning("DebugServer.get_api_call_summary is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def enable_api_recorder(self, *args):

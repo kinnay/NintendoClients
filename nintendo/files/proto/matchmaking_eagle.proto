@@ -1,0 +1,72 @@
+
+import matchmaking;
+
+struct MatchmakeRefereeStartRoundParam {
+	uint32 personal_data_category;
+	uint32 gid;
+	list<pid> pids;
+	uint8 report_summary_mode;
+	uint32 event_id;
+}
+
+struct MatchmakeRefereePersonalRoundResult {
+	pid pid;
+	uint32 personal_round_result_flag;
+	uint32 round_win_loss;
+	sint32 rating_value_change;
+	qbuffer buffer;
+	uint8 report_summary_mode;
+	uint32 event_id;
+}
+
+protocol MatchmakeReferee : 120 {
+	method start_round(MatchmakeRefereeStartRoundParam param) {
+		uint64 round_id;
+	}
+	
+	method get_start_round_param(uint64 round_id) {
+		MatchmakeRefereeStartRoundParam param;
+	}
+	
+	method end_round(MatchmakeRefereeEndRoundParam param) {}
+	method end_round_with_partial_report(MatchmakeRefereeEndRoundParam param) {}
+	method end_round_with_report(uint64 round_id) {}
+	
+	method get_round_participants(uint64 round_id) {
+		list<pid> pids;
+	}
+	
+	method get_not_summarized_round() {
+		list<MatchmakeRefereeRound> rounds;
+	}
+	
+	method get_round(uint64 round) {
+		MatchmakeRefereeRound round;
+	}
+	
+	method get_stats_primary(MatchmakeRefereeStatsTarget target) {
+		MatchmakeRefereeStats stats;
+	}
+	
+	method get_stats_primaries(list<MatchmakeRefereeStatsTarget> targets) {
+		list<MatchmakeRefereeStats> stats;
+		list<result> results;
+	}
+	
+	method get_stats_all(MatchmakeRefereeStatsTarget target) {
+		list<MatchmakeRefereeStats> stats;
+	}
+	
+	method create_stats(MatchmakeRefereeStatsInitParam param) {
+		MatchmakeRefereeStats stats;
+	}
+	
+	method get_or_create_stats(MatchmakeRefereeStatsInitParam param) {
+		MatchmakeRefereeStats stats;
+	}
+	
+	method reset_stats() {}
+	
+	method get_event_point;
+	method reset_event_point;
+}

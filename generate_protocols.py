@@ -251,12 +251,16 @@ class File:
 		
 	def add_protocol(self, proto):
 		if self.scope.add(proto.name):
-			raise ValueError("%s is already defined" %proto.name)
+			item = self.protocols.get(proto.name)
+			if not item or item.file == self or proto.file != self:
+				raise ValueError("%s is already defined" %proto.name)
 		self.protocols[proto.name] = proto
 	
 	def add_struct(self, struct):
 		if self.scope.add(struct.name):
-			raise ValueError("%s is already defined" %struct.name)
+			item = self.structs.get(struct.name)
+			if not item or item.file == self or struct.file != self:
+				raise ValueError("%s is already defined" %struct.name)
 		self.structs[struct.name] = struct
 	
 	def add_enum(self, enum):
@@ -435,6 +439,7 @@ class Parser:
 		stream.skip_reserved("protocol")
 		
 		protocol = Protocol()
+		protocol.file = self.file
 		protocol.name = stream.parse_name()
 		stream.skip_symbol(":")
 		
@@ -622,6 +627,7 @@ class Parser:
 		stream.skip_reserved("struct")
 		
 		struct = Struct()
+		struct.file = self.file
 		struct.name = stream.parse_name()
 		
 		token = stream.peek()
@@ -1042,7 +1048,7 @@ class CodeGenerator:
 		stream.write_line("async def handle_%s(self, client, input, output):" %method.name)
 		
 		if not method.supported:
-			stream.write_line('\tlogger.warning("%s.%s is unsupported")' %(class_name, method.name))
+			stream.write_line('\tlogger.warning("%s.%s is not supported")' %(class_name, method.name))
 			stream.write_line('\traise common.RMCError("Core::NotImplemented")')
 			return
 			

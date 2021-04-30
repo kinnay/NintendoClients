@@ -65,62 +65,62 @@ class SubscriberServer(SubscriberProtocol):
 			raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_hello(self, client, input, output):
-		logger.warning("SubscriberServer.hello is unsupported")
+		logger.warning("SubscriberServer.hello is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_post_content(self, client, input, output):
-		logger.warning("SubscriberServer.post_content is unsupported")
+		logger.warning("SubscriberServer.post_content is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_content(self, client, input, output):
-		logger.warning("SubscriberServer.get_content is unsupported")
+		logger.warning("SubscriberServer.get_content is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_follow(self, client, input, output):
-		logger.warning("SubscriberServer.follow is unsupported")
+		logger.warning("SubscriberServer.follow is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_unfollow_all_and_follow(self, client, input, output):
-		logger.warning("SubscriberServer.unfollow_all_and_follow is unsupported")
+		logger.warning("SubscriberServer.unfollow_all_and_follow is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_unfollow(self, client, input, output):
-		logger.warning("SubscriberServer.unfollow is unsupported")
+		logger.warning("SubscriberServer.unfollow is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_following(self, client, input, output):
-		logger.warning("SubscriberServer.get_following is unsupported")
+		logger.warning("SubscriberServer.get_following is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_follower(self, client, input, output):
-		logger.warning("SubscriberServer.get_follower is unsupported")
+		logger.warning("SubscriberServer.get_follower is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_num_followers(self, client, input, output):
-		logger.warning("SubscriberServer.get_num_followers is unsupported")
+		logger.warning("SubscriberServer.get_num_followers is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_timeline(self, client, input, output):
-		logger.warning("SubscriberServer.get_timeline is unsupported")
+		logger.warning("SubscriberServer.get_timeline is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_delete_content(self, client, input, output):
-		logger.warning("SubscriberServer.delete_content is unsupported")
+		logger.warning("SubscriberServer.delete_content is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_content_multi(self, client, input, output):
-		logger.warning("SubscriberServer.get_content_multi is unsupported")
+		logger.warning("SubscriberServer.get_content_multi is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_update_user_status(self, client, input, output):
-		logger.warning("SubscriberServer.update_user_status is unsupported")
+		logger.warning("SubscriberServer.update_user_status is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_friend_user_statuses(self, client, input, output):
-		logger.warning("SubscriberServer.get_friend_user_statuses is unsupported")
+		logger.warning("SubscriberServer.get_friend_user_statuses is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_user_statuses(self, client, input, output):
-		logger.warning("SubscriberServer.get_user_statuses is unsupported")
+		logger.warning("SubscriberServer.get_user_statuses is not supported")
 		raise common.RMCError("Core::NotImplemented")
 

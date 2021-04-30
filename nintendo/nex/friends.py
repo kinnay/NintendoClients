@@ -842,107 +842,107 @@ class FriendsServerV1(FriendsProtocolV1):
 			raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_update_profile(self, client, input, output):
-		logger.warning("FriendsServerV1.update_profile is unsupported")
+		logger.warning("FriendsServerV1.update_profile is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_update_mii(self, client, input, output):
-		logger.warning("FriendsServerV1.update_mii is unsupported")
+		logger.warning("FriendsServerV1.update_mii is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_update_mii_list(self, client, input, output):
-		logger.warning("FriendsServerV1.update_mii_list is unsupported")
+		logger.warning("FriendsServerV1.update_mii_list is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_update_played_games(self, client, input, output):
-		logger.warning("FriendsServerV1.update_played_games is unsupported")
+		logger.warning("FriendsServerV1.update_played_games is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_update_preference(self, client, input, output):
-		logger.warning("FriendsServerV1.update_preference is unsupported")
+		logger.warning("FriendsServerV1.update_preference is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_friend_mii(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_mii is unsupported")
+		logger.warning("FriendsServerV1.get_friend_mii is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_friend_mii_list(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_mii_list is unsupported")
+		logger.warning("FriendsServerV1.get_friend_mii_list is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_is_active_game(self, client, input, output):
-		logger.warning("FriendsServerV1.is_active_game is unsupported")
+		logger.warning("FriendsServerV1.is_active_game is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_principal_id_by_local_friend_code(self, client, input, output):
-		logger.warning("FriendsServerV1.get_principal_id_by_local_friend_code is unsupported")
+		logger.warning("FriendsServerV1.get_principal_id_by_local_friend_code is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_friend_relationships(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_relationships is unsupported")
+		logger.warning("FriendsServerV1.get_friend_relationships is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_add_friend_by_principal_id(self, client, input, output):
-		logger.warning("FriendsServerV1.add_friend_by_principal_id is unsupported")
+		logger.warning("FriendsServerV1.add_friend_by_principal_id is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_add_friend_by_principal_ids(self, client, input, output):
-		logger.warning("FriendsServerV1.add_friend_by_principal_ids is unsupported")
+		logger.warning("FriendsServerV1.add_friend_by_principal_ids is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_remove_friend_by_local_friend_code(self, client, input, output):
-		logger.warning("FriendsServerV1.remove_friend_by_local_friend_code is unsupported")
+		logger.warning("FriendsServerV1.remove_friend_by_local_friend_code is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_remove_friend_by_principal_id(self, client, input, output):
-		logger.warning("FriendsServerV1.remove_friend_by_principal_id is unsupported")
+		logger.warning("FriendsServerV1.remove_friend_by_principal_id is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_all_friends(self, client, input, output):
-		logger.warning("FriendsServerV1.get_all_friends is unsupported")
+		logger.warning("FriendsServerV1.get_all_friends is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_update_black_list(self, client, input, output):
-		logger.warning("FriendsServerV1.update_black_list is unsupported")
+		logger.warning("FriendsServerV1.update_black_list is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_sync_friend(self, client, input, output):
-		logger.warning("FriendsServerV1.sync_friend is unsupported")
+		logger.warning("FriendsServerV1.sync_friend is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_update_presence(self, client, input, output):
-		logger.warning("FriendsServerV1.update_presence is unsupported")
+		logger.warning("FriendsServerV1.update_presence is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_update_favorite_game_key(self, client, input, output):
-		logger.warning("FriendsServerV1.update_favorite_game_key is unsupported")
+		logger.warning("FriendsServerV1.update_favorite_game_key is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_update_comment(self, client, input, output):
-		logger.warning("FriendsServerV1.update_comment is unsupported")
+		logger.warning("FriendsServerV1.update_comment is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_update_picture(self, client, input, output):
-		logger.warning("FriendsServerV1.update_picture is unsupported")
+		logger.warning("FriendsServerV1.update_picture is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_friend_presence(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_presence is unsupported")
+		logger.warning("FriendsServerV1.get_friend_presence is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_friend_comment(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_comment is unsupported")
+		logger.warning("FriendsServerV1.get_friend_comment is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_friend_picture(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_picture is unsupported")
+		logger.warning("FriendsServerV1.get_friend_picture is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_get_friend_persistent_info(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_persistent_info is unsupported")
+		logger.warning("FriendsServerV1.get_friend_persistent_info is not supported")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_send_invitation(self, client, input, output):
-		logger.warning("FriendsServerV1.send_invitation is unsupported")
+		logger.warning("FriendsServerV1.send_invitation is not supported")
 		raise common.RMCError("Core::NotImplemented")
 
 
