@@ -7,6 +7,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class RecipientType:
+	PRINCIPAL = 1
+	GATHERING = 2
+
+
 class MessageRecipient(common.Structure):
 	def __init__(self):
 		super().__init__()

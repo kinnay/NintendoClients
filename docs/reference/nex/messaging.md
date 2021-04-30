@@ -15,6 +15,8 @@ Provides a client and server for the `MessagingProtocol` and `MessageDeliveryPro
 <code>**class** [MessageDeliveryServer](#messagedeliveryserver)</code><br>
 <span class="docs">The server for the `MessageDeliveryProtocol`.</span>
 
+<code>**class** [RecipientType](#recipienttype)</code><br>
+
 <code>**class** [BinaryMessage](#binarymessage)([UserMessage](#usermessage))</code><br>
 <code>**class** [MessageRecipient](#messagerecipient)([Structure](../common))</code><br>
 <code>**class** [TextMessage](#textmessage)([UserMessage](#usermessage))</code><br>
@@ -101,6 +103,13 @@ Provides a client and server for the `MessagingProtocol` and `MessageDeliveryPro
 
 <code>**async def deliver_message**(client: [RMCClient](../rmc#rmcclient), message: [Data](../common)) -> None</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
+
+## RecipientType
+This class defines the following constants:<br>
+<span class="docs">
+`PRINCIPAL = 1`<br>
+`GATHERING = 2`<br>
+</span>
 
 ## BinaryMessage
 <code>**def _\_init__**()</code><br>

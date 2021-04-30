@@ -1,4 +1,9 @@
 
+enum RecipientType {
+	PRINCIPAL = 1,
+	GATHERING = 2
+}
+
 struct MessageRecipient {
 	uint32 type;
 	pid pid;
