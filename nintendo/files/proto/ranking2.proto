@@ -61,6 +61,7 @@ struct Ranking2EstimateScoreRankOutput {
 	uint32 score;
 	uint32 category;
 	sint32 season;
+	uint8 sampling_rate;
 }
 
 struct Ranking2GetByListParam {

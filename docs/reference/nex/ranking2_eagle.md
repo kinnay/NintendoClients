@@ -1,7 +1,7 @@
 
-# Module: <code>nintendo.nex.ranking2</code>
+# Module: <code>nintendo.nex.ranking2_eagle</code>
 
-Provides a client and server for the `Ranking2Protocol`. This page was generated automatically from `ranking2.proto`.
+Provides a client and server for the `Ranking2Protocol`. This page was generated automatically from `ranking2_eagle.proto`.
 
 <code>**class** [Ranking2Client](#ranking2client)</code><br>
 <span class="docs">The client for the `Ranking2Protocol`.</span>
@@ -15,6 +15,7 @@ Provides a client and server for the `Ranking2Protocol`. This page was generated
 <code>**class** [Ranking2ChartInfo](#ranking2chartinfo)([Structure](../common))</code><br>
 <code>**class** [Ranking2ChartInfoInput](#ranking2chartinfoinput)([Structure](../common))</code><br>
 <code>**class** [Ranking2CommonData](#ranking2commondata)([Structure](../common))</code><br>
+<code>**class** [Ranking2EstimateMyScoreRankInput](#ranking2estimatemyscorerankinput)([Structure](../common))</code><br>
 <code>**class** [Ranking2EstimateScoreRankInput](#ranking2estimatescorerankinput)([Structure](../common))</code><br>
 <code>**class** [Ranking2EstimateScoreRankOutput](#ranking2estimatescorerankoutput)([Structure](../common))</code><br>
 <code>**class** [Ranking2GetByListParam](#ranking2getbylistparam)([Structure](../common))</code><br>
@@ -57,6 +58,9 @@ Provides a client and server for the `Ranking2Protocol`. This page was generated
 <code>**async def get_estimate_score_rank**(input: [Ranking2EstimateScoreRankInput](#ranking2estimatescorerankinput)) -> [Ranking2EstimateScoreRankOutput](#ranking2estimatescorerankoutput)</code><br>
 <span class="docs">Calls method `10` on the server.</span>
 
+<code>**async def get_estimate_my_score_rank**(input: [Ranking2EstimateMyScoreRankInput](#ranking2estimatemyscorerankinput)) -> [Ranking2EstimateScoreRankOutput](#ranking2estimatescorerankoutput)</code><br>
+<span class="docs">Calls method `11` on the server.</span>
+
 ## Ranking2Server
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`Ranking2Server`](#ranking2server).</span>
@@ -93,6 +97,9 @@ Provides a client and server for the `Ranking2Protocol`. This page was generated
 
 <code>**async def get_estimate_score_rank**(client: [RMCClient](../rmc#rmcclient), input: [Ranking2EstimateScoreRankInput](#ranking2estimatescorerankinput)) -> [Ranking2EstimateScoreRankOutput](#ranking2estimatescorerankoutput)</code><br>
 <span class="docs">Handler for method `10`. This method should be overridden by a subclass.</span>
+
+<code>**async def get_estimate_my_score_rank**(client: [RMCClient](../rmc#rmcclient), input: [Ranking2EstimateMyScoreRankInput](#ranking2estimatemyscorerankinput)) -> [Ranking2EstimateScoreRankOutput](#ranking2estimatescorerankoutput)</code><br>
+<span class="docs">Handler for method `11`. This method should be overridden by a subclass.</span>
 
 ## RankingMode
 This class defines the following constants:<br>
@@ -164,6 +171,16 @@ The following fields are defined in this class:<br>
 <code>username: str</code><br>
 <code>mii: bytes</code><br>
 <code>binary_data: bytes</code><br>
+</span><br>
+
+## Ranking2EstimateMyScoreRankInput
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `Ranking2EstimateMyScoreRankInput` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>category: int</code><br>
+<code>seasons_to_go_back: int</code><br>
 </span><br>
 
 ## Ranking2EstimateScoreRankInput

@@ -1,0 +1,13 @@
+
+import ranking2;
+
+struct Ranking2EstimateMyScoreRankInput {
+	uint32 category;
+	uint8 seasons_to_go_back;
+}
+
+protocol Ranking2 : Ranking2 {
+	method(11) get_estimate_my_score_rank(Ranking2EstimateMyScoreRankInput input) {
+		Ranking2EstimateScoreRankOutput output;
+	}
+}

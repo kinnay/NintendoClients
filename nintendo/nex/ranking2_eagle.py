@@ -385,6 +385,27 @@ class Ranking2ScoreData(common.Structure):
 		stream.u32(self.score)
 
 
+class Ranking2EstimateMyScoreRankInput(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.category = None
+		self.seasons_to_go_back = None
+	
+	def check_required(self, settings, version):
+		for field in ['category', 'seasons_to_go_back']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.category = stream.u32()
+		self.seasons_to_go_back = stream.u8()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u32(self.category)
+		stream.u8(self.seasons_to_go_back)
+
+
 class Ranking2Protocol:
 	METHOD_PUT_SCORE = 1
 	METHOD_GET_COMMON_DATA = 2
@@ -396,6 +417,7 @@ class Ranking2Protocol:
 	METHOD_GET_RANKING_CHART = 8
 	METHOD_GET_RANKING_CHARTS = 9
 	METHOD_GET_ESTIMATE_SCORE_RANK = 10
+	METHOD_GET_ESTIMATE_MY_SCORE_RANK = 11
 	
 	PROTOCOL_ID = 0x7A
 
@@ -553,6 +575,21 @@ class Ranking2Client(Ranking2Protocol):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("Ranking2Client.get_estimate_score_rank -> done")
 		return output
+	
+	async def get_estimate_my_score_rank(self, input):
+		logger.info("Ranking2Client.get_estimate_my_score_rank()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(input)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_ESTIMATE_MY_SCORE_RANK, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		output = stream.extract(Ranking2EstimateScoreRankOutput)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("Ranking2Client.get_estimate_my_score_rank -> done")
+		return output
 
 
 class Ranking2Server(Ranking2Protocol):
@@ -568,6 +605,7 @@ class Ranking2Server(Ranking2Protocol):
 			self.METHOD_GET_RANKING_CHART: self.handle_get_ranking_chart,
 			self.METHOD_GET_RANKING_CHARTS: self.handle_get_ranking_charts,
 			self.METHOD_GET_ESTIMATE_SCORE_RANK: self.handle_get_estimate_score_rank,
+			self.METHOD_GET_ESTIMATE_MY_SCORE_RANK: self.handle_get_estimate_my_score_rank,
 		}
 	
 	async def logout(self, client):
@@ -680,6 +718,17 @@ class Ranking2Server(Ranking2Protocol):
 			raise RuntimeError("Expected Ranking2EstimateScoreRankOutput, got %s" %response.__class__.__name__)
 		output.add(response)
 	
+	async def handle_get_estimate_my_score_rank(self, client, input, output):
+		logger.info("Ranking2Server.get_estimate_my_score_rank()")
+		#--- request ---
+		input = input.extract(Ranking2EstimateMyScoreRankInput)
+		response = await self.get_estimate_my_score_rank(client, input)
+		
+		#--- response ---
+		if not isinstance(response, Ranking2EstimateScoreRankOutput):
+			raise RuntimeError("Expected Ranking2EstimateScoreRankOutput, got %s" %response.__class__.__name__)
+		output.add(response)
+	
 	async def put_score(self, *args):
 		logger.warning("Ranking2Server.put_score not implemented")
 		raise common.RMCError("Core::NotImplemented")
@@ -718,5 +767,9 @@ class Ranking2Server(Ranking2Protocol):
 	
 	async def get_estimate_score_rank(self, *args):
 		logger.warning("Ranking2Server.get_estimate_score_rank not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_estimate_my_score_rank(self, *args):
+		logger.warning("Ranking2Server.get_estimate_my_score_rank not implemented")
 		raise common.RMCError("Core::NotImplemented")
 
