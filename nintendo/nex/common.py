@@ -98,7 +98,7 @@ class Structure:
 					)
 					
 				substream = stream.substream()
-				cls.load(self, substream, 0)
+				cls.load(self, substream, version)
 				
 				if not substream.eof():
 					logger.warning(
