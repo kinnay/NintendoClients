@@ -34,8 +34,14 @@ Provides classes that are used by various `nex` modules.
 <code>**def _\_init__**(code: int = 0x10001)</code><br>
 <span class="docs">Creates a new RMCError from the given error code.</span>
 
+<code>**def code**() -> int</code><br>
+<span class="docs">Returns the error code.</span>
+
+<code>**def name**() -> str</code><br>
+<span class="docs">Returns a description of the error. If the error code is unknown, this method returns `"unknown error"`.</span>
+
 <code>**def result**() -> [Result](#result)</code><br>
-<span class="docs">Returns a result that represents the error.</span>
+<span class="docs">Returns a result object that represents the error.</span>
 
 ## Result
 <code style="color: blue">@classmethod</code><br>

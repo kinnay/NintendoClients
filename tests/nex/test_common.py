@@ -26,6 +26,10 @@ def test_result():
 
 
 def test_rmcerror():
+	error = common.RMCError()
+	assert error.name() == "Core::Unknown"
+	assert error.code() == 0x80010001
+	
 	result = common.RMCError().result()
 	assert result.is_error()
 	assert result.name() == "Core::Unknown"

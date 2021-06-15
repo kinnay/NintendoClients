@@ -18,6 +18,12 @@ class RMCError(Exception):
 	
 	def result(self):
 		return self.res
+		
+	def name(self):
+		return self.res.name()
+	
+	def code(self):
+		return self.res.code()
 
 	
 class Result:
