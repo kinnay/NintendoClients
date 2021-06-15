@@ -323,16 +323,16 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def update_privacy_setting**(online_status: bool, community_participation: bool) -> None</code><br>
 <span class="docs">Calls method `23` on the server.</span>
 
-<code>**async def get_my_black_list**() -> list[int]</code><br>
+<code>**async def get_my_block_list**() -> list[int]</code><br>
 <span class="docs">Calls method `24` on the server.</span>
 
-<code>**async def add_to_black_list**(pids: list[int]) -> None</code><br>
+<code>**async def add_to_block_list**(pids: list[int]) -> None</code><br>
 <span class="docs">Calls method `25` on the server.</span>
 
-<code>**async def remove_from_black_list**(pids: list[int]) -> None</code><br>
+<code>**async def remove_from_block_list**(pids: list[int]) -> None</code><br>
 <span class="docs">Calls method `26` on the server.</span>
 
-<code>**async def clear_my_black_list**() -> None</code><br>
+<code>**async def clear_my_block_list**() -> None</code><br>
 <span class="docs">Calls method `27` on the server.</span>
 
 <code>**async def report_violation**(pid: int, username: str, violation_code: int) -> None</code><br>
@@ -754,16 +754,16 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def update_privacy_setting**(client: [RMCClient](../rmc#rmcclient), online_status: bool, community_participation: bool) -> None</code><br>
 <span class="docs">Handler for method `23`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_my_black_list**(client: [RMCClient](../rmc#rmcclient)) -> list[int]</code><br>
+<code>**async def get_my_block_list**(client: [RMCClient](../rmc#rmcclient)) -> list[int]</code><br>
 <span class="docs">Handler for method `24`. This method should be overridden by a subclass.</span>
 
-<code>**async def add_to_black_list**(client: [RMCClient](../rmc#rmcclient), pids: list[int]) -> None</code><br>
+<code>**async def add_to_block_list**(client: [RMCClient](../rmc#rmcclient), pids: list[int]) -> None</code><br>
 <span class="docs">Handler for method `25`. This method should be overridden by a subclass.</span>
 
-<code>**async def remove_from_black_list**(client: [RMCClient](../rmc#rmcclient), pids: list[int]) -> None</code><br>
+<code>**async def remove_from_block_list**(client: [RMCClient](../rmc#rmcclient), pids: list[int]) -> None</code><br>
 <span class="docs">Handler for method `26`. This method should be overridden by a subclass.</span>
 
-<code>**async def clear_my_black_list**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def clear_my_block_list**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
 <span class="docs">Handler for method `27`. This method should be overridden by a subclass.</span>
 
 <code>**async def report_violation**(client: [RMCClient](../rmc#rmcclient), pid: int, username: str, violation_code: int) -> None</code><br>

@@ -1001,10 +1001,10 @@ class MatchmakeExtensionProtocol:
 	METHOD_FIND_OFFICIAL_COMMUNITY = 21
 	METHOD_FIND_COMMUNITY_BY_PARTICIPANT = 22
 	METHOD_UPDATE_PRIVACY_SETTING = 23
-	METHOD_GET_MY_BLACK_LIST = 24
-	METHOD_ADD_TO_BLACK_LIST = 25
-	METHOD_REMOVE_FROM_BLACK_LIST = 26
-	METHOD_CLEAR_MY_BLACK_LIST = 27
+	METHOD_GET_MY_BLOCK_LIST = 24
+	METHOD_ADD_TO_BLOCK_LIST = 25
+	METHOD_REMOVE_FROM_BLOCK_LIST = 26
+	METHOD_CLEAR_MY_BLOCK_LIST = 27
 	METHOD_REPORT_VIOLATION = 28
 	METHOD_IS_VIOLATION_USER = 29
 	METHOD_JOIN_MATCHMAKE_SESSION_EX = 30
@@ -2205,57 +2205,57 @@ class MatchmakeExtensionClient(MatchmakeExtensionProtocol):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MatchmakeExtensionClient.update_privacy_setting -> done")
 	
-	async def get_my_black_list(self):
-		logger.info("MatchmakeExtensionClient.get_my_black_list()")
+	async def get_my_block_list(self):
+		logger.info("MatchmakeExtensionClient.get_my_block_list()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
-		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_MY_BLACK_LIST, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_MY_BLOCK_LIST, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
 		pids = stream.list(stream.pid)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("MatchmakeExtensionClient.get_my_black_list -> done")
+		logger.info("MatchmakeExtensionClient.get_my_block_list -> done")
 		return pids
 	
-	async def add_to_black_list(self, pids):
-		logger.info("MatchmakeExtensionClient.add_to_black_list()")
+	async def add_to_block_list(self, pids):
+		logger.info("MatchmakeExtensionClient.add_to_block_list()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(pids, stream.pid)
-		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_ADD_TO_BLACK_LIST, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_ADD_TO_BLOCK_LIST, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("MatchmakeExtensionClient.add_to_black_list -> done")
+		logger.info("MatchmakeExtensionClient.add_to_block_list -> done")
 	
-	async def remove_from_black_list(self, pids):
-		logger.info("MatchmakeExtensionClient.remove_from_black_list()")
+	async def remove_from_block_list(self, pids):
+		logger.info("MatchmakeExtensionClient.remove_from_block_list()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(pids, stream.pid)
-		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_REMOVE_FROM_BLACK_LIST, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_REMOVE_FROM_BLOCK_LIST, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("MatchmakeExtensionClient.remove_from_black_list -> done")
+		logger.info("MatchmakeExtensionClient.remove_from_block_list -> done")
 	
-	async def clear_my_black_list(self):
-		logger.info("MatchmakeExtensionClient.clear_my_black_list()")
+	async def clear_my_block_list(self):
+		logger.info("MatchmakeExtensionClient.clear_my_block_list()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
-		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_CLEAR_MY_BLACK_LIST, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_CLEAR_MY_BLOCK_LIST, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("MatchmakeExtensionClient.clear_my_black_list -> done")
+		logger.info("MatchmakeExtensionClient.clear_my_block_list -> done")
 	
 	async def report_violation(self, pid, username, violation_code):
 		logger.info("MatchmakeExtensionClient.report_violation()")
@@ -3745,10 +3745,10 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 			self.METHOD_FIND_OFFICIAL_COMMUNITY: self.handle_find_official_community,
 			self.METHOD_FIND_COMMUNITY_BY_PARTICIPANT: self.handle_find_community_by_participant,
 			self.METHOD_UPDATE_PRIVACY_SETTING: self.handle_update_privacy_setting,
-			self.METHOD_GET_MY_BLACK_LIST: self.handle_get_my_black_list,
-			self.METHOD_ADD_TO_BLACK_LIST: self.handle_add_to_black_list,
-			self.METHOD_REMOVE_FROM_BLACK_LIST: self.handle_remove_from_black_list,
-			self.METHOD_CLEAR_MY_BLACK_LIST: self.handle_clear_my_black_list,
+			self.METHOD_GET_MY_BLOCK_LIST: self.handle_get_my_block_list,
+			self.METHOD_ADD_TO_BLOCK_LIST: self.handle_add_to_block_list,
+			self.METHOD_REMOVE_FROM_BLOCK_LIST: self.handle_remove_from_block_list,
+			self.METHOD_CLEAR_MY_BLOCK_LIST: self.handle_clear_my_block_list,
 			self.METHOD_REPORT_VIOLATION: self.handle_report_violation,
 			self.METHOD_IS_VIOLATION_USER: self.handle_is_violation_user,
 			self.METHOD_JOIN_MATCHMAKE_SESSION_EX: self.handle_join_matchmake_session_ex,
@@ -4019,32 +4019,32 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 		community_participation = input.bool()
 		await self.update_privacy_setting(client, online_status, community_participation)
 	
-	async def handle_get_my_black_list(self, client, input, output):
-		logger.info("MatchmakeExtensionServer.get_my_black_list()")
+	async def handle_get_my_block_list(self, client, input, output):
+		logger.info("MatchmakeExtensionServer.get_my_block_list()")
 		#--- request ---
-		response = await self.get_my_black_list(client)
+		response = await self.get_my_block_list(client)
 		
 		#--- response ---
 		if not isinstance(response, list):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.pid)
 	
-	async def handle_add_to_black_list(self, client, input, output):
-		logger.info("MatchmakeExtensionServer.add_to_black_list()")
+	async def handle_add_to_block_list(self, client, input, output):
+		logger.info("MatchmakeExtensionServer.add_to_block_list()")
 		#--- request ---
 		pids = input.list(input.pid)
-		await self.add_to_black_list(client, pids)
+		await self.add_to_block_list(client, pids)
 	
-	async def handle_remove_from_black_list(self, client, input, output):
-		logger.info("MatchmakeExtensionServer.remove_from_black_list()")
+	async def handle_remove_from_block_list(self, client, input, output):
+		logger.info("MatchmakeExtensionServer.remove_from_block_list()")
 		#--- request ---
 		pids = input.list(input.pid)
-		await self.remove_from_black_list(client, pids)
+		await self.remove_from_block_list(client, pids)
 	
-	async def handle_clear_my_black_list(self, client, input, output):
-		logger.info("MatchmakeExtensionServer.clear_my_black_list()")
+	async def handle_clear_my_block_list(self, client, input, output):
+		logger.info("MatchmakeExtensionServer.clear_my_block_list()")
 		#--- request ---
-		await self.clear_my_black_list(client)
+		await self.clear_my_block_list(client)
 	
 	async def handle_report_violation(self, client, input, output):
 		logger.info("MatchmakeExtensionServer.report_violation()")
@@ -4416,20 +4416,20 @@ class MatchmakeExtensionServer(MatchmakeExtensionProtocol):
 		logger.warning("MatchmakeExtensionServer.update_privacy_setting not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	async def get_my_black_list(self, *args):
-		logger.warning("MatchmakeExtensionServer.get_my_black_list not implemented")
+	async def get_my_block_list(self, *args):
+		logger.warning("MatchmakeExtensionServer.get_my_block_list not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	async def add_to_black_list(self, *args):
-		logger.warning("MatchmakeExtensionServer.add_to_black_list not implemented")
+	async def add_to_block_list(self, *args):
+		logger.warning("MatchmakeExtensionServer.add_to_block_list not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	async def remove_from_black_list(self, *args):
-		logger.warning("MatchmakeExtensionServer.remove_from_black_list not implemented")
+	async def remove_from_block_list(self, *args):
+		logger.warning("MatchmakeExtensionServer.remove_from_block_list not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	async def clear_my_black_list(self, *args):
-		logger.warning("MatchmakeExtensionServer.clear_my_black_list not implemented")
+	async def clear_my_block_list(self, *args):
+		logger.warning("MatchmakeExtensionServer.clear_my_block_list not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def report_violation(self, *args):

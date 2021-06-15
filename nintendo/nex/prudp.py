@@ -1413,7 +1413,7 @@ class PRUDPServerTransport:
 	async def process_packet(self, packet, addr):
 		logger.debug("[SRV] Received packet from %s: %s" %(addr, packet))
 		await self.ports.get(packet.dest_port, packet.dest_type).handle(packet, addr)
-		
+
 
 class PRUDPDatagramTransport(PRUDPServerTransport):
 	def __init__(self, settings, socket, group):
@@ -1434,8 +1434,8 @@ class PRUDPDatagramTransport(PRUDPServerTransport):
 	
 	def local_address(self):
 		return self.socket.local_address()
-			
-	
+
+
 class PRUDPSocketTransport(PRUDPServerTransport):
 	def __init__(self, settings, addr):
 		super().__init__(settings)

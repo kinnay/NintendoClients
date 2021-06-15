@@ -531,10 +531,10 @@ protocol MatchmakeExtension : 109 {
 	
 	method update_privacy_setting(bool online_status, bool community_participation) {}
 	
-	method get_my_black_list() { list<pid> pids; }
-	method add_to_black_list(list<pid> pids) {}
-	method remove_from_black_list(list<pid> pids) {}
-	method clear_my_black_list() {}
+	method get_my_block_list() { list<pid> pids; }
+	method add_to_block_list(list<pid> pids) {}
+	method remove_from_block_list(list<pid> pids) {}
+	method clear_my_block_list() {}
 	
 	method report_violation(pid pid, string username, uint32 violation_code) {}
 	
