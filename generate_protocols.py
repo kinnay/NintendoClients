@@ -1383,8 +1383,8 @@ class DocsGenerator:
 				
 	def format_constant(self, type, value):
 		if type.name in self.file.structs: return "[%s](#%s)()" %(type.name, type.name.lower())
-		if type.name == "ResultRange": return "[ResultRange](../common#resultrange)"
-		if type.name == "NotificationEvent": return "[NotificationEvent](../notification#notificationevent)"
+		if type.name == "ResultRange": return "[ResultRange](../common#resultrange)()"
+		if type.name == "NotificationEvent": return "[NotificationEvent](../notification#notificationevent)()"
 		
 		if type.name in NUMERIC_TYPES + ["bool"]: return str(value)
 		if type.name in ["buffer", "qbuffer"]: return 'b"%s"' %value

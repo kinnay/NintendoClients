@@ -235,6 +235,10 @@ class DateTime:
 	@classmethod
 	def never(cls):
 		return cls(0)
+	
+	@classmethod
+	def future(cls):
+		return cls.make(9999, 12, 31, 23, 59, 59)
 		
 	@classmethod
 	def make(cls, year, month=1, day=1, hour=0, minute=0, second=0):

@@ -129,10 +129,14 @@ class TestDateTime:
 		datetime = common.DateTime.fromtimestamp(1604149200)
 		assert datetime.value() == 135605968896
 	
+	def test_now(self):
+		datetime = common.DateTime.now()
+		assert datetime.year() >= 2020
+	
 	def test_never(self):
 		datetime = common.DateTime.never()
 		assert datetime.value() == 0
 	
-	def test_now(self):
-		datetime = common.DateTime.now()
-		assert datetime.year() >= 2020
+	def test_future(self):
+		datetime = common.DateTime.future()
+		assert datetime.value() == 0x9C3F3F7EFB

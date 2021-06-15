@@ -144,12 +144,16 @@ A `DateTime` object always represents UTC time.
 <span class="docs">Creates a new [`DateTime`](#datetime) object from the given posix timestamp.</span>
 
 <code style="color: blue">@classmethod</code><br>
+<code>**def now**() -> [DateTime](#datetime)</code><br>
+<span class="docs">Creates a new [`DateTime`](#datetime) object that represents the current time.</span>
+
+<code style="color: blue">@classmethod</code><br>
 <code>**def never**() -> [DateTime](#datetime)</code><br>
 <span class="docs">Creates a special [`DateTime`](#datetime) object that represents 'never'.</span>
 
 <code style="color: blue">@classmethod</code><br>
-<code>**def now**() -> [DateTime](#datetime)</code><br>
-<span class="docs">Creates a new [`DateTime`](#datetime) object that represents the current time.</span>
+<code>**def future**() -> [DateTime](#datetime)</code><br>
+<span class="docs">Creates a special [`DateTime`](#datetime) object that represents 'future'.</span>
 
 ## ResultRange
 `offset: int`<br>
