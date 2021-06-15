@@ -1253,30 +1253,28 @@ class DataStoreReqUpdateInfo(common.Structure):
 class DataStoreSearchParam(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.search_target = None
-		self.owner_ids = None
-		self.owner_type = None
-		self.destination_ids = None
-		self.data_type = None
-		self.created_after = None
-		self.created_before = None
-		self.updated_after = None
-		self.updated_before = None
-		self.refer_data_id = None
-		self.tags = None
-		self.result_order_column = None
-		self.result_order = None
+		self.search_target = 1
+		self.owner_ids = []
+		self.owner_type = 0
+		self.destination_ids = []
+		self.data_type = 65535
+		self.created_after = common.DateTime(671076024059)
+		self.created_before = common.DateTime(671076024059)
+		self.updated_after = common.DateTime(671076024059)
+		self.updated_before = common.DateTime(671076024059)
+		self.refer_data_id = 0
+		self.tags = []
+		self.result_order_column = 0
+		self.result_order = 0
 		self.result_range = common.ResultRange()
-		self.result_option = None
-		self.minimal_rating_frequency = None
-		self.use_cache = None
-		self.total_count_enabled = None
-		self.data_types = None
+		self.result_option = 0
+		self.minimal_rating_frequency = 0
+		self.use_cache = False
+		self.total_count_enabled = True
+		self.data_types = []
 	
 	def check_required(self, settings, version):
-		for field in ['search_target', 'owner_ids', 'owner_type', 'destination_ids', 'data_type', 'created_after', 'created_before', 'updated_after', 'updated_before', 'refer_data_id', 'tags', 'result_order_column', 'result_order', 'result_option', 'minimal_rating_frequency', 'use_cache', 'total_count_enabled', 'data_types']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
+		pass
 	
 	def load(self, stream, version):
 		self.search_target = stream.u8()

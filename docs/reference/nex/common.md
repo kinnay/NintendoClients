@@ -145,7 +145,7 @@ A `DateTime` object always represents UTC time.
 
 <code style="color: blue">@classmethod</code><br>
 <code>**def now**() -> [DateTime](#datetime)</code><br>
-<span class="docs">Creates a new [`DateTime`](#datetime) object that represents the current time.</span>
+<span class="docs">Creates a new [`DateTime`](#datetime) object for the current time.</span>
 
 <code style="color: blue">@classmethod</code><br>
 <code>**def never**() -> [DateTime](#datetime)</code><br>

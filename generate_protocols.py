@@ -577,13 +577,20 @@ class Parser:
 		return template
 		
 	def parse_constant(self, stream, type):
-		if type.name in NUMERIC_TYPES + ["datetime"]: return stream.parse_number()
+		if type.name in NUMERIC_TYPES: return stream.parse_number()
 		elif type.name in STRING_TYPES: return stream.parse_string()
 		elif type.name == "bool":
 			token = stream.read_name()
 			if token.value not in ["false", "true"]:
 				stream.error(token)
 			return token.value == "true"
+		elif type.name == "datetime":
+			token = stream.read()
+			if token.type == TYPE_NUMBER: return token.value
+			elif token.type == TYPE_NAME:
+				if token.value == "never": return 0
+				if token.value == "future": return 671076024059
+			stream.error(token)
 		elif type.name == "list":
 			list = []
 			
@@ -1392,6 +1399,8 @@ class DocsGenerator:
 		if type.name == "datetime":
 			if value == 0:
 				return "[DateTime](../common#datetime).never()"
+			elif value == 671076024059:
+				return "[DateTime](../common#datetime).future()"
 			return "[DateTime](../common#datetime)(%i)" %value
 		
 		if type.name == "list":

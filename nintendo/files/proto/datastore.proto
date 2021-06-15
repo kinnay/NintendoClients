@@ -307,25 +307,25 @@ struct DataStoreReqUpdateInfo {
 }
 
 struct DataStoreSearchParam {
-	uint8 search_target;
-	list<pid> owner_ids;
-	uint8 owner_type;
-	list<uint64> destination_ids;
-	uint16 data_type;
-	datetime created_after;
-	datetime created_before;
-	datetime updated_after;
-	datetime updated_before;
-	uint32 refer_data_id;
-	list<string> tags;
-	uint8 result_order_column;
-	uint8 result_order;
+	uint8 search_target = 1;
+	list<pid> owner_ids = [];
+	uint8 owner_type = 0;
+	list<uint64> destination_ids = [];
+	uint16 data_type = 65535;
+	datetime created_after = future;
+	datetime created_before = future;
+	datetime updated_after = future;
+	datetime updated_before = future;
+	uint32 refer_data_id = 0;
+	list<string> tags = [];
+	uint8 result_order_column = 0;
+	uint8 result_order = 0;
 	ResultRange result_range;
-	uint8 result_option;
-	uint32 minimal_rating_frequency;
-	bool use_cache;
-	bool total_count_enabled;
-	list<uint16> data_types;
+	uint8 result_option = 0;
+	uint32 minimal_rating_frequency = 0;
+	bool use_cache = false;
+	bool total_count_enabled = true;
+	list<uint16> data_types = [];
 }
 
 struct DataStoreSearchResult {

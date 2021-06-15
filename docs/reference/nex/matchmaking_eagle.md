@@ -1227,7 +1227,7 @@ If `nex.version` >= 40000:<br>
 <code>exclude_system_password: bool = False</code><br>
 <code>refer_gid: int = 0</code><br>
 <code>codeword: str = ""</code><br>
-<code>range: [ResultRange](../common#resultrange) = [ResultRange](../common#resultrange)</code><br>
+<code>range: [ResultRange](../common#resultrange) = [ResultRange](../common#resultrange)()</code><br>
 </span><br>
 </span><br>
 

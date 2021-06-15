@@ -987,25 +987,25 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>search_target: int</code><br>
-<code>owner_ids: list[int]</code><br>
-<code>owner_type: int</code><br>
-<code>destination_ids: list[int]</code><br>
-<code>data_type: int</code><br>
-<code>created_after: [DateTime](../common#datetime)</code><br>
-<code>created_before: [DateTime](../common#datetime)</code><br>
-<code>updated_after: [DateTime](../common#datetime)</code><br>
-<code>updated_before: [DateTime](../common#datetime)</code><br>
-<code>refer_data_id: int</code><br>
-<code>tags: list[str]</code><br>
-<code>result_order_column: int</code><br>
-<code>result_order: int</code><br>
-<code>result_range: [ResultRange](../common#resultrange) = [ResultRange](../common#resultrange)</code><br>
-<code>result_option: int</code><br>
-<code>minimal_rating_frequency: int</code><br>
-<code>use_cache: bool</code><br>
-<code>total_count_enabled: bool</code><br>
-<code>data_types: list[int]</code><br>
+<code>search_target: int = 1</code><br>
+<code>owner_ids: list[int] = []</code><br>
+<code>owner_type: int = 0</code><br>
+<code>destination_ids: list[int] = []</code><br>
+<code>data_type: int = 65535</code><br>
+<code>created_after: [DateTime](../common#datetime) = [DateTime](../common#datetime).future()</code><br>
+<code>created_before: [DateTime](../common#datetime) = [DateTime](../common#datetime).future()</code><br>
+<code>updated_after: [DateTime](../common#datetime) = [DateTime](../common#datetime).future()</code><br>
+<code>updated_before: [DateTime](../common#datetime) = [DateTime](../common#datetime).future()</code><br>
+<code>refer_data_id: int = 0</code><br>
+<code>tags: list[str] = []</code><br>
+<code>result_order_column: int = 0</code><br>
+<code>result_order: int = 0</code><br>
+<code>result_range: [ResultRange](../common#resultrange) = [ResultRange](../common#resultrange)()</code><br>
+<code>result_option: int = 0</code><br>
+<code>minimal_rating_frequency: int = 0</code><br>
+<code>use_cache: bool = False</code><br>
+<code>total_count_enabled: bool = True</code><br>
+<code>data_types: list[int] = []</code><br>
 </span><br>
 
 ## DataStoreSearchResult
