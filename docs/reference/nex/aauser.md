@@ -9,10 +9,10 @@ Provides a client and server for the `AAUserProtocol`. This page was generated a
 <code>**class** [AAUserServer](#aauserserver)</code><br>
 <span class="docs">The server for the `AAUserProtocol`.</span>
 
-<code>**class** [ApplicationInfo](#applicationinfo)([Structure](../common))</code><br>
+<code>**class** [ApplicationInfo](#applicationinfo)([Structure](common.md))</code><br>
 
 ## AAUserClient
-<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
+<code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
 <span class="docs">Creates a new [`AAUserClient`](#aauserclient).</span>
 
 <code>**async def register_application**(title_id: int) -> None</code><br>
@@ -31,19 +31,19 @@ Provides a client and server for the `AAUserProtocol`. This page was generated a
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`AAUserServer`](#aauserserver).</span>
 
-<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
-<code>**async def register_application**(client: [RMCClient](../rmc#rmcclient), title_id: int) -> None</code><br>
+<code>**async def register_application**(client: [RMCClient](rmc.md#rmcclient), title_id: int) -> None</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
 
-<code>**async def unregister_application**(client: [RMCClient](../rmc#rmcclient), title_id: int) -> None</code><br>
+<code>**async def unregister_application**(client: [RMCClient](rmc.md#rmcclient), title_id: int) -> None</code><br>
 <span class="docs">Handler for method `2`. This method should be overridden by a subclass.</span>
 
-<code>**async def set_application_info**(client: [RMCClient](../rmc#rmcclient), application_info: list[[ApplicationInfo](#applicationinfo)]) -> None</code><br>
+<code>**async def set_application_info**(client: [RMCClient](rmc.md#rmcclient), application_info: list[[ApplicationInfo](#applicationinfo)]) -> None</code><br>
 <span class="docs">Handler for method `3`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_application_info**(client: [RMCClient](../rmc#rmcclient)) -> list[[ApplicationInfo](#applicationinfo)]</code><br>
+<code>**async def get_application_info**(client: [RMCClient](rmc.md#rmcclient)) -> list[[ApplicationInfo](#applicationinfo)]</code><br>
 <span class="docs">Handler for method `4`. This method should be overridden by a subclass.</span>
 
 ## ApplicationInfo

@@ -15,30 +15,30 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**class** [FriendsServerV2](#friendsserverv2)</code><br>
 <span class="docs">The server for the `FriendsProtocolV2`.</span>
 
-<code>**class** [BlacklistedPrincipal](#blacklistedprincipal)([Data](../common))</code><br>
-<code>**class** [Comment](#comment)([Data](../common))</code><br>
-<code>**class** [FriendInfo](#friendinfo)([Data](../common))</code><br>
-<code>**class** [FriendRequest](#friendrequest)([Data](../common))</code><br>
-<code>**class** [FriendRequestMessage](#friendrequestmessage)([Data](../common))</code><br>
-<code>**class** [GameKey](#gamekey)([Data](../common))</code><br>
-<code>**class** [MiiV2](#miiv2)([Data](../common))</code><br>
-<code>**class** [NNAInfo](#nnainfo)([Data](../common))</code><br>
-<code>**class** [NintendoCreateAccountData](#nintendocreateaccountdata)([Data](../common))</code><br>
-<code>**class** [NintendoPresenceV2](#nintendopresencev2)([Data](../common))</code><br>
-<code>**class** [PersistentNotification](#persistentnotification)([Data](../common))</code><br>
-<code>**class** [PrincipalBasicInfo](#principalbasicinfo)([Data](../common))</code><br>
-<code>**class** [PrincipalPreference](#principalpreference)([Data](../common))</code><br>
-<code>**class** [PrincipalRequestBlockSetting](#principalrequestblocksetting)([Structure](../common))</code><br>
+<code>**class** [BlacklistedPrincipal](#blacklistedprincipal)([Data](common.md))</code><br>
+<code>**class** [Comment](#comment)([Data](common.md))</code><br>
+<code>**class** [FriendInfo](#friendinfo)([Data](common.md))</code><br>
+<code>**class** [FriendRequest](#friendrequest)([Data](common.md))</code><br>
+<code>**class** [FriendRequestMessage](#friendrequestmessage)([Data](common.md))</code><br>
+<code>**class** [GameKey](#gamekey)([Data](common.md))</code><br>
+<code>**class** [MiiV2](#miiv2)([Data](common.md))</code><br>
+<code>**class** [NNAInfo](#nnainfo)([Data](common.md))</code><br>
+<code>**class** [NintendoCreateAccountData](#nintendocreateaccountdata)([Data](common.md))</code><br>
+<code>**class** [NintendoPresenceV2](#nintendopresencev2)([Data](common.md))</code><br>
+<code>**class** [PersistentNotification](#persistentnotification)([Data](common.md))</code><br>
+<code>**class** [PrincipalBasicInfo](#principalbasicinfo)([Data](common.md))</code><br>
+<code>**class** [PrincipalPreference](#principalpreference)([Data](common.md))</code><br>
+<code>**class** [PrincipalRequestBlockSetting](#principalrequestblocksetting)([Structure](common.md))</code><br>
 
 ## FriendsClientV1
-<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
+<code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
 <span class="docs">Creates a new [`FriendsClientV1`](#friendsclientv1).</span>
 
 ## FriendsClientV2
-<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
+<code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
 <span class="docs">Creates a new [`FriendsClientV2`](#friendsclientv2).</span>
 
-<code>**async def update_and_get_all_information**(nna_info: [NNAInfo](#nnainfo), presence: [NintendoPresenceV2](#nintendopresencev2), birthday: [DateTime](../common#datetime)) -> [RMCResponse](../common)</code><br>
+<code>**async def update_and_get_all_information**(nna_info: [NNAInfo](#nnainfo), presence: [NintendoPresenceV2](#nintendopresencev2), birthday: [DateTime](common.md#datetime)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `1` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>principal_preference: [PrincipalPreference](#principalpreference)</code><br>
@@ -53,7 +53,7 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 </span>
 </span>
 
-<code>**async def add_friend**(pid: int) -> [RMCResponse](../common)</code><br>
+<code>**async def add_friend**(pid: int) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `2` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>request: [FriendRequest](#friendrequest)</code><br>
@@ -61,7 +61,7 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 </span>
 </span>
 
-<code>**async def add_friend_by_name**(name: str) -> [RMCResponse](../common)</code><br>
+<code>**async def add_friend_by_name**(name: str) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `3` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>request: [FriendRequest](#friendrequest)</code><br>
@@ -72,7 +72,7 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def remove_friend**(pid: int) -> None</code><br>
 <span class="docs">Calls method `4` on the server.</span>
 
-<code>**async def add_friend_request**(unk1: int, unk2: int, unk3: str, unk4: int, unk5: str, game_key: [GameKey](#gamekey), unk6: [DateTime](../common#datetime)) -> [RMCResponse](../common)</code><br>
+<code>**async def add_friend_request**(unk1: int, unk2: int, unk3: str, unk4: int, unk5: str, game_key: [GameKey](#gamekey), unk6: [DateTime](common.md#datetime)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `5` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>request: [FriendRequest](#friendrequest)</code><br>
@@ -104,10 +104,10 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def update_presence**(presence: [NintendoPresenceV2](#nintendopresencev2)) -> None</code><br>
 <span class="docs">Calls method `13` on the server.</span>
 
-<code>**async def update_mii**(mii: [MiiV2](#miiv2)) -> [DateTime](../common#datetime)</code><br>
+<code>**async def update_mii**(mii: [MiiV2](#miiv2)) -> [DateTime](common.md#datetime)</code><br>
 <span class="docs">Calls method `14` on the server.</span>
 
-<code>**async def update_comment**(comment: [Comment](#comment)) -> [DateTime](../common#datetime)</code><br>
+<code>**async def update_comment**(comment: [Comment](#comment)) -> [DateTime](common.md#datetime)</code><br>
 <span class="docs">Calls method `15` on the server.</span>
 
 <code>**async def update_preference**(preference: [PrincipalPreference](#principalpreference)) -> None</code><br>
@@ -129,17 +129,17 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`FriendsServerV1`](#friendsserverv1).</span>
 
-<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
 ## FriendsServerV2
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`FriendsServerV2`](#friendsserverv2).</span>
 
-<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
-<code>**async def update_and_get_all_information**(client: [RMCClient](../rmc#rmcclient), nna_info: [NNAInfo](#nnainfo), presence: [NintendoPresenceV2](#nintendopresencev2), birthday: [DateTime](../common#datetime)) -> [RMCResponse](../common)</code><br>
+<code>**async def update_and_get_all_information**(client: [RMCClient](rmc.md#rmcclient), nna_info: [NNAInfo](#nnainfo), presence: [NintendoPresenceV2](#nintendopresencev2), birthday: [DateTime](common.md#datetime)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>principal_preference: [PrincipalPreference](#principalpreference)</code><br>
@@ -154,7 +154,7 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 </span>
 </span>
 
-<code>**async def add_friend**(client: [RMCClient](../rmc#rmcclient), pid: int) -> [RMCResponse](../common)</code><br>
+<code>**async def add_friend**(client: [RMCClient](rmc.md#rmcclient), pid: int) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `2`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>request: [FriendRequest](#friendrequest)</code><br>
@@ -162,7 +162,7 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 </span>
 </span>
 
-<code>**async def add_friend_by_name**(client: [RMCClient](../rmc#rmcclient), name: str) -> [RMCResponse](../common)</code><br>
+<code>**async def add_friend_by_name**(client: [RMCClient](rmc.md#rmcclient), name: str) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `3`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>request: [FriendRequest](#friendrequest)</code><br>
@@ -170,10 +170,10 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 </span>
 </span>
 
-<code>**async def remove_friend**(client: [RMCClient](../rmc#rmcclient), pid: int) -> None</code><br>
+<code>**async def remove_friend**(client: [RMCClient](rmc.md#rmcclient), pid: int) -> None</code><br>
 <span class="docs">Handler for method `4`. This method should be overridden by a subclass.</span>
 
-<code>**async def add_friend_request**(client: [RMCClient](../rmc#rmcclient), unk1: int, unk2: int, unk3: str, unk4: int, unk5: str, game_key: [GameKey](#gamekey), unk6: [DateTime](../common#datetime)) -> [RMCResponse](../common)</code><br>
+<code>**async def add_friend_request**(client: [RMCClient](rmc.md#rmcclient), unk1: int, unk2: int, unk3: str, unk4: int, unk5: str, game_key: [GameKey](#gamekey), unk6: [DateTime](common.md#datetime)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `5`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>request: [FriendRequest](#friendrequest)</code><br>
@@ -181,49 +181,49 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 </span>
 </span>
 
-<code>**async def cancel_friend_request**(client: [RMCClient](../rmc#rmcclient), id: int) -> None</code><br>
+<code>**async def cancel_friend_request**(client: [RMCClient](rmc.md#rmcclient), id: int) -> None</code><br>
 <span class="docs">Handler for method `6`. This method should be overridden by a subclass.</span>
 
-<code>**async def accept_friend_request**(client: [RMCClient](../rmc#rmcclient), id: int) -> [FriendInfo](#friendinfo)</code><br>
+<code>**async def accept_friend_request**(client: [RMCClient](rmc.md#rmcclient), id: int) -> [FriendInfo](#friendinfo)</code><br>
 <span class="docs">Handler for method `7`. This method should be overridden by a subclass.</span>
 
-<code>**async def delete_friend_request**(client: [RMCClient](../rmc#rmcclient), id: int) -> None</code><br>
+<code>**async def delete_friend_request**(client: [RMCClient](rmc.md#rmcclient), id: int) -> None</code><br>
 <span class="docs">Handler for method `8`. This method should be overridden by a subclass.</span>
 
-<code>**async def deny_friend_request**(client: [RMCClient](../rmc#rmcclient), id: int) -> [BlacklistedPrincipal](#blacklistedprincipal)</code><br>
+<code>**async def deny_friend_request**(client: [RMCClient](rmc.md#rmcclient), id: int) -> [BlacklistedPrincipal](#blacklistedprincipal)</code><br>
 <span class="docs">Handler for method `9`. This method should be overridden by a subclass.</span>
 
-<code>**async def mark_friend_requests_as_received**(client: [RMCClient](../rmc#rmcclient), ids: list[int]) -> None</code><br>
+<code>**async def mark_friend_requests_as_received**(client: [RMCClient](rmc.md#rmcclient), ids: list[int]) -> None</code><br>
 <span class="docs">Handler for method `10`. This method should be overridden by a subclass.</span>
 
-<code>**async def add_black_list**(client: [RMCClient](../rmc#rmcclient), principal: [BlacklistedPrincipal](#blacklistedprincipal)) -> [BlacklistedPrincipal](#blacklistedprincipal)</code><br>
+<code>**async def add_black_list**(client: [RMCClient](rmc.md#rmcclient), principal: [BlacklistedPrincipal](#blacklistedprincipal)) -> [BlacklistedPrincipal](#blacklistedprincipal)</code><br>
 <span class="docs">Handler for method `11`. This method should be overridden by a subclass.</span>
 
-<code>**async def remove_black_list**(client: [RMCClient](../rmc#rmcclient), pid: int) -> None</code><br>
+<code>**async def remove_black_list**(client: [RMCClient](rmc.md#rmcclient), pid: int) -> None</code><br>
 <span class="docs">Handler for method `12`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_presence**(client: [RMCClient](../rmc#rmcclient), presence: [NintendoPresenceV2](#nintendopresencev2)) -> None</code><br>
+<code>**async def update_presence**(client: [RMCClient](rmc.md#rmcclient), presence: [NintendoPresenceV2](#nintendopresencev2)) -> None</code><br>
 <span class="docs">Handler for method `13`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_mii**(client: [RMCClient](../rmc#rmcclient), mii: [MiiV2](#miiv2)) -> [DateTime](../common#datetime)</code><br>
+<code>**async def update_mii**(client: [RMCClient](rmc.md#rmcclient), mii: [MiiV2](#miiv2)) -> [DateTime](common.md#datetime)</code><br>
 <span class="docs">Handler for method `14`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_comment**(client: [RMCClient](../rmc#rmcclient), comment: [Comment](#comment)) -> [DateTime](../common#datetime)</code><br>
+<code>**async def update_comment**(client: [RMCClient](rmc.md#rmcclient), comment: [Comment](#comment)) -> [DateTime](common.md#datetime)</code><br>
 <span class="docs">Handler for method `15`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_preference**(client: [RMCClient](../rmc#rmcclient), preference: [PrincipalPreference](#principalpreference)) -> None</code><br>
+<code>**async def update_preference**(client: [RMCClient](rmc.md#rmcclient), preference: [PrincipalPreference](#principalpreference)) -> None</code><br>
 <span class="docs">Handler for method `16`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_basic_info**(client: [RMCClient](../rmc#rmcclient), pids: list[int]) -> list[[PrincipalBasicInfo](#principalbasicinfo)]</code><br>
+<code>**async def get_basic_info**(client: [RMCClient](rmc.md#rmcclient), pids: list[int]) -> list[[PrincipalBasicInfo](#principalbasicinfo)]</code><br>
 <span class="docs">Handler for method `17`. This method should be overridden by a subclass.</span>
 
-<code>**async def delete_persistent_notification**(client: [RMCClient](../rmc#rmcclient), notifications: list[[PersistentNotification](#persistentnotification)]) -> None</code><br>
+<code>**async def delete_persistent_notification**(client: [RMCClient](rmc.md#rmcclient), notifications: list[[PersistentNotification](#persistentnotification)]) -> None</code><br>
 <span class="docs">Handler for method `18`. This method should be overridden by a subclass.</span>
 
-<code>**async def check_setting_status**(client: [RMCClient](../rmc#rmcclient)) -> int</code><br>
+<code>**async def check_setting_status**(client: [RMCClient](rmc.md#rmcclient)) -> int</code><br>
 <span class="docs">Handler for method `19`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_request_block_settings**(client: [RMCClient](../rmc#rmcclient), unk: list[int]) -> list[[PrincipalRequestBlockSetting](#principalrequestblocksetting)]</code><br>
+<code>**async def get_request_block_settings**(client: [RMCClient](rmc.md#rmcclient), unk: list[int]) -> list[[PrincipalRequestBlockSetting](#principalrequestblocksetting)]</code><br>
 <span class="docs">Handler for method `20`. This method should be overridden by a subclass.</span>
 
 ## BlacklistedPrincipal
@@ -234,7 +234,7 @@ The following fields are defined in this class:<br>
 <span class="docs">
 <code>principal_info: [PrincipalBasicInfo](#principalbasicinfo) = [PrincipalBasicInfo](#principalbasicinfo)()</code><br>
 <code>game_key: [GameKey](#gamekey) = [GameKey](#gamekey)()</code><br>
-<code>since: [DateTime](../common#datetime)</code><br>
+<code>since: [DateTime](common.md#datetime)</code><br>
 </span><br>
 
 ## Comment
@@ -245,7 +245,7 @@ The following fields are defined in this class:<br>
 <span class="docs">
 <code>unk: int</code><br>
 <code>text: str</code><br>
-<code>changed: [DateTime](../common#datetime)</code><br>
+<code>changed: [DateTime](common.md#datetime)</code><br>
 </span><br>
 
 ## FriendInfo
@@ -257,8 +257,8 @@ The following fields are defined in this class:<br>
 <code>nna_info: [NNAInfo](#nnainfo) = [NNAInfo](#nnainfo)()</code><br>
 <code>presence: [NintendoPresenceV2](#nintendopresencev2) = [NintendoPresenceV2](#nintendopresencev2)()</code><br>
 <code>comment: [Comment](#comment) = [Comment](#comment)()</code><br>
-<code>befriended: [DateTime](../common#datetime)</code><br>
-<code>last_online: [DateTime](../common#datetime)</code><br>
+<code>befriended: [DateTime](common.md#datetime)</code><br>
+<code>last_online: [DateTime](common.md#datetime)</code><br>
 <code>unk: int</code><br>
 </span><br>
 
@@ -270,7 +270,7 @@ The following fields are defined in this class:<br>
 <span class="docs">
 <code>principal_info: [PrincipalBasicInfo](#principalbasicinfo) = [PrincipalBasicInfo](#principalbasicinfo)()</code><br>
 <code>message: [FriendRequestMessage](#friendrequestmessage) = [FriendRequestMessage](#friendrequestmessage)()</code><br>
-<code>sent: [DateTime](../common#datetime)</code><br>
+<code>sent: [DateTime](common.md#datetime)</code><br>
 </span><br>
 
 ## FriendRequestMessage
@@ -286,8 +286,8 @@ The following fields are defined in this class:<br>
 <code>unk4: int</code><br>
 <code>string: str</code><br>
 <code>game_key: [GameKey](#gamekey) = [GameKey](#gamekey)()</code><br>
-<code>datetime: [DateTime](../common#datetime)</code><br>
-<code>expires: [DateTime](../common#datetime)</code><br>
+<code>datetime: [DateTime](common.md#datetime)</code><br>
+<code>expires: [DateTime](common.md#datetime)</code><br>
 </span><br>
 
 ## GameKey
@@ -310,7 +310,7 @@ The following fields are defined in this class:<br>
 <code>unk1: int = 0</code><br>
 <code>unk2: int = 0</code><br>
 <code>data: bytes</code><br>
-<code>datetime: [DateTime](../common#datetime) = [DateTime](../common#datetime).never()</code><br>
+<code>datetime: [DateTime](common.md#datetime) = [DateTime](common.md#datetime).never()</code><br>
 </span><br>
 
 ## NNAInfo
@@ -332,7 +332,7 @@ The following fields are defined in this class:<br>
 <span class="docs">
 <code>info: [NNAInfo](#nnainfo) = [NNAInfo](#nnainfo)()</code><br>
 <code>token: str</code><br>
-<code>birthday: [DateTime](../common#datetime)</code><br>
+<code>birthday: [DateTime](common.md#datetime)</code><br>
 <code>unk: int</code><br>
 </span><br>
 

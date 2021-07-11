@@ -9,23 +9,23 @@ Provides a client and server for the `NotificationProtocol`. This page was gener
 <code>**class** [NotificationServer](#notificationserver)</code><br>
 <span class="docs">The server for the `NotificationProtocol`.</span>
 
-<code>**class** [NotificationEvent](#notificationevent)([Structure](../common))</code><br>
+<code>**class** [NotificationEvent](#notificationevent)([Structure](common.md))</code><br>
 
 ## NotificationClient
-<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
+<code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
 <span class="docs">Creates a new [`NotificationClient`](#notificationclient).</span>
 
-<code>**async def process_notification_event**(event: [NotificationEvent](../notification#notificationevent)) -> None</code><br>
+<code>**async def process_notification_event**(event: [NotificationEvent](notification.md#notificationevent)) -> None</code><br>
 <span class="docs">Calls method `1` on the server.</span>
 
 ## NotificationServer
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`NotificationServer`](#notificationserver).</span>
 
-<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
-<code>**async def process_notification_event**(client: [RMCClient](../rmc#rmcclient), event: [NotificationEvent](../notification#notificationevent)) -> None</code><br>
+<code>**async def process_notification_event**(client: [RMCClient](rmc.md#rmcclient), event: [NotificationEvent](notification.md#notificationevent)) -> None</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
 
 ## NotificationEvent

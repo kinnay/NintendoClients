@@ -11,17 +11,17 @@ Provides a client and server for the `NintendoNotificationProtocol`. This page w
 
 <code>**class** [NintendoNotificationType](#nintendonotificationtype)</code><br>
 
-<code>**class** [NintendoNotificationEvent](#nintendonotificationevent)([Structure](../common))</code><br>
-<code>**class** [NintendoNotificationEventGeneral](#nintendonotificationeventgeneral)([Data](../common))</code><br>
-<code>**class** [NintendoNotificationEventKeyValue](#nintendonotificationeventkeyvalue)([Data](../common))</code><br>
-<code>**class** [NintendoNotificationEventProfile](#nintendonotificationeventprofile)([Data](../common))</code><br>
-<code>**class** [StringKeyValue](#stringkeyvalue)([Data](../common))</code><br>
-<code>**class** [u32KeyValue](#u32keyvalue)([Data](../common))</code><br>
-<code>**class** [u64KeyValue](#u64keyvalue)([Data](../common))</code><br>
-<code>**class** [u8KeyValue](#u8keyvalue)([Data](../common))</code><br>
+<code>**class** [NintendoNotificationEvent](#nintendonotificationevent)([Structure](common.md))</code><br>
+<code>**class** [NintendoNotificationEventGeneral](#nintendonotificationeventgeneral)([Data](common.md))</code><br>
+<code>**class** [NintendoNotificationEventKeyValue](#nintendonotificationeventkeyvalue)([Data](common.md))</code><br>
+<code>**class** [NintendoNotificationEventProfile](#nintendonotificationeventprofile)([Data](common.md))</code><br>
+<code>**class** [StringKeyValue](#stringkeyvalue)([Data](common.md))</code><br>
+<code>**class** [u32KeyValue](#u32keyvalue)([Data](common.md))</code><br>
+<code>**class** [u64KeyValue](#u64keyvalue)([Data](common.md))</code><br>
+<code>**class** [u8KeyValue](#u8keyvalue)([Data](common.md))</code><br>
 
 ## NintendoNotificationClient
-<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
+<code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
 <span class="docs">Creates a new [`NintendoNotificationClient`](#nintendonotificationclient).</span>
 
 <code>**async def process_nintendo_notification_event**(event: [NintendoNotificationEvent](#nintendonotificationevent)) -> None</code><br>
@@ -34,13 +34,13 @@ Provides a client and server for the `NintendoNotificationProtocol`. This page w
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`NintendoNotificationServer`](#nintendonotificationserver).</span>
 
-<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
-<code>**async def process_nintendo_notification_event**(client: [RMCClient](../rmc#rmcclient), event: [NintendoNotificationEvent](#nintendonotificationevent)) -> None</code><br>
+<code>**async def process_nintendo_notification_event**(client: [RMCClient](rmc.md#rmcclient), event: [NintendoNotificationEvent](#nintendonotificationevent)) -> None</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
 
-<code>**async def process_nintendo_notification_event_alt**(client: [RMCClient](../rmc#rmcclient), event: [NintendoNotificationEvent](#nintendonotificationevent)) -> None</code><br>
+<code>**async def process_nintendo_notification_event_alt**(client: [RMCClient](rmc.md#rmcclient), event: [NintendoNotificationEvent](#nintendonotificationevent)) -> None</code><br>
 <span class="docs">Handler for method `2`. This method should be overridden by a subclass.</span>
 
 ## NintendoNotificationType
@@ -61,7 +61,7 @@ The following fields are defined in this class:<br>
 <span class="docs">
 <code>type: int</code><br>
 <code>pid: int</code><br>
-<code>data: [Data](../common)</code><br>
+<code>data: [Data](common.md)</code><br>
 </span><br>
 
 ## NintendoNotificationEventGeneral

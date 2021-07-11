@@ -2,7 +2,7 @@
 # Module: <code>nintendo.dauth</code>
 Provides a client for the [device authentication server](https://github.com/kinnay/nintendo/wiki/DAuth-Server).
 
-<code>**class** DAuthError([NDASError](../switch#ndaserror))</code><br>
+<code>**class** DAuthError([NDASError](switch.md#ndaserror))</code><br>
 <span class="docs">Raised when the `dauth` server returns an error code.</span>
 
 <code>**class** [DAuthClient](#dauthclient)</code><br>
@@ -16,7 +16,7 @@ Provides a client for the [device authentication server](https://github.com/kinn
 `DRAGONS: int = 0xD5B6CAC2C1514C56`<br>
 `PREPO: int = 0xDF51C436BC01C437`
 
-<code>**def _\_init__**(keyset: [KeySet](../switch#keyset))</code><br>
+<code>**def _\_init__**(keyset: [KeySet](switch.md#keyset))</code><br>
 <span class="docs">Creates a new `dauth` client with the given keyset.</span>
 
 <code>**def set_certificate**(cert: [TLSCertificate](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscertificate), key: [TLSPrivateKey](https://anynet.readthedocs.io/en/latest/reference/tls/#tlsprivatekey)) -> None</code>

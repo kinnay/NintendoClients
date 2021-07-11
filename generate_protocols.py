@@ -1260,9 +1260,9 @@ class DocsGenerator:
 		
 		for struct in self.file.structs.values():
 			if not struct.parent:
-				parent = "[Structure](../common)"
+				parent = "[Structure](common.md)"
 			elif struct.parent == "Data":
-				parent = "[Data](../common)"
+				parent = "[Data](common.md)"
 			elif struct.parent in self.file.structs:
 				parent = "[%s](#%s)" %(struct.parent, struct.parent.lower())
 			else:
@@ -1306,7 +1306,7 @@ class DocsGenerator:
 	def generate_client(self, proto):
 		name = make_class_name(proto.name, "Client")
 		self.text += "## %s\n" %name
-		self.text += "<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>\n"
+		self.text += "<code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>\n"
 		self.text += '<span class="docs">Creates a new [`%s`](#%s).</span>\n\n' %(name, name.lower())
 		
 		for method in proto.methods.values():
@@ -1331,7 +1331,7 @@ class DocsGenerator:
 		self.text += "## %s\n" %name
 		self.text += "<code>**def _\_init__**()</code><br>\n"
 		self.text += '<span class="docs">Creates a new [`%s`](#%s).</span>\n\n' %(name, name.lower())
-		self.text += "<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>\n"
+		self.text += "<code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>\n"
 		self.text += '<span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>\n\n'
 		
 		for method in proto.methods.values():
@@ -1339,7 +1339,7 @@ class DocsGenerator:
 				self.generate_server_method(method)
 		
 	def generate_server_method(self, method):
-		param = ["client: [RMCClient](../rmc#rmcclient)"]
+		param = ["client: [RMCClient](rmc.md#rmcclient)"]
 		param += [self.format_variable(param, False) for param in method.request.vars]
 		param = ", ".join(param)
 		rval = self.format_return_value(method)
@@ -1367,12 +1367,12 @@ class DocsGenerator:
 		if type.name in ["float", "double"]: return "float"
 		if type.name in ["buffer", "qbuffer"]: return "bytes"
 		if type.name == "variant": return "object"
-		if type.name == "datetime": return "[DateTime](../common#datetime)"
-		if type.name == "stationurl": return "[StationURL](../common#stationurl)"
-		if type.name == "result": return "[Result](../common#result)"
-		if type.name == "anydata": return "[Data](../common)"
-		if type.name == "ResultRange": return "[ResultRange](../common#resultrange)"
-		if type.name == "NotificationEvent": return "[NotificationEvent](../notification#notificationevent)"
+		if type.name == "datetime": return "[DateTime](common.md#datetime)"
+		if type.name == "stationurl": return "[StationURL](common.md#stationurl)"
+		if type.name == "result": return "[Result](common.md#result)"
+		if type.name == "anydata": return "[Data](common.md)"
+		if type.name == "ResultRange": return "[ResultRange](common.md#resultrange)"
+		if type.name == "NotificationEvent": return "[NotificationEvent](notification.md#notificationevent)"
 		if type.name in self.file.structs: return "[%s](#%s)" %(type.name, type.name.lower())
 		if type.name in NUMERIC_TYPES: return "int"
 		if type.name == "list": return "list[%s]" %self.format_type(type.template[0])
@@ -1383,25 +1383,25 @@ class DocsGenerator:
 	
 	def format_return_value(self, method):
 		if len(method.response.vars) > 1:
-			return "[RMCResponse](../common)"
+			return "[RMCResponse](common.md)"
 		if len(method.response.vars) == 1:
 			return self.format_type(method.response.vars[0].type)
 		return "None"
 				
 	def format_constant(self, type, value):
 		if type.name in self.file.structs: return "[%s](#%s)()" %(type.name, type.name.lower())
-		if type.name == "ResultRange": return "[ResultRange](../common#resultrange)()"
-		if type.name == "NotificationEvent": return "[NotificationEvent](../notification#notificationevent)()"
+		if type.name == "ResultRange": return "[ResultRange](common.md#resultrange)()"
+		if type.name == "NotificationEvent": return "[NotificationEvent](notification.md#notificationevent)()"
 		
 		if type.name in NUMERIC_TYPES + ["bool"]: return str(value)
 		if type.name in ["buffer", "qbuffer"]: return 'b"%s"' %value
 		if type.name in ["string", "stationurl"]: return '"%s"' %value
 		if type.name == "datetime":
 			if value == 0:
-				return "[DateTime](../common#datetime).never()"
+				return "[DateTime](common.md#datetime).never()"
 			elif value == 671076024059:
-				return "[DateTime](../common#datetime).future()"
-			return "[DateTime](../common#datetime)(%i)" %value
+				return "[DateTime](common.md#datetime).future()"
+			return "[DateTime](common.md#datetime)(%i)" %value
 		
 		if type.name == "list":
 			entries = []

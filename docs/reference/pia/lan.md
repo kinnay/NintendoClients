@@ -12,17 +12,17 @@ Provides a client that can search for LAN sessions on the wifi network.
 <code>**class** [LanStationInfo](#lanstationinfo)</code><br>
 <span class="docs">Information about a station in a LAN session.</span>
 
-<code>**async def browse**(settings: [Settings](../settings#settings), search_criteria: [LanSessionSearchCriteria](#lansessionsearchcriteria), key: bytes = None, timeout: float = 1, max: int = 0) -> list[[LanSessionInfo](#lansessioninfo)]</code><br>
+<code>**async def browse**(settings: [Settings](settings.md#settings), search_criteria: [LanSessionSearchCriteria](#lansessionsearchcriteria), key: bytes = None, timeout: float = 1, max: int = 0) -> list[[LanSessionInfo](#lansessioninfo)]</code><br>
 <span class="docs">Searches for LAN sessions that match the given search criteria. Blocks until either `max` different LAN session are discovered or the `timeout` has expired. If `max` is `0`, this function always keeps listening until the timeout expires.</span>
 
-<code>**async with serve**(settings: [Settings](../settings#settings), handler: Callable, key: bytes = None) -> None</code><br>
+<code>**async with serve**(settings: [Settings](settings.md#settings), handler: Callable, key: bytes = None) -> None</code><br>
 <span class="docs">Hosts a server that replies to browse requests. `handler` should be a function that takes no arguments and returns the list of active [`LanSessionInfo`](#lansessioninfo) objects.</span>
 
 ## LanSessionSearchCriteria
-<code>min_participants: [Range](../types#range) = None</code><br>
+<code>min_participants: [Range](types.md#range) = None</code><br>
 <span class="docs">Specifies the allowed range of values for the minimum number of participants.</span>
 
-<code>max_participants: [Range](../types#range) = None</code><br>
+<code>max_participants: [Range](types.md#range) = None</code><br>
 <span class="docs">Specifies the allowed range of values for the minimum number of participants.</span>
 
 `opened_only: bool = None`<br>
@@ -31,7 +31,7 @@ Provides a client that can search for LAN sessions on the wifi network.
 `vacant_only: bool = None`<br>
 <span class="docs">If `True`, only sessions with less than the maximum number of participants are returned.</span>
 
-<code>result_range: [ResultRange](../types#resultrange) = [ResultRange](../types#resultrange)()</code><br>
+<code>result_range: [ResultRange](types.md#resultrange) = [ResultRange](types.md#resultrange)()</code><br>
 <span class="docs">Result range. This controls which LAN sessions are returned if multiple LAN sessions match the given search criteria on a single host. This attribute seems to be ignored by real consoles, since they never host more than one LAN session at once.</span>
 
 `game_mode: int = None`<br>
@@ -41,7 +41,7 @@ Provides a client that can search for LAN sessions on the wifi network.
 <span class="docs">If set, only sessions with the specified session type are returned.</span>
 
 `attributes: list = [None] * 6`<br>
-<span class="docs">Only sessions with the given attributes are returned. Every item should either be a [`Range`](../types#range) object or a `list[int]` of accepted values.</span>
+<span class="docs">Only sessions with the given attributes are returned. Every item should either be a [`Range`](types.md#range) object or a `list[int]` of accepted values.</span>
 
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [LanSessionSearchCriteria](#lansessionsearchcriteria) object with no restrictions.</span>
@@ -64,7 +64,7 @@ Provides a client that can search for LAN sessions on the wifi network.
 `session_type: int`<br>
 `application_data: bytes`<br>
 `is_opened: bool`<br>
-<code>host_location: [StationLocation](../types#stationlocation)</code><br>
+<code>host_location: [StationLocation](types.md#stationlocation)</code><br>
 <code>stations: list[[LanStationInfo](#lanstationinfo)]</code><br>
 `session_param: bytes`
 

@@ -2,7 +2,7 @@
 # Module: <code>nintendo.aauth</code>
 Provides a client for the [application authentication server](https://github.com/kinnay/nintendo/wiki/AAuth-Server).
 
-<code>**class** AAuthError([NDASError](../switch#ndaserror))</code><br>
+<code>**class** AAuthError([NDASError](switch.md#ndaserror))</code><br>
 <span class="docs">Raised when the `aauth` server returns an error code.</span>
 
 <code>**class** [AAuthClient](#aauthclient)</code><br>
@@ -28,7 +28,7 @@ Provides a client for the [application authentication server](https://github.com
 <span class="docs">Changes the TLS context. By default, the server certificate is verified with `Nintendo CA - G3`.</span>
 
 <code>**async def auth_system**(title_id: int, title_version: int, device_token: str) -> dict</code><br>
-<span class="docs">Requests an application token from the `aauth` server for a system title with `/v3/application_auth_token`. The device token can be obtained from the [`dauth server`](../dauth).</span>
+<span class="docs">Requests an application token from the `aauth` server for a system title with `/v3/application_auth_token`. The device token can be obtained from the [`dauth server`](dauth.md).</span>
 
 <code>**async def auth_digital**(title_id: int, title_version: int, device_token: str, ticket: bytes) -> dict</code><br>
-<span class="docs">Requests an application token from the `aauth` server for a digital title with `/v3/application_auth_token`. The device token can be obtained from the [`dauth server`](../dauth).</span>
+<span class="docs">Requests an application token from the `aauth` server for a digital title with `/v3/application_auth_token`. The device token can be obtained from the [`dauth server`](dauth.md).</span>

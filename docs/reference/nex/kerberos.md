@@ -59,15 +59,15 @@ Provides classes for Kerberos authentication. For details, click [here](https://
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`ClientTicket`](#clientticket) instance. The attributes must be filled in manually.</span>
 
-<code>**def encrypt**(key: bytes, settings: [Settings](../../settings#settings)) -> bytes</code><br>
+<code>**def encrypt**(key: bytes, settings: [Settings](settings.md#settings)) -> bytes</code><br>
 <span class="docs">Encodes the ticket and encrypts it with the given Kerberos key.</span>
 
 <code style="color: blue">@classmethod</code><br>
-<code>**def decrypt**(data: bytes, key: bytes, settings: [Settings](../../settings#settings)) -> [`ClientTicket`](#clientticket)</code><br>
+<code>**def decrypt**(data: bytes, key: bytes, settings: [Settings](settings.md#settings)) -> [`ClientTicket`](#clientticket)</code><br>
 <span class="docs">Decrypts `data` with the given Kerberos key and parses the ticket.</span>
 
 ## ServerTicket
-<code>timestamp: [DateTime](../common#datetime) = None</code><br>
+<code>timestamp: [DateTime](common.md#datetime) = None</code><br>
 <span class="docs">Time at which the ticket was issued.</span><br>
 `source: int = None`<br>
 <span class="docs">The source user id of the ticket.</span><br>
@@ -77,11 +77,11 @@ Provides classes for Kerberos authentication. For details, click [here](https://
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`ServerTicket`](#serverticket) instance. The attributes must be filled in manually.</span>
 
-<code>**def encrypt**(key: bytes, settings: [Settings](../../settings#settings)) -> bytes</code><br>
+<code>**def encrypt**(key: bytes, settings: [Settings](settings.md#settings)) -> bytes</code><br>
 <span class="docs">Encodes the ticket and encrypts it with the given Kerberos key.</span>
 
 <code style="color: blue">@classmethod</code><br>
-<code>**def decrypt**(data: bytes, key: bytes, settings: [Settings](../../settings#settings)) -> [`ServerTicket`](#serverticket)</code><br>
+<code>**def decrypt**(data: bytes, key: bytes, settings: [Settings](settings.md#settings)) -> [`ServerTicket`](#serverticket)</code><br>
 <span class="docs">Decrypts `data` with the given Kerberos key and parses the ticket.</span>
 
 ## Credentials

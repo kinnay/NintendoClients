@@ -10,13 +10,13 @@ Provides a client and server for the `SubscriberProtocol`. This page was generat
 <span class="docs">The server for the `SubscriberProtocol`.</span>
 
 ## SubscriberClient
-<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
+<code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
 <span class="docs">Creates a new [`SubscriberClient`](#subscriberclient).</span>
 
 ## SubscriberServer
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`SubscriberServer`](#subscriberserver).</span>
 
-<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 

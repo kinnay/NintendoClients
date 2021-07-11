@@ -29,39 +29,39 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 
 <code>**class** [MatchmakeSystem](#matchmakesystem)</code><br>
 
-<code>**class** [AutoMatchmakeParam](#automatchmakeparam)([Structure](../common))</code><br>
-<code>**class** [CreateMatchmakeSessionParam](#creatematchmakesessionparam)([Structure](../common))</code><br>
-<code>**class** [DeletionEntry](#deletionentry)([Structure](../common))</code><br>
-<code>**class** [FindMatchmakeSessionByParticipantParam](#findmatchmakesessionbyparticipantparam)([Structure](../common))</code><br>
-<code>**class** [FindMatchmakeSessionByParticipantResult](#findmatchmakesessionbyparticipantresult)([Structure](../common))</code><br>
-<code>**class** [Gathering](#gathering)([Structure](../common))</code><br>
-<code>**class** [GatheringStats](#gatheringstats)([Structure](../common))</code><br>
-<code>**class** [GatheringURLs](#gatheringurls)([Structure](../common))</code><br>
-<code>**class** [Invitation](#invitation)([Structure](../common))</code><br>
-<code>**class** [JoinMatchmakeSessionParam](#joinmatchmakesessionparam)([Structure](../common))</code><br>
-<code>**class** [MatchmakeBlockListParam](#matchmakeblocklistparam)([Structure](../common))</code><br>
-<code>**class** [MatchmakeParam](#matchmakeparam)([Structure](../common))</code><br>
-<code>**class** [MatchmakeRefereeEndRoundParam](#matchmakerefereeendroundparam)([Structure](../common))</code><br>
-<code>**class** [MatchmakeRefereePersonalRoundResult](#matchmakerefereepersonalroundresult)([Structure](../common))</code><br>
-<code>**class** [MatchmakeRefereeRound](#matchmakerefereeround)([Structure](../common))</code><br>
-<code>**class** [MatchmakeRefereeStartRoundParam](#matchmakerefereestartroundparam)([Structure](../common))</code><br>
-<code>**class** [MatchmakeRefereeStats](#matchmakerefereestats)([Structure](../common))</code><br>
-<code>**class** [MatchmakeRefereeStatsInitParam](#matchmakerefereestatsinitparam)([Structure](../common))</code><br>
-<code>**class** [MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)([Structure](../common))</code><br>
+<code>**class** [AutoMatchmakeParam](#automatchmakeparam)([Structure](common.md))</code><br>
+<code>**class** [CreateMatchmakeSessionParam](#creatematchmakesessionparam)([Structure](common.md))</code><br>
+<code>**class** [DeletionEntry](#deletionentry)([Structure](common.md))</code><br>
+<code>**class** [FindMatchmakeSessionByParticipantParam](#findmatchmakesessionbyparticipantparam)([Structure](common.md))</code><br>
+<code>**class** [FindMatchmakeSessionByParticipantResult](#findmatchmakesessionbyparticipantresult)([Structure](common.md))</code><br>
+<code>**class** [Gathering](#gathering)([Structure](common.md))</code><br>
+<code>**class** [GatheringStats](#gatheringstats)([Structure](common.md))</code><br>
+<code>**class** [GatheringURLs](#gatheringurls)([Structure](common.md))</code><br>
+<code>**class** [Invitation](#invitation)([Structure](common.md))</code><br>
+<code>**class** [JoinMatchmakeSessionParam](#joinmatchmakesessionparam)([Structure](common.md))</code><br>
+<code>**class** [MatchmakeBlockListParam](#matchmakeblocklistparam)([Structure](common.md))</code><br>
+<code>**class** [MatchmakeParam](#matchmakeparam)([Structure](common.md))</code><br>
+<code>**class** [MatchmakeRefereeEndRoundParam](#matchmakerefereeendroundparam)([Structure](common.md))</code><br>
+<code>**class** [MatchmakeRefereePersonalRoundResult](#matchmakerefereepersonalroundresult)([Structure](common.md))</code><br>
+<code>**class** [MatchmakeRefereeRound](#matchmakerefereeround)([Structure](common.md))</code><br>
+<code>**class** [MatchmakeRefereeStartRoundParam](#matchmakerefereestartroundparam)([Structure](common.md))</code><br>
+<code>**class** [MatchmakeRefereeStats](#matchmakerefereestats)([Structure](common.md))</code><br>
+<code>**class** [MatchmakeRefereeStatsInitParam](#matchmakerefereestatsinitparam)([Structure](common.md))</code><br>
+<code>**class** [MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)([Structure](common.md))</code><br>
 <code>**class** [MatchmakeSession](#matchmakesession)([Gathering](#gathering))</code><br>
-<code>**class** [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)([Structure](../common))</code><br>
-<code>**class** [ParticipantDetails](#participantdetails)([Structure](../common))</code><br>
+<code>**class** [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)([Structure](common.md))</code><br>
+<code>**class** [ParticipantDetails](#participantdetails)([Structure](common.md))</code><br>
 <code>**class** [PersistentGathering](#persistentgathering)([Gathering](#gathering))</code><br>
-<code>**class** [PlayingSession](#playingsession)([Structure](../common))</code><br>
-<code>**class** [SimpleCommunity](#simplecommunity)([Structure](../common))</code><br>
-<code>**class** [SimplePlayingSession](#simpleplayingsession)([Structure](../common))</code><br>
-<code>**class** [UpdateMatchmakeSessionParam](#updatematchmakesessionparam)([Structure](../common))</code><br>
+<code>**class** [PlayingSession](#playingsession)([Structure](common.md))</code><br>
+<code>**class** [SimpleCommunity](#simplecommunity)([Structure](common.md))</code><br>
+<code>**class** [SimplePlayingSession](#simpleplayingsession)([Structure](common.md))</code><br>
+<code>**class** [UpdateMatchmakeSessionParam](#updatematchmakesessionparam)([Structure](common.md))</code><br>
 
 ## MatchMakingClient
-<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
+<code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
 <span class="docs">Creates a new [`MatchMakingClient`](#matchmakingclient).</span>
 
-<code>**async def register_gathering**(gathering: [Data](../common)) -> int</code><br>
+<code>**async def register_gathering**(gathering: [Data](common.md)) -> int</code><br>
 <span class="docs">Calls method `1` on the server.</span>
 
 <code>**async def unregister_gathering**(gid: int) -> bool</code><br>
@@ -70,7 +70,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def unregister_gatherings**(gids: list[int]) -> bool</code><br>
 <span class="docs">Calls method `3` on the server.</span>
 
-<code>**async def update_gathering**(gathering: [Data](../common)) -> bool</code><br>
+<code>**async def update_gathering**(gathering: [Data](common.md)) -> bool</code><br>
 <span class="docs">Calls method `4` on the server.</span>
 
 <code>**async def invite**(gid: int, pids: list[int], message: str) -> bool</code><br>
@@ -106,39 +106,39 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def get_detailed_participants**(gid: int) -> list[[ParticipantDetails](#participantdetails)]</code><br>
 <span class="docs">Calls method `15` on the server.</span>
 
-<code>**async def get_participants_urls**(gid: int) -> list[[StationURL](../common#stationurl)]</code><br>
+<code>**async def get_participants_urls**(gid: int) -> list[[StationURL](common.md#stationurl)]</code><br>
 <span class="docs">Calls method `16` on the server.</span>
 
-<code>**async def find_by_type**(type: str, range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_type**(type: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Calls method `17` on the server.</span>
 
-<code>**async def find_by_description**(description: str, range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_description**(description: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Calls method `18` on the server.</span>
 
-<code>**async def find_by_description_regex**(regex: str, range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_description_regex**(regex: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Calls method `19` on the server.</span>
 
-<code>**async def find_by_id**(ids: list[int]) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_id**(ids: list[int]) -> list[[Data](common.md)]</code><br>
 <span class="docs">Calls method `20` on the server.</span>
 
-<code>**async def find_by_single_id**(id: list[int]) -> [RMCResponse](../common)</code><br>
+<code>**async def find_by_single_id**(id: list[int]) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `21` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>result: bool</code><br>
-<code>gathering: [Data](../common)</code><br>
+<code>gathering: [Data](common.md)</code><br>
 </span>
 </span>
 
-<code>**async def find_by_owner**(owner: int, range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_owner**(owner: int, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Calls method `22` on the server.</span>
 
-<code>**async def find_by_participants**(pids: list[int]) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_participants**(pids: list[int]) -> list[[Data](common.md)]</code><br>
 <span class="docs">Calls method `23` on the server.</span>
 
-<code>**async def find_invitations**(range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def find_invitations**(range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Calls method `24` on the server.</span>
 
-<code>**async def find_by_sql_query**(query: str, range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_sql_query**(query: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Calls method `25` on the server.</span>
 
 <code>**async def launch_session**(gid: int, url: str) -> bool</code><br>
@@ -147,7 +147,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def update_session_url**(gid: int, url: str) -> bool</code><br>
 <span class="docs">Calls method `27` on the server.</span>
 
-<code>**async def get_session_url**(gid: int) -> [RMCResponse](../common)</code><br>
+<code>**async def get_session_url**(gid: int) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `28` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>result: bool</code><br>
@@ -155,7 +155,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 </span>
 </span>
 
-<code>**async def get_state**(gid: int) -> [RMCResponse](../common)</code><br>
+<code>**async def get_state**(gid: int) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `29` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>result: bool</code><br>
@@ -169,7 +169,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def report_stats**(gid: int, stats: list[[GatheringStats](#gatheringstats)]) -> bool</code><br>
 <span class="docs">Calls method `31` on the server.</span>
 
-<code>**async def get_stats**(gid: int, pids: list[int], columns: list[int]) -> [RMCResponse](../common)</code><br>
+<code>**async def get_stats**(gid: int, pids: list[int], columns: list[int]) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `32` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>result: bool</code><br>
@@ -180,7 +180,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def delete_gathering**(gid: int) -> bool</code><br>
 <span class="docs">Calls method `33` on the server.</span>
 
-<code>**async def get_pending_deletions**(reason: int, range: [ResultRange](../common#resultrange)) -> [RMCResponse](../common)</code><br>
+<code>**async def get_pending_deletions**(reason: int, range: [ResultRange](common.md#resultrange)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `34` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>result: bool</code><br>
@@ -194,19 +194,19 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def migrate_gathering_ownership_v1**(gid: int, potential_owners: list[int]) -> bool</code><br>
 <span class="docs">Calls method `36` on the server.</span>
 
-<code>**async def find_by_description_like**(description: str, range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_description_like**(description: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Calls method `37` on the server.</span>
 
-<code>**async def register_local_url**(gid: int, url: [StationURL](../common#stationurl)) -> None</code><br>
+<code>**async def register_local_url**(gid: int, url: [StationURL](common.md#stationurl)) -> None</code><br>
 <span class="docs">Calls method `38` on the server.</span>
 
-<code>**async def register_local_urls**(gid: int, urls: list[[StationURL](../common#stationurl)]) -> None</code><br>
+<code>**async def register_local_urls**(gid: int, urls: list[[StationURL](common.md#stationurl)]) -> None</code><br>
 <span class="docs">Calls method `39` on the server.</span>
 
 <code>**async def update_session_host_v1**(gid: int) -> None</code><br>
 <span class="docs">Calls method `40` on the server.</span>
 
-<code>**async def get_session_urls**(gid: int) -> list[[StationURL](../common#stationurl)]</code><br>
+<code>**async def get_session_urls**(gid: int) -> list[[StationURL](common.md#stationurl)]</code><br>
 <span class="docs">Calls method `41` on the server.</span>
 
 <code>**async def update_session_host**(gid: int, is_migrate_owner: bool) -> None</code><br>
@@ -219,7 +219,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <span class="docs">Calls method `44` on the server.</span>
 
 ## MatchMakingClientExt
-<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
+<code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
 <span class="docs">Creates a new [`MatchMakingClientExt`](#matchmakingclientext).</span>
 
 <code>**async def end_participation**(gid: int, message: str) -> bool</code><br>
@@ -241,7 +241,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <span class="docs">Calls method `6` on the server.</span>
 
 ## MatchmakeExtensionClient
-<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
+<code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
 <span class="docs">Creates a new [`MatchmakeExtensionClient`](#matchmakeextensionclient).</span>
 
 <code>**async def close_participation**(gid: int) -> None</code><br>
@@ -250,21 +250,21 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def open_participation**(gid: int) -> None</code><br>
 <span class="docs">Calls method `2` on the server.</span>
 
-<code>**async def auto_matchmake_postpone**(gathering: [Data](../common), message: str) -> [Data](../common)</code><br>
+<code>**async def auto_matchmake_postpone**(gathering: [Data](common.md), message: str) -> [Data](common.md)</code><br>
 <span class="docs">Calls method `3` on the server.</span>
 
-<code>**async def browse_matchmake_session**(search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def browse_matchmake_session**(search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Calls method `4` on the server.</span>
 
-<code>**async def browse_matchmake_session_with_host_urls**(search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](../common#resultrange)) -> [RMCResponse](../common)</code><br>
+<code>**async def browse_matchmake_session_with_host_urls**(search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](common.md#resultrange)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `5` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
-<code>gatherings: list[[Data](../common)]</code><br>
+<code>gatherings: list[[Data](common.md)]</code><br>
 <code>urls: list[[GatheringURLs](#gatheringurls)]</code><br>
 </span>
 </span>
 
-<code>**async def create_matchmake_session**(gathering: [Data](../common), description: str, num_participants: int) -> [RMCResponse](../common)</code><br>
+<code>**async def create_matchmake_session**(gathering: [Data](common.md), description: str, num_participants: int) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `6` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>gid: int</code><br>
@@ -281,7 +281,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def update_notification_data**(type: int, param1: int, param2: int, param3: str) -> None</code><br>
 <span class="docs">Calls method `9` on the server.</span>
 
-<code>**async def get_friend_notification_data**(type: int) -> list[[NotificationEvent](../notification#notificationevent)]</code><br>
+<code>**async def get_friend_notification_data**(type: int) -> list[[NotificationEvent](notification.md#notificationevent)]</code><br>
 <span class="docs">Calls method `10` on the server.</span>
 
 <code>**async def update_application_buffer**(gid: int, buffer: bytes) -> None</code><br>
@@ -290,13 +290,13 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def update_matchmake_session_attribute**(gid: int, attribs: list[int]) -> None</code><br>
 <span class="docs">Calls method `12` on the server.</span>
 
-<code>**async def get_friend_notification_data_list**(types: list[int]) -> list[[NotificationEvent](../notification#notificationevent)]</code><br>
+<code>**async def get_friend_notification_data_list**(types: list[int]) -> list[[NotificationEvent](notification.md#notificationevent)]</code><br>
 <span class="docs">Calls method `13` on the server.</span>
 
-<code>**async def update_matchmake_session**(gathering: [Data](../common)) -> None</code><br>
+<code>**async def update_matchmake_session**(gathering: [Data](common.md)) -> None</code><br>
 <span class="docs">Calls method `14` on the server.</span>
 
-<code>**async def auto_matchmake_with_search_criteria_postpone**(search_criteria: list[[MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)], gathering: [Data](../common), message: str) -> [Data](../common)</code><br>
+<code>**async def auto_matchmake_with_search_criteria_postpone**(search_criteria: list[[MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)], gathering: [Data](common.md), message: str) -> [Data](common.md)</code><br>
 <span class="docs">Calls method `15` on the server.</span>
 
 <code>**async def get_playing_session**(pids: list[int]) -> list[[PlayingSession](#playingsession)]</code><br>
@@ -314,10 +314,10 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def find_community_by_gathering_id**(gids: list[int]) -> list[[PersistentGathering](#persistentgathering)]</code><br>
 <span class="docs">Calls method `20` on the server.</span>
 
-<code>**async def find_official_community**(available_only: bool, range: [ResultRange](../common#resultrange)) -> list[[PersistentGathering](#persistentgathering)]</code><br>
+<code>**async def find_official_community**(available_only: bool, range: [ResultRange](common.md#resultrange)) -> list[[PersistentGathering](#persistentgathering)]</code><br>
 <span class="docs">Calls method `21` on the server.</span>
 
-<code>**async def find_community_by_participant**(pid: int, range: [ResultRange](../common#resultrange)) -> list[[PersistentGathering](#persistentgathering)]</code><br>
+<code>**async def find_community_by_participant**(pid: int, range: [ResultRange](common.md#resultrange)) -> list[[PersistentGathering](#persistentgathering)]</code><br>
 <span class="docs">Calls method `22` on the server.</span>
 
 <code>**async def update_privacy_setting**(online_status: bool, community_participation: bool) -> None</code><br>
@@ -338,7 +338,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def report_violation**(pid: int, username: str, violation_code: int) -> None</code><br>
 <span class="docs">Calls method `28` on the server.</span>
 
-<code>**async def is_violation_user**() -> [RMCResponse](../common)</code><br>
+<code>**async def is_violation_user**() -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `29` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>flag: bool</code><br>
@@ -355,7 +355,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def get_simple_community**(gids: list[int]) -> list[[SimpleCommunity](#simplecommunity)]</code><br>
 <span class="docs">Calls method `32` on the server.</span>
 
-<code>**async def auto_matchmake_with_gathering_id_postpone**(gids: list[int], gathering: [Data](../common), message: str) -> [Data](../common)</code><br>
+<code>**async def auto_matchmake_with_gathering_id_postpone**(gids: list[int], gathering: [Data](common.md), message: str) -> [Data](common.md)</code><br>
 <span class="docs">Calls method `33` on the server.</span>
 
 <code>**async def update_progress_score**(gid: int, score: int) -> None</code><br>
@@ -382,10 +382,10 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def find_matchmake_session_by_gathering_id_detail**(gid: int) -> [MatchmakeSession](#matchmakesession)</code><br>
 <span class="docs">Calls method `41` on the server.</span>
 
-<code>**async def browse_matchmake_session_no_holder**(search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](../common#resultrange)) -> list[[MatchmakeSession](#matchmakesession)]</code><br>
+<code>**async def browse_matchmake_session_no_holder**(search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](common.md#resultrange)) -> list[[MatchmakeSession](#matchmakesession)]</code><br>
 <span class="docs">Calls method `42` on the server.</span>
 
-<code>**async def browse_matchmake_session_with_host_urls_no_holder**(search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](../common#resultrange)) -> [RMCResponse](../common)</code><br>
+<code>**async def browse_matchmake_session_with_host_urls_no_holder**(search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](common.md#resultrange)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `43` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>sessions: list[[MatchmakeSession](#matchmakesession)]</code><br>
@@ -411,7 +411,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def find_matchmake_session_by_single_gathering_id**(gid: int) -> [MatchmakeSession](#matchmakesession)</code><br>
 <span class="docs">Calls method `49` on the server.</span>
 
-<code>**async def find_matchmake_session_by_owner**(pid: int, range: [ResultRange](../common#resultrange)) -> list[[MatchmakeSession](#matchmakesession)]</code><br>
+<code>**async def find_matchmake_session_by_owner**(pid: int, range: [ResultRange](common.md#resultrange)) -> list[[MatchmakeSession](#matchmakesession)]</code><br>
 <span class="docs">Calls method `50` on the server.</span>
 
 <code>**async def find_matchmake_session_by_participant**(param: [FindMatchmakeSessionByParticipantParam](#findmatchmakesessionbyparticipantparam)) -> list[[FindMatchmakeSessionByParticipantResult](#findmatchmakesessionbyparticipantresult)]</code><br>
@@ -420,7 +420,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def browse_matchmake_session_no_holder_no_result_range**(search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)) -> list[[MatchmakeSession](#matchmakesession)]</code><br>
 <span class="docs">Calls method `52` on the server.</span>
 
-<code>**async def browse_matchmake_session_with_host_urls_no_holder_no_result_range**(search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)) -> [RMCResponse](../common)</code><br>
+<code>**async def browse_matchmake_session_with_host_urls_no_holder_no_result_range**(search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `53` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>sessions: list[[MatchmakeSession](#matchmakesession)]</code><br>
@@ -429,7 +429,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 </span>
 
 ## MatchmakeRefereeClient
-<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
+<code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
 <span class="docs">Creates a new [`MatchmakeRefereeClient`](#matchmakerefereeclient).</span>
 
 <code>**async def start_round**(param: [MatchmakeRefereeStartRoundParam](#matchmakerefereestartroundparam)) -> int</code><br>
@@ -459,11 +459,11 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def get_stats_primary**(target: [MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)) -> [MatchmakeRefereeStats](#matchmakerefereestats)</code><br>
 <span class="docs">Calls method `9` on the server.</span>
 
-<code>**async def get_stats_primaries**(targets: list[[MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)]) -> [RMCResponse](../common)</code><br>
+<code>**async def get_stats_primaries**(targets: list[[MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)]) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `10` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>stats: list[[MatchmakeRefereeStats](#matchmakerefereestats)]</code><br>
-<code>results: list[[Result](../common#result)]</code><br>
+<code>results: list[[Result](common.md#result)]</code><br>
 </span>
 </span>
 
@@ -483,96 +483,96 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`MatchMakingServer`](#matchmakingserver).</span>
 
-<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
-<code>**async def register_gathering**(client: [RMCClient](../rmc#rmcclient), gathering: [Data](../common)) -> int</code><br>
+<code>**async def register_gathering**(client: [RMCClient](rmc.md#rmcclient), gathering: [Data](common.md)) -> int</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
 
-<code>**async def unregister_gathering**(client: [RMCClient](../rmc#rmcclient), gid: int) -> bool</code><br>
+<code>**async def unregister_gathering**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> bool</code><br>
 <span class="docs">Handler for method `2`. This method should be overridden by a subclass.</span>
 
-<code>**async def unregister_gatherings**(client: [RMCClient](../rmc#rmcclient), gids: list[int]) -> bool</code><br>
+<code>**async def unregister_gatherings**(client: [RMCClient](rmc.md#rmcclient), gids: list[int]) -> bool</code><br>
 <span class="docs">Handler for method `3`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_gathering**(client: [RMCClient](../rmc#rmcclient), gathering: [Data](../common)) -> bool</code><br>
+<code>**async def update_gathering**(client: [RMCClient](rmc.md#rmcclient), gathering: [Data](common.md)) -> bool</code><br>
 <span class="docs">Handler for method `4`. This method should be overridden by a subclass.</span>
 
-<code>**async def invite**(client: [RMCClient](../rmc#rmcclient), gid: int, pids: list[int], message: str) -> bool</code><br>
+<code>**async def invite**(client: [RMCClient](rmc.md#rmcclient), gid: int, pids: list[int], message: str) -> bool</code><br>
 <span class="docs">Handler for method `5`. This method should be overridden by a subclass.</span>
 
-<code>**async def accept_invitation**(client: [RMCClient](../rmc#rmcclient), gid: int, message: str) -> bool</code><br>
+<code>**async def accept_invitation**(client: [RMCClient](rmc.md#rmcclient), gid: int, message: str) -> bool</code><br>
 <span class="docs">Handler for method `6`. This method should be overridden by a subclass.</span>
 
-<code>**async def decline_invitation**(client: [RMCClient](../rmc#rmcclient), gid: int, message: str) -> bool</code><br>
+<code>**async def decline_invitation**(client: [RMCClient](rmc.md#rmcclient), gid: int, message: str) -> bool</code><br>
 <span class="docs">Handler for method `7`. This method should be overridden by a subclass.</span>
 
-<code>**async def cancel_invitation**(client: [RMCClient](../rmc#rmcclient), gid: int, pids: list[int], message: str) -> bool</code><br>
+<code>**async def cancel_invitation**(client: [RMCClient](rmc.md#rmcclient), gid: int, pids: list[int], message: str) -> bool</code><br>
 <span class="docs">Handler for method `8`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_invitations_sent**(client: [RMCClient](../rmc#rmcclient), gid: int) -> list[[Invitation](#invitation)]</code><br>
+<code>**async def get_invitations_sent**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> list[[Invitation](#invitation)]</code><br>
 <span class="docs">Handler for method `9`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_invitations_received**(client: [RMCClient](../rmc#rmcclient)) -> list[[Invitation](#invitation)]</code><br>
+<code>**async def get_invitations_received**(client: [RMCClient](rmc.md#rmcclient)) -> list[[Invitation](#invitation)]</code><br>
 <span class="docs">Handler for method `10`. This method should be overridden by a subclass.</span>
 
-<code>**async def participate**(client: [RMCClient](../rmc#rmcclient), gid: int, message: str) -> bool</code><br>
+<code>**async def participate**(client: [RMCClient](rmc.md#rmcclient), gid: int, message: str) -> bool</code><br>
 <span class="docs">Handler for method `11`. This method should be overridden by a subclass.</span>
 
-<code>**async def cancel_participation**(client: [RMCClient](../rmc#rmcclient), gid: int, message: str) -> bool</code><br>
+<code>**async def cancel_participation**(client: [RMCClient](rmc.md#rmcclient), gid: int, message: str) -> bool</code><br>
 <span class="docs">Handler for method `12`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_participants**(client: [RMCClient](../rmc#rmcclient), gid: int) -> list[int]</code><br>
+<code>**async def get_participants**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> list[int]</code><br>
 <span class="docs">Handler for method `13`. This method should be overridden by a subclass.</span>
 
-<code>**async def add_participants**(client: [RMCClient](../rmc#rmcclient), gid: int, pids: list[int], message: str) -> bool</code><br>
+<code>**async def add_participants**(client: [RMCClient](rmc.md#rmcclient), gid: int, pids: list[int], message: str) -> bool</code><br>
 <span class="docs">Handler for method `14`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_detailed_participants**(client: [RMCClient](../rmc#rmcclient), gid: int) -> list[[ParticipantDetails](#participantdetails)]</code><br>
+<code>**async def get_detailed_participants**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> list[[ParticipantDetails](#participantdetails)]</code><br>
 <span class="docs">Handler for method `15`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_participants_urls**(client: [RMCClient](../rmc#rmcclient), gid: int) -> list[[StationURL](../common#stationurl)]</code><br>
+<code>**async def get_participants_urls**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> list[[StationURL](common.md#stationurl)]</code><br>
 <span class="docs">Handler for method `16`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_type**(client: [RMCClient](../rmc#rmcclient), type: str, range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_type**(client: [RMCClient](rmc.md#rmcclient), type: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Handler for method `17`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_description**(client: [RMCClient](../rmc#rmcclient), description: str, range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_description**(client: [RMCClient](rmc.md#rmcclient), description: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Handler for method `18`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_description_regex**(client: [RMCClient](../rmc#rmcclient), regex: str, range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_description_regex**(client: [RMCClient](rmc.md#rmcclient), regex: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Handler for method `19`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_id**(client: [RMCClient](../rmc#rmcclient), ids: list[int]) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_id**(client: [RMCClient](rmc.md#rmcclient), ids: list[int]) -> list[[Data](common.md)]</code><br>
 <span class="docs">Handler for method `20`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_single_id**(client: [RMCClient](../rmc#rmcclient), id: list[int]) -> [RMCResponse](../common)</code><br>
+<code>**async def find_by_single_id**(client: [RMCClient](rmc.md#rmcclient), id: list[int]) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `21`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>result: bool</code><br>
-<code>gathering: [Data](../common)</code><br>
+<code>gathering: [Data](common.md)</code><br>
 </span>
 </span>
 
-<code>**async def find_by_owner**(client: [RMCClient](../rmc#rmcclient), owner: int, range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_owner**(client: [RMCClient](rmc.md#rmcclient), owner: int, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Handler for method `22`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_participants**(client: [RMCClient](../rmc#rmcclient), pids: list[int]) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_participants**(client: [RMCClient](rmc.md#rmcclient), pids: list[int]) -> list[[Data](common.md)]</code><br>
 <span class="docs">Handler for method `23`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_invitations**(client: [RMCClient](../rmc#rmcclient), range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def find_invitations**(client: [RMCClient](rmc.md#rmcclient), range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Handler for method `24`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_sql_query**(client: [RMCClient](../rmc#rmcclient), query: str, range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_sql_query**(client: [RMCClient](rmc.md#rmcclient), query: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Handler for method `25`. This method should be overridden by a subclass.</span>
 
-<code>**async def launch_session**(client: [RMCClient](../rmc#rmcclient), gid: int, url: str) -> bool</code><br>
+<code>**async def launch_session**(client: [RMCClient](rmc.md#rmcclient), gid: int, url: str) -> bool</code><br>
 <span class="docs">Handler for method `26`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_session_url**(client: [RMCClient](../rmc#rmcclient), gid: int, url: str) -> bool</code><br>
+<code>**async def update_session_url**(client: [RMCClient](rmc.md#rmcclient), gid: int, url: str) -> bool</code><br>
 <span class="docs">Handler for method `27`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_session_url**(client: [RMCClient](../rmc#rmcclient), gid: int) -> [RMCResponse](../common)</code><br>
+<code>**async def get_session_url**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `28`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>result: bool</code><br>
@@ -580,7 +580,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 </span>
 </span>
 
-<code>**async def get_state**(client: [RMCClient](../rmc#rmcclient), gid: int) -> [RMCResponse](../common)</code><br>
+<code>**async def get_state**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `29`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>result: bool</code><br>
@@ -588,13 +588,13 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 </span>
 </span>
 
-<code>**async def set_state**(client: [RMCClient](../rmc#rmcclient), gid: int, state: int) -> bool</code><br>
+<code>**async def set_state**(client: [RMCClient](rmc.md#rmcclient), gid: int, state: int) -> bool</code><br>
 <span class="docs">Handler for method `30`. This method should be overridden by a subclass.</span>
 
-<code>**async def report_stats**(client: [RMCClient](../rmc#rmcclient), gid: int, stats: list[[GatheringStats](#gatheringstats)]) -> bool</code><br>
+<code>**async def report_stats**(client: [RMCClient](rmc.md#rmcclient), gid: int, stats: list[[GatheringStats](#gatheringstats)]) -> bool</code><br>
 <span class="docs">Handler for method `31`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_stats**(client: [RMCClient](../rmc#rmcclient), gid: int, pids: list[int], columns: list[int]) -> [RMCResponse](../common)</code><br>
+<code>**async def get_stats**(client: [RMCClient](rmc.md#rmcclient), gid: int, pids: list[int], columns: list[int]) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `32`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>result: bool</code><br>
@@ -602,10 +602,10 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 </span>
 </span>
 
-<code>**async def delete_gathering**(client: [RMCClient](../rmc#rmcclient), gid: int) -> bool</code><br>
+<code>**async def delete_gathering**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> bool</code><br>
 <span class="docs">Handler for method `33`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_pending_deletions**(client: [RMCClient](../rmc#rmcclient), reason: int, range: [ResultRange](../common#resultrange)) -> [RMCResponse](../common)</code><br>
+<code>**async def get_pending_deletions**(client: [RMCClient](rmc.md#rmcclient), reason: int, range: [ResultRange](common.md#resultrange)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `34`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>result: bool</code><br>
@@ -613,89 +613,89 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 </span>
 </span>
 
-<code>**async def delete_from_deletions**(client: [RMCClient](../rmc#rmcclient), deletions: list[int]) -> bool</code><br>
+<code>**async def delete_from_deletions**(client: [RMCClient](rmc.md#rmcclient), deletions: list[int]) -> bool</code><br>
 <span class="docs">Handler for method `35`. This method should be overridden by a subclass.</span>
 
-<code>**async def migrate_gathering_ownership_v1**(client: [RMCClient](../rmc#rmcclient), gid: int, potential_owners: list[int]) -> bool</code><br>
+<code>**async def migrate_gathering_ownership_v1**(client: [RMCClient](rmc.md#rmcclient), gid: int, potential_owners: list[int]) -> bool</code><br>
 <span class="docs">Handler for method `36`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_description_like**(client: [RMCClient](../rmc#rmcclient), description: str, range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def find_by_description_like**(client: [RMCClient](rmc.md#rmcclient), description: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Handler for method `37`. This method should be overridden by a subclass.</span>
 
-<code>**async def register_local_url**(client: [RMCClient](../rmc#rmcclient), gid: int, url: [StationURL](../common#stationurl)) -> None</code><br>
+<code>**async def register_local_url**(client: [RMCClient](rmc.md#rmcclient), gid: int, url: [StationURL](common.md#stationurl)) -> None</code><br>
 <span class="docs">Handler for method `38`. This method should be overridden by a subclass.</span>
 
-<code>**async def register_local_urls**(client: [RMCClient](../rmc#rmcclient), gid: int, urls: list[[StationURL](../common#stationurl)]) -> None</code><br>
+<code>**async def register_local_urls**(client: [RMCClient](rmc.md#rmcclient), gid: int, urls: list[[StationURL](common.md#stationurl)]) -> None</code><br>
 <span class="docs">Handler for method `39`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_session_host_v1**(client: [RMCClient](../rmc#rmcclient), gid: int) -> None</code><br>
+<code>**async def update_session_host_v1**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> None</code><br>
 <span class="docs">Handler for method `40`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_session_urls**(client: [RMCClient](../rmc#rmcclient), gid: int) -> list[[StationURL](../common#stationurl)]</code><br>
+<code>**async def get_session_urls**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> list[[StationURL](common.md#stationurl)]</code><br>
 <span class="docs">Handler for method `41`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_session_host**(client: [RMCClient](../rmc#rmcclient), gid: int, is_migrate_owner: bool) -> None</code><br>
+<code>**async def update_session_host**(client: [RMCClient](rmc.md#rmcclient), gid: int, is_migrate_owner: bool) -> None</code><br>
 <span class="docs">Handler for method `42`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_gathering_ownership**(client: [RMCClient](../rmc#rmcclient), gid: int, participants_only: bool) -> bool</code><br>
+<code>**async def update_gathering_ownership**(client: [RMCClient](rmc.md#rmcclient), gid: int, participants_only: bool) -> bool</code><br>
 <span class="docs">Handler for method `43`. This method should be overridden by a subclass.</span>
 
-<code>**async def migrate_gathering_ownership**(client: [RMCClient](../rmc#rmcclient), gid: int, potential_owners: list[int], participants_only: bool) -> None</code><br>
+<code>**async def migrate_gathering_ownership**(client: [RMCClient](rmc.md#rmcclient), gid: int, potential_owners: list[int], participants_only: bool) -> None</code><br>
 <span class="docs">Handler for method `44`. This method should be overridden by a subclass.</span>
 
 ## MatchMakingServerExt
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`MatchMakingServerExt`](#matchmakingserverext).</span>
 
-<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
-<code>**async def end_participation**(client: [RMCClient](../rmc#rmcclient), gid: int, message: str) -> bool</code><br>
+<code>**async def end_participation**(client: [RMCClient](rmc.md#rmcclient), gid: int, message: str) -> bool</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_participants**(client: [RMCClient](../rmc#rmcclient), gid: int, only_active: bool) -> list[int]</code><br>
+<code>**async def get_participants**(client: [RMCClient](rmc.md#rmcclient), gid: int, only_active: bool) -> list[int]</code><br>
 <span class="docs">Handler for method `2`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_detailed_participants**(client: [RMCClient](../rmc#rmcclient), gid: int, only_active: bool) -> list[[ParticipantDetails](#participantdetails)]</code><br>
+<code>**async def get_detailed_participants**(client: [RMCClient](rmc.md#rmcclient), gid: int, only_active: bool) -> list[[ParticipantDetails](#participantdetails)]</code><br>
 <span class="docs">Handler for method `3`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_participants_urls**(client: [RMCClient](../rmc#rmcclient), gids: list[int]) -> list[[GatheringURLs](#gatheringurls)]</code><br>
+<code>**async def get_participants_urls**(client: [RMCClient](rmc.md#rmcclient), gids: list[int]) -> list[[GatheringURLs](#gatheringurls)]</code><br>
 <span class="docs">Handler for method `4`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_gathering_relations**(client: [RMCClient](../rmc#rmcclient), id: int, descr: str) -> bool</code><br>
+<code>**async def get_gathering_relations**(client: [RMCClient](rmc.md#rmcclient), id: int, descr: str) -> bool</code><br>
 <span class="docs">Handler for method `5`. This method should be overridden by a subclass.</span>
 
-<code>**async def delete_from_deletions**(client: [RMCClient](../rmc#rmcclient), deletions: list[int], pid: int) -> None</code><br>
+<code>**async def delete_from_deletions**(client: [RMCClient](rmc.md#rmcclient), deletions: list[int], pid: int) -> None</code><br>
 <span class="docs">Handler for method `6`. This method should be overridden by a subclass.</span>
 
 ## MatchmakeExtensionServer
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`MatchmakeExtensionServer`](#matchmakeextensionserver).</span>
 
-<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
-<code>**async def close_participation**(client: [RMCClient](../rmc#rmcclient), gid: int) -> None</code><br>
+<code>**async def close_participation**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> None</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
 
-<code>**async def open_participation**(client: [RMCClient](../rmc#rmcclient), gid: int) -> None</code><br>
+<code>**async def open_participation**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> None</code><br>
 <span class="docs">Handler for method `2`. This method should be overridden by a subclass.</span>
 
-<code>**async def auto_matchmake_postpone**(client: [RMCClient](../rmc#rmcclient), gathering: [Data](../common), message: str) -> [Data](../common)</code><br>
+<code>**async def auto_matchmake_postpone**(client: [RMCClient](rmc.md#rmcclient), gathering: [Data](common.md), message: str) -> [Data](common.md)</code><br>
 <span class="docs">Handler for method `3`. This method should be overridden by a subclass.</span>
 
-<code>**async def browse_matchmake_session**(client: [RMCClient](../rmc#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](../common#resultrange)) -> list[[Data](../common)]</code><br>
+<code>**async def browse_matchmake_session**(client: [RMCClient](rmc.md#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
 <span class="docs">Handler for method `4`. This method should be overridden by a subclass.</span>
 
-<code>**async def browse_matchmake_session_with_host_urls**(client: [RMCClient](../rmc#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](../common#resultrange)) -> [RMCResponse](../common)</code><br>
+<code>**async def browse_matchmake_session_with_host_urls**(client: [RMCClient](rmc.md#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](common.md#resultrange)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `5`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
-<code>gatherings: list[[Data](../common)]</code><br>
+<code>gatherings: list[[Data](common.md)]</code><br>
 <code>urls: list[[GatheringURLs](#gatheringurls)]</code><br>
 </span>
 </span>
 
-<code>**async def create_matchmake_session**(client: [RMCClient](../rmc#rmcclient), gathering: [Data](../common), description: str, num_participants: int) -> [RMCResponse](../common)</code><br>
+<code>**async def create_matchmake_session**(client: [RMCClient](rmc.md#rmcclient), gathering: [Data](common.md), description: str, num_participants: int) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `6`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>gid: int</code><br>
@@ -703,73 +703,73 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 </span>
 </span>
 
-<code>**async def join_matchmake_session**(client: [RMCClient](../rmc#rmcclient), gid: int, message: str) -> bytes</code><br>
+<code>**async def join_matchmake_session**(client: [RMCClient](rmc.md#rmcclient), gid: int, message: str) -> bytes</code><br>
 <span class="docs">Handler for method `7`. This method should be overridden by a subclass.</span>
 
-<code>**async def modify_current_game_attribute**(client: [RMCClient](../rmc#rmcclient), gid: int, attrib: int, value: int) -> None</code><br>
+<code>**async def modify_current_game_attribute**(client: [RMCClient](rmc.md#rmcclient), gid: int, attrib: int, value: int) -> None</code><br>
 <span class="docs">Handler for method `8`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_notification_data**(client: [RMCClient](../rmc#rmcclient), type: int, param1: int, param2: int, param3: str) -> None</code><br>
+<code>**async def update_notification_data**(client: [RMCClient](rmc.md#rmcclient), type: int, param1: int, param2: int, param3: str) -> None</code><br>
 <span class="docs">Handler for method `9`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_friend_notification_data**(client: [RMCClient](../rmc#rmcclient), type: int) -> list[[NotificationEvent](../notification#notificationevent)]</code><br>
+<code>**async def get_friend_notification_data**(client: [RMCClient](rmc.md#rmcclient), type: int) -> list[[NotificationEvent](notification.md#notificationevent)]</code><br>
 <span class="docs">Handler for method `10`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_application_buffer**(client: [RMCClient](../rmc#rmcclient), gid: int, buffer: bytes) -> None</code><br>
+<code>**async def update_application_buffer**(client: [RMCClient](rmc.md#rmcclient), gid: int, buffer: bytes) -> None</code><br>
 <span class="docs">Handler for method `11`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_matchmake_session_attribute**(client: [RMCClient](../rmc#rmcclient), gid: int, attribs: list[int]) -> None</code><br>
+<code>**async def update_matchmake_session_attribute**(client: [RMCClient](rmc.md#rmcclient), gid: int, attribs: list[int]) -> None</code><br>
 <span class="docs">Handler for method `12`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_friend_notification_data_list**(client: [RMCClient](../rmc#rmcclient), types: list[int]) -> list[[NotificationEvent](../notification#notificationevent)]</code><br>
+<code>**async def get_friend_notification_data_list**(client: [RMCClient](rmc.md#rmcclient), types: list[int]) -> list[[NotificationEvent](notification.md#notificationevent)]</code><br>
 <span class="docs">Handler for method `13`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_matchmake_session**(client: [RMCClient](../rmc#rmcclient), gathering: [Data](../common)) -> None</code><br>
+<code>**async def update_matchmake_session**(client: [RMCClient](rmc.md#rmcclient), gathering: [Data](common.md)) -> None</code><br>
 <span class="docs">Handler for method `14`. This method should be overridden by a subclass.</span>
 
-<code>**async def auto_matchmake_with_search_criteria_postpone**(client: [RMCClient](../rmc#rmcclient), search_criteria: list[[MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)], gathering: [Data](../common), message: str) -> [Data](../common)</code><br>
+<code>**async def auto_matchmake_with_search_criteria_postpone**(client: [RMCClient](rmc.md#rmcclient), search_criteria: list[[MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)], gathering: [Data](common.md), message: str) -> [Data](common.md)</code><br>
 <span class="docs">Handler for method `15`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_playing_session**(client: [RMCClient](../rmc#rmcclient), pids: list[int]) -> list[[PlayingSession](#playingsession)]</code><br>
+<code>**async def get_playing_session**(client: [RMCClient](rmc.md#rmcclient), pids: list[int]) -> list[[PlayingSession](#playingsession)]</code><br>
 <span class="docs">Handler for method `16`. This method should be overridden by a subclass.</span>
 
-<code>**async def create_community**(client: [RMCClient](../rmc#rmcclient), community: [PersistentGathering](#persistentgathering), message: str) -> int</code><br>
+<code>**async def create_community**(client: [RMCClient](rmc.md#rmcclient), community: [PersistentGathering](#persistentgathering), message: str) -> int</code><br>
 <span class="docs">Handler for method `17`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_community**(client: [RMCClient](../rmc#rmcclient), community: [PersistentGathering](#persistentgathering)) -> None</code><br>
+<code>**async def update_community**(client: [RMCClient](rmc.md#rmcclient), community: [PersistentGathering](#persistentgathering)) -> None</code><br>
 <span class="docs">Handler for method `18`. This method should be overridden by a subclass.</span>
 
-<code>**async def join_community**(client: [RMCClient](../rmc#rmcclient), gid: int, message: str, password: str) -> None</code><br>
+<code>**async def join_community**(client: [RMCClient](rmc.md#rmcclient), gid: int, message: str, password: str) -> None</code><br>
 <span class="docs">Handler for method `19`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_community_by_gathering_id**(client: [RMCClient](../rmc#rmcclient), gids: list[int]) -> list[[PersistentGathering](#persistentgathering)]</code><br>
+<code>**async def find_community_by_gathering_id**(client: [RMCClient](rmc.md#rmcclient), gids: list[int]) -> list[[PersistentGathering](#persistentgathering)]</code><br>
 <span class="docs">Handler for method `20`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_official_community**(client: [RMCClient](../rmc#rmcclient), available_only: bool, range: [ResultRange](../common#resultrange)) -> list[[PersistentGathering](#persistentgathering)]</code><br>
+<code>**async def find_official_community**(client: [RMCClient](rmc.md#rmcclient), available_only: bool, range: [ResultRange](common.md#resultrange)) -> list[[PersistentGathering](#persistentgathering)]</code><br>
 <span class="docs">Handler for method `21`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_community_by_participant**(client: [RMCClient](../rmc#rmcclient), pid: int, range: [ResultRange](../common#resultrange)) -> list[[PersistentGathering](#persistentgathering)]</code><br>
+<code>**async def find_community_by_participant**(client: [RMCClient](rmc.md#rmcclient), pid: int, range: [ResultRange](common.md#resultrange)) -> list[[PersistentGathering](#persistentgathering)]</code><br>
 <span class="docs">Handler for method `22`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_privacy_setting**(client: [RMCClient](../rmc#rmcclient), online_status: bool, community_participation: bool) -> None</code><br>
+<code>**async def update_privacy_setting**(client: [RMCClient](rmc.md#rmcclient), online_status: bool, community_participation: bool) -> None</code><br>
 <span class="docs">Handler for method `23`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_my_block_list**(client: [RMCClient](../rmc#rmcclient)) -> list[int]</code><br>
+<code>**async def get_my_block_list**(client: [RMCClient](rmc.md#rmcclient)) -> list[int]</code><br>
 <span class="docs">Handler for method `24`. This method should be overridden by a subclass.</span>
 
-<code>**async def add_to_block_list**(client: [RMCClient](../rmc#rmcclient), pids: list[int]) -> None</code><br>
+<code>**async def add_to_block_list**(client: [RMCClient](rmc.md#rmcclient), pids: list[int]) -> None</code><br>
 <span class="docs">Handler for method `25`. This method should be overridden by a subclass.</span>
 
-<code>**async def remove_from_block_list**(client: [RMCClient](../rmc#rmcclient), pids: list[int]) -> None</code><br>
+<code>**async def remove_from_block_list**(client: [RMCClient](rmc.md#rmcclient), pids: list[int]) -> None</code><br>
 <span class="docs">Handler for method `26`. This method should be overridden by a subclass.</span>
 
-<code>**async def clear_my_block_list**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def clear_my_block_list**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Handler for method `27`. This method should be overridden by a subclass.</span>
 
-<code>**async def report_violation**(client: [RMCClient](../rmc#rmcclient), pid: int, username: str, violation_code: int) -> None</code><br>
+<code>**async def report_violation**(client: [RMCClient](rmc.md#rmcclient), pid: int, username: str, violation_code: int) -> None</code><br>
 <span class="docs">Handler for method `28`. This method should be overridden by a subclass.</span>
 
-<code>**async def is_violation_user**(client: [RMCClient](../rmc#rmcclient)) -> [RMCResponse](../common)</code><br>
+<code>**async def is_violation_user**(client: [RMCClient](rmc.md#rmcclient)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `29`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>flag: bool</code><br>
@@ -777,46 +777,46 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 </span>
 </span>
 
-<code>**async def join_matchmake_session_ex**(client: [RMCClient](../rmc#rmcclient), gid: int, gmessage: str, ignore_block_list: bool, num_participants: int) -> bytes</code><br>
+<code>**async def join_matchmake_session_ex**(client: [RMCClient](rmc.md#rmcclient), gid: int, gmessage: str, ignore_block_list: bool, num_participants: int) -> bytes</code><br>
 <span class="docs">Handler for method `30`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_simple_playing_session**(client: [RMCClient](../rmc#rmcclient), pids: list[int], include_login_user: bool) -> list[[SimplePlayingSession](#simpleplayingsession)]</code><br>
+<code>**async def get_simple_playing_session**(client: [RMCClient](rmc.md#rmcclient), pids: list[int], include_login_user: bool) -> list[[SimplePlayingSession](#simpleplayingsession)]</code><br>
 <span class="docs">Handler for method `31`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_simple_community**(client: [RMCClient](../rmc#rmcclient), gids: list[int]) -> list[[SimpleCommunity](#simplecommunity)]</code><br>
+<code>**async def get_simple_community**(client: [RMCClient](rmc.md#rmcclient), gids: list[int]) -> list[[SimpleCommunity](#simplecommunity)]</code><br>
 <span class="docs">Handler for method `32`. This method should be overridden by a subclass.</span>
 
-<code>**async def auto_matchmake_with_gathering_id_postpone**(client: [RMCClient](../rmc#rmcclient), gids: list[int], gathering: [Data](../common), message: str) -> [Data](../common)</code><br>
+<code>**async def auto_matchmake_with_gathering_id_postpone**(client: [RMCClient](rmc.md#rmcclient), gids: list[int], gathering: [Data](common.md), message: str) -> [Data](common.md)</code><br>
 <span class="docs">Handler for method `33`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_progress_score**(client: [RMCClient](../rmc#rmcclient), gid: int, score: int) -> None</code><br>
+<code>**async def update_progress_score**(client: [RMCClient](rmc.md#rmcclient), gid: int, score: int) -> None</code><br>
 <span class="docs">Handler for method `34`. This method should be overridden by a subclass.</span>
 
-<code>**async def debug_notify_event**(client: [RMCClient](../rmc#rmcclient), pid: int, main_type: int, sub_type: int, param1: int, param2: int, param3: str) -> None</code><br>
+<code>**async def debug_notify_event**(client: [RMCClient](rmc.md#rmcclient), pid: int, main_type: int, sub_type: int, param1: int, param2: int, param3: str) -> None</code><br>
 <span class="docs">Handler for method `35`. This method should be overridden by a subclass.</span>
 
-<code>**async def generate_matchmake_session_system_password**(client: [RMCClient](../rmc#rmcclient), gid: int) -> str</code><br>
+<code>**async def generate_matchmake_session_system_password**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> str</code><br>
 <span class="docs">Handler for method `36`. This method should be overridden by a subclass.</span>
 
-<code>**async def clear_matchmake_session_system_password**(client: [RMCClient](../rmc#rmcclient), gid: int) -> None</code><br>
+<code>**async def clear_matchmake_session_system_password**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> None</code><br>
 <span class="docs">Handler for method `37`. This method should be overridden by a subclass.</span>
 
-<code>**async def create_matchmake_session_with_param**(client: [RMCClient](../rmc#rmcclient), param: [CreateMatchmakeSessionParam](#creatematchmakesessionparam)) -> [MatchmakeSession](#matchmakesession)</code><br>
+<code>**async def create_matchmake_session_with_param**(client: [RMCClient](rmc.md#rmcclient), param: [CreateMatchmakeSessionParam](#creatematchmakesessionparam)) -> [MatchmakeSession](#matchmakesession)</code><br>
 <span class="docs">Handler for method `38`. This method should be overridden by a subclass.</span>
 
-<code>**async def join_matchmake_session_with_param**(client: [RMCClient](../rmc#rmcclient), param: [JoinMatchmakeSessionParam](#joinmatchmakesessionparam)) -> [MatchmakeSession](#matchmakesession)</code><br>
+<code>**async def join_matchmake_session_with_param**(client: [RMCClient](rmc.md#rmcclient), param: [JoinMatchmakeSessionParam](#joinmatchmakesessionparam)) -> [MatchmakeSession](#matchmakesession)</code><br>
 <span class="docs">Handler for method `39`. This method should be overridden by a subclass.</span>
 
-<code>**async def auto_matchmake_with_param_postpone**(client: [RMCClient](../rmc#rmcclient), param: [AutoMatchmakeParam](#automatchmakeparam)) -> [MatchmakeSession](#matchmakesession)</code><br>
+<code>**async def auto_matchmake_with_param_postpone**(client: [RMCClient](rmc.md#rmcclient), param: [AutoMatchmakeParam](#automatchmakeparam)) -> [MatchmakeSession](#matchmakesession)</code><br>
 <span class="docs">Handler for method `40`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_matchmake_session_by_gathering_id_detail**(client: [RMCClient](../rmc#rmcclient), gid: int) -> [MatchmakeSession](#matchmakesession)</code><br>
+<code>**async def find_matchmake_session_by_gathering_id_detail**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> [MatchmakeSession](#matchmakesession)</code><br>
 <span class="docs">Handler for method `41`. This method should be overridden by a subclass.</span>
 
-<code>**async def browse_matchmake_session_no_holder**(client: [RMCClient](../rmc#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](../common#resultrange)) -> list[[MatchmakeSession](#matchmakesession)]</code><br>
+<code>**async def browse_matchmake_session_no_holder**(client: [RMCClient](rmc.md#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](common.md#resultrange)) -> list[[MatchmakeSession](#matchmakesession)]</code><br>
 <span class="docs">Handler for method `42`. This method should be overridden by a subclass.</span>
 
-<code>**async def browse_matchmake_session_with_host_urls_no_holder**(client: [RMCClient](../rmc#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](../common#resultrange)) -> [RMCResponse](../common)</code><br>
+<code>**async def browse_matchmake_session_with_host_urls_no_holder**(client: [RMCClient](rmc.md#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](common.md#resultrange)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `43`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>sessions: list[[MatchmakeSession](#matchmakesession)]</code><br>
@@ -824,34 +824,34 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 </span>
 </span>
 
-<code>**async def update_matchmake_session_part**(client: [RMCClient](../rmc#rmcclient), param: [UpdateMatchmakeSessionParam](#updatematchmakesessionparam)) -> None</code><br>
+<code>**async def update_matchmake_session_part**(client: [RMCClient](rmc.md#rmcclient), param: [UpdateMatchmakeSessionParam](#updatematchmakesessionparam)) -> None</code><br>
 <span class="docs">Handler for method `44`. This method should be overridden by a subclass.</span>
 
-<code>**async def request_matchmaking**(client: [RMCClient](../rmc#rmcclient), param: [AutoMatchmakeParam](#automatchmakeparam)) -> int</code><br>
+<code>**async def request_matchmaking**(client: [RMCClient](rmc.md#rmcclient), param: [AutoMatchmakeParam](#automatchmakeparam)) -> int</code><br>
 <span class="docs">Handler for method `45`. This method should be overridden by a subclass.</span>
 
-<code>**async def withdraw_matchmaking**(client: [RMCClient](../rmc#rmcclient), request_id: int) -> None</code><br>
+<code>**async def withdraw_matchmaking**(client: [RMCClient](rmc.md#rmcclient), request_id: int) -> None</code><br>
 <span class="docs">Handler for method `46`. This method should be overridden by a subclass.</span>
 
-<code>**async def withdraw_matchmaking_all**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def withdraw_matchmaking_all**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Handler for method `47`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_matchmake_session_by_gathering_id**(client: [RMCClient](../rmc#rmcclient), gids: list[int]) -> list[[MatchmakeSession](#matchmakesession)]</code><br>
+<code>**async def find_matchmake_session_by_gathering_id**(client: [RMCClient](rmc.md#rmcclient), gids: list[int]) -> list[[MatchmakeSession](#matchmakesession)]</code><br>
 <span class="docs">Handler for method `48`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_matchmake_session_by_single_gathering_id**(client: [RMCClient](../rmc#rmcclient), gid: int) -> [MatchmakeSession](#matchmakesession)</code><br>
+<code>**async def find_matchmake_session_by_single_gathering_id**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> [MatchmakeSession](#matchmakesession)</code><br>
 <span class="docs">Handler for method `49`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_matchmake_session_by_owner**(client: [RMCClient](../rmc#rmcclient), pid: int, range: [ResultRange](../common#resultrange)) -> list[[MatchmakeSession](#matchmakesession)]</code><br>
+<code>**async def find_matchmake_session_by_owner**(client: [RMCClient](rmc.md#rmcclient), pid: int, range: [ResultRange](common.md#resultrange)) -> list[[MatchmakeSession](#matchmakesession)]</code><br>
 <span class="docs">Handler for method `50`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_matchmake_session_by_participant**(client: [RMCClient](../rmc#rmcclient), param: [FindMatchmakeSessionByParticipantParam](#findmatchmakesessionbyparticipantparam)) -> list[[FindMatchmakeSessionByParticipantResult](#findmatchmakesessionbyparticipantresult)]</code><br>
+<code>**async def find_matchmake_session_by_participant**(client: [RMCClient](rmc.md#rmcclient), param: [FindMatchmakeSessionByParticipantParam](#findmatchmakesessionbyparticipantparam)) -> list[[FindMatchmakeSessionByParticipantResult](#findmatchmakesessionbyparticipantresult)]</code><br>
 <span class="docs">Handler for method `51`. This method should be overridden by a subclass.</span>
 
-<code>**async def browse_matchmake_session_no_holder_no_result_range**(client: [RMCClient](../rmc#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)) -> list[[MatchmakeSession](#matchmakesession)]</code><br>
+<code>**async def browse_matchmake_session_no_holder_no_result_range**(client: [RMCClient](rmc.md#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)) -> list[[MatchmakeSession](#matchmakesession)]</code><br>
 <span class="docs">Handler for method `52`. This method should be overridden by a subclass.</span>
 
-<code>**async def browse_matchmake_session_with_host_urls_no_holder_no_result_range**(client: [RMCClient](../rmc#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)) -> [RMCResponse](../common)</code><br>
+<code>**async def browse_matchmake_session_with_host_urls_no_holder_no_result_range**(client: [RMCClient](rmc.md#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `53`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>sessions: list[[MatchmakeSession](#matchmakesession)]</code><br>
@@ -863,54 +863,54 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`MatchmakeRefereeServer`](#matchmakerefereeserver).</span>
 
-<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
-<code>**async def start_round**(client: [RMCClient](../rmc#rmcclient), param: [MatchmakeRefereeStartRoundParam](#matchmakerefereestartroundparam)) -> int</code><br>
+<code>**async def start_round**(client: [RMCClient](rmc.md#rmcclient), param: [MatchmakeRefereeStartRoundParam](#matchmakerefereestartroundparam)) -> int</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_start_round_param**(client: [RMCClient](../rmc#rmcclient), round_id: int) -> [MatchmakeRefereeStartRoundParam](#matchmakerefereestartroundparam)</code><br>
+<code>**async def get_start_round_param**(client: [RMCClient](rmc.md#rmcclient), round_id: int) -> [MatchmakeRefereeStartRoundParam](#matchmakerefereestartroundparam)</code><br>
 <span class="docs">Handler for method `2`. This method should be overridden by a subclass.</span>
 
-<code>**async def end_round**(client: [RMCClient](../rmc#rmcclient), param: [MatchmakeRefereeEndRoundParam](#matchmakerefereeendroundparam)) -> None</code><br>
+<code>**async def end_round**(client: [RMCClient](rmc.md#rmcclient), param: [MatchmakeRefereeEndRoundParam](#matchmakerefereeendroundparam)) -> None</code><br>
 <span class="docs">Handler for method `3`. This method should be overridden by a subclass.</span>
 
-<code>**async def end_round_with_partial_report**(client: [RMCClient](../rmc#rmcclient), param: [MatchmakeRefereeEndRoundParam](#matchmakerefereeendroundparam)) -> None</code><br>
+<code>**async def end_round_with_partial_report**(client: [RMCClient](rmc.md#rmcclient), param: [MatchmakeRefereeEndRoundParam](#matchmakerefereeendroundparam)) -> None</code><br>
 <span class="docs">Handler for method `4`. This method should be overridden by a subclass.</span>
 
-<code>**async def end_round_without_report**(client: [RMCClient](../rmc#rmcclient), round_id: int) -> None</code><br>
+<code>**async def end_round_without_report**(client: [RMCClient](rmc.md#rmcclient), round_id: int) -> None</code><br>
 <span class="docs">Handler for method `5`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_round_participants**(client: [RMCClient](../rmc#rmcclient), round_id: int) -> list[int]</code><br>
+<code>**async def get_round_participants**(client: [RMCClient](rmc.md#rmcclient), round_id: int) -> list[int]</code><br>
 <span class="docs">Handler for method `6`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_not_summarized_round**(client: [RMCClient](../rmc#rmcclient)) -> list[[MatchmakeRefereeRound](#matchmakerefereeround)]</code><br>
+<code>**async def get_not_summarized_round**(client: [RMCClient](rmc.md#rmcclient)) -> list[[MatchmakeRefereeRound](#matchmakerefereeround)]</code><br>
 <span class="docs">Handler for method `7`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_round**(client: [RMCClient](../rmc#rmcclient), round: int) -> [MatchmakeRefereeRound](#matchmakerefereeround)</code><br>
+<code>**async def get_round**(client: [RMCClient](rmc.md#rmcclient), round: int) -> [MatchmakeRefereeRound](#matchmakerefereeround)</code><br>
 <span class="docs">Handler for method `8`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_stats_primary**(client: [RMCClient](../rmc#rmcclient), target: [MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)) -> [MatchmakeRefereeStats](#matchmakerefereestats)</code><br>
+<code>**async def get_stats_primary**(client: [RMCClient](rmc.md#rmcclient), target: [MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)) -> [MatchmakeRefereeStats](#matchmakerefereestats)</code><br>
 <span class="docs">Handler for method `9`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_stats_primaries**(client: [RMCClient](../rmc#rmcclient), targets: list[[MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)]) -> [RMCResponse](../common)</code><br>
+<code>**async def get_stats_primaries**(client: [RMCClient](rmc.md#rmcclient), targets: list[[MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)]) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `10`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>stats: list[[MatchmakeRefereeStats](#matchmakerefereestats)]</code><br>
-<code>results: list[[Result](../common#result)]</code><br>
+<code>results: list[[Result](common.md#result)]</code><br>
 </span>
 </span>
 
-<code>**async def get_stats_all**(client: [RMCClient](../rmc#rmcclient), target: [MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)) -> list[[MatchmakeRefereeStats](#matchmakerefereestats)]</code><br>
+<code>**async def get_stats_all**(client: [RMCClient](rmc.md#rmcclient), target: [MatchmakeRefereeStatsTarget](#matchmakerefereestatstarget)) -> list[[MatchmakeRefereeStats](#matchmakerefereestats)]</code><br>
 <span class="docs">Handler for method `11`. This method should be overridden by a subclass.</span>
 
-<code>**async def create_stats**(client: [RMCClient](../rmc#rmcclient), param: [MatchmakeRefereeStatsInitParam](#matchmakerefereestatsinitparam)) -> [MatchmakeRefereeStats](#matchmakerefereestats)</code><br>
+<code>**async def create_stats**(client: [RMCClient](rmc.md#rmcclient), param: [MatchmakeRefereeStatsInitParam](#matchmakerefereestatsinitparam)) -> [MatchmakeRefereeStats](#matchmakerefereestats)</code><br>
 <span class="docs">Handler for method `12`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_or_create_stats**(client: [RMCClient](../rmc#rmcclient), param: [MatchmakeRefereeStatsInitParam](#matchmakerefereestatsinitparam)) -> [MatchmakeRefereeStats](#matchmakerefereestats)</code><br>
+<code>**async def get_or_create_stats**(client: [RMCClient](rmc.md#rmcclient), param: [MatchmakeRefereeStatsInitParam](#matchmakerefereestatsinitparam)) -> [MatchmakeRefereeStats](#matchmakerefereestats)</code><br>
 <span class="docs">Handler for method `13`. This method should be overridden by a subclass.</span>
 
-<code>**async def reset_stats**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def reset_stats**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Handler for method `14`. This method should be overridden by a subclass.</span>
 
 ## MatchmakeSystem
@@ -1019,7 +1019,7 @@ The following fields are defined in this class:<br>
 The following fields are defined in this class:<br>
 <span class="docs">
 <code>gid: int</code><br>
-<code>urls: list[[StationURL](../common#stationurl)]</code><br>
+<code>urls: list[[StationURL](common.md#stationurl)]</code><br>
 </span><br>
 
 ## Invitation
@@ -1192,7 +1192,7 @@ If `nex.version` >= 30500:<br>
 If `nex.version` >= 40000:<br>
 <span class="docs">
 <code>param: [MatchmakeParam](#matchmakeparam) = [MatchmakeParam](#matchmakeparam)()</code><br>
-<code>started_time: [DateTime](../common#datetime) = [DateTime](../common#datetime).never()</code><br>
+<code>started_time: [DateTime](common.md#datetime) = [DateTime](common.md#datetime).never()</code><br>
 <code>user_password: str = ""</code><br>
 <code>refer_gid: int = 0</code><br>
 <code>user_password_enabled: bool = False</code><br>
@@ -1227,7 +1227,7 @@ If `nex.version` >= 40000:<br>
 <code>exclude_system_password: bool = False</code><br>
 <code>refer_gid: int = 0</code><br>
 <code>codeword: str = ""</code><br>
-<code>range: [ResultRange](../common#resultrange) = [ResultRange](../common#resultrange)()</code><br>
+<code>range: [ResultRange](common.md#resultrange) = [ResultRange](common.md#resultrange)()</code><br>
 </span><br>
 </span><br>
 
@@ -1253,8 +1253,8 @@ The following fields are defined in this class:<br>
 <code>password: str</code><br>
 <code>attribs: list[int]</code><br>
 <code>application_buffer: bytes</code><br>
-<code>participation_start: [DateTime](../common#datetime)</code><br>
-<code>participation_end: [DateTime](../common#datetime)</code><br>
+<code>participation_start: [DateTime](common.md#datetime)</code><br>
+<code>participation_end: [DateTime](common.md#datetime)</code><br>
 <code>matchmake_session_count: int</code><br>
 <code>num_participants: int</code><br>
 </span><br>
@@ -1266,7 +1266,7 @@ The following fields are defined in this class:<br>
 The following fields are defined in this class:<br>
 <span class="docs">
 <code>pid: int</code><br>
-<code>gathering: [Data](../common)</code><br>
+<code>gathering: [Data](common.md)</code><br>
 </span><br>
 
 ## SimpleCommunity
@@ -1304,7 +1304,7 @@ The following fields are defined in this class:<br>
 <code>application_buffer: bytes</code><br>
 <code>progress_score: int</code><br>
 <code>param: [MatchmakeParam](#matchmakeparam) = [MatchmakeParam](#matchmakeparam)()</code><br>
-<code>started_time: [DateTime](../common#datetime)</code><br>
+<code>started_time: [DateTime](common.md#datetime)</code><br>
 <code>user_password: str</code><br>
 <code>game_mode: int</code><br>
 <code>description: str</code><br>

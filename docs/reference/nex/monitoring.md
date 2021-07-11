@@ -10,7 +10,7 @@ Provides a client and server for the `MonitoringProtocol`. This page was generat
 <span class="docs">The server for the `MonitoringProtocol`.</span>
 
 ## MonitoringClient
-<code>**def _\_init__**(client: [RMCClient](../rmc#rmcclient) / [HppClient](../hpp#hppclient))</code><br>
+<code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
 <span class="docs">Creates a new [`MonitoringClient`](#monitoringclient).</span>
 
 <code>**async def ping_daemon**() -> bool</code><br>
@@ -23,12 +23,12 @@ Provides a client and server for the `MonitoringProtocol`. This page was generat
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new [`MonitoringServer`](#monitoringserver).</span>
 
-<code>**async def logout**(client: [RMCClient](../rmc#rmcclient)) -> None</code><br>
+<code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
-<code>**async def ping_daemon**(client: [RMCClient](../rmc#rmcclient)) -> bool</code><br>
+<code>**async def ping_daemon**(client: [RMCClient](rmc.md#rmcclient)) -> bool</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_cluster_members**(client: [RMCClient](../rmc#rmcclient)) -> list[str]</code><br>
+<code>**async def get_cluster_members**(client: [RMCClient](rmc.md#rmcclient)) -> list[str]</code><br>
 <span class="docs">Handler for method `2`. This method should be overridden by a subclass.</span>
 

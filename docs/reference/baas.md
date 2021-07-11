@@ -36,7 +36,7 @@ Provides a client for the [BaaS server](https://github.com/kinnay/nintendo/wiki/
 <span class="docs">Changes the TLS context. By default, the server certificate is verified with default authorities.</span>
 
 <code>**async def authenticate**(device_token: str) -> dict</code><br>
-<span class="docs">Requests an authorization token with `/1.0.0/application/token`. This method must be called before any other requests can be made. The device token can be obtained from the [`dauth server`](../dauth).</span>
+<span class="docs">Requests an authorization token with `/1.0.0/application/token`. This method must be called before any other requests can be made. The device token can be obtained from the [`dauth server`](dauth.md).</span>
 
 <code>**async def login**(id: int, password: str, access_token: str, app_token: str = None) -> dict</code><br>
-<span class="docs">Logs in with the given user id and password, using `/1.0.0/login`. If an app token is provided, the server returns an id token that can be used to log in on a game server. App tokens can be obtained from the [`aauth server`](../aauth).</span>
+<span class="docs">Logs in with the given user id and password, using `/1.0.0/login`. If an app token is provided, the server returns an id token that can be used to log in on a game server. App tokens can be obtained from the [`aauth server`](aauth.md).</span>

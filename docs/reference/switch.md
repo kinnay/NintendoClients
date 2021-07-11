@@ -4,7 +4,7 @@
 Provides useful functions and classes related to Nintendo Switch.
 
 <code>**class** [NDASError](#ndaserror)(Exception)</code><br>
-<span class="docs">Raised when an error occurs in the [`dauth`](../dauth) or [`aauth`](../aauth) client.</span>
+<span class="docs">Raised when an error occurs in the [`dauth`](dauth.md) or [`aauth`](aauth.md) client.</span>
 
 <code>**class** [KeySet](#keyset)</code><br>
 <span class="docs">Reads a keyset file like `prod.keys`.</span>

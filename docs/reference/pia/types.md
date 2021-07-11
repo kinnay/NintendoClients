@@ -10,7 +10,7 @@ Provides types that are used by various `pia` modules.
 <span class="docs">A result range. Limits queries to a specific range.</span>
 
 <code>**class** [StationLocation](#stationlocation)</code><br>
-<span class="docs">Holds information about the address of a station. This is `pia`'s replacement for `nex`'s [`StationURL`](../../nex/common#stationurl).</span>
+<span class="docs">Holds information about the address of a station. This is `pia`'s replacement for `nex`'s [`StationURL`](../nex/common.md#stationurl).</span>
 
 <code>**class** [StationAddress](#stationaddress)</code><br>
 <span class="docs">Holds the address of a station.</span>
@@ -56,10 +56,10 @@ Provides types that are used by various `pia` modules.
 <code>**def copy**() -> [StationLocation](#stationlocation)</code>
 <span class="docs">Returns a copy of the station location.</span>
 
-<code>**def set_station_url**(url: [StationURL](../../nex/common#stationurl)) -> None</code><br>
+<code>**def set_station_url**(url: [StationURL](../nex/common.md#stationurl)) -> None</code><br>
 <span class="docs">Replaces the station location with the given station url.</span>
 
-<code>**def get_station_url**() -> [StationURL](../../nex/common#stationurl)</code><br>
+<code>**def get_station_url**() -> [StationURL](../nex/common.md#stationurl)</code><br>
 <span class="docs">Converts the station location to a station url.</span>
 
 ## StationAddress
