@@ -172,7 +172,7 @@ class RMCClient:
 				await self.handle_request(message)
 			else:
 				logger.debug(
-					"Received RMC response: protocol=%i method=%i call=%i",
+					"Received RMC response: protocol=%i method=%s call=%i",
 					message.protocol, message.method, message.call_id
 				)
 				if message.call_id in self.requests:
