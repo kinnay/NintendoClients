@@ -347,6 +347,10 @@ class LanSessionInfo:
 		return hmac.digest(key, param, hashlib.sha256)
 		
 	def encode(self, stream):
+		if len(self.attributes) != 6: raise ValueError("Attributes must contain exactly 6 integers")
+		if len(self.stations) != 16:
+			raise ValueError("Session must contain exactly 16 station entries")
+		
 		stream.u32(self.game_mode)
 		stream.u32(self.session_id)
 		stream.repeat(self.attributes, stream.u32)
