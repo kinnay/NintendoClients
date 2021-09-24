@@ -31,8 +31,9 @@ If you install this package with `pip install .` all requirements (except for Py
     * **smm2_level.py:** Downloads a Super Mario Maker 2 level and its thumbnails, and prints information about both the level and its creator.
     * **smm2_ninji.py:** Requests the list of ninji courses and downloads a replay file.
     * **animalcrossing.py:** Searches for an island by dodo code and prints information about it.
-	* **gamebuilder.py:** Downloads a game from Game Builder Garage, and requests basic metadata such as its creation date.
-	<br><br>
+    * **gamebuilder.py:** Downloads a game from Game Builder Garage, and requests basic metadata such as its creation date.
+    * **lan_host.py:** Makes your name show up on your Switch if you search for LAN sessions in Splatoon 2.
+    <br><br>
 * **custom/**
     * **server.py:** Shows how to create a simple game server with both an authentication server and a secure server.
     * **server_login.py:** Logs in on a game server and disconnects immediately. This can be used to test custom servers.
