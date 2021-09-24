@@ -45,4 +45,4 @@ The following constants are only defined if applicable:
 
 Switch games that are currently defined:
 
-<span class="docs">`ACNH`, `SMM2` and `Tetris99`.</span>
+<span class="docs">`ACNH`, `GBG`, `SMM2`, `Splatoon 2` and `Tetris99`.</span>
