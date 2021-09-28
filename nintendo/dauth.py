@@ -33,7 +33,8 @@ SYSTEM_VERSION_DIGEST = {
 	1201: "CusHY#000c0001#YXsU5FTbkUh18QH27L3woGqw5n1gIDpMGbPXM8oACzY=",
 	1202: "CusHY#000c0002#6tB3UVnmvT_nsNBMPSD-K1oe0IA1cYvYDyqDCjy2W_I=",
 	1203: "CusHY#000c0003#E8Ph6vISWsJtN0E3hsfVRoZMG1Qqkc-qGRlAp-Bs2SI=",
-	1210: "CusHY#000c0100#Hzs8Gtp6yKgGKMb732-5Q-NvbQcHCgBh_LQrrpg0bIs="
+	1210: "CusHY#000c0100#Hzs8Gtp6yKgGKMb732-5Q-NvbQcHCgBh_LQrrpg0bIs=",
+	1300: "CusHY#000d0000#r1xneESd4PiTRYIhVIl0bK1ST5L5BUmv_uGPLqc4PPo="
 }
 
 USER_AGENT = {
@@ -55,7 +56,8 @@ USER_AGENT = {
 	1201: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 12.3.0.0)",
 	1202: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 12.3.0.0)",
 	1203: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 12.3.0.0)",
-	1210: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 12.3.0.0)"
+	1210: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 12.3.0.0)",
+	1300: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 13.3.0.0)"
 }
 
 KEY_GENERATION = {
@@ -77,10 +79,34 @@ KEY_GENERATION = {
 	1201: 11,
 	1202: 11,
 	1203: 11,
-	1210: 11
+	1210: 11,
+	1300: 13
 }
 
-LATEST_VERSION = 1210
+API_VERSION = {
+	900: 6,
+	901: 6,
+	910: 6,
+	920: 6,
+	1000: 6,
+	1001: 6,
+	1002: 6,
+	1003: 6,
+	1004: 6,
+	1010: 6,
+	1011: 6,
+	1020: 6,
+	1100: 6,
+	1101: 6,
+	1200: 6,
+	1201: 6,
+	1202: 6,
+	1203: 6,
+	1210: 6,
+	1300: 7
+}
+
+LATEST_VERSION = 1300
 
 
 class DAuthError(switch.NDASError): pass
@@ -107,6 +133,7 @@ class DAuthClient:
 		self.user_agent = USER_AGENT[LATEST_VERSION]
 		self.system_digest = SYSTEM_VERSION_DIGEST[LATEST_VERSION]
 		self.key_generation = KEY_GENERATION[LATEST_VERSION]
+		self.api_version = API_VERSION[LATEST_VERSION]
 		
 		self.power_state = "FA"
 		
@@ -114,21 +141,23 @@ class DAuthClient:
 		self.context.set_certificate(cert, key)
 	def set_context(self, context):
 		self.context = context
-	
-	def set_platform_region(self, region): self.region = region
 
 	def set_url(self, url): self.url = url
+	def set_power_state(self, state): self.power_state = state
+	def set_platform_region(self, region): self.region = region
+	
 	def set_user_agent(self, user_agent): self.user_agent = user_agent
 	def set_system_digest(self, digest): self.system_digest = digest
+	def set_key_generation(self, keygen): self.key_generation = keygen
+	def set_api_version(self, version): self.api_version = version
+	
 	def set_system_version(self, version):
 		if version not in USER_AGENT:
 			raise ValueError("Unknown system version: %i" %version)
 		self.user_agent = USER_AGENT[version]
 		self.system_digest = SYSTEM_VERSION_DIGEST[version]
 		self.key_generation = KEY_GENERATION[version]
-	
-	def set_power_state(self, state): self.power_state = state
-	def set_key_generation(self, keygen): self.key_generation = keygen
+		self.api_version = API_VERSION[version]
 		
 	async def request(self, req):
 		req.headers["Host"] = self.url
@@ -152,7 +181,7 @@ class DAuthClient:
 		return response
 		
 	async def challenge(self):
-		req = http.HTTPRequest.post("/v6/challenge")
+		req = http.HTTPRequest.post("/v%i/challenge" %self.api_version)
 		req.plainform["key_generation"] = self.key_generation
 		
 		response = await self.request(req)
@@ -163,7 +192,7 @@ class DAuthClient:
 		
 		data = switch.b64decode(challenge["data"])
 		
-		req = http.HTTPRequest.post("/v6/device_auth_token")
+		req = http.HTTPRequest.post("/v%i/device_auth_token" %self.api_version)
 		req.plainform["challenge"] = challenge["challenge"]
 		req.plainform["client_id"] = "%016x" %client_id
 		if self.region == 2:

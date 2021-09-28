@@ -38,6 +38,7 @@ async def test_aauth():
 	async with http.serve(handler, "127.0.0.1", 12345):
 		client = aauth.AAuthClient()
 		client.set_url("127.0.0.1:12345")
+		client.set_system_version(1200)
 		client.set_context(None)
 		response = await client.auth_digital(
 			0x0100123001234000, 0x70000, "device.token", CERT

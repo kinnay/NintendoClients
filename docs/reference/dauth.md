@@ -37,6 +37,9 @@ Provides a client for the [device authentication server](https://github.com/kinn
 <code>**def set_power_state**(state: str) -> None</code><br>
 <span class="docs">Changes the content of the `X-Nintendo-PowerState` header. The default is `"FA"`.
 
+<code>**def set_api_version**(version: int) -> None</code><br>
+<span class="docs">Selects the DAuth API version. Currently, only `6` and `7` are supported. The default depends on the latest system version.</span>
+
 <code>**def set_key_generation**(keygen: int) -> None</code><br>
 <span class="docs">Changes the master key revision that's used for the challenge. The default depends on the latest system version.</span>
 
@@ -44,10 +47,10 @@ Provides a client for the [device authentication server](https://github.com/kinn
 <span class="docs">Changes the system version digest that's sent to the `dauth` server. The default depends on the latest system version.</span>
 
 <code>**def set_system_version**(version: int) -> None</code></br>
-<span class="docs">Updates the user agent, system version digest and master key revision for the given system version. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` and later are supported.</span>
+<span class="docs">Updates the user agent, API version, system version digest and master key revision for the given system version. The system version should be given as a decimal integer. For example, `1002` is system version `10.0.2`. All system versions from `9.0.0` and later are supported.</span>
 
 <code>**async def challenge**() -> dict</code><br>
-<span class="docs">Requests a challenge from the `dauth` server with `/v6/challenge`.
+<span class="docs">Requests a challenge from the `dauth` server.</span>
 
 <code>**async def device_token**(client_id: int) -> dict</code><br>
-<span class="docs">Requests a device token from the `dauth` server with `/v6/device_auth_token`. The challenge is performed automatically.
+<span class="docs">Requests a device token from the `dauth` server. The challenge is done automatically.</span>
