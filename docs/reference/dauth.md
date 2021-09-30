@@ -9,11 +9,16 @@ Provides a client for the [device authentication server](https://github.com/kinn
 <span class="docs">The `dauth` client.</span>
 
 ## DAuthClient
+`SCSI: int = 0x146C8AC7B8A0DB52`<br>
+`ESHOP: int = 0x41F4A6491028E3C4`<br>
 `BCAT: int = 0x67BF9945B45248C6`<br>
+`SATA: int = 0x6AC5A6873FE5F68C`<br>
 `ACCOUNT: int = 0x81333C548B2E876D`<br>
+`NPNS: int = 0x83B72B05DC3278D7`<br>
 `BAAS: int = 0x8F849B5D34778D8E`<br>
 `BEACH: int = 0x93AF0ACB26258DE9`<br>
 `DRAGONS: int = 0xD5B6CAC2C1514C56`<br>
+`PCTL: int = 0xDC656EA03B63CF68`<br>
 `PREPO: int = 0xDF51C436BC01C437`
 
 <code>**def _\_init__**(keyset: [KeySet](switch.md#keyset))</code><br>
