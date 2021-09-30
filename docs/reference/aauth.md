@@ -27,6 +27,9 @@ Provides a client for the [application authentication server](https://github.com
 <code>**def set_context**(context: [TLSContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscontext)) -> None</code><br>
 <span class="docs">Changes the TLS context. By default, the server certificate is verified with `Nintendo CA - G3`.</span>
 
+<code>**async def challenge**(device_token: str) -> dict</code><br>
+<span class="docs">Requests a challenge from the `aauth` server. The device token can be obtained from the [`dauth server`](dauth.md).</span>
+
 <code>**async def auth_system**(title_id: int, title_version: int, device_token: str) -> dict</code><br>
 <span class="docs">Requests an application token from the `aauth` server for a system title with `/v3/application_auth_token`. The device token can be obtained from the [`dauth server`](dauth.md).</span>
 

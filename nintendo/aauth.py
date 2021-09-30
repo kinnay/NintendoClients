@@ -116,6 +116,13 @@ class AAuthClient:
 		if struct.unpack_from(">Q", ticket, 0x2A8)[0] != ticket[0x285]:
 			raise ValueError("Ticket has inconsistent master key revision")
 
+	async def challenge(self, device_token):
+		req = http.HTTPRequest.post("/v3/challenge")
+		req.plainform["&device_auth_token"] = device_token
+		
+		response = await self.request(req, False)
+		return response.json
+
 	async def auth_system(self, title_id, title_version, device_token):
 		req = http.HTTPRequest.post("/v3/application_auth_token")
 		req.form["application_id"] = "%016x" %title_id
