@@ -59,3 +59,6 @@ Provides a client for the [device authentication server](https://github.com/kinn
 
 <code>**async def device_token**(client_id: int) -> dict</code><br>
 <span class="docs">Requests a device token from the `dauth` server. The challenge is done automatically.</span>
+
+<code>**async def edge_token**(client_id: int, vendor_id: str = "akamai") -> dict</code><br>
+<span class="docs">Requests an edge token from the `dauth` server. The challenge is done automatically.</span>
