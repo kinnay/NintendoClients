@@ -5,10 +5,10 @@ import pytest
 import struct
 
 
-EXPECTED_REQUEST = \
+TOKEN_REQUEST = \
 	"POST /v3/application_auth_token HTTP/1.1\r\n" \
 	"Host: 127.0.0.1:12345\r\n" \
-	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 12.3.0.0; Add-on 12.3.0.0)\r\n" \
+	"User-Agent: libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 13.3.0.0; Add-on 13.3.0.0)\r\n" \
 	"Accept: */*\r\n" \
 	"X-Nintendo-PowerState: FA\r\n" \
 	"Content-Length: 1428\r\n" \
@@ -27,8 +27,8 @@ CERT += bytes(0x18)
 async def test_aauth():
 	async def handler(client, request):
 		text = request.encode().decode()
-		assert text.startswith(EXPECTED_REQUEST)
-		assert text[1378:1388] == "&cert_key="
+		assert text.startswith(TOKEN_REQUEST)
+		assert text[1375:1385] == "&cert_key="
 		response = http.HTTPResponse(200)
 		response.json = {
 			"application_auth_token": "application token"
@@ -38,7 +38,7 @@ async def test_aauth():
 	async with http.serve(handler, "127.0.0.1", 12345):
 		client = aauth.AAuthClient()
 		client.set_url("127.0.0.1:12345")
-		client.set_system_version(1200)
+		client.set_system_version(1300)
 		client.set_context(None)
 		response = await client.auth_digital(
 			0x0100123001234000, 0x70000, "device.token", CERT
