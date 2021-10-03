@@ -146,10 +146,10 @@ class RMCClient:
 			raise ValueError("Server with protocol id %i already exists" %server.PROTOCOL_ID)
 		self.servers[server.PROTOCOL_ID] = server
 	
-	async def cleanup(self):
+	def cleanup(self):
 		self.closed = True
 		for event in self.requests.values():
-			await event.set()
+			event.set()
 		
 	async def start(self, servers):
 		for server in servers:
@@ -160,7 +160,7 @@ class RMCClient:
 				data = await self.client.recv()
 			except anyio.EndOfStream:
 				logger.info("Connection was closed")
-				await self.cleanup()
+				self.cleanup()
 				return
 			
 			message = RMCMessage.parse(self.settings, data)
@@ -178,7 +178,7 @@ class RMCClient:
 				if message.call_id in self.requests:
 					self.responses[message.call_id] = message
 					event = self.requests.pop(message.call_id)
-					await event.set()
+					event.set()
 				else:
 					logger.warning("RMC response has invalid call id")
 	
@@ -237,7 +237,7 @@ class RMCClient:
 		self.call_id = (self.call_id + 1) & 0xFFFFFFFF
 		
 		if not noresponse:
-			event = anyio.create_event()
+			event = anyio.Event()
 			self.requests[call_id] = event
 		
 		message = RMCMessage.request(self.settings, protocol, method, call_id, body)
@@ -274,7 +274,7 @@ async def connect(settings, host, port, vport=1, context=None, credentials=None,
 		client = RMCClient(settings, client)
 		async with client:
 			async with util.create_task_group() as group:
-				await group.spawn(client.start, servers)
+				group.start_soon(client.start, servers)
 				yield client
 	logger.debug("RMC client is closed")
 

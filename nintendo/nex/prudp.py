@@ -760,7 +760,7 @@ class PRUDPClient:
 		self.syn_complete = False
 		self.closed = False
 		
-		self.handshake_event = anyio.create_event()
+		self.handshake_event = anyio.Event()
 	
 	async def __aenter__(self): return self
 	async def __aexit__(self, typ, val, tb):
@@ -796,7 +796,7 @@ class PRUDPClient:
 		self.group = group
 		
 		self.scheduler = scheduler.Scheduler(group)
-		await self.scheduler.start()
+		self.scheduler.start()
 		
 		self.credentials = credentials
 		if self.credentials:
@@ -808,7 +808,7 @@ class PRUDPClient:
 		if self.closed:
 			raise RuntimeError("PRUDP connection failed")
 		
-		self.ping_event = await self.scheduler.repeat(self.send_ping, self.ping_timeout)
+		self.ping_event = self.scheduler.repeat(self.send_ping, self.ping_timeout)
 	
 	async def serve(self, group):
 		self.group = group
@@ -818,9 +818,9 @@ class PRUDPClient:
 		self.sliding_windows[0].skip()
 		
 		self.scheduler = scheduler.Scheduler(group)
-		await self.scheduler.start()
+		self.scheduler.start()
 		
-		self.ping_event = await self.scheduler.repeat(self.send_ping, self.ping_timeout)
+		self.ping_event = self.scheduler.repeat(self.send_ping, self.ping_timeout)
 	
 	async def send(self, data, substream=0):
 		if not 0 <= substream <= self.max_substream_id:
@@ -908,7 +908,7 @@ class PRUDPClient:
 			return
 		
 		if (packet.flags & FLAG_RELIABLE or packet.type == TYPE_SYN) and packet.flags & FLAG_NEED_ACK:
-			await self.schedule_timeout(packet)
+			self.schedule_timeout(packet)
 			
 	async def resend_packet(self, packet, counter):
 		key = (packet.type, packet.substream_id, packet.packet_id)
@@ -921,15 +921,15 @@ class PRUDPClient:
 				await self.abort()
 				return
 			
-			handle = await self.scheduler.schedule(self.resend_packet, self.resend_timeout, packet, counter + 1)
+			handle = self.scheduler.schedule(self.resend_packet, self.resend_timeout, packet, counter + 1)
 			self.ack_events[key] = handle
 		else:
 			logger.error("Packet timed out: %s" %packet)
 			await self.abort()
 	
-	async def schedule_timeout(self, packet):
+	def schedule_timeout(self, packet):
 		key = (packet.type, packet.substream_id, packet.packet_id)
-		handle = await self.scheduler.schedule(self.resend_packet, self.resend_timeout, packet, 0)
+		handle = self.scheduler.schedule(self.resend_packet, self.resend_timeout, packet, 0)
 		self.ack_events[key] = handle
 		
 	def build_connection_request(self):
@@ -1022,7 +1022,7 @@ class PRUDPClient:
 		if key in self.ack_events:
 			self.check_connection_response(packet.payload)
 			self.remote_session_id = packet.session_id
-			await self.handshake_event.set()
+			self.handshake_event.set()
 	
 	async def process_other(self, packet):
 		connection_signature = self.packet_encoder.calc_connection_signature(self.remote_addr)
@@ -1104,7 +1104,7 @@ class PRUDPClient:
 	async def abort(self):
 		self.closed = True
 		self.scheduler.remove_all()
-		await self.handshake_event.set()
+		self.handshake_event.set()
 		for queue in self.packets:
 			await queue.close()
 		await self.unreliable_packets.close()
@@ -1284,7 +1284,7 @@ class PRUDPServerStream:
 		
 		if key not in self.clients:
 			self.clients[key] = client
-			await self.group.spawn(self.start_client, client)
+			self.group.start_soon(self.start_client, client)
 		
 		ack = PRUDPPacket(TYPE_CONNECT, FLAG_ACK | FLAG_HAS_SIZE)
 		ack.version = packet.version
@@ -1351,9 +1351,9 @@ class PRUDPClientTransport:
 					await client.handshake(credentials, group)
 					yield client
 					await client.close()
-			
-	async def start(self):
-		await self.group.spawn(self.process)
+	
+	def start(self):
+		self.group.start_soon(self.process)
 	
 	async def process(self):
 		while True:
@@ -1421,8 +1421,8 @@ class PRUDPDatagramTransport(PRUDPServerTransport):
 		self.socket = socket
 		self.group = group
 		
-	async def start(self):
-		await self.group.spawn(self.process)
+	def start(self):
+		self.group.start_soon(self.process)
 		
 	async def process(self):
 		while True:
@@ -1489,7 +1489,7 @@ async def connect_transport(settings, host, port, context=None):
 	async with connect_transport_socket(settings, host, port, context) as socket:
 		async with util.create_task_group() as group:
 			transport = PRUDPClientTransport(settings, socket, group)
-			await transport.start()
+			transport.start()
 			yield transport
 
 @contextlib.asynccontextmanager
@@ -1500,7 +1500,7 @@ async def serve_transport(settings, host="", port=0, context=None):
 		async with udp.bind(host, port) as socket:
 			async with util.create_task_group() as group:
 				transport = PRUDPDatagramTransport(settings, socket, group)
-				await transport.start()
+				transport.start()
 				yield transport
 	else:
 		transport = PRUDPSocketTransport(settings, (host, port))

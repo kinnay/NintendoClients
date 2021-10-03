@@ -422,8 +422,8 @@ class LanServer:
 		self.sock = sock
 		self.group = group
 	
-	async def start(self):
-		await self.group.spawn(self.process)
+	def start(self):
+		self.group.start_soon(self.process)
 	
 	async def process(self):
 		while True:
@@ -532,7 +532,7 @@ async def browse(settings, search_criteria, key=None, timeout=1, max=0):
 		
 		sessions = []
 		ids = []
-		async with anyio.move_on_after(timeout):
+		with anyio.move_on_after(timeout):
 			while max == 0 or len(sessions) < max:
 				data, addr = await sock.recv()
 				session = parse_browse_reply(settings, data, key, challenge_key, challenge_data)
@@ -546,5 +546,5 @@ async def serve(settings, handler, key=None):
 	async with udp.bind(util.broadcast_address(), 30000) as sock:
 		async with util.create_task_group() as group:
 			server = LanServer(settings, handler, key, sock, group)
-			await server.start()
+			server.start()
 			yield server
