@@ -31,7 +31,7 @@ def handler():
 	session.min_participants = 1
 	session.max_participants = 10
 	session.system_version = 5
-	session.application_version = 65
+	session.application_version = 66
 	session.session_type = 0
 	session.application_data = HOST_NAME.encode("utf-16le").ljust(74, b"\0")
 	session.is_opened = True
