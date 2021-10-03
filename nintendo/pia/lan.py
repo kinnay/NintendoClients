@@ -543,7 +543,7 @@ async def browse(settings, search_criteria, key=None, timeout=1, max=0):
 
 @contextlib.asynccontextmanager
 async def serve(settings, handler, key=None):
-	async with udp.bind(util.broadcast_address(), 30000) as sock:
+	async with udp.bind("0.0.0.0", 30000) as sock:
 		async with util.create_task_group() as group:
 			server = LanServer(settings, handler, key, sock, group)
 			server.start()
