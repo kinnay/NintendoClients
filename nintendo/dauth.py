@@ -195,7 +195,9 @@ class DAuthClient:
 		
 	async def challenge(self):
 		req = http.HTTPRequest.post("/v%i/challenge" %self.api_version)
-		req.plainform["key_generation"] = self.key_generation
+		req.form = {
+			"key_generation": self.key_generation
+		}
 		
 		response = await self.request(req)
 		return response.json
@@ -206,17 +208,16 @@ class DAuthClient:
 		data = switch.b64decode(challenge["data"])
 		
 		req = http.HTTPRequest.post("/v%i/device_auth_token" %self.api_version)
-		req.plainform["challenge"] = challenge["challenge"]
-		req.plainform["client_id"] = "%016x" %client_id
-		if self.region == 2:
-			req.plainform["ist"] = "true"
-		else:
-			req.plainform["ist"] = "false"
-		req.plainform["key_generation"] = self.key_generation
-		req.plainform["system_version"] = self.system_digest
+		req.rawform = {
+			"challenge": challenge["challenge"],
+			"client_id": "%016x" %client_id,
+			"ist": "true" if self.region == 2 else "false",
+			"key_generation": self.key_generation,
+			"system_version": self.system_digest
+		}
 		
-		string = http.formencode(req.plainform, False)
-		req.plainform["mac"] = self.calculate_mac(string, data)
+		string = http.formencode(req.rawform, False)
+		req.rawform["mac"] = self.calculate_mac(string, data)
 		
 		response = await self.request(req)
 		return response.json
@@ -227,19 +228,19 @@ class DAuthClient:
 		data = switch.b64decode(challenge["data"])\
 		
 		req = http.HTTPRequest.post("/v%i/edge_token" %self.api_version)
-		req.plainform["challenge"] = challenge["challenge"]
-		req.plainform["client_id"] = "%016x" %client_id
-		if self.region == 2:
-			req.plainform["ist"] = "true"
-		else:
-			req.plainform["ist"] = "false"
-		req.plainform["key_generation"] = self.key_generation
-		req.plainform["system_version"] = self.system_digest
-		if self.api_version == 7:
-			req.plainform["vendor_id"] = vendor_id
+		req.rawform = {
+			"challenge": challenge["challenge"],
+			"client_id": "%016x" %client_id,
+			"ist": "true" if self.region == 2 else "false",
+			"key_generation": self.key_generation,
+			"system_version": self.system_digest
+		}
 		
-		string = http.formencode(req.plainform, False)
-		req.plainform["mac"] = self.calculate_mac(string, data)
+		if self.api_version == 7:
+			req.rawform["vendor_id"] = vendor_id
+		
+		string = http.formencode(req.rawform, False)
+		req.rawform["mac"] = self.calculate_mac(string, data)
 		
 		response = await self.request(req)
 		return response.json

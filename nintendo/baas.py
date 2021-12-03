@@ -69,8 +69,9 @@ class BAASClient:
 			req.headers["Authorization"] = "Bearer " + token
 		if use_power_state:
 			req.headers["X-Nintendo-PowerState"] = self.power_state
-		req.headers["Content-Length"] = 0
-		req.headers["Content-Type"] = "application/x-www-form-urlencoded"
+		if req.method == "POST":
+			req.headers["Content-Length"] = 0
+			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 		
 		response = await http.request(self.url, req, self.context)
 		if response.error():
@@ -80,16 +81,21 @@ class BAASClient:
 		
 	async def authenticate(self, device_token):
 		req = http.HTTPRequest.post("/1.0.0/application/token")
-		req.form["grantType"] = "public_client"
-		req.form["assertion"] = device_token
-		
+		req.form = {
+			"grantType": "public_client",
+			"assertion": device_token
+		}
+
 		response = await self.request(req, None, True)
 		return response.json
 	
 	async def login(self, id, password, auth, app_token=None):
 		req = http.HTTPRequest.post("/1.0.0/login")
-		req.form["id"] = "%016x" %id
-		req.form["password"] = password
+		req.form = {
+			"id": "%016x" %id,
+			"password": password
+		}
+		
 		if app_token:
 			req.form["appAuthNToken"] = app_token
 			

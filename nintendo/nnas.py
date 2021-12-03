@@ -344,9 +344,12 @@ class NNASClient:
 		req = http.HTTPRequest.post("/v1/api/oauth20/access_token/generate")
 		self.prepare(req, cert=self.device_cert)
 		
-		req.form["grant_type"] = "password"
-		req.form["user_id"] = username
-		req.form["password"] = password
+		req.form = {
+			"grant_type": "password",
+			"user_id": username,
+			"password": password,
+		}
+		
 		if password_type is not None:
 			req.form["password_type"] = password_type
 		
@@ -355,7 +358,10 @@ class NNASClient:
 	
 	async def get_nex_token(self, access_token, game_server_id):
 		req = http.HTTPRequest.get("/v1/api/provider/nex_token/@me")
-		req.params["game_server_id"] = "%08X" %game_server_id
+		req.params = {
+			"game_server_id": "%08X" %game_server_id
+		}
+		
 		self.prepare(req, access_token)
 		
 		response = await self.request(req)
@@ -363,7 +369,10 @@ class NNASClient:
 	
 	async def get_service_token(self, access_token, client_id):
 		req = http.HTTPRequest.get("/v1/api/provider/service_token/@me")
-		req.params["client_id"] = client_id
+		req.params = {
+			"client_id": client_id
+		}
+		
 		self.prepare(req, access_token)
 		
 		response = await self.request(req)
@@ -380,7 +389,10 @@ class NNASClient:
 		
 	async def get_miis(self, pids):
 		req = http.HTTPRequest.get("/v1/api/miis")
-		req.params["pids"] = ",".join([str(pid) for pid in pids])
+		req.params = {
+			"pids": ",".join([str(pid) for pid in pids])
+		}
+		
 		self.prepare(req)
 		
 		response = await self.request(req)
@@ -388,9 +400,11 @@ class NNASClient:
 	
 	async def get_pids(self, nnids):
 		req = http.HTTPRequest.get("/v1/api/admin/mapped_ids")
-		req.params["input_type"] = "user_id"
-		req.params["output_type"] = "pid"
-		req.params["input"] = ",".join(nnids)
+		req.params = {
+			"input_type": "user_id",
+			"output_type": "pid",
+			"input": ",".join(nnids)
+		}
 		self.prepare(req)
 		
 		response = await self.request(req)
@@ -398,9 +412,11 @@ class NNASClient:
 		
 	async def get_nnids(self, pids):
 		req = http.HTTPRequest.get("/v1/api/admin/mapped_ids")
-		req.params["input_type"] = "pid"
-		req.params["output_type"] = "user_id"
-		req.params["input"] = ",".join([str(pid) for pid in pids])
+		req.params = {
+			"input_type": "pid",
+			"output_type": "user_id",
+			"input": ",".join([str(pid) for pid in pids])
+		}
 		self.prepare(req)
 		
 		response = await self.request(req)

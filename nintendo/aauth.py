@@ -120,17 +120,21 @@ class AAuthClient:
 
 	async def challenge(self, device_token):
 		req = http.HTTPRequest.post("/v3/challenge")
-		req.plainform["&device_auth_token"] = device_token
+		req.rawform = {
+			"&device_auth_token": device_token
+		}
 		
 		response = await self.request(req, False)
 		return response.json
 
 	async def auth_system(self, title_id, title_version, device_token):
 		req = http.HTTPRequest.post("/v3/application_auth_token")
-		req.form["application_id"] = "%016x" %title_id
-		req.form["application_version"] = "%08x" %title_version
-		req.form["device_auth_token"] = device_token
-		req.form["media_type"] = "SYSTEM"
+		req.form = {
+			"application_id": "%016x" %title_id,
+			"application_version": "%08x" %title_version,
+			"device_auth_token": device_token,
+			"media_type": "SYSTEM"
+		}
 
 		response = await self.request(req, True)
 		return response.json
@@ -148,13 +152,15 @@ class AAuthClient:
 		encrypted_key = rsa.encrypt(plain_key)
 	
 		req = http.HTTPRequest.post("/v3/application_auth_token")
-		req.form["application_id"] = "%016x" %title_id
-		req.form["application_version"] = "%08x" %title_version
-		req.form["device_auth_token"] = device_token
-		req.form["media_type"] = "DIGITAL"
+		req.form = {
+			"application_id": "%016x" %title_id,
+			"application_version": "%08x" %title_version,
+			"device_auth_token": device_token,
+			"media_type": "DIGITAL",
+			
+			"cert": switch.b64encode(encrypted_ticket),
+			"cert_key": switch.b64encode(encrypted_key)
+		}
 		
-		req.form["cert"] = switch.b64encode(encrypted_ticket)
-		req.form["cert_key"] = switch.b64encode(encrypted_key)
-	
 		response = await self.request(req, True)
 		return response.json

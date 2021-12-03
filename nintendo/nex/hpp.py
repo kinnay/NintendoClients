@@ -59,7 +59,7 @@ class HppClient:
 		req.headers["Content-Type"] = "multipart/form-data"
 		req.headers["Content-Length"] = 0
 		req.boundary = "--------BOUNDARY--------" + random
-		req.files["file"] = data
+		req.files = {"file": data}
 		
 		response = await http.request(req, self.context)
 		if response.error():
