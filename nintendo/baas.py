@@ -89,7 +89,7 @@ class BAASClient:
 		response = await self.request(req, None, True)
 		return response.json
 	
-	async def login(self, id, password, auth, app_token=None):
+	async def login(self, id, password, access_token, app_token=None, skip_verification=False):
 		req = http.HTTPRequest.post("/1.0.0/login")
 		req.form = {
 			"id": "%016x" %id,
@@ -98,6 +98,14 @@ class BAASClient:
 		
 		if app_token:
 			req.form["appAuthNToken"] = app_token
+		if skip_verification:
+			req.form["skipOp2Verification"] = "1"
 			
-		response = await self.request(req, auth, True)
+		response = await self.request(req, access_token, True)
+		return response.json
+	
+	async def register(self, access_token):
+		req = http.HTTPRequest.post("/1.0.0/users")
+		
+		response = await self.request(req, access_token, False)
 		return response.json

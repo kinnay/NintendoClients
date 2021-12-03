@@ -38,5 +38,8 @@ Provides a client for the [BaaS server](https://github.com/kinnay/nintendo/wiki/
 <code>**async def authenticate**(device_token: str) -> dict</code><br>
 <span class="docs">Requests an authorization token with `/1.0.0/application/token`. This method must be called before any other requests can be made. The device token can be obtained from the [`dauth server`](dauth.md).</span>
 
-<code>**async def login**(id: int, password: str, access_token: str, app_token: str = None) -> dict</code><br>
-<span class="docs">Logs in with the given user id and password, using `/1.0.0/login`. If an app token is provided, the server returns an id token that can be used to log in on a game server. App tokens can be obtained from the [`aauth server`](aauth.md).</span>
+<code>**async def login**(id: int, password: str, access_token: str, app_token: str = None, skip_verification: bool = False) -> dict</code><br>
+<span class="docs">Logs in with the given user id and password, using `/1.0.0/login`. If an app token is provided, the server returns an id token that can be used to log in on a game server. App tokens can be obtained from the [`aauth server`](aauth.md). If `skip_verification` is `True` the client asks the server to skip NSO verification.</span>
+
+<code>**async def register**(access_token: str) -> dict</code><br>
+<span class="docs">Registers a new device account on the `BaaS` server.</span>
