@@ -22,7 +22,7 @@ class BackEndClient:
 		self.auth_host = host
 		self.auth_port = port
 		
-		if settings["nex.version"] < 40000:
+		if self.settings["nex.version"] < 40000:
 			self.auth_proto = authentication.AuthenticationClient(client)
 		else:
 			self.auth_proto = authentication.AuthenticationClientNX(client)
@@ -121,6 +121,7 @@ class BackEndClient:
 			bytes.fromhex(response.source_key),
 			response.server_url
 		)
+	
 	def login_guest(self):
 		return self.login("guest", "MMQea3n!fsik")
 
