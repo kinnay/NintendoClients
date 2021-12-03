@@ -188,7 +188,7 @@ class TokenStream:
 			self.error(token)
 	
 	def check_token(self, type, value):
-		token = stream.peek()
+		token = self.peek()
 		if token.type == type and token.value == value:
 			self.index += 1
 			return True
