@@ -28,7 +28,7 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**class** [PersistentNotification](#persistentnotification)([Data](common.md))</code><br>
 <code>**class** [PrincipalBasicInfo](#principalbasicinfo)([Data](common.md))</code><br>
 <code>**class** [PrincipalPreference](#principalpreference)([Data](common.md))</code><br>
-<code>**class** [PrincipalRequestBlockSetting](#principalrequestblocksetting)([Structure](common.md))</code><br>
+<code>**class** [PrincipalRequestBlockSetting](#principalrequestblocksetting)([Data](common.md))</code><br>
 
 ## FriendsClientV1
 <code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
@@ -390,9 +390,9 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: bool</code><br>
-<code>unk2: bool</code><br>
-<code>unk3: bool</code><br>
+<code>show_online_status: bool</code><br>
+<code>show_current_title: bool</code><br>
+<code>block_friend_requests: bool</code><br>
 </span><br>
 
 ## PrincipalRequestBlockSetting

@@ -98,12 +98,12 @@ struct PrincipalBasicInfo : Data {
 }
 
 struct PrincipalPreference : Data {
-	bool unk1;
-	bool unk2;
-	bool unk3;
+	bool show_online_status;
+	bool show_current_title;
+	bool block_friend_requests;
 }
 
-struct PrincipalRequestBlockSetting {
+struct PrincipalRequestBlockSetting : Data {
 	uint32 unk1;
 	bool unk2;
 }

@@ -382,29 +382,29 @@ common.DataHolder.register(PrincipalBasicInfo, "PrincipalBasicInfo")
 class PrincipalPreference(common.Data):
 	def __init__(self):
 		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
-		self.unk3 = None
+		self.show_online_status = None
+		self.show_current_title = None
+		self.block_friend_requests = None
 	
 	def check_required(self, settings, version):
-		for field in ['unk1', 'unk2', 'unk3']:
+		for field in ['show_online_status', 'show_current_title', 'block_friend_requests']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk1 = stream.bool()
-		self.unk2 = stream.bool()
-		self.unk3 = stream.bool()
+		self.show_online_status = stream.bool()
+		self.show_current_title = stream.bool()
+		self.block_friend_requests = stream.bool()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.bool(self.unk1)
-		stream.bool(self.unk2)
-		stream.bool(self.unk3)
+		stream.bool(self.show_online_status)
+		stream.bool(self.show_current_title)
+		stream.bool(self.block_friend_requests)
 common.DataHolder.register(PrincipalPreference, "PrincipalPreference")
 
 
-class PrincipalRequestBlockSetting(common.Structure):
+class PrincipalRequestBlockSetting(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.unk1 = None
@@ -423,6 +423,7 @@ class PrincipalRequestBlockSetting(common.Structure):
 		self.check_required(stream.settings, version)
 		stream.u32(self.unk1)
 		stream.bool(self.unk2)
+common.DataHolder.register(PrincipalRequestBlockSetting, "PrincipalRequestBlockSetting")
 
 
 class FriendsProtocolV1:
