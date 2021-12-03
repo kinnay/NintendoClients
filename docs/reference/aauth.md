@@ -27,6 +27,9 @@ Provides a client for the [application authentication server](https://github.com
 <code>**def set_context**(context: [TLSContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscontext)) -> None</code><br>
 <span class="docs">Changes the TLS context. By default, the server certificate is verified with `Nintendo CA - G3`.</span>
 
+<code>**async def get_time**() -> tuple[int, str]</code><br>
+<span class="docs">Requests the current server time with `/v1/time`. Returns a tuple that contains the current server time and your public IP address.</span>
+
 <code>**async def challenge**(device_token: str) -> dict</code><br>
 <span class="docs">Requests a challenge from the `aauth` server. The device token can be obtained from the [`dauth server`](dauth.md).</span>
 
@@ -35,3 +38,6 @@ Provides a client for the [application authentication server](https://github.com
 
 <code>**async def auth_digital**(title_id: int, title_version: int, device_token: str, ticket: bytes) -> dict</code><br>
 <span class="docs">Requests an application token from the `aauth` server for a digital title with `/v3/application_auth_token`. The device token can be obtained from the [`dauth server`](dauth.md).</span>
+
+<code>**async def auth_nocert**(title_id: int, title_version: int, device_token): str -> dict</code><br>
+<span class="docs">Requests an application token from the `aauth` server for a title for which no ticket was found on the Switch. Do not use this on a production server, because it will immediately ban your Switch.</span>

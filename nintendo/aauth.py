@@ -118,6 +118,18 @@ class AAuthClient:
 		if struct.unpack_from(">Q", ticket, 0x2A8)[0] != ticket[0x285]:
 			raise ValueError("Ticket has inconsistent master key revision")
 
+	async def get_time(self):
+		req = http.HTTPRequest.get("/v1/time")
+		req.headers["Host"] = self.url
+		req.headers["Accept"] = "*/*"
+		
+		response = await http.request(self.url, req, self.context)
+		response.raise_if_error()
+		
+		time = int(response.headers["X-NINTENDO-UNIXTIME"])
+		ip = response.headers["X-NINTENDO-GLOBAL-IP"]
+		return time, ip
+	
 	async def challenge(self, device_token):
 		req = http.HTTPRequest.post("/v3/challenge")
 		req.rawform = {
@@ -125,6 +137,18 @@ class AAuthClient:
 		}
 		
 		response = await self.request(req, False)
+		return response.json
+
+	async def auth_nocert(self, title_id, title_version, device_token):
+		req = http.HTTPRequest.post("/v3/application_auth_token")
+		req.form = {
+			"application_id": "%016x" %title_id,
+			"application_version": "%08x" %title_version,
+			"device_auth_token": device_token,
+			"media_type": "NO_CERT"
+		}
+		
+		response = await self.request(req, True)
 		return response.json
 
 	async def auth_system(self, title_id, title_version, device_token):
