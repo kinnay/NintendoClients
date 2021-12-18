@@ -139,6 +139,8 @@ class AAuthClient:
 		response = await self.request(req, False)
 		return response.json
 
+	# Warning: do not use auth_nocert on a production server.
+	# It will immediately ban your Switch.
 	async def auth_nocert(self, title_id, title_version, device_token):
 		req = http.HTTPRequest.post("/v3/application_auth_token")
 		req.form = {

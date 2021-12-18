@@ -40,4 +40,4 @@ Provides a client for the [application authentication server](https://github.com
 <span class="docs">Requests an application token from the `aauth` server for a digital title with `/v3/application_auth_token`. The device token can be obtained from the [`dauth server`](dauth.md).</span>
 
 <code>**async def auth_nocert**(title_id: int, title_version: int, device_token): str -> dict</code><br>
-<span class="docs">Requests an application token from the `aauth` server for a title for which no ticket was found on the Switch. Do not use this on a production server, because it will immediately ban your Switch.</span>
+<span class="docs">Requests an application token from the `aauth` server for a title for which no ticket was found on the Switch.<br><br><b><span style="color: red">WARNING:</span></b> Do not use `auth_nocert` on a production server, because it will immediately ban your Switch.</span>
