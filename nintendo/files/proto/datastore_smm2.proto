@@ -213,7 +213,7 @@ struct CommentInfo {
 	uint16 unk7;
 	uint8 unk8;
 	uint8 unk9;
-	uint8 unk10;
+	uint16 unk10;
 	bool unk11;
 	bool unk12;
 	datetime unk13;
