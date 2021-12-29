@@ -1642,6 +1642,78 @@ class SearchCoursesLatestParam(common.Structure):
 		stream.add(self.range)
 
 
+class SearchUsersPlayedCourseParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.option = 0
+		self.count = None
+	
+	def check_required(self, settings, version):
+		for field in ['data_id', 'count']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.data_id = stream.u64()
+		self.option = stream.u32()
+		self.count = stream.u32()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u64(self.data_id)
+		stream.u32(self.option)
+		stream.u32(self.count)
+
+
+class SearchUsersClearedCourseParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.option = 0
+		self.count = None
+	
+	def check_required(self, settings, version):
+		for field in ['data_id', 'count']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.data_id = stream.u64()
+		self.option = stream.u32()
+		self.count = stream.u32()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u64(self.data_id)
+		stream.u32(self.option)
+		stream.u32(self.count)
+
+
+class SearchUsersPositiveRatedCourseParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.option = 0
+		self.count = None
+	
+	def check_required(self, settings, version):
+		for field in ['data_id', 'count']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.data_id = stream.u64()
+		self.option = stream.u32()
+		self.count = stream.u32()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u64(self.data_id)
+		stream.u32(self.option)
+		stream.u32(self.count)
+
+
 class SearchCoursesPointRankingParam(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -1793,7 +1865,7 @@ class CommentInfo(common.Structure):
 		self.unk7 = stream.u16()
 		self.unk8 = stream.u8()
 		self.unk9 = stream.u8()
-		self.unk10 = stream.u8()
+		self.unk10 = stream.u16()
 		self.unk11 = stream.bool()
 		self.unk12 = stream.bool()
 		self.unk13 = stream.datetime()
@@ -1814,7 +1886,7 @@ class CommentInfo(common.Structure):
 		stream.u16(self.unk7)
 		stream.u8(self.unk8)
 		stream.u8(self.unk9)
-		stream.u8(self.unk10)
+		stream.u16(self.unk10)
 		stream.bool(self.unk11)
 		stream.bool(self.unk12)
 		stream.datetime(self.unk13)
@@ -1823,6 +1895,33 @@ class CommentInfo(common.Structure):
 		stream.add(self.picture)
 		stream.u16(self.unk16)
 		stream.u8(self.unk17)
+
+
+class DeathPositionInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.x = None
+		self.y = None
+		self.is_subworld = None
+	
+	def check_required(self, settings, version):
+		for field in ['data_id', 'x', 'y', 'is_subworld']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.data_id = stream.u64()
+		self.x = stream.u16()
+		self.y = stream.u16()
+		self.is_subworld = stream.bool()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u64(self.data_id)
+		stream.u16(self.x)
+		stream.u16(self.y)
+		stream.bool(self.is_subworld)
 
 
 class CommentPictureReqGetInfoWithoutHeaders(common.Structure):
@@ -2516,6 +2615,9 @@ class DataStoreProtocolSMM2:
 	METHOD_GET_USERS = 48
 	METHOD_SYNC_USER_PROFILE = 49
 	METHOD_SEARCH_USERS_USER_POINT = 50
+	METHOD_SEARCH_USERS_PLAYED_COURSE = 53
+	METHOD_SEARCH_USERS_CLEARED_COURSE = 54
+	METHOD_SEARCH_USERS_POSITIVE_RATED_COURSE = 55
 	METHOD_UPDATE_LAST_LOGIN_TIME = 59
 	METHOD_GET_USERNAME_NG_TYPE = 65
 	METHOD_GET_COURSES = 70
@@ -2525,6 +2627,7 @@ class DataStoreProtocolSMM2:
 	METHOD_GET_COURSES_EVENT = 85
 	METHOD_SEARCH_COURSES_EVENT = 86
 	METHOD_GET_COURSE_COMMENTS = 95
+	METHOD_GET_DEATH_POSITIONS = 103
 	METHOD_GET_USER_OR_COURSE = 131
 	METHOD_GET_REQ_GET_INFO_HEADERS_INFO = 134
 	METHOD_GET_EVENT_COURSE_STAMP = 153
@@ -3324,6 +3427,51 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		logger.info("DataStoreClientSMM2.search_users_user_point -> done")
 		return obj
 	
+	async def search_users_played_course(self, param):
+		logger.info("DataStoreClientSMM2.search_users_played_course()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SEARCH_USERS_PLAYED_COURSE, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		users = stream.list(UserInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.search_users_played_course -> done")
+		return users
+	
+	async def search_users_cleared_course(self, param):
+		logger.info("DataStoreClientSMM2.search_users_cleared_course()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SEARCH_USERS_CLEARED_COURSE, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		users = stream.list(UserInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.search_users_cleared_course -> done")
+		return users
+	
+	async def search_users_positive_rated_course(self, param):
+		logger.info("DataStoreClientSMM2.search_users_positive_rated_course()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SEARCH_USERS_POSITIVE_RATED_COURSE, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		users = stream.list(UserInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.search_users_positive_rated_course -> done")
+		return users
+	
 	async def update_last_login_time(self):
 		logger.info("DataStoreClientSMM2.update_last_login_time()")
 		#--- request ---
@@ -3464,6 +3612,21 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_course_comments -> done")
 		return comments
+	
+	async def get_death_positions(self, data_id):
+		logger.info("DataStoreClientSMM2.get_death_positions()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u64(data_id)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_DEATH_POSITIONS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		positions = stream.list(DeathPositionInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.get_death_positions -> done")
+		return positions
 	
 	async def get_user_or_course(self, param):
 		logger.info("DataStoreClientSMM2.get_user_or_course()")
@@ -3609,6 +3772,9 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_GET_USERS: self.handle_get_users,
 			self.METHOD_SYNC_USER_PROFILE: self.handle_sync_user_profile,
 			self.METHOD_SEARCH_USERS_USER_POINT: self.handle_search_users_user_point,
+			self.METHOD_SEARCH_USERS_PLAYED_COURSE: self.handle_search_users_played_course,
+			self.METHOD_SEARCH_USERS_CLEARED_COURSE: self.handle_search_users_cleared_course,
+			self.METHOD_SEARCH_USERS_POSITIVE_RATED_COURSE: self.handle_search_users_positive_rated_course,
 			self.METHOD_UPDATE_LAST_LOGIN_TIME: self.handle_update_last_login_time,
 			self.METHOD_GET_USERNAME_NG_TYPE: self.handle_get_username_ng_type,
 			self.METHOD_GET_COURSES: self.handle_get_courses,
@@ -3618,6 +3784,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_GET_COURSES_EVENT: self.handle_get_courses_event,
 			self.METHOD_SEARCH_COURSES_EVENT: self.handle_search_courses_event,
 			self.METHOD_GET_COURSE_COMMENTS: self.handle_get_course_comments,
+			self.METHOD_GET_DEATH_POSITIONS: self.handle_get_death_positions,
 			self.METHOD_GET_USER_OR_COURSE: self.handle_get_user_or_course,
 			self.METHOD_GET_REQ_GET_INFO_HEADERS_INFO: self.handle_get_req_get_info_headers_info,
 			self.METHOD_GET_EVENT_COURSE_STAMP: self.handle_get_event_course_stamp,
@@ -4209,6 +4376,39 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		output.list(response.ranks, output.u32)
 		output.bool(response.result)
 	
+	async def handle_search_users_played_course(self, client, input, output):
+		logger.info("DataStoreServerSMM2.search_users_played_course()")
+		#--- request ---
+		param = input.extract(SearchUsersPlayedCourseParam)
+		response = await self.search_users_played_course(client, param)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
+	
+	async def handle_search_users_cleared_course(self, client, input, output):
+		logger.info("DataStoreServerSMM2.search_users_cleared_course()")
+		#--- request ---
+		param = input.extract(SearchUsersClearedCourseParam)
+		response = await self.search_users_cleared_course(client, param)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
+	
+	async def handle_search_users_positive_rated_course(self, client, input, output):
+		logger.info("DataStoreServerSMM2.search_users_positive_rated_course()")
+		#--- request ---
+		param = input.extract(SearchUsersPositiveRatedCourseParam)
+		response = await self.search_users_positive_rated_course(client, param)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
+	
 	async def handle_update_last_login_time(self, client, input, output):
 		logger.info("DataStoreServerSMM2.update_last_login_time()")
 		#--- request ---
@@ -4313,6 +4513,17 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		#--- request ---
 		data_id = input.u64()
 		response = await self.get_course_comments(client, data_id)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
+	
+	async def handle_get_death_positions(self, client, input, output):
+		logger.info("DataStoreServerSMM2.get_death_positions()")
+		#--- request ---
+		data_id = input.u64()
+		response = await self.get_death_positions(client, data_id)
 		
 		#--- response ---
 		if not isinstance(response, list):
@@ -4587,6 +4798,18 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		logger.warning("DataStoreServerSMM2.search_users_user_point not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
+	async def search_users_played_course(self, *args):
+		logger.warning("DataStoreServerSMM2.search_users_played_course not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def search_users_cleared_course(self, *args):
+		logger.warning("DataStoreServerSMM2.search_users_cleared_course not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def search_users_positive_rated_course(self, *args):
+		logger.warning("DataStoreServerSMM2.search_users_positive_rated_course not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
 	async def update_last_login_time(self, *args):
 		logger.warning("DataStoreServerSMM2.update_last_login_time not implemented")
 		raise common.RMCError("Core::NotImplemented")
@@ -4621,6 +4844,10 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	
 	async def get_course_comments(self, *args):
 		logger.warning("DataStoreServerSMM2.get_course_comments not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_death_positions(self, *args):
+		logger.warning("DataStoreServerSMM2.get_death_positions not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_user_or_course(self, *args):

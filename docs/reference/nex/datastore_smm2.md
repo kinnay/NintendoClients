@@ -70,6 +70,7 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 <code>**class** [DataStoreSpecificMetaInfo](#datastorespecificmetainfo)([Structure](common.md))</code><br>
 <code>**class** [DataStoreSpecificMetaInfoV1](#datastorespecificmetainfov1)([Structure](common.md))</code><br>
 <code>**class** [DataStoreTouchObjectParam](#datastoretouchobjectparam)([Structure](common.md))</code><br>
+<code>**class** [DeathPositionInfo](#deathpositioninfo)([Structure](common.md))</code><br>
 <code>**class** [EventCourseGhostInfo](#eventcourseghostinfo)([Structure](common.md))</code><br>
 <code>**class** [EventCourseHistogram](#eventcoursehistogram)([Structure](common.md))</code><br>
 <code>**class** [EventCourseInfo](#eventcourseinfo)([Structure](common.md))</code><br>
@@ -88,6 +89,9 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 <code>**class** [SearchCoursesEventParam](#searchcourseseventparam)([Structure](common.md))</code><br>
 <code>**class** [SearchCoursesLatestParam](#searchcourseslatestparam)([Structure](common.md))</code><br>
 <code>**class** [SearchCoursesPointRankingParam](#searchcoursespointrankingparam)([Structure](common.md))</code><br>
+<code>**class** [SearchUsersClearedCourseParam](#searchusersclearedcourseparam)([Structure](common.md))</code><br>
+<code>**class** [SearchUsersPlayedCourseParam](#searchusersplayedcourseparam)([Structure](common.md))</code><br>
+<code>**class** [SearchUsersPositiveRatedCourseParam](#searchuserspositiveratedcourseparam)([Structure](common.md))</code><br>
 <code>**class** [SearchUsersUserPointParam](#searchusersuserpointparam)([Structure](common.md))</code><br>
 <code>**class** [SyncUserProfileParam](#syncuserprofileparam)([Structure](common.md))</code><br>
 <code>**class** [SyncUserProfileResult](#syncuserprofileresult)([Structure](common.md))</code><br>
@@ -321,6 +325,15 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 </span>
 </span>
 
+<code>**async def search_users_played_course**(param: [SearchUsersPlayedCourseParam](#searchusersplayedcourseparam)) -> list[[UserInfo](#userinfo)]</code><br>
+<span class="docs">Calls method `53` on the server.</span>
+
+<code>**async def search_users_cleared_course**(param: [SearchUsersClearedCourseParam](#searchusersclearedcourseparam)) -> list[[UserInfo](#userinfo)]</code><br>
+<span class="docs">Calls method `54` on the server.</span>
+
+<code>**async def search_users_positive_rated_course**(param: [SearchUsersPositiveRatedCourseParam](#searchuserspositiveratedcourseparam)) -> list[[UserInfo](#userinfo)]</code><br>
+<span class="docs">Calls method `55` on the server.</span>
+
 <code>**async def update_last_login_time**() -> None</code><br>
 <span class="docs">Calls method `59` on the server.</span>
 
@@ -368,6 +381,9 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 
 <code>**async def get_course_comments**(data_id: int) -> list[[CommentInfo](#commentinfo)]</code><br>
 <span class="docs">Calls method `95` on the server.</span>
+
+<code>**async def get_death_positions**(data_id: int) -> list[[DeathPositionInfo](#deathpositioninfo)]</code><br>
+<span class="docs">Calls method `103` on the server.</span>
 
 <code>**async def get_user_or_course**(param: [GetUserOrCourseParam](#getuserorcourseparam)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `131` on the server. The RMC response has the following attributes:<br>
@@ -620,6 +636,15 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 </span>
 </span>
 
+<code>**async def search_users_played_course**(client: [RMCClient](rmc.md#rmcclient), param: [SearchUsersPlayedCourseParam](#searchusersplayedcourseparam)) -> list[[UserInfo](#userinfo)]</code><br>
+<span class="docs">Handler for method `53`. This method should be overridden by a subclass.</span>
+
+<code>**async def search_users_cleared_course**(client: [RMCClient](rmc.md#rmcclient), param: [SearchUsersClearedCourseParam](#searchusersclearedcourseparam)) -> list[[UserInfo](#userinfo)]</code><br>
+<span class="docs">Handler for method `54`. This method should be overridden by a subclass.</span>
+
+<code>**async def search_users_positive_rated_course**(client: [RMCClient](rmc.md#rmcclient), param: [SearchUsersPositiveRatedCourseParam](#searchuserspositiveratedcourseparam)) -> list[[UserInfo](#userinfo)]</code><br>
+<span class="docs">Handler for method `55`. This method should be overridden by a subclass.</span>
+
 <code>**async def update_last_login_time**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Handler for method `59`. This method should be overridden by a subclass.</span>
 
@@ -667,6 +692,9 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 
 <code>**async def get_course_comments**(client: [RMCClient](rmc.md#rmcclient), data_id: int) -> list[[CommentInfo](#commentinfo)]</code><br>
 <span class="docs">Handler for method `95`. This method should be overridden by a subclass.</span>
+
+<code>**async def get_death_positions**(client: [RMCClient](rmc.md#rmcclient), data_id: int) -> list[[DeathPositionInfo](#deathpositioninfo)]</code><br>
+<span class="docs">Handler for method `103`. This method should be overridden by a subclass.</span>
 
 <code>**async def get_user_or_course**(client: [RMCClient](rmc.md#rmcclient), param: [GetUserOrCourseParam](#getuserorcourseparam)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `131`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
@@ -1493,6 +1521,18 @@ The following fields are defined in this class:<br>
 <code>access_password: int</code><br>
 </span><br>
 
+## DeathPositionInfo
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `DeathPositionInfo` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>data_id: int</code><br>
+<code>x: int</code><br>
+<code>y: int</code><br>
+<code>is_subworld: bool</code><br>
+</span><br>
+
 ## EventCourseGhostInfo
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new `EventCourseGhostInfo` instance. Required fields must be filled in manually.</span>
@@ -1713,6 +1753,39 @@ The following fields are defined in this class:<br>
 <code>range: [ResultRange](common.md#resultrange) = [ResultRange](common.md#resultrange)()</code><br>
 <code>difficulty: int</code><br>
 <code>reject_regions: list[int] = []</code><br>
+</span><br>
+
+## SearchUsersClearedCourseParam
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `SearchUsersClearedCourseParam` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>data_id: int</code><br>
+<code>option: int = 0</code><br>
+<code>count: int</code><br>
+</span><br>
+
+## SearchUsersPlayedCourseParam
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `SearchUsersPlayedCourseParam` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>data_id: int</code><br>
+<code>option: int = 0</code><br>
+<code>count: int</code><br>
+</span><br>
+
+## SearchUsersPositiveRatedCourseParam
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `SearchUsersPositiveRatedCourseParam` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>data_id: int</code><br>
+<code>option: int = 0</code><br>
+<code>count: int</code><br>
 </span><br>
 
 ## SearchUsersUserPointParam
