@@ -2626,7 +2626,7 @@ class DataStoreProtocolSMM2:
 	METHOD_SEARCH_COURSES_ENDLESS_MODE = 79
 	METHOD_GET_COURSES_EVENT = 85
 	METHOD_SEARCH_COURSES_EVENT = 86
-	METHOD_GET_COURSE_COMMENTS = 95
+	METHOD_SEARCH_COMMENTS = 95
 	METHOD_GET_DEATH_POSITIONS = 103
 	METHOD_GET_USER_OR_COURSE = 131
 	METHOD_GET_REQ_GET_INFO_HEADERS_INFO = 134
@@ -3598,19 +3598,19 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		logger.info("DataStoreClientSMM2.search_courses_event -> done")
 		return courses
 	
-	async def get_course_comments(self, data_id):
-		logger.info("DataStoreClientSMM2.get_course_comments()")
+	async def search_comments(self, data_id):
+		logger.info("DataStoreClientSMM2.search_comments()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.u64(data_id)
-		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_COURSE_COMMENTS, stream.get())
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SEARCH_COMMENTS, stream.get())
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
 		comments = stream.list(CommentInfo)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStoreClientSMM2.get_course_comments -> done")
+		logger.info("DataStoreClientSMM2.search_comments -> done")
 		return comments
 	
 	async def get_death_positions(self, data_id):
@@ -3783,7 +3783,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_SEARCH_COURSES_ENDLESS_MODE: self.handle_search_courses_endless_mode,
 			self.METHOD_GET_COURSES_EVENT: self.handle_get_courses_event,
 			self.METHOD_SEARCH_COURSES_EVENT: self.handle_search_courses_event,
-			self.METHOD_GET_COURSE_COMMENTS: self.handle_get_course_comments,
+			self.METHOD_SEARCH_COMMENTS: self.handle_search_comments,
 			self.METHOD_GET_DEATH_POSITIONS: self.handle_get_death_positions,
 			self.METHOD_GET_USER_OR_COURSE: self.handle_get_user_or_course,
 			self.METHOD_GET_REQ_GET_INFO_HEADERS_INFO: self.handle_get_req_get_info_headers_info,
@@ -4508,11 +4508,11 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.add)
 	
-	async def handle_get_course_comments(self, client, input, output):
-		logger.info("DataStoreServerSMM2.get_course_comments()")
+	async def handle_search_comments(self, client, input, output):
+		logger.info("DataStoreServerSMM2.search_comments()")
 		#--- request ---
 		data_id = input.u64()
-		response = await self.get_course_comments(client, data_id)
+		response = await self.search_comments(client, data_id)
 		
 		#--- response ---
 		if not isinstance(response, list):
@@ -4842,8 +4842,8 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		logger.warning("DataStoreServerSMM2.search_courses_event not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
-	async def get_course_comments(self, *args):
-		logger.warning("DataStoreServerSMM2.get_course_comments not implemented")
+	async def search_comments(self, *args):
+		logger.warning("DataStoreServerSMM2.search_comments not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_death_positions(self, *args):

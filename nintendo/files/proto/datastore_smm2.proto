@@ -500,7 +500,7 @@ protocol DataStore_SMM2 : DataStore {
 		list<EventCourseInfo> courses;
 	}
 	
-	method(95) get_course_comments(uint64 data_id) {
+	method(95) search_comments(uint64 data_id) {
 		list<CommentInfo> comments;
 	}
 
