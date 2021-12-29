@@ -171,6 +171,24 @@ struct SearchCoursesLatestParam {
 	ResultRange range;
 }
 
+struct SearchUsersPlayedCourseParam {
+	uint64 data_id;
+	uint32 option = 0;
+	uint32 count;
+}
+
+struct SearchUsersClearedCourseParam {
+	uint64 data_id;
+	uint32 option = 0;
+	uint32 count;
+}
+
+struct SearchUsersPositiveRatedCourseParam {
+	uint64 data_id;
+	uint32 option = 0;
+	uint32 count;
+}
+
 struct SearchCoursesPointRankingParam {
 	uint32 option = 0;
 	ResultRange range;
@@ -222,6 +240,13 @@ struct CommentInfo {
 	CommentPictureReqGetInfoWithoutHeaders picture;
 	uint16 unk16;
 	uint8 unk17;
+}
+
+struct DeathPositionInfo {
+	uint64 data_id;
+	uint16 x;
+	uint16 y;
+	bool is_subworld;
 }
 
 struct CommentPictureReqGetInfoWithoutHeaders {
@@ -428,6 +453,18 @@ protocol DataStore_SMM2 : DataStore {
 		bool result;
 	}
 
+	method(53) search_users_played_course(SearchUsersPlayedCourseParam param) {
+		list<UserInfo> users;
+	}
+
+	method(54) search_users_cleared_course(SearchUsersClearedCourseParam param) {
+		list<UserInfo> users;
+	}
+
+	method(55) search_users_positive_rated_course(SearchUsersPositiveRatedCourseParam param) {
+		list<UserInfo> users;
+	}
+
 	method(59) update_last_login_time() {}
 
 	method(65) get_username_ng_type() {
@@ -465,6 +502,10 @@ protocol DataStore_SMM2 : DataStore {
 	
 	method(95) get_course_comments(uint64 data_id) {
 		list<CommentInfo> comments;
+	}
+
+	method(103) get_death_positions(uint64 data_id) {
+		list<DeathPositionInfo> positions;
 	}
 	
 	method(131) get_user_or_course(GetUserOrCourseParam param) {
