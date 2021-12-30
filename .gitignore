@@ -1,4 +1,3 @@
-
 /*.egg-info/
 __pycache__/
 /site/
@@ -7,3 +6,5 @@ __pycache__/
 /*.bin
 /*.jpg
 
+build
+dist
