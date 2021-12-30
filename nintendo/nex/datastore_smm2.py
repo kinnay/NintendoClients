@@ -1927,6 +1927,66 @@ class SyncUserProfileParam(common.Structure):
 		stream.u32(self.unk6)
 
 
+class SearchWorldMapPlayedByParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+	
+	def check_required(self, settings, version):
+		for field in ['unk1', 'unk2']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.unk1 = stream.u32()
+		self.unk2 = stream.u32()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u32(self.unk1)
+		stream.u32(self.unk2)
+
+
+class SearchWorldMapPickUpParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.count = None
+	
+	def check_required(self, settings, version):
+		for field in ['count']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.count = stream.u32()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u32(self.count)
+
+
+class GetWorldMapParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.ids = None
+		self.option = 63
+	
+	def check_required(self, settings, version):
+		for field in ['ids']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.ids = stream.list(stream.string)
+		self.option = stream.u32()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.list(self.ids, stream.string)
+		stream.u32(self.option)
+
+
 class BadgeInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -2168,6 +2228,111 @@ class CourseInfo(common.Structure):
 		stream.u8(self.unk12)
 		stream.add(self.one_screen_thumbnail)
 		stream.add(self.entire_thumbnail)
+
+
+class WorldMapMetaInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.id = None
+		self.owner_id = None
+		self.unk1 = None
+		self.unk2 = None
+		self.thumbnail = RelationObjectReqGetInfo()
+		self.worlds = None
+		self.levels = None
+		self.unk3 = None
+		self.unk4 = None
+		self.unk5 = None
+		self.unk6 = None
+		self.unk7 = None
+		self.unk8 = None
+		self.unk9 = None
+	
+	def check_required(self, settings, version):
+		for field in ['id', 'owner_id', 'unk1', 'unk2', 'worlds', 'levels', 'unk3', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.id = stream.string()
+		self.owner_id = stream.u64()
+		self.unk1 = stream.bool()
+		self.unk2 = stream.u8()
+		self.thumbnail = stream.extract(RelationObjectReqGetInfo)
+		self.worlds = stream.u8()
+		self.levels = stream.u8()
+		self.unk3 = stream.bool()
+		self.unk4 = stream.u32()
+		self.unk5 = stream.u32()
+		self.unk6 = stream.u64()
+		self.unk7 = stream.u32()
+		self.unk8 = stream.bool()
+		self.unk9 = stream.bool()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.string(self.id)
+		stream.u64(self.owner_id)
+		stream.bool(self.unk1)
+		stream.u8(self.unk2)
+		stream.add(self.thumbnail)
+		stream.u8(self.worlds)
+		stream.u8(self.levels)
+		stream.bool(self.unk3)
+		stream.u32(self.unk4)
+		stream.u32(self.unk5)
+		stream.u64(self.unk6)
+		stream.u32(self.unk7)
+		stream.bool(self.unk8)
+		stream.bool(self.unk9)
+
+
+class WorldMapInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.id = None
+		self.owner_id = None
+		self.unk3 = None
+		self.thumbnail = RelationObjectReqGetInfo()
+		self.worlds = None
+		self.levels = None
+		self.unk4 = None
+		self.unk9 = None
+		self.unk10 = None
+		self.data_ids = None
+		self.players = None
+	
+	def check_required(self, settings, version):
+		for field in ['id', 'owner_id', 'unk3', 'worlds', 'levels', 'unk4', 'unk9', 'unk10', 'data_ids', 'players']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.id = stream.string()
+		self.owner_id = stream.u64()
+		self.unk3 = stream.qbuffer()
+		self.thumbnail = stream.extract(RelationObjectReqGetInfo)
+		self.worlds = stream.u8()
+		self.levels = stream.u8()
+		self.unk4 = stream.bool()
+		self.unk9 = stream.u32()
+		self.unk10 = stream.u32()
+		self.data_ids = stream.list(stream.u64)
+		self.players = stream.list(stream.u8)
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.string(self.id)
+		stream.u64(self.owner_id)
+		stream.qbuffer(self.unk3)
+		stream.add(self.thumbnail)
+		stream.u8(self.worlds)
+		stream.u8(self.levels)
+		stream.bool(self.unk4)
+		stream.u32(self.unk9)
+		stream.u32(self.unk10)
+		stream.list(self.data_ids, stream.u64)
+		stream.list(self.players, stream.u8)
 
 
 class CourseTimeStats(common.Structure):
@@ -2759,6 +2924,8 @@ class DataStoreProtocolSMM2:
 	METHOD_GET_EVENT_COURSE_STATUS = 154
 	METHOD_GET_EVENT_COURSE_HISTOGRAM = 156
 	METHOD_GET_EVENT_COURSE_GHOST = 157
+	METHOD_GET_WORLD_MAP = 160
+	METHOD_SEARCH_WORLD_MAP_PICK_UP = 162
 	
 	PROTOCOL_ID = 0x73
 
@@ -3923,6 +4090,38 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_event_course_ghost -> done")
 		return ghosts
+	
+	async def get_world_map(self, param):
+		logger.info("DataStoreClientSMM2.get_world_map()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_WORLD_MAP, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.maps = stream.list(WorldMapInfo)
+		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.get_world_map -> done")
+		return obj
+	
+	async def search_world_map_pick_up(self, param):
+		logger.info("DataStoreClientSMM2.search_world_map_pick_up()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SEARCH_WORLD_MAP_PICK_UP, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		maps = stream.list(WorldMapMetaInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.search_world_map_pick_up -> done")
+		return maps
 
 
 class DataStoreServerSMM2(DataStoreProtocolSMM2):
@@ -4002,6 +4201,8 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_GET_EVENT_COURSE_STATUS: self.handle_get_event_course_status,
 			self.METHOD_GET_EVENT_COURSE_HISTOGRAM: self.handle_get_event_course_histogram,
 			self.METHOD_GET_EVENT_COURSE_GHOST: self.handle_get_event_course_ghost,
+			self.METHOD_GET_WORLD_MAP: self.handle_get_world_map,
+			self.METHOD_SEARCH_WORLD_MAP_PICK_UP: self.handle_search_world_map_pick_up,
 		}
 	
 	async def logout(self, client):
@@ -4876,6 +5077,32 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.add)
 	
+	async def handle_get_world_map(self, client, input, output):
+		logger.info("DataStoreServerSMM2.get_world_map()")
+		#--- request ---
+		param = input.extract(GetWorldMapParam)
+		response = await self.get_world_map(client, param)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['maps', 'results']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.maps, output.add)
+		output.list(response.results, output.result)
+	
+	async def handle_search_world_map_pick_up(self, client, input, output):
+		logger.info("DataStoreServerSMM2.search_world_map_pick_up()")
+		#--- request ---
+		param = input.extract(SearchWorldMapPickUpParam)
+		response = await self.search_world_map_pick_up(client, param)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
+	
 	async def prepare_get_object_v1(self, *args):
 		logger.warning("DataStoreServerSMM2.prepare_get_object_v1 not implemented")
 		raise common.RMCError("Core::NotImplemented")
@@ -5170,5 +5397,13 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	
 	async def get_event_course_ghost(self, *args):
 		logger.warning("DataStoreServerSMM2.get_event_course_ghost not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_world_map(self, *args):
+		logger.warning("DataStoreServerSMM2.get_world_map not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def search_world_map_pick_up(self, *args):
+		logger.warning("DataStoreServerSMM2.search_world_map_pick_up not implemented")
 		raise common.RMCError("Core::NotImplemented")
 

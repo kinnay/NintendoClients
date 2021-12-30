@@ -244,6 +244,20 @@ struct SyncUserProfileParam {
 	uint32	unk6;
 }
 
+struct SearchWorldMapPlayedByParam {
+	uint32 unk1;
+	uint32 unk2;
+}
+
+struct SearchWorldMapPickUpParam {
+	uint32 count;
+}
+
+struct GetWorldMapParam {
+	list<string> ids;
+	uint32 option = 63;
+}
+
 /*** Other structures ***/
 
 struct BadgeInfo {
@@ -315,6 +329,38 @@ struct CourseInfo {
 	uint8 unk12;
 	RelationObjectReqGetInfo one_screen_thumbnail;
 	RelationObjectReqGetInfo entire_thumbnail;
+}
+
+struct WorldMapMetaInfo {
+	string id;
+	uint64 owner_id;
+	bool unk1;
+	uint8 unk2;
+	RelationObjectReqGetInfo thumbnail;
+	uint8 worlds;
+	uint8 levels;
+	bool unk3;
+	uint32 unk4;
+	uint32 unk5;
+	uint64 unk6;
+	uint32 unk7;
+	bool unk8;
+	bool unk9;
+}
+
+struct WorldMapInfo {
+	string id;
+	uint64 owner_id;
+	qbuffer unk3;
+	RelationObjectReqGetInfo thumbnail;
+	uint8 worlds;
+	uint8 levels;
+	bool unk4;
+	uint32 unk9;
+	uint32 unk10;
+	list<uint64> data_ids;
+	list<uint8> players;
+	// Unimplemented
 }
 
 struct CourseTimeStats {
@@ -584,5 +630,14 @@ protocol DataStore_SMM2 : DataStore {
 	
 	method(157) get_event_course_ghost(GetEventCourseGhostParam param) {
 		list<EventCourseGhostInfo> ghosts;
+	}
+
+	method(160) get_world_map(GetWorldMapParam param) {
+		list<WorldMapInfo> maps;
+		list<result> results;
+	}
+
+	method(162) search_world_map_pick_up(SearchWorldMapPickUpParam param) {
+		list<WorldMapMetaInfo> maps;
 	}
 }
