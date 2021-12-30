@@ -85,10 +85,15 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 <code>**class** [RegisterUserParam](#registeruserparam)([Structure](common.md))</code><br>
 <code>**class** [RelationObjectReqGetInfo](#relationobjectreqgetinfo)([Structure](common.md))</code><br>
 <code>**class** [ReqGetInfoHeadersInfo](#reqgetinfoheadersinfo)([Structure](common.md))</code><br>
+<code>**class** [SearchCoursesBestTime](#searchcoursesbesttime)([Structure](common.md))</code><br>
 <code>**class** [SearchCoursesEndlessModeParam](#searchcoursesendlessmodeparam)([Structure](common.md))</code><br>
 <code>**class** [SearchCoursesEventParam](#searchcourseseventparam)([Structure](common.md))</code><br>
+<code>**class** [SearchCoursesFirstClear](#searchcoursesfirstclear)([Structure](common.md))</code><br>
 <code>**class** [SearchCoursesLatestParam](#searchcourseslatestparam)([Structure](common.md))</code><br>
+<code>**class** [SearchCoursesPlayedBy](#searchcoursesplayedby)([Structure](common.md))</code><br>
 <code>**class** [SearchCoursesPointRankingParam](#searchcoursespointrankingparam)([Structure](common.md))</code><br>
+<code>**class** [SearchCoursesPositiveRatedBy](#searchcoursespositiveratedby)([Structure](common.md))</code><br>
+<code>**class** [SearchCoursesPostedByParam](#searchcoursespostedbyparam)([Structure](common.md))</code><br>
 <code>**class** [SearchUsersClearedCourseParam](#searchusersclearedcourseparam)([Structure](common.md))</code><br>
 <code>**class** [SearchUsersPlayedCourseParam](#searchusersplayedcourseparam)([Structure](common.md))</code><br>
 <code>**class** [SearchUsersPositiveRatedCourseParam](#searchuserspositiveratedcourseparam)([Structure](common.md))</code><br>
@@ -365,8 +370,38 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 </span>
 </span>
 
+<code>**async def search_courses_posted_by**(param: [SearchCoursesPostedByParam](#searchcoursespostedbyparam)) -> [RMCResponse](common.md)</code><br>
+<span class="docs">Calls method `74` on the server. The RMC response has the following attributes:<br>
+<span class="docs">
+<code>courses: list[[CourseInfo](#courseinfo)]</code><br>
+<code>result: bool</code><br>
+</span>
+</span>
+
+<code>**async def search_courses_positive_rated_by**(param: [SearchCoursesPositiveRatedBy](#searchcoursespositiveratedby)) -> list[[CourseInfo](#courseinfo)]</code><br>
+<span class="docs">Calls method `75` on the server.</span>
+
+<code>**async def search_courses_played_by**(param: [SearchCoursesPlayedBy](#searchcoursesplayedby)) -> list[[CourseInfo](#courseinfo)]</code><br>
+<span class="docs">Calls method `76` on the server.</span>
+
 <code>**async def search_courses_endless_mode**(param: [SearchCoursesEndlessModeParam](#searchcoursesendlessmodeparam)) -> list[[CourseInfo](#courseinfo)]</code><br>
 <span class="docs">Calls method `79` on the server.</span>
+
+<code>**async def search_courses_first_clear**(param: [SearchCoursesFirstClear](#searchcoursesfirstclear)) -> [RMCResponse](common.md)</code><br>
+<span class="docs">Calls method `80` on the server. The RMC response has the following attributes:<br>
+<span class="docs">
+<code>courses: list[[CourseInfo](#courseinfo)]</code><br>
+<code>result: bool</code><br>
+</span>
+</span>
+
+<code>**async def search_courses_best_time**(param: [SearchCoursesBestTime](#searchcoursesbesttime)) -> [RMCResponse](common.md)</code><br>
+<span class="docs">Calls method `81` on the server. The RMC response has the following attributes:<br>
+<span class="docs">
+<code>courses: list[[CourseInfo](#courseinfo)]</code><br>
+<code>result: bool</code><br>
+</span>
+</span>
 
 <code>**async def get_courses_event**(param: [GetCoursesParam](#getcoursesparam), dummy: [GetCoursesEventParam](#getcourseseventparam)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `85` on the server. The RMC response has the following attributes:<br>
@@ -676,8 +711,38 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 </span>
 </span>
 
+<code>**async def search_courses_posted_by**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesPostedByParam](#searchcoursespostedbyparam)) -> [RMCResponse](common.md)</code><br>
+<span class="docs">Handler for method `74`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
+<span class="docs">
+<code>courses: list[[CourseInfo](#courseinfo)]</code><br>
+<code>result: bool</code><br>
+</span>
+</span>
+
+<code>**async def search_courses_positive_rated_by**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesPositiveRatedBy](#searchcoursespositiveratedby)) -> list[[CourseInfo](#courseinfo)]</code><br>
+<span class="docs">Handler for method `75`. This method should be overridden by a subclass.</span>
+
+<code>**async def search_courses_played_by**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesPlayedBy](#searchcoursesplayedby)) -> list[[CourseInfo](#courseinfo)]</code><br>
+<span class="docs">Handler for method `76`. This method should be overridden by a subclass.</span>
+
 <code>**async def search_courses_endless_mode**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesEndlessModeParam](#searchcoursesendlessmodeparam)) -> list[[CourseInfo](#courseinfo)]</code><br>
 <span class="docs">Handler for method `79`. This method should be overridden by a subclass.</span>
+
+<code>**async def search_courses_first_clear**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesFirstClear](#searchcoursesfirstclear)) -> [RMCResponse](common.md)</code><br>
+<span class="docs">Handler for method `80`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
+<span class="docs">
+<code>courses: list[[CourseInfo](#courseinfo)]</code><br>
+<code>result: bool</code><br>
+</span>
+</span>
+
+<code>**async def search_courses_best_time**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesBestTime](#searchcoursesbesttime)) -> [RMCResponse](common.md)</code><br>
+<span class="docs">Handler for method `81`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
+<span class="docs">
+<code>courses: list[[CourseInfo](#courseinfo)]</code><br>
+<code>result: bool</code><br>
+</span>
+</span>
 
 <code>**async def get_courses_event**(client: [RMCClient](rmc.md#rmcclient), param: [GetCoursesParam](#getcoursesparam), dummy: [GetCoursesEventParam](#getcourseseventparam)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `85`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
@@ -1713,6 +1778,17 @@ The following fields are defined in this class:<br>
 <code>expiration: int</code><br>
 </span><br>
 
+## SearchCoursesBestTime
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `SearchCoursesBestTime` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>pid: int</code><br>
+<code>option: int = 0</code><br>
+<code>range: [ResultRange](common.md#resultrange) = [ResultRange](common.md#resultrange)()</code><br>
+</span><br>
+
 ## SearchCoursesEndlessModeParam
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new `SearchCoursesEndlessModeParam` instance. Required fields must be filled in manually.</span>
@@ -1733,6 +1809,17 @@ The following fields are defined in this class:<br>
 <code>option: int = 0</code><br>
 </span><br>
 
+## SearchCoursesFirstClear
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `SearchCoursesFirstClear` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>pid: int</code><br>
+<code>option: int = 0</code><br>
+<code>range: [ResultRange](common.md#resultrange) = [ResultRange](common.md#resultrange)()</code><br>
+</span><br>
+
 ## SearchCoursesLatestParam
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new `SearchCoursesLatestParam` instance. Required fields must be filled in manually.</span>
@@ -1741,6 +1828,17 @@ The following fields are defined in this class:<br>
 <span class="docs">
 <code>option: int = 0</code><br>
 <code>range: [ResultRange](common.md#resultrange) = [ResultRange](common.md#resultrange)()</code><br>
+</span><br>
+
+## SearchCoursesPlayedBy
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `SearchCoursesPlayedBy` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>option: int = 0</code><br>
+<code>count: int</code><br>
+<code>pid: int</code><br>
 </span><br>
 
 ## SearchCoursesPointRankingParam
@@ -1753,6 +1851,28 @@ The following fields are defined in this class:<br>
 <code>range: [ResultRange](common.md#resultrange) = [ResultRange](common.md#resultrange)()</code><br>
 <code>difficulty: int</code><br>
 <code>reject_regions: list[int] = []</code><br>
+</span><br>
+
+## SearchCoursesPositiveRatedBy
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `SearchCoursesPositiveRatedBy` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>option: int = 0</code><br>
+<code>count: int</code><br>
+<code>pid: int</code><br>
+</span><br>
+
+## SearchCoursesPostedByParam
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `SearchCoursesPostedByParam` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>option: int = 0</code><br>
+<code>range: [ResultRange](common.md#resultrange) = [ResultRange](common.md#resultrange)()</code><br>
+<code>pids: list[int]</code><br>
 </span><br>
 
 ## SearchUsersClearedCourseParam

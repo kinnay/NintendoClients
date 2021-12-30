@@ -156,10 +156,40 @@ struct RegisterUserParam {
 	string device_id;
 }
 
+struct SearchCoursesPostedByParam {
+	uint32 option = 0;
+	ResultRange range;
+	list<uint64> pids;
+}
+
+struct SearchCoursesPositiveRatedBy {
+	uint32 option = 0;
+	uint32 count;
+	uint64 pid;
+}
+
+struct SearchCoursesPlayedBy {
+	uint32 option = 0;
+	uint32 count;
+	uint64 pid;
+}
+
 struct SearchCoursesEndlessModeParam {
 	uint32 option = 0;
 	uint32 count;
 	uint8 difficulty;
+}
+
+struct SearchCoursesFirstClear {
+	uint64 pid;
+	uint32 option = 0;
+	ResultRange range;
+}
+
+struct SearchCoursesBestTime {
+	uint64 pid;
+	uint32 option = 0;
+	ResultRange range;
 }
 
 struct SearchCoursesEventParam {
@@ -487,8 +517,31 @@ protocol DataStore_SMM2 : DataStore {
 		bool result;
 	}
 
+	method(74) search_courses_posted_by(SearchCoursesPostedByParam param) {
+		list<CourseInfo> courses;
+		bool result;
+	}
+
+	method(75) search_courses_positive_rated_by(SearchCoursesPositiveRatedBy param) {
+		list<CourseInfo> courses;
+	}
+
+	method(76) search_courses_played_by(SearchCoursesPlayedBy param) {
+		list<CourseInfo> courses;
+	}
+
 	method(79) search_courses_endless_mode(SearchCoursesEndlessModeParam param) {
 		list<CourseInfo> courses;
+	}
+
+	method(80) search_courses_first_clear(SearchCoursesFirstClear param) {
+		list<CourseInfo> courses;
+		bool result;
+	}
+
+	method(81) search_courses_best_time(SearchCoursesBestTime param) {
+		list<CourseInfo> courses;
+		bool result;
 	}
 	
 	method(85) get_courses_event(GetCoursesParam param, GetCoursesEventParam dummy) {
