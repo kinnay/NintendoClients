@@ -419,7 +419,7 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 <code>**async def search_courses_event**(param: [SearchCoursesEventParam](#searchcourseseventparam)) -> list[[EventCourseInfo](#eventcourseinfo)]</code><br>
 <span class="docs">Calls method `86` on the server.</span>
 
-<code>**async def get_course_comments**(data_id: int) -> list[[CommentInfo](#commentinfo)]</code><br>
+<code>**async def search_comments**(data_id: int) -> list[[CommentInfo](#commentinfo)]</code><br>
 <span class="docs">Calls method `95` on the server.</span>
 
 <code>**async def get_death_positions**(data_id: int) -> list[[DeathPositionInfo](#deathpositioninfo)]</code><br>
@@ -771,7 +771,7 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 <code>**async def search_courses_event**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesEventParam](#searchcourseseventparam)) -> list[[EventCourseInfo](#eventcourseinfo)]</code><br>
 <span class="docs">Handler for method `86`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_course_comments**(client: [RMCClient](rmc.md#rmcclient), data_id: int) -> list[[CommentInfo](#commentinfo)]</code><br>
+<code>**async def search_comments**(client: [RMCClient](rmc.md#rmcclient), data_id: int) -> list[[CommentInfo](#commentinfo)]</code><br>
 <span class="docs">Handler for method `95`. This method should be overridden by a subclass.</span>
 
 <code>**async def get_death_positions**(client: [RMCClient](rmc.md#rmcclient), data_id: int) -> list[[DeathPositionInfo](#deathpositioninfo)]</code><br>
