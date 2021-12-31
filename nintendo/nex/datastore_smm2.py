@@ -1607,7 +1607,7 @@ class SearchCoursesPostedByParam(common.Structure):
 		stream.list(self.pids, stream.u64)
 
 
-class SearchCoursesPositiveRatedBy(common.Structure):
+class SearchCoursesPositiveRatedByParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.option = 0
@@ -1631,7 +1631,7 @@ class SearchCoursesPositiveRatedBy(common.Structure):
 		stream.u64(self.pid)
 
 
-class SearchCoursesPlayedBy(common.Structure):
+class SearchCoursesPlayedByParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.option = 0
@@ -1679,7 +1679,7 @@ class SearchCoursesEndlessModeParam(common.Structure):
 		stream.u8(self.difficulty)
 
 
-class SearchCoursesFirstClear(common.Structure):
+class SearchCoursesFirstClearParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.pid = None
@@ -1703,7 +1703,7 @@ class SearchCoursesFirstClear(common.Structure):
 		stream.add(self.range)
 
 
-class SearchCoursesBestTime(common.Structure):
+class SearchCoursesBestTimeParam(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.pid = None
@@ -1927,25 +1927,25 @@ class SyncUserProfileParam(common.Structure):
 		stream.u32(self.unk6)
 
 
-class SearchWorldMapPlayedByParam(common.Structure):
+class GetWorldMapParam(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
+		self.ids = None
+		self.option = 0
 	
 	def check_required(self, settings, version):
-		for field in ['unk1', 'unk2']:
+		for field in ['ids']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk1 = stream.u32()
-		self.unk2 = stream.u32()
+		self.ids = stream.list(stream.string)
+		self.option = stream.u32()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.u32(self.unk1)
-		stream.u32(self.unk2)
+		stream.list(self.ids, stream.string)
+		stream.u32(self.option)
 
 
 class SearchWorldMapPickUpParam(common.Structure):
@@ -1966,25 +1966,25 @@ class SearchWorldMapPickUpParam(common.Structure):
 		stream.u32(self.count)
 
 
-class GetWorldMapParam(common.Structure):
+class SearchWorldMapPlayedByParam(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.ids = None
-		self.option = 63
+		self.unk1 = None
+		self.unk2 = None
 	
 	def check_required(self, settings, version):
-		for field in ['ids']:
+		for field in ['unk1', 'unk2']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.ids = stream.list(stream.string)
-		self.option = stream.u32()
+		self.unk1 = stream.u32()
+		self.unk2 = stream.u32()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.list(self.ids, stream.string)
-		stream.u32(self.option)
+		stream.u32(self.unk1)
+		stream.u32(self.unk2)
 
 
 class BadgeInfo(common.Structure):
@@ -2230,109 +2230,58 @@ class CourseInfo(common.Structure):
 		stream.add(self.entire_thumbnail)
 
 
-class WorldMapMetaInfo(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.id = None
-		self.owner_id = None
-		self.unk1 = None
-		self.unk2 = None
-		self.thumbnail = RelationObjectReqGetInfo()
-		self.worlds = None
-		self.levels = None
-		self.unk3 = None
-		self.unk4 = None
-		self.unk5 = None
-		self.unk6 = None
-		self.unk7 = None
-		self.unk8 = None
-		self.unk9 = None
-	
-	def check_required(self, settings, version):
-		for field in ['id', 'owner_id', 'unk1', 'unk2', 'worlds', 'levels', 'unk3', 'unk4', 'unk5', 'unk6', 'unk7', 'unk8', 'unk9']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream, version):
-		self.id = stream.string()
-		self.owner_id = stream.u64()
-		self.unk1 = stream.bool()
-		self.unk2 = stream.u8()
-		self.thumbnail = stream.extract(RelationObjectReqGetInfo)
-		self.worlds = stream.u8()
-		self.levels = stream.u8()
-		self.unk3 = stream.bool()
-		self.unk4 = stream.u32()
-		self.unk5 = stream.u32()
-		self.unk6 = stream.u64()
-		self.unk7 = stream.u32()
-		self.unk8 = stream.bool()
-		self.unk9 = stream.bool()
-	
-	def save(self, stream, version):
-		self.check_required(stream.settings, version)
-		stream.string(self.id)
-		stream.u64(self.owner_id)
-		stream.bool(self.unk1)
-		stream.u8(self.unk2)
-		stream.add(self.thumbnail)
-		stream.u8(self.worlds)
-		stream.u8(self.levels)
-		stream.bool(self.unk3)
-		stream.u32(self.unk4)
-		stream.u32(self.unk5)
-		stream.u64(self.unk6)
-		stream.u32(self.unk7)
-		stream.bool(self.unk8)
-		stream.bool(self.unk9)
-
-
 class WorldMapInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
 		self.id = None
 		self.owner_id = None
-		self.unk3 = None
+		self.unk1 = None
 		self.thumbnail = RelationObjectReqGetInfo()
 		self.worlds = None
 		self.levels = None
-		self.unk4 = None
-		self.unk9 = None
-		self.unk10 = None
+		self.unk2 = None
+		self.unk3 = None
 		self.data_ids = None
-		self.players = None
+		self.unk4 = None
+		self.unk5 = None
+		self.unk6 = None
+		self.unk7 = None
 	
 	def check_required(self, settings, version):
-		for field in ['id', 'owner_id', 'unk3', 'worlds', 'levels', 'unk4', 'unk9', 'unk10', 'data_ids', 'players']:
+		for field in ['id', 'owner_id', 'unk1', 'worlds', 'levels', 'unk2', 'unk3', 'data_ids', 'unk4', 'unk5', 'unk6', 'unk7']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
 		self.id = stream.string()
-		self.owner_id = stream.u64()
-		self.unk3 = stream.qbuffer()
+		self.owner_id = stream.pid()
+		self.unk1 = stream.qbuffer()
 		self.thumbnail = stream.extract(RelationObjectReqGetInfo)
 		self.worlds = stream.u8()
 		self.levels = stream.u8()
-		self.unk4 = stream.bool()
-		self.unk9 = stream.u32()
-		self.unk10 = stream.u32()
+		self.unk2 = stream.u8()
+		self.unk3 = stream.datetime()
 		self.data_ids = stream.list(stream.u64)
-		self.players = stream.list(stream.u8)
+		self.unk4 = stream.map(stream.u8, stream.u32)
+		self.unk5 = stream.u32()
+		self.unk6 = stream.u8()
+		self.unk7 = stream.u8()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
 		stream.string(self.id)
-		stream.u64(self.owner_id)
-		stream.qbuffer(self.unk3)
+		stream.pid(self.owner_id)
+		stream.qbuffer(self.unk1)
 		stream.add(self.thumbnail)
 		stream.u8(self.worlds)
 		stream.u8(self.levels)
-		stream.bool(self.unk4)
-		stream.u32(self.unk9)
-		stream.u32(self.unk10)
+		stream.u8(self.unk2)
+		stream.datetime(self.unk3)
 		stream.list(self.data_ids, stream.u64)
-		stream.list(self.players, stream.u8)
+		stream.map(self.unk4, stream.u8, stream.u32)
+		stream.u32(self.unk5)
+		stream.u8(self.unk6)
+		stream.u8(self.unk7)
 
 
 class CourseTimeStats(common.Structure):
@@ -4117,7 +4066,7 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
-		maps = stream.list(WorldMapMetaInfo)
+		maps = stream.list(WorldMapInfo)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.search_world_map_pick_up -> done")
@@ -4900,7 +4849,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	async def handle_search_courses_positive_rated_by(self, client, input, output):
 		logger.info("DataStoreServerSMM2.search_courses_positive_rated_by()")
 		#--- request ---
-		param = input.extract(SearchCoursesPositiveRatedBy)
+		param = input.extract(SearchCoursesPositiveRatedByParam)
 		response = await self.search_courses_positive_rated_by(client, param)
 		
 		#--- response ---
@@ -4911,7 +4860,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	async def handle_search_courses_played_by(self, client, input, output):
 		logger.info("DataStoreServerSMM2.search_courses_played_by()")
 		#--- request ---
-		param = input.extract(SearchCoursesPlayedBy)
+		param = input.extract(SearchCoursesPlayedByParam)
 		response = await self.search_courses_played_by(client, param)
 		
 		#--- response ---
@@ -4933,7 +4882,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	async def handle_search_courses_first_clear(self, client, input, output):
 		logger.info("DataStoreServerSMM2.search_courses_first_clear()")
 		#--- request ---
-		param = input.extract(SearchCoursesFirstClear)
+		param = input.extract(SearchCoursesFirstClearParam)
 		response = await self.search_courses_first_clear(client, param)
 		
 		#--- response ---
@@ -4948,7 +4897,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	async def handle_search_courses_best_time(self, client, input, output):
 		logger.info("DataStoreServerSMM2.search_courses_best_time()")
 		#--- request ---
-		param = input.extract(SearchCoursesBestTime)
+		param = input.extract(SearchCoursesBestTimeParam)
 		response = await self.search_courses_best_time(client, param)
 		
 		#--- response ---
@@ -4992,17 +4941,6 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		#--- request ---
 		data_id = input.u64()
 		response = await self.search_comments(client, data_id)
-		
-		#--- response ---
-		if not isinstance(response, list):
-			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
-		output.list(response, output.add)
-	
-	async def handle_get_death_positions(self, client, input, output):
-		logger.info("DataStoreServerSMM2.get_death_positions()")
-		#--- request ---
-		data_id = input.u64()
-		response = await self.get_death_positions(client, data_id)
 		
 		#--- response ---
 		if not isinstance(response, list):
@@ -5380,10 +5318,6 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	
 	async def search_comments(self, *args):
 		logger.warning("DataStoreServerSMM2.search_comments not implemented")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def get_death_positions(self, *args):
-		logger.warning("DataStoreServerSMM2.get_death_positions not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_death_positions(self, *args):

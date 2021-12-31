@@ -162,13 +162,13 @@ struct SearchCoursesPostedByParam {
 	list<uint64> pids;
 }
 
-struct SearchCoursesPositiveRatedBy {
+struct SearchCoursesPositiveRatedByParam {
 	uint32 option = 0;
 	uint32 count;
 	uint64 pid;
 }
 
-struct SearchCoursesPlayedBy {
+struct SearchCoursesPlayedByParam {
 	uint32 option = 0;
 	uint32 count;
 	uint64 pid;
@@ -180,13 +180,13 @@ struct SearchCoursesEndlessModeParam {
 	uint8 difficulty;
 }
 
-struct SearchCoursesFirstClear {
+struct SearchCoursesFirstClearParam {
 	uint64 pid;
 	uint32 option = 0;
 	ResultRange range;
 }
 
-struct SearchCoursesBestTime {
+struct SearchCoursesBestTimeParam {
 	uint64 pid;
 	uint32 option = 0;
 	ResultRange range;
@@ -244,18 +244,18 @@ struct SyncUserProfileParam {
 	uint32	unk6;
 }
 
-struct SearchWorldMapPlayedByParam {
-	uint32 unk1;
-	uint32 unk2;
+struct GetWorldMapParam {
+	list<string> ids;
+	uint32 option = 0;
 }
 
 struct SearchWorldMapPickUpParam {
 	uint32 count;
 }
 
-struct GetWorldMapParam {
-	list<string> ids;
-	uint32 option = 63;
+struct SearchWorldMapPlayedByParam {
+	uint32 unk1;
+	uint32 unk2;
 }
 
 /*** Other structures ***/
@@ -331,36 +331,20 @@ struct CourseInfo {
 	RelationObjectReqGetInfo entire_thumbnail;
 }
 
-struct WorldMapMetaInfo {
-	string id;
-	uint64 owner_id;
-	bool unk1;
-	uint8 unk2;
-	RelationObjectReqGetInfo thumbnail;
-	uint8 worlds;
-	uint8 levels;
-	bool unk3;
-	uint32 unk4;
-	uint32 unk5;
-	uint64 unk6;
-	uint32 unk7;
-	bool unk8;
-	bool unk9;
-}
-
 struct WorldMapInfo {
 	string id;
-	uint64 owner_id;
-	qbuffer unk3;
+	pid owner_id;
+	qbuffer unk1;
 	RelationObjectReqGetInfo thumbnail;
 	uint8 worlds;
 	uint8 levels;
-	bool unk4;
-	uint32 unk9;
-	uint32 unk10;
+	uint8 unk2;
+	datetime unk3;
 	list<uint64> data_ids;
-	list<uint8> players;
-	// Unimplemented
+	map<uint8, uint32> unk4;
+	uint32 unk5;
+	uint8 unk6;
+	uint8 unk7;
 }
 
 struct CourseTimeStats {
@@ -568,11 +552,11 @@ protocol DataStore_SMM2 : DataStore {
 		bool result;
 	}
 
-	method(75) search_courses_positive_rated_by(SearchCoursesPositiveRatedBy param) {
+	method(75) search_courses_positive_rated_by(SearchCoursesPositiveRatedByParam param) {
 		list<CourseInfo> courses;
 	}
 
-	method(76) search_courses_played_by(SearchCoursesPlayedBy param) {
+	method(76) search_courses_played_by(SearchCoursesPlayedByParam param) {
 		list<CourseInfo> courses;
 	}
 
@@ -580,12 +564,12 @@ protocol DataStore_SMM2 : DataStore {
 		list<CourseInfo> courses;
 	}
 
-	method(80) search_courses_first_clear(SearchCoursesFirstClear param) {
+	method(80) search_courses_first_clear(SearchCoursesFirstClearParam param) {
 		list<CourseInfo> courses;
 		bool result;
 	}
 
-	method(81) search_courses_best_time(SearchCoursesBestTime param) {
+	method(81) search_courses_best_time(SearchCoursesBestTimeParam param) {
 		list<CourseInfo> courses;
 		bool result;
 	}
@@ -638,6 +622,6 @@ protocol DataStore_SMM2 : DataStore {
 	}
 
 	method(162) search_world_map_pick_up(SearchWorldMapPickUpParam param) {
-		list<WorldMapMetaInfo> maps;
+		list<WorldMapInfo> maps;
 	}
 }

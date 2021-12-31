@@ -86,14 +86,14 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 <code>**class** [RegisterUserParam](#registeruserparam)([Structure](common.md))</code><br>
 <code>**class** [RelationObjectReqGetInfo](#relationobjectreqgetinfo)([Structure](common.md))</code><br>
 <code>**class** [ReqGetInfoHeadersInfo](#reqgetinfoheadersinfo)([Structure](common.md))</code><br>
-<code>**class** [SearchCoursesBestTime](#searchcoursesbesttime)([Structure](common.md))</code><br>
+<code>**class** [SearchCoursesBestTimeParam](#searchcoursesbesttimeparam)([Structure](common.md))</code><br>
 <code>**class** [SearchCoursesEndlessModeParam](#searchcoursesendlessmodeparam)([Structure](common.md))</code><br>
 <code>**class** [SearchCoursesEventParam](#searchcourseseventparam)([Structure](common.md))</code><br>
-<code>**class** [SearchCoursesFirstClear](#searchcoursesfirstclear)([Structure](common.md))</code><br>
+<code>**class** [SearchCoursesFirstClearParam](#searchcoursesfirstclearparam)([Structure](common.md))</code><br>
 <code>**class** [SearchCoursesLatestParam](#searchcourseslatestparam)([Structure](common.md))</code><br>
-<code>**class** [SearchCoursesPlayedBy](#searchcoursesplayedby)([Structure](common.md))</code><br>
+<code>**class** [SearchCoursesPlayedByParam](#searchcoursesplayedbyparam)([Structure](common.md))</code><br>
 <code>**class** [SearchCoursesPointRankingParam](#searchcoursespointrankingparam)([Structure](common.md))</code><br>
-<code>**class** [SearchCoursesPositiveRatedBy](#searchcoursespositiveratedby)([Structure](common.md))</code><br>
+<code>**class** [SearchCoursesPositiveRatedByParam](#searchcoursespositiveratedbyparam)([Structure](common.md))</code><br>
 <code>**class** [SearchCoursesPostedByParam](#searchcoursespostedbyparam)([Structure](common.md))</code><br>
 <code>**class** [SearchUsersClearedCourseParam](#searchusersclearedcourseparam)([Structure](common.md))</code><br>
 <code>**class** [SearchUsersPlayedCourseParam](#searchusersplayedcourseparam)([Structure](common.md))</code><br>
@@ -108,7 +108,6 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 <code>**class** [UnknownStruct6](#unknownstruct6)([Structure](common.md))</code><br>
 <code>**class** [UserInfo](#userinfo)([Structure](common.md))</code><br>
 <code>**class** [WorldMapInfo](#worldmapinfo)([Structure](common.md))</code><br>
-<code>**class** [WorldMapMetaInfo](#worldmapmetainfo)([Structure](common.md))</code><br>
 
 ## DataStoreClientSMM2
 <code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
@@ -383,16 +382,16 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 </span>
 </span>
 
-<code>**async def search_courses_positive_rated_by**(param: [SearchCoursesPositiveRatedBy](#searchcoursespositiveratedby)) -> list[[CourseInfo](#courseinfo)]</code><br>
+<code>**async def search_courses_positive_rated_by**(param: [SearchCoursesPositiveRatedByParam](#searchcoursespositiveratedbyparam)) -> list[[CourseInfo](#courseinfo)]</code><br>
 <span class="docs">Calls method `75` on the server.</span>
 
-<code>**async def search_courses_played_by**(param: [SearchCoursesPlayedBy](#searchcoursesplayedby)) -> list[[CourseInfo](#courseinfo)]</code><br>
+<code>**async def search_courses_played_by**(param: [SearchCoursesPlayedByParam](#searchcoursesplayedbyparam)) -> list[[CourseInfo](#courseinfo)]</code><br>
 <span class="docs">Calls method `76` on the server.</span>
 
 <code>**async def search_courses_endless_mode**(param: [SearchCoursesEndlessModeParam](#searchcoursesendlessmodeparam)) -> list[[CourseInfo](#courseinfo)]</code><br>
 <span class="docs">Calls method `79` on the server.</span>
 
-<code>**async def search_courses_first_clear**(param: [SearchCoursesFirstClear](#searchcoursesfirstclear)) -> [RMCResponse](common.md)</code><br>
+<code>**async def search_courses_first_clear**(param: [SearchCoursesFirstClearParam](#searchcoursesfirstclearparam)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `80` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>courses: list[[CourseInfo](#courseinfo)]</code><br>
@@ -400,7 +399,7 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 </span>
 </span>
 
-<code>**async def search_courses_best_time**(param: [SearchCoursesBestTime](#searchcoursesbesttime)) -> [RMCResponse](common.md)</code><br>
+<code>**async def search_courses_best_time**(param: [SearchCoursesBestTimeParam](#searchcoursesbesttimeparam)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `81` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>courses: list[[CourseInfo](#courseinfo)]</code><br>
@@ -456,7 +455,7 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 </span>
 </span>
 
-<code>**async def search_world_map_pick_up**(param: [SearchWorldMapPickUpParam](#searchworldmappickupparam)) -> list[[WorldMapMetaInfo](#worldmapmetainfo)]</code><br>
+<code>**async def search_world_map_pick_up**(param: [SearchWorldMapPickUpParam](#searchworldmappickupparam)) -> list[[WorldMapInfo](#worldmapinfo)]</code><br>
 <span class="docs">Calls method `162` on the server.</span>
 
 ## DataStoreServerSMM2
@@ -735,16 +734,16 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 </span>
 </span>
 
-<code>**async def search_courses_positive_rated_by**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesPositiveRatedBy](#searchcoursespositiveratedby)) -> list[[CourseInfo](#courseinfo)]</code><br>
+<code>**async def search_courses_positive_rated_by**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesPositiveRatedByParam](#searchcoursespositiveratedbyparam)) -> list[[CourseInfo](#courseinfo)]</code><br>
 <span class="docs">Handler for method `75`. This method should be overridden by a subclass.</span>
 
-<code>**async def search_courses_played_by**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesPlayedBy](#searchcoursesplayedby)) -> list[[CourseInfo](#courseinfo)]</code><br>
+<code>**async def search_courses_played_by**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesPlayedByParam](#searchcoursesplayedbyparam)) -> list[[CourseInfo](#courseinfo)]</code><br>
 <span class="docs">Handler for method `76`. This method should be overridden by a subclass.</span>
 
 <code>**async def search_courses_endless_mode**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesEndlessModeParam](#searchcoursesendlessmodeparam)) -> list[[CourseInfo](#courseinfo)]</code><br>
 <span class="docs">Handler for method `79`. This method should be overridden by a subclass.</span>
 
-<code>**async def search_courses_first_clear**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesFirstClear](#searchcoursesfirstclear)) -> [RMCResponse](common.md)</code><br>
+<code>**async def search_courses_first_clear**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesFirstClearParam](#searchcoursesfirstclearparam)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `80`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>courses: list[[CourseInfo](#courseinfo)]</code><br>
@@ -752,7 +751,7 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 </span>
 </span>
 
-<code>**async def search_courses_best_time**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesBestTime](#searchcoursesbesttime)) -> [RMCResponse](common.md)</code><br>
+<code>**async def search_courses_best_time**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesBestTimeParam](#searchcoursesbesttimeparam)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `81`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>courses: list[[CourseInfo](#courseinfo)]</code><br>
@@ -808,7 +807,7 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 </span>
 </span>
 
-<code>**async def search_world_map_pick_up**(client: [RMCClient](rmc.md#rmcclient), param: [SearchWorldMapPickUpParam](#searchworldmappickupparam)) -> list[[WorldMapMetaInfo](#worldmapmetainfo)]</code><br>
+<code>**async def search_world_map_pick_up**(client: [RMCClient](rmc.md#rmcclient), param: [SearchWorldMapPickUpParam](#searchworldmappickupparam)) -> list[[WorldMapInfo](#worldmapinfo)]</code><br>
 <span class="docs">Handler for method `162`. This method should be overridden by a subclass.</span>
 
 ## ClearCondition
@@ -1775,7 +1774,7 @@ The following fields are defined in this class:<br>
 The following fields are defined in this class:<br>
 <span class="docs">
 <code>ids: list[str]</code><br>
-<code>option: int = 63</code><br>
+<code>option: int = 0</code><br>
 </span><br>
 
 ## RegisterUserParam
@@ -1815,9 +1814,9 @@ The following fields are defined in this class:<br>
 <code>expiration: int</code><br>
 </span><br>
 
-## SearchCoursesBestTime
+## SearchCoursesBestTimeParam
 <code>**def _\_init__**()</code><br>
-<span class="docs">Creates a new `SearchCoursesBestTime` instance. Required fields must be filled in manually.</span>
+<span class="docs">Creates a new `SearchCoursesBestTimeParam` instance. Required fields must be filled in manually.</span>
 
 The following fields are defined in this class:<br>
 <span class="docs">
@@ -1846,9 +1845,9 @@ The following fields are defined in this class:<br>
 <code>option: int = 0</code><br>
 </span><br>
 
-## SearchCoursesFirstClear
+## SearchCoursesFirstClearParam
 <code>**def _\_init__**()</code><br>
-<span class="docs">Creates a new `SearchCoursesFirstClear` instance. Required fields must be filled in manually.</span>
+<span class="docs">Creates a new `SearchCoursesFirstClearParam` instance. Required fields must be filled in manually.</span>
 
 The following fields are defined in this class:<br>
 <span class="docs">
@@ -1867,9 +1866,9 @@ The following fields are defined in this class:<br>
 <code>range: [ResultRange](common.md#resultrange) = [ResultRange](common.md#resultrange)()</code><br>
 </span><br>
 
-## SearchCoursesPlayedBy
+## SearchCoursesPlayedByParam
 <code>**def _\_init__**()</code><br>
-<span class="docs">Creates a new `SearchCoursesPlayedBy` instance. Required fields must be filled in manually.</span>
+<span class="docs">Creates a new `SearchCoursesPlayedByParam` instance. Required fields must be filled in manually.</span>
 
 The following fields are defined in this class:<br>
 <span class="docs">
@@ -1890,9 +1889,9 @@ The following fields are defined in this class:<br>
 <code>reject_regions: list[int] = []</code><br>
 </span><br>
 
-## SearchCoursesPositiveRatedBy
+## SearchCoursesPositiveRatedByParam
 <code>**def _\_init__**()</code><br>
-<span class="docs">Creates a new `SearchCoursesPositiveRatedBy` instance. Required fields must be filled in manually.</span>
+<span class="docs">Creates a new `SearchCoursesPositiveRatedByParam` instance. Required fields must be filled in manually.</span>
 
 The following fields are defined in this class:<br>
 <span class="docs">
@@ -2092,36 +2091,16 @@ The following fields are defined in this class:<br>
 <span class="docs">
 <code>id: str</code><br>
 <code>owner_id: int</code><br>
-<code>unk3: bytes</code><br>
+<code>unk1: bytes</code><br>
 <code>thumbnail: [RelationObjectReqGetInfo](#relationobjectreqgetinfo) = [RelationObjectReqGetInfo](#relationobjectreqgetinfo)()</code><br>
 <code>worlds: int</code><br>
 <code>levels: int</code><br>
-<code>unk4: bool</code><br>
-<code>unk9: int</code><br>
-<code>unk10: int</code><br>
-<code>data_ids: list[int]</code><br>
-<code>players: list[int]</code><br>
-</span><br>
-
-## WorldMapMetaInfo
-<code>**def _\_init__**()</code><br>
-<span class="docs">Creates a new `WorldMapMetaInfo` instance. Required fields must be filled in manually.</span>
-
-The following fields are defined in this class:<br>
-<span class="docs">
-<code>id: str</code><br>
-<code>owner_id: int</code><br>
-<code>unk1: bool</code><br>
 <code>unk2: int</code><br>
-<code>thumbnail: [RelationObjectReqGetInfo](#relationobjectreqgetinfo) = [RelationObjectReqGetInfo](#relationobjectreqgetinfo)()</code><br>
-<code>worlds: int</code><br>
-<code>levels: int</code><br>
-<code>unk3: bool</code><br>
-<code>unk4: int</code><br>
+<code>unk3: [DateTime](common.md#datetime)</code><br>
+<code>data_ids: list[int]</code><br>
+<code>unk4: dict[int, int]</code><br>
 <code>unk5: int</code><br>
 <code>unk6: int</code><br>
 <code>unk7: int</code><br>
-<code>unk8: bool</code><br>
-<code>unk9: bool</code><br>
 </span><br>
 
