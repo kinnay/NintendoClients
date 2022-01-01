@@ -1,6 +1,8 @@
 
 /*.egg-info/
 __pycache__/
+/build/
+/dist/
 /site/
 
 /private/
