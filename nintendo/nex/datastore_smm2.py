@@ -1583,6 +1583,78 @@ class RegisterUserParam(common.Structure):
 		stream.string(self.device_id)
 
 
+class SearchCoursesPostedByParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.option = 0
+		self.range = common.ResultRange()
+		self.pids = None
+	
+	def check_required(self, settings, version):
+		for field in ['pids']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.option = stream.u32()
+		self.range = stream.extract(common.ResultRange)
+		self.pids = stream.list(stream.u64)
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u32(self.option)
+		stream.add(self.range)
+		stream.list(self.pids, stream.u64)
+
+
+class SearchCoursesPositiveRatedByParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.option = 0
+		self.count = None
+		self.pid = None
+	
+	def check_required(self, settings, version):
+		for field in ['count', 'pid']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.option = stream.u32()
+		self.count = stream.u32()
+		self.pid = stream.u64()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u32(self.option)
+		stream.u32(self.count)
+		stream.u64(self.pid)
+
+
+class SearchCoursesPlayedByParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.option = 0
+		self.count = None
+		self.pid = None
+	
+	def check_required(self, settings, version):
+		for field in ['count', 'pid']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.option = stream.u32()
+		self.count = stream.u32()
+		self.pid = stream.u64()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u32(self.option)
+		stream.u32(self.count)
+		stream.u64(self.pid)
+
+
 class SearchCoursesEndlessModeParam(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -1605,6 +1677,54 @@ class SearchCoursesEndlessModeParam(common.Structure):
 		stream.u32(self.option)
 		stream.u32(self.count)
 		stream.u8(self.difficulty)
+
+
+class SearchCoursesFirstClearParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.pid = None
+		self.option = 0
+		self.range = common.ResultRange()
+	
+	def check_required(self, settings, version):
+		for field in ['pid']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.pid = stream.u64()
+		self.option = stream.u32()
+		self.range = stream.extract(common.ResultRange)
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u64(self.pid)
+		stream.u32(self.option)
+		stream.add(self.range)
+
+
+class SearchCoursesBestTimeParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.pid = None
+		self.option = 0
+		self.range = common.ResultRange()
+	
+	def check_required(self, settings, version):
+		for field in ['pid']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.pid = stream.u64()
+		self.option = stream.u32()
+		self.range = stream.extract(common.ResultRange)
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u64(self.pid)
+		stream.u32(self.option)
+		stream.add(self.range)
 
 
 class SearchCoursesEventParam(common.Structure):
@@ -1805,6 +1925,66 @@ class SyncUserProfileParam(common.Structure):
 		stream.bool(self.unk5)
 		stream.string(self.unk_guid)
 		stream.u32(self.unk6)
+
+
+class GetWorldMapParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.ids = None
+		self.option = 0
+	
+	def check_required(self, settings, version):
+		for field in ['ids']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.ids = stream.list(stream.string)
+		self.option = stream.u32()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.list(self.ids, stream.string)
+		stream.u32(self.option)
+
+
+class SearchWorldMapPickUpParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.count = None
+	
+	def check_required(self, settings, version):
+		for field in ['count']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.count = stream.u32()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u32(self.count)
+
+
+class SearchWorldMapPlayedByParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+	
+	def check_required(self, settings, version):
+		for field in ['unk1', 'unk2']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.unk1 = stream.u32()
+		self.unk2 = stream.u32()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u32(self.unk1)
+		stream.u32(self.unk2)
 
 
 class BadgeInfo(common.Structure):
@@ -2048,6 +2228,60 @@ class CourseInfo(common.Structure):
 		stream.u8(self.unk12)
 		stream.add(self.one_screen_thumbnail)
 		stream.add(self.entire_thumbnail)
+
+
+class WorldMapInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.id = None
+		self.owner_id = None
+		self.unk1 = None
+		self.thumbnail = RelationObjectReqGetInfo()
+		self.worlds = None
+		self.levels = None
+		self.unk2 = None
+		self.unk3 = None
+		self.data_ids = None
+		self.unk4 = None
+		self.unk5 = None
+		self.unk6 = None
+		self.unk7 = None
+	
+	def check_required(self, settings, version):
+		for field in ['id', 'owner_id', 'unk1', 'worlds', 'levels', 'unk2', 'unk3', 'data_ids', 'unk4', 'unk5', 'unk6', 'unk7']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.id = stream.string()
+		self.owner_id = stream.pid()
+		self.unk1 = stream.qbuffer()
+		self.thumbnail = stream.extract(RelationObjectReqGetInfo)
+		self.worlds = stream.u8()
+		self.levels = stream.u8()
+		self.unk2 = stream.u8()
+		self.unk3 = stream.datetime()
+		self.data_ids = stream.list(stream.u64)
+		self.unk4 = stream.map(stream.u8, stream.u32)
+		self.unk5 = stream.u32()
+		self.unk6 = stream.u8()
+		self.unk7 = stream.u8()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.string(self.id)
+		stream.pid(self.owner_id)
+		stream.qbuffer(self.unk1)
+		stream.add(self.thumbnail)
+		stream.u8(self.worlds)
+		stream.u8(self.levels)
+		stream.u8(self.unk2)
+		stream.datetime(self.unk3)
+		stream.list(self.data_ids, stream.u64)
+		stream.map(self.unk4, stream.u8, stream.u32)
+		stream.u32(self.unk5)
+		stream.u8(self.unk6)
+		stream.u8(self.unk7)
 
 
 class CourseTimeStats(common.Structure):
@@ -2623,7 +2857,12 @@ class DataStoreProtocolSMM2:
 	METHOD_GET_COURSES = 70
 	METHOD_SEARCH_COURSES_POINT_RANKING = 71
 	METHOD_SEARCH_COURSES_LATEST = 73
+	METHOD_SEARCH_COURSES_POSTED_BY = 74
+	METHOD_SEARCH_COURSES_POSITIVE_RATED_BY = 75
+	METHOD_SEARCH_COURSES_PLAYED_BY = 76
 	METHOD_SEARCH_COURSES_ENDLESS_MODE = 79
+	METHOD_SEARCH_COURSES_FIRST_CLEAR = 80
+	METHOD_SEARCH_COURSES_BEST_TIME = 81
 	METHOD_GET_COURSES_EVENT = 85
 	METHOD_SEARCH_COURSES_EVENT = 86
 	METHOD_SEARCH_COMMENTS = 95
@@ -2634,6 +2873,8 @@ class DataStoreProtocolSMM2:
 	METHOD_GET_EVENT_COURSE_STATUS = 154
 	METHOD_GET_EVENT_COURSE_HISTOGRAM = 156
 	METHOD_GET_EVENT_COURSE_GHOST = 157
+	METHOD_GET_WORLD_MAP = 160
+	METHOD_SEARCH_WORLD_MAP_PICK_UP = 162
 	
 	PROTOCOL_ID = 0x73
 
@@ -3550,6 +3791,53 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		logger.info("DataStoreClientSMM2.search_courses_latest -> done")
 		return obj
 	
+	async def search_courses_posted_by(self, param):
+		logger.info("DataStoreClientSMM2.search_courses_posted_by()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_POSTED_BY, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.courses = stream.list(CourseInfo)
+		obj.result = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.search_courses_posted_by -> done")
+		return obj
+	
+	async def search_courses_positive_rated_by(self, param):
+		logger.info("DataStoreClientSMM2.search_courses_positive_rated_by()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_POSITIVE_RATED_BY, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		courses = stream.list(CourseInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.search_courses_positive_rated_by -> done")
+		return courses
+	
+	async def search_courses_played_by(self, param):
+		logger.info("DataStoreClientSMM2.search_courses_played_by()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_PLAYED_BY, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		courses = stream.list(CourseInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.search_courses_played_by -> done")
+		return courses
+	
 	async def search_courses_endless_mode(self, param):
 		logger.info("DataStoreClientSMM2.search_courses_endless_mode()")
 		#--- request ---
@@ -3564,6 +3852,40 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.search_courses_endless_mode -> done")
 		return courses
+	
+	async def search_courses_first_clear(self, param):
+		logger.info("DataStoreClientSMM2.search_courses_first_clear()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_FIRST_CLEAR, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.courses = stream.list(CourseInfo)
+		obj.result = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.search_courses_first_clear -> done")
+		return obj
+	
+	async def search_courses_best_time(self, param):
+		logger.info("DataStoreClientSMM2.search_courses_best_time()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SEARCH_COURSES_BEST_TIME, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.courses = stream.list(CourseInfo)
+		obj.result = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.search_courses_best_time -> done")
+		return obj
 	
 	async def get_courses_event(self, param, dummy):
 		logger.info("DataStoreClientSMM2.get_courses_event()")
@@ -3717,6 +4039,38 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("DataStoreClientSMM2.get_event_course_ghost -> done")
 		return ghosts
+	
+	async def get_world_map(self, param):
+		logger.info("DataStoreClientSMM2.get_world_map()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_WORLD_MAP, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.maps = stream.list(WorldMapInfo)
+		obj.results = stream.list(stream.result)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.get_world_map -> done")
+		return obj
+	
+	async def search_world_map_pick_up(self, param):
+		logger.info("DataStoreClientSMM2.search_world_map_pick_up()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SEARCH_WORLD_MAP_PICK_UP, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		maps = stream.list(WorldMapInfo)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.search_world_map_pick_up -> done")
+		return maps
 
 
 class DataStoreServerSMM2(DataStoreProtocolSMM2):
@@ -3780,7 +4134,12 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_GET_COURSES: self.handle_get_courses,
 			self.METHOD_SEARCH_COURSES_POINT_RANKING: self.handle_search_courses_point_ranking,
 			self.METHOD_SEARCH_COURSES_LATEST: self.handle_search_courses_latest,
+			self.METHOD_SEARCH_COURSES_POSTED_BY: self.handle_search_courses_posted_by,
+			self.METHOD_SEARCH_COURSES_POSITIVE_RATED_BY: self.handle_search_courses_positive_rated_by,
+			self.METHOD_SEARCH_COURSES_PLAYED_BY: self.handle_search_courses_played_by,
 			self.METHOD_SEARCH_COURSES_ENDLESS_MODE: self.handle_search_courses_endless_mode,
+			self.METHOD_SEARCH_COURSES_FIRST_CLEAR: self.handle_search_courses_first_clear,
+			self.METHOD_SEARCH_COURSES_BEST_TIME: self.handle_search_courses_best_time,
 			self.METHOD_GET_COURSES_EVENT: self.handle_get_courses_event,
 			self.METHOD_SEARCH_COURSES_EVENT: self.handle_search_courses_event,
 			self.METHOD_SEARCH_COMMENTS: self.handle_search_comments,
@@ -3791,6 +4150,8 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_GET_EVENT_COURSE_STATUS: self.handle_get_event_course_status,
 			self.METHOD_GET_EVENT_COURSE_HISTOGRAM: self.handle_get_event_course_histogram,
 			self.METHOD_GET_EVENT_COURSE_GHOST: self.handle_get_event_course_ghost,
+			self.METHOD_GET_WORLD_MAP: self.handle_get_world_map,
+			self.METHOD_SEARCH_WORLD_MAP_PICK_UP: self.handle_search_world_map_pick_up,
 		}
 	
 	async def logout(self, client):
@@ -4470,6 +4831,43 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		output.list(response.courses, output.add)
 		output.bool(response.result)
 	
+	async def handle_search_courses_posted_by(self, client, input, output):
+		logger.info("DataStoreServerSMM2.search_courses_posted_by()")
+		#--- request ---
+		param = input.extract(SearchCoursesPostedByParam)
+		response = await self.search_courses_posted_by(client, param)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['courses', 'result']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.courses, output.add)
+		output.bool(response.result)
+	
+	async def handle_search_courses_positive_rated_by(self, client, input, output):
+		logger.info("DataStoreServerSMM2.search_courses_positive_rated_by()")
+		#--- request ---
+		param = input.extract(SearchCoursesPositiveRatedByParam)
+		response = await self.search_courses_positive_rated_by(client, param)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
+	
+	async def handle_search_courses_played_by(self, client, input, output):
+		logger.info("DataStoreServerSMM2.search_courses_played_by()")
+		#--- request ---
+		param = input.extract(SearchCoursesPlayedByParam)
+		response = await self.search_courses_played_by(client, param)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
+	
 	async def handle_search_courses_endless_mode(self, client, input, output):
 		logger.info("DataStoreServerSMM2.search_courses_endless_mode()")
 		#--- request ---
@@ -4480,6 +4878,36 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		if not isinstance(response, list):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.add)
+	
+	async def handle_search_courses_first_clear(self, client, input, output):
+		logger.info("DataStoreServerSMM2.search_courses_first_clear()")
+		#--- request ---
+		param = input.extract(SearchCoursesFirstClearParam)
+		response = await self.search_courses_first_clear(client, param)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['courses', 'result']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.courses, output.add)
+		output.bool(response.result)
+	
+	async def handle_search_courses_best_time(self, client, input, output):
+		logger.info("DataStoreServerSMM2.search_courses_best_time()")
+		#--- request ---
+		param = input.extract(SearchCoursesBestTimeParam)
+		response = await self.search_courses_best_time(client, param)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['courses', 'result']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.courses, output.add)
+		output.bool(response.result)
 	
 	async def handle_get_courses_event(self, client, input, output):
 		logger.info("DataStoreServerSMM2.get_courses_event()")
@@ -4592,6 +5020,32 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		#--- request ---
 		param = input.extract(GetEventCourseGhostParam)
 		response = await self.get_event_course_ghost(client, param)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
+	
+	async def handle_get_world_map(self, client, input, output):
+		logger.info("DataStoreServerSMM2.get_world_map()")
+		#--- request ---
+		param = input.extract(GetWorldMapParam)
+		response = await self.get_world_map(client, param)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['maps', 'results']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.maps, output.add)
+		output.list(response.results, output.result)
+	
+	async def handle_search_world_map_pick_up(self, client, input, output):
+		logger.info("DataStoreServerSMM2.search_world_map_pick_up()")
+		#--- request ---
+		param = input.extract(SearchWorldMapPickUpParam)
+		response = await self.search_world_map_pick_up(client, param)
 		
 		#--- response ---
 		if not isinstance(response, list):
@@ -4830,8 +5284,28 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 		logger.warning("DataStoreServerSMM2.search_courses_latest not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
+	async def search_courses_posted_by(self, *args):
+		logger.warning("DataStoreServerSMM2.search_courses_posted_by not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def search_courses_positive_rated_by(self, *args):
+		logger.warning("DataStoreServerSMM2.search_courses_positive_rated_by not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def search_courses_played_by(self, *args):
+		logger.warning("DataStoreServerSMM2.search_courses_played_by not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
 	async def search_courses_endless_mode(self, *args):
 		logger.warning("DataStoreServerSMM2.search_courses_endless_mode not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def search_courses_first_clear(self, *args):
+		logger.warning("DataStoreServerSMM2.search_courses_first_clear not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def search_courses_best_time(self, *args):
+		logger.warning("DataStoreServerSMM2.search_courses_best_time not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_courses_event(self, *args):
@@ -4872,5 +5346,13 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	
 	async def get_event_course_ghost(self, *args):
 		logger.warning("DataStoreServerSMM2.get_event_course_ghost not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_world_map(self, *args):
+		logger.warning("DataStoreServerSMM2.get_world_map not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def search_world_map_pick_up(self, *args):
+		logger.warning("DataStoreServerSMM2.search_world_map_pick_up not implemented")
 		raise common.RMCError("Core::NotImplemented")
 
