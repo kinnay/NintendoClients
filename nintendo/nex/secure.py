@@ -52,8 +52,9 @@ class SecureConnectionProtocol:
 	METHOD_REQUEST_URLS = 3
 	METHOD_REGISTER_EX = 4
 	METHOD_TEST_CONNECTIVITY = 5
-	METHOD_REPLACE_URL = 6
-	METHOD_SEND_REPORT = 7
+	METHOD_UPDATE_URLS = 6
+	METHOD_REPLACE_URL = 7
+	METHOD_SEND_REPORT = 8
 	
 	PROTOCOL_ID = 0xB
 
@@ -148,6 +149,19 @@ class SecureConnectionClient(SecureConnectionProtocol):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("SecureConnectionClient.test_connectivity -> done")
 	
+	async def update_urls(self, urls):
+		logger.info("SecureConnectionClient.update_urls()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(urls, stream.stationurl)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_UPDATE_URLS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("SecureConnectionClient.update_urls -> done")
+	
 	async def replace_url(self, url, new):
 		logger.info("SecureConnectionClient.replace_url()")
 		#--- request ---
@@ -185,6 +199,7 @@ class SecureConnectionServer(SecureConnectionProtocol):
 			self.METHOD_REQUEST_URLS: self.handle_request_urls,
 			self.METHOD_REGISTER_EX: self.handle_register_ex,
 			self.METHOD_TEST_CONNECTIVITY: self.handle_test_connectivity,
+			self.METHOD_UPDATE_URLS: self.handle_update_urls,
 			self.METHOD_REPLACE_URL: self.handle_replace_url,
 			self.METHOD_SEND_REPORT: self.handle_send_report,
 		}
@@ -269,6 +284,12 @@ class SecureConnectionServer(SecureConnectionProtocol):
 		#--- request ---
 		await self.test_connectivity(client)
 	
+	async def handle_update_urls(self, client, input, output):
+		logger.info("SecureConnectionServer.update_urls()")
+		#--- request ---
+		urls = input.list(input.stationurl)
+		await self.update_urls(client, urls)
+	
 	async def handle_replace_url(self, client, input, output):
 		logger.info("SecureConnectionServer.replace_url()")
 		#--- request ---
@@ -301,6 +322,10 @@ class SecureConnectionServer(SecureConnectionProtocol):
 	
 	async def test_connectivity(self, *args):
 		logger.warning("SecureConnectionServer.test_connectivity not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def update_urls(self, *args):
+		logger.warning("SecureConnectionServer.update_urls not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def replace_url(self, *args):

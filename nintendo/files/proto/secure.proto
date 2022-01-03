@@ -32,6 +32,7 @@ protocol SecureConnection : 11 {
 	}
 	
 	method test_connectivity() {}
+	method update_urls(list<stationurl> urls) {}
 	method replace_url(stationurl url, stationurl new) {}
 	method send_report(uint32 report_id, qbuffer data) {}
 }

@@ -53,11 +53,14 @@ Provides a client and server for the `SecureConnectionProtocol`. This page was g
 <code>**async def test_connectivity**() -> None</code><br>
 <span class="docs">Calls method `5` on the server.</span>
 
-<code>**async def replace_url**(url: [StationURL](common.md#stationurl), new: [StationURL](common.md#stationurl)) -> None</code><br>
+<code>**async def update_urls**(urls: list[[StationURL](common.md#stationurl)]) -> None</code><br>
 <span class="docs">Calls method `6` on the server.</span>
 
-<code>**async def send_report**(report_id: int, data: bytes) -> None</code><br>
+<code>**async def replace_url**(url: [StationURL](common.md#stationurl), new: [StationURL](common.md#stationurl)) -> None</code><br>
 <span class="docs">Calls method `7` on the server.</span>
+
+<code>**async def send_report**(report_id: int, data: bytes) -> None</code><br>
+<span class="docs">Calls method `8` on the server.</span>
 
 ## SecureConnectionServer
 <code>**def _\_init__**()</code><br>
@@ -103,11 +106,14 @@ Provides a client and server for the `SecureConnectionProtocol`. This page was g
 <code>**async def test_connectivity**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Handler for method `5`. This method should be overridden by a subclass.</span>
 
-<code>**async def replace_url**(client: [RMCClient](rmc.md#rmcclient), url: [StationURL](common.md#stationurl), new: [StationURL](common.md#stationurl)) -> None</code><br>
+<code>**async def update_urls**(client: [RMCClient](rmc.md#rmcclient), urls: list[[StationURL](common.md#stationurl)]) -> None</code><br>
 <span class="docs">Handler for method `6`. This method should be overridden by a subclass.</span>
 
-<code>**async def send_report**(client: [RMCClient](rmc.md#rmcclient), report_id: int, data: bytes) -> None</code><br>
+<code>**async def replace_url**(client: [RMCClient](rmc.md#rmcclient), url: [StationURL](common.md#stationurl), new: [StationURL](common.md#stationurl)) -> None</code><br>
 <span class="docs">Handler for method `7`. This method should be overridden by a subclass.</span>
+
+<code>**async def send_report**(client: [RMCClient](rmc.md#rmcclient), report_id: int, data: bytes) -> None</code><br>
+<span class="docs">Handler for method `8`. This method should be overridden by a subclass.</span>
 
 ## ConnectionData
 <code>**def _\_init__**()</code><br>
