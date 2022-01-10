@@ -108,35 +108,6 @@ struct PrincipalRequestBlockSetting : Data {
 	bool unk2;
 }
 
-protocol Friends_V1 : 101 {
-	method update_profile;
-	method update_mii;
-	method update_mii_list;
-	method update_played_games;
-	method update_preference;
-	method get_friend_mii;
-	method get_friend_mii_list;
-	method is_active_game;
-	method get_principal_id_by_local_friend_code;
-	method get_friend_relationships;
-	method add_friend_by_principal_id;
-	method add_friend_by_principal_ids;
-	method remove_friend_by_local_friend_code;
-	method remove_friend_by_principal_id;
-	method get_all_friends;
-	method update_black_list;
-	method sync_friend;
-	method update_presence;
-	method update_favorite_game_key;
-	method update_comment;
-	method update_picture;
-	method get_friend_presence;
-	method get_friend_comment;
-	method get_friend_picture;
-	method get_friend_persistent_info;
-	method send_invitation;
-}
-
 protocol Friends_V2 : 102 {
 	method update_and_get_all_information(NNAInfo nna_info, NintendoPresenceV2 presence, datetime birthday) {
 		PrincipalPreference principal_preference;

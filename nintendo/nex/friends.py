@@ -426,37 +426,6 @@ class PrincipalRequestBlockSetting(common.Data):
 common.DataHolder.register(PrincipalRequestBlockSetting, "PrincipalRequestBlockSetting")
 
 
-class FriendsProtocolV1:
-	METHOD_UPDATE_PROFILE = 1
-	METHOD_UPDATE_MII = 2
-	METHOD_UPDATE_MII_LIST = 3
-	METHOD_UPDATE_PLAYED_GAMES = 4
-	METHOD_UPDATE_PREFERENCE = 5
-	METHOD_GET_FRIEND_MII = 6
-	METHOD_GET_FRIEND_MII_LIST = 7
-	METHOD_IS_ACTIVE_GAME = 8
-	METHOD_GET_PRINCIPAL_ID_BY_LOCAL_FRIEND_CODE = 9
-	METHOD_GET_FRIEND_RELATIONSHIPS = 10
-	METHOD_ADD_FRIEND_BY_PRINCIPAL_ID = 11
-	METHOD_ADD_FRIEND_BY_PRINCIPAL_IDS = 12
-	METHOD_REMOVE_FRIEND_BY_LOCAL_FRIEND_CODE = 13
-	METHOD_REMOVE_FRIEND_BY_PRINCIPAL_ID = 14
-	METHOD_GET_ALL_FRIENDS = 15
-	METHOD_UPDATE_BLACK_LIST = 16
-	METHOD_SYNC_FRIEND = 17
-	METHOD_UPDATE_PRESENCE = 18
-	METHOD_UPDATE_FAVORITE_GAME_KEY = 19
-	METHOD_UPDATE_COMMENT = 20
-	METHOD_UPDATE_PICTURE = 21
-	METHOD_GET_FRIEND_PRESENCE = 22
-	METHOD_GET_FRIEND_COMMENT = 23
-	METHOD_GET_FRIEND_PICTURE = 24
-	METHOD_GET_FRIEND_PERSISTENT_INFO = 25
-	METHOD_SEND_INVITATION = 26
-	
-	PROTOCOL_ID = 0x65
-
-
 class FriendsProtocolV2:
 	METHOD_UPDATE_AND_GET_ALL_INFORMATION = 1
 	METHOD_ADD_FRIEND = 2
@@ -480,13 +449,6 @@ class FriendsProtocolV2:
 	METHOD_GET_REQUEST_BLOCK_SETTINGS = 20
 	
 	PROTOCOL_ID = 0x66
-
-
-class FriendsClientV1(FriendsProtocolV1):
-	def __init__(self, client):
-		self.settings = client.settings
-		self.client = client
-	
 
 
 class FriendsClientV2(FriendsProtocolV2):
@@ -799,152 +761,6 @@ class FriendsClientV2(FriendsProtocolV2):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("FriendsClientV2.get_request_block_settings -> done")
 		return settings
-
-
-class FriendsServerV1(FriendsProtocolV1):
-	def __init__(self):
-		self.methods = {
-			self.METHOD_UPDATE_PROFILE: self.handle_update_profile,
-			self.METHOD_UPDATE_MII: self.handle_update_mii,
-			self.METHOD_UPDATE_MII_LIST: self.handle_update_mii_list,
-			self.METHOD_UPDATE_PLAYED_GAMES: self.handle_update_played_games,
-			self.METHOD_UPDATE_PREFERENCE: self.handle_update_preference,
-			self.METHOD_GET_FRIEND_MII: self.handle_get_friend_mii,
-			self.METHOD_GET_FRIEND_MII_LIST: self.handle_get_friend_mii_list,
-			self.METHOD_IS_ACTIVE_GAME: self.handle_is_active_game,
-			self.METHOD_GET_PRINCIPAL_ID_BY_LOCAL_FRIEND_CODE: self.handle_get_principal_id_by_local_friend_code,
-			self.METHOD_GET_FRIEND_RELATIONSHIPS: self.handle_get_friend_relationships,
-			self.METHOD_ADD_FRIEND_BY_PRINCIPAL_ID: self.handle_add_friend_by_principal_id,
-			self.METHOD_ADD_FRIEND_BY_PRINCIPAL_IDS: self.handle_add_friend_by_principal_ids,
-			self.METHOD_REMOVE_FRIEND_BY_LOCAL_FRIEND_CODE: self.handle_remove_friend_by_local_friend_code,
-			self.METHOD_REMOVE_FRIEND_BY_PRINCIPAL_ID: self.handle_remove_friend_by_principal_id,
-			self.METHOD_GET_ALL_FRIENDS: self.handle_get_all_friends,
-			self.METHOD_UPDATE_BLACK_LIST: self.handle_update_black_list,
-			self.METHOD_SYNC_FRIEND: self.handle_sync_friend,
-			self.METHOD_UPDATE_PRESENCE: self.handle_update_presence,
-			self.METHOD_UPDATE_FAVORITE_GAME_KEY: self.handle_update_favorite_game_key,
-			self.METHOD_UPDATE_COMMENT: self.handle_update_comment,
-			self.METHOD_UPDATE_PICTURE: self.handle_update_picture,
-			self.METHOD_GET_FRIEND_PRESENCE: self.handle_get_friend_presence,
-			self.METHOD_GET_FRIEND_COMMENT: self.handle_get_friend_comment,
-			self.METHOD_GET_FRIEND_PICTURE: self.handle_get_friend_picture,
-			self.METHOD_GET_FRIEND_PERSISTENT_INFO: self.handle_get_friend_persistent_info,
-			self.METHOD_SEND_INVITATION: self.handle_send_invitation,
-		}
-	
-	async def logout(self, client):
-		pass
-	
-	async def handle(self, client, method_id, input, output):
-		if method_id in self.methods:
-			await self.methods[method_id](client, input, output)
-		else:
-			logger.warning("Unknown method called on FriendsServerV1: %i", method_id)
-			raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_update_profile(self, client, input, output):
-		logger.warning("FriendsServerV1.update_profile is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_update_mii(self, client, input, output):
-		logger.warning("FriendsServerV1.update_mii is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_update_mii_list(self, client, input, output):
-		logger.warning("FriendsServerV1.update_mii_list is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_update_played_games(self, client, input, output):
-		logger.warning("FriendsServerV1.update_played_games is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_update_preference(self, client, input, output):
-		logger.warning("FriendsServerV1.update_preference is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_get_friend_mii(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_mii is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_get_friend_mii_list(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_mii_list is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_is_active_game(self, client, input, output):
-		logger.warning("FriendsServerV1.is_active_game is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_get_principal_id_by_local_friend_code(self, client, input, output):
-		logger.warning("FriendsServerV1.get_principal_id_by_local_friend_code is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_get_friend_relationships(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_relationships is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_add_friend_by_principal_id(self, client, input, output):
-		logger.warning("FriendsServerV1.add_friend_by_principal_id is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_add_friend_by_principal_ids(self, client, input, output):
-		logger.warning("FriendsServerV1.add_friend_by_principal_ids is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_remove_friend_by_local_friend_code(self, client, input, output):
-		logger.warning("FriendsServerV1.remove_friend_by_local_friend_code is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_remove_friend_by_principal_id(self, client, input, output):
-		logger.warning("FriendsServerV1.remove_friend_by_principal_id is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_get_all_friends(self, client, input, output):
-		logger.warning("FriendsServerV1.get_all_friends is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_update_black_list(self, client, input, output):
-		logger.warning("FriendsServerV1.update_black_list is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_sync_friend(self, client, input, output):
-		logger.warning("FriendsServerV1.sync_friend is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_update_presence(self, client, input, output):
-		logger.warning("FriendsServerV1.update_presence is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_update_favorite_game_key(self, client, input, output):
-		logger.warning("FriendsServerV1.update_favorite_game_key is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_update_comment(self, client, input, output):
-		logger.warning("FriendsServerV1.update_comment is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_update_picture(self, client, input, output):
-		logger.warning("FriendsServerV1.update_picture is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_get_friend_presence(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_presence is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_get_friend_comment(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_comment is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_get_friend_picture(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_picture is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_get_friend_persistent_info(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_persistent_info is not supported")
-		raise common.RMCError("Core::NotImplemented")
-	
-	async def handle_send_invitation(self, client, input, output):
-		logger.warning("FriendsServerV1.send_invitation is not supported")
-		raise common.RMCError("Core::NotImplemented")
 
 
 class FriendsServerV2(FriendsProtocolV2):

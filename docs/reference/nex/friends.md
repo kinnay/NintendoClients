@@ -1,16 +1,10 @@
 
 # Module: <code>nintendo.nex.friends</code>
 
-Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`. This page was generated automatically from `friends.proto`.
-
-<code>**class** [FriendsClientV1](#friendsclientv1)</code><br>
-<span class="docs">The client for the `FriendsProtocolV1`.</span>
+Provides a client and server for the `FriendsProtocolV2`. This page was generated automatically from `friends.proto`.
 
 <code>**class** [FriendsClientV2](#friendsclientv2)</code><br>
 <span class="docs">The client for the `FriendsProtocolV2`.</span>
-
-<code>**class** [FriendsServerV1](#friendsserverv1)</code><br>
-<span class="docs">The server for the `FriendsProtocolV1`.</span>
 
 <code>**class** [FriendsServerV2](#friendsserverv2)</code><br>
 <span class="docs">The server for the `FriendsProtocolV2`.</span>
@@ -29,10 +23,6 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**class** [PrincipalBasicInfo](#principalbasicinfo)([Data](common.md))</code><br>
 <code>**class** [PrincipalPreference](#principalpreference)([Data](common.md))</code><br>
 <code>**class** [PrincipalRequestBlockSetting](#principalrequestblocksetting)([Data](common.md))</code><br>
-
-## FriendsClientV1
-<code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
-<span class="docs">Creates a new [`FriendsClientV1`](#friendsclientv1).</span>
 
 ## FriendsClientV2
 <code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
@@ -124,13 +114,6 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 
 <code>**async def get_request_block_settings**(unk: list[int]) -> list[[PrincipalRequestBlockSetting](#principalrequestblocksetting)]</code><br>
 <span class="docs">Calls method `20` on the server.</span>
-
-## FriendsServerV1
-<code>**def _\_init__**()</code><br>
-<span class="docs">Creates a new [`FriendsServerV1`](#friendsserverv1).</span>
-
-<code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
-<span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
 ## FriendsServerV2
 <code>**def _\_init__**()</code><br>

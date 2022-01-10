@@ -1,3 +1,17 @@
+#===== 3DS Games =====#
+
+class Friends3DS:
+	TITLE_ID_USA = 0x0004013000003202
+	LATEST_VERSION = 0x0014
+
+	# Friends 3DS has no product code
+	PRODUCT_CODE_EUR = "----"
+	PRODUCT_CODE_USA = "----"
+	PRODUCT_CODE_JAP = "----"
+	
+	GAME_SERVER_ID = 0x3200
+	ACCESS_KEY = "ridfebb9"
+	NEX_VERSION = 20000
 
 #===== Wii U Games =====#
 
