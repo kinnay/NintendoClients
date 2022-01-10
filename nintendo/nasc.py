@@ -1,10 +1,12 @@
+
 from anynet import http, tls
 import pkg_resources
-import base64
 import datetime
+import base64
 
 import logging
 logger = logging.getLogger(__name__)
+
 
 # These still work here
 # But should probably be changed out for the 3DS ones
@@ -12,12 +14,14 @@ CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CA_
 CERT = pkg_resources.resource_filename("nintendo", "files/cert/WIIU_COMMON_1_CERT.der")
 KEY = pkg_resources.resource_filename("nintendo", "files/cert/WIIU_COMMON_1_RSA_KEY.der")
 
+
 def nintendo_base64_decode(input):
 	input = input.replace('.', '+').replace('-', '/').replace('*', '=').encode()
 	return base64.b64decode(input).decode()
 
 def nintendo_base64_encode(input):
 	return base64.b64encode(input.encode()).decode().replace('+', '.').replace('/', '-').replace('=', '*')
+
 
 class NASCError(Exception):
 	def __init__(self, status_code, form):
@@ -29,6 +33,7 @@ class NASCError(Exception):
 			return "NASC request failed: %s" %nintendo_base64_decode(self.form.get("returncd"))
 		else:
 			return "NASC request failed with status %i" %self.status_code
+
 
 class NASCLocator:
 	def __init__(self):
@@ -43,6 +48,7 @@ class NASCLocator:
 		inst.host = host
 		inst.port = port
 		return inst
+
 
 class NASCResponse:
 	def __init__(self):
@@ -61,6 +67,7 @@ class NASCResponse:
 		inst.token = form.get("token")
 		inst.datetime = nintendo_base64_decode(form.get("datetime"))
 		return inst
+
 
 class NASCClient:
 	def __init__(self):
