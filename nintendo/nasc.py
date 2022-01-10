@@ -147,29 +147,8 @@ class NASCClient:
 		req.headers["User-Agent"] = "CTR FPD/%s" %self.fpd_version
 		req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 
-		year = str(datetime.datetime.today().year)[2:4]
-		month = str(datetime.datetime.today().month)
-		day = str(datetime.datetime.today().day)
-		hour = str(datetime.datetime.today().hour)
-		minute = str(datetime.datetime.today().minute)
-		second = str(datetime.datetime.today().second)
-
-		if len(month) == 1:
-			month = "0" + month
-
-		if len(day) == 1:
-			day = "0" + day
-
-		if len(hour) == 1:
-			hour = "0" + hour
-
-		if len(minute) == 1:
-			minute = "0" + minute
-
-		if len(second) == 1:
-			second = "0" + second
-
-		device_time = year+month+day+hour+minute+second
+		now = datetime.datetime.now()
+		device_time = now.strftime("%y%m%d%H%M%S")
 
 		req.form = {
 			"gameid": nintendo_base64_encode("%08X" % game_server_id),
