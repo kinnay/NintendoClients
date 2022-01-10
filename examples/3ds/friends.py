@@ -1,7 +1,12 @@
+
 from nintendo import nasc
 from nintendo.nex import backend, friends_3ds, settings
 from nintendo.games import Friends3DS
 import anyio
+
+import logging
+logging.basicConfig(level=logging.INFO)
+
 
 SERIAL_NUMBER = "..." # Serial number on console minus the last digit
 MAC_ADDRESS = "..." # Console MAC address (see WiFi settings), all lowercase with no colons
@@ -15,6 +20,7 @@ PID_HMAC = "..." # Sniff console traffic or dump from friends title save (bytes 
 # can be used to dump the PID and password
 PID = 0
 NEX_PASSWORD = "..."
+
 
 async def main():
 	client = nasc.NASCClient()

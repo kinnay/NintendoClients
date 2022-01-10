@@ -1,3 +1,4 @@
+
 #===== 3DS Games =====#
 
 class Friends3DS:
@@ -12,6 +13,7 @@ class Friends3DS:
 	GAME_SERVER_ID = 0x3200
 	ACCESS_KEY = "ridfebb9"
 	NEX_VERSION = 20000
+
 
 #===== Wii U Games =====#
 
