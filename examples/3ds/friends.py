@@ -1,6 +1,6 @@
 
 from nintendo import nasc
-from nintendo.nex import backend, friends_3ds, settings
+from nintendo.nex import backend, friends, settings
 from nintendo.games import Friends3DS
 import anyio
 
@@ -34,7 +34,7 @@ async def main():
 	s.configure(Friends3DS.ACCESS_KEY, Friends3DS.NEX_VERSION)
 	async with backend.connect(s, nasc_data.locator.host, nasc_data.locator.port) as be:
 		async with be.login(str(PID), NEX_PASSWORD) as client:
-			friends_client = friends_3ds.FriendsClientV1(client)
+			friends_client = friends.FriendsClientV1(client)
 			await friends_client.update_comment("Hello World")
 
 anyio.run(main)

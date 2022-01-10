@@ -1,4 +1,105 @@
 
+// 3DS structures
+
+struct FriendMii {
+	uint32 unk1;
+	Mii mii;
+	datetime unk2;
+}
+
+struct FriendMiiList {
+	uint32 unk1;
+	MiiList mii;
+	datetime unk2;
+}
+
+struct FriendMiiRequest {
+	uint32 unk1;
+	datetime unk2;
+}
+
+struct FriendPersistentInfo {
+	pid pid;
+	uint8 region;
+	uint8 country;
+	uint8 area;
+	uint8 language;
+	uint8 platform;
+	GameKey game_key;
+	string message;
+	datetime message_updated;
+	datetime friended;
+	datetime unk;
+}
+
+struct FriendPicture {
+	uint32 unk;
+	buffer data;
+	datetime datetime;
+}
+
+struct FriendPresence {
+	uint32 unk;
+	NintendoPresence presence;
+}
+
+struct FriendRelationship {
+	uint32 unk1;
+	uint64 unk2;
+	uint8 unk3;
+}
+
+struct GameKey : Data {
+	uint64 title_id = 0;
+	uint16 title_version = 0;
+}
+
+struct Mii {
+	string unk1;
+	bool unk2;
+	uint8 unk3;
+	buffer mii_data;
+}
+
+struct MiiList {
+	string unk1;
+	bool unk2;
+	uint8 unk3;
+	list<buffer> mii_datas;
+}
+
+struct MyProfile {
+	uint8 region;
+	uint8 country;
+	uint8 area;
+	uint8 language;
+	uint8 platform;
+	uint64 unk1;
+	string unk2;
+	string unk3;
+}
+
+struct NintendoPresence {
+	uint32 changed_bit_flag;
+	GameKey game_key;
+	string game_mode_description;
+	uint32 join_availability_flag;
+	uint8 matchmake_system_type;
+	uint32 join_game_id;
+	uint32 join_game_mode;
+	pid owner_pid;
+	uint32 join_group_id;
+	buffer application_data;
+}
+
+struct PlayedGame {
+	GameKey game_key;
+	datetime datetime;
+}
+
+
+// Wii U structures
+
 struct BlacklistedPrincipal : Data {
 	PrincipalBasicInfo principal_info;
 	GameKey game_key;
@@ -36,11 +137,6 @@ struct FriendRequestMessage : Data {
 	GameKey game_key;
 	datetime datetime;
 	datetime expires;
-}
-
-struct GameKey : Data {
-	uint64 title_id = 0;
-	uint16 title_version = 0;
 }
 
 struct MiiV2 : Data {
@@ -106,6 +202,68 @@ struct PrincipalPreference : Data {
 struct PrincipalRequestBlockSetting : Data {
 	uint32 unk1;
 	bool unk2;
+}
+
+protocol Friends_V1 : 101 {
+	method update_profile(MyProfile profile_data) {}
+	method update_mii(Mii mii) {}
+	method update_mii_list(MiiList mii_list) {}
+	method update_played_games(list<PlayedGame> played_games) {}
+	method update_preference(bool unk1, bool unk2, bool unk3) {}
+	
+	method get_friend_mii(list<FriendMiiRequest> friends) {
+		list<FriendMii> miis;
+	}
+	method get_friend_mii_list(list<FriendMiiRequest> friends) {
+		list<FriendMiiList> mii_lists;
+	}
+	
+	method is_active_game;
+	method get_principal_id_by_local_friend_code;
+
+	method get_friend_relationships(list<uint32> unk) {
+		list<FriendRelationship> friend_relationships;
+	}
+
+	method add_friend_by_principal_id(uint64 unk, uint32 pid) {
+		FriendRelationship friend_relationship;
+	}
+	
+	method add_friend_by_principal_ids;
+	method remove_friend_by_local_friend_code;
+	method remove_friend_by_principal_id;
+
+	method get_all_friends() {
+		list<FriendRelationship> friend_relationships;
+	}
+	
+	method update_black_list;
+
+	method sync_friend(uint64 unk1, list<uint32> unk2, list<uint64> unk3) {
+		list<FriendRelationship> friend_list;
+	}
+
+	method update_presence(NintendoPresence presence_info, bool unk) {}
+	method update_favorite_game_key(GameKey game_key) {}
+	method update_comment(string comment) {}
+
+	method update_picture;
+
+	method get_friend_presence(list<uint32> unk) {
+		list<FriendPresence> friend_presence_list;
+	}
+	
+	method get_friend_comment;
+
+	method get_friend_picture(list<uint32> unk) {
+		list<FriendPicture> friend_pictures;
+	}
+
+	method get_friend_persistent_info(list<uint32> unk) {
+		list<FriendPersistentInfo> persistent_infos;
+	}
+
+	method send_invitation(list<uint32> unk) {}
 }
 
 protocol Friends_V2 : 102 {
