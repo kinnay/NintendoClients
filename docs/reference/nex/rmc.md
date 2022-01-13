@@ -15,7 +15,7 @@ Provides a client and server for the RMC protocol. An alternative client that ca
 <code>**async with serve**(settings: [Settings](settings.md#settings), servers: list[object], host: str = "", port: int = 0, vport: int = 1, context: [TLSContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscontext) = None, key: bytes = None) -> None</code><br>
 <span class="docs">Creates an RMC server based on PRUDP and binds it to the given address. If `host` is empty, the local address of the default interface is used. If `port` is 0, it is chosen by the operating system. If `context` is provided, and the underlying transport supports this, the server is secured with TLS. If `key` is provided it is used to decrypt the Kerberos tickets in connection requests. If `key` is `None`, the payload of connection requests is ignored and all client connections are accepted. `servers` must be a list of service implementations.</span>
 
-<code>**async with serve_prudp**(settings: [Settings](settings.md#settings), servers: list[object], transport: [PRUDPServerTransport](prudp.md#prudpservertransport), port: int, key: bytes = None) -> None</code><br>
+<code>**async with serve_on_transport**(settings: [Settings](settings.md#settings), servers: list[object], transport: [PRUDPServerTransport](prudp.md#prudpservertransport), port: int, key: bytes = None) -> None</code><br>
 <span class="docs">Creates an RMC server on top of the given transport server. If `key` is provided it is used to decrypt the Kerberos tickets in connection requests. If `key` is `None`, the payload of connection requests is ignored and all client connections are accepted. `servers` must be a list of service implementations.</span>
 
 ## RMCClient

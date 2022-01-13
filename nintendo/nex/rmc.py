@@ -292,9 +292,9 @@ async def serve(settings, servers, host="", port=0, vport=1, context=None, key=N
 	async with prudp.serve(handle, settings, host, port, vport, 10, context, key):
 		yield
 	logger.info("RMC server is closed")
-	
+
 @contextlib.asynccontextmanager
-async def serve_prudp(settings, servers, transport, port, key=None):
+async def serve_on_transport(settings, servers, transport, port, key=None):
 	async def handle(client):
 		host, port = client.remote_address()
 		logger.debug("New RMC connection: %s:%i", host, port)
@@ -307,3 +307,5 @@ async def serve_prudp(settings, servers, transport, port, key=None):
 	async with transport.serve(handle, port, 10, key):
 		yield
 	logger.info("RMC server is closed")
+
+serve_prudp = serve_on_transport
