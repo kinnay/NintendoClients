@@ -8,11 +8,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# These still work here
-# But should probably be changed out for the 3DS ones
 CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CA_G3.der")
-CERT = pkg_resources.resource_filename("nintendo", "files/cert/WIIU_COMMON_1_CERT.der")
-KEY = pkg_resources.resource_filename("nintendo", "files/cert/WIIU_COMMON_1_RSA_KEY.der")
+CERT = pkg_resources.resource_filename("nintendo", "files/cert/ctr-common-1-cert.der")
+KEY = pkg_resources.resource_filename("nintendo", "files/cert/ctr-common-1-key.der")
 
 
 def nintendo_base64_decode(input):
