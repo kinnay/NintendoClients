@@ -27,7 +27,7 @@ async def main():
 
 	client.set_device(SERIAL_NUMBER, MAC_ADDRESS, FCDCERT)
 	client.set_user(PID, PID_HMAC)
-	client.set_title(Friends3DS.TITLE_ID_USA, Friends3DS.LATEST_VERSION, Friends3DS.PRODUCT_CODE_USA)
+	client.set_title(Friends3DS.TITLE_ID_EUR, Friends3DS.LATEST_VERSION, Friends3DS.PRODUCT_CODE_EUR)
 	nasc_data = await client.get_nasc_data(Friends3DS.GAME_SERVER_ID)
 
 	s = settings.load("friends")
