@@ -173,7 +173,6 @@ class NASCClient:
 	async def request(self, req):
 		# Apply Nintendo's custom base64 encoding
 		req.form = encode_form(req.form)
-		print(req.encode().decode())
 		
 		# Must manually decode form here since server doesn't return correct content-type
 		response = await http.request(self.url, req, self.context)
