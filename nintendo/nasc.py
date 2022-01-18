@@ -63,7 +63,8 @@ class NASCError(Exception):
 
 class LoginResponse:
 	def __init__(self):
-		self.locator = None
+		self.host = None
+		self.port = None
 		self.token = None
 		self.datetime = None
 
@@ -74,7 +75,7 @@ class LoginResponse:
 		inst = cls()
 		inst.host = host
 		inst.port = int(port)
-		inst.token = form["token"]
+		inst.token = b64encode(form["token"])
 		inst.datetime = parse_date(form["datetime"].decode())
 		return inst
 
@@ -189,7 +190,7 @@ class NASCClient:
 			raise ValueError("Please configure the title (set_title)")
 		if self.serial_number is None:
 			raise ValueError("Please configure the device (set_device)")
-		if self.pid is None and self.passwd is None:
+		if self.pid is None and self.password is None:
 			raise ValueError("Please configure a user id or password (set_user / set_password)")
 		
 		req = http.HTTPRequest.post("/ac")
