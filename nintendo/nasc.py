@@ -13,12 +13,19 @@ CERT = pkg_resources.resource_filename("nintendo", "files/cert/ctr-common-1-cert
 KEY = pkg_resources.resource_filename("nintendo", "files/cert/ctr-common-1-key.der")
 
 
-def nintendo_base64_decode(input):
-	input = input.replace('.', '+').replace('-', '/').replace('*', '=').encode()
-	return base64.b64decode(input).decode()
+def b64decode(text):
+	text = text.replace(".", "+").replace("-", "/").replace("*", "=")
+	return base64.b64decode(text).decode()
 
-def nintendo_base64_encode(input):
-	return base64.b64encode(input.encode()).decode().replace('+', '.').replace('/', '-').replace('=', '*')
+def b64encode(text):
+	text = base64.b64encode(text).decode()
+	return text.replace("+", ".").replace("/", "-").replace("=", "*")
+
+def decode_form(form):
+	return {key: b64decode(value) for key, value in form.items()}
+
+def encode_form(form):
+	return {key: b64encode(value) for key, value in form.items()}
 
 
 class NASCError(Exception):
@@ -28,7 +35,7 @@ class NASCError(Exception):
 	
 	def __str__(self):
 		if "returncd" in self.form:
-			return "NASC request failed: %s" %nintendo_base64_decode(self.form.get("returncd"))
+			return "NASC request failed: %s" %self.form["returncd"]
 		else:
 			return "NASC request failed with status %i" %self.status_code
 
@@ -40,7 +47,7 @@ class NASCLocator:
 
 	@classmethod
 	def parse(cls, locator):
-		host, port = nintendo_base64_decode(locator).split(":")
+		host, port = locator.split(":")
 
 		inst = cls()
 		inst.host = host
@@ -60,10 +67,10 @@ class NASCResponse:
 	def parse(cls, form):
 		inst = cls()
 		inst.locator = NASCLocator.parse(form.get("locator"))
-		inst.retry = nintendo_base64_decode(form.get("retry"))
-		inst.return_code = nintendo_base64_decode(form.get("returncd"))
+		inst.retry = form.get("retry")
+		inst.return_code = form.get("returncd")
 		inst.token = form.get("token")
-		inst.datetime = nintendo_base64_decode(form.get("datetime"))
+		inst.datetime = form.get("datetime")
 		return inst
 
 
@@ -127,9 +134,13 @@ class NASCClient:
 		self.pid_hmac = pid_hmac
 
 	async def request(self, req):
+		# Apply Nintendo's custom base64 encoding
+		req.form = encode_form(req.form)
+		
+		# Must manually decode form here since server doesn't return correct content-type
 		response = await http.request(self.url, req, self.context)
-		response.form = http.formdecode(response.text) # Must manually decode here since server doesn't return correct content-type
-
+		response.form = decode_form(http.formdecode(response.text))
+		
 		if response.error():
 			raise NASCError(response.status_code, response.form)
 
@@ -149,28 +160,28 @@ class NASCClient:
 		device_time = now.strftime("%y%m%d%H%M%S")
 
 		req.form = {
-			"gameid": nintendo_base64_encode("%08X" % game_server_id),
-			"sdkver": nintendo_base64_encode(self.sdk_version),
-			"titleid": nintendo_base64_encode("%016X" % self.title_id),
-			"gamecd":  nintendo_base64_encode(self.title_product_code),
-			"gamever": nintendo_base64_encode("%04X" % self.title_version),
-			"mediatype": nintendo_base64_encode(self.media_type),
-			"makercd": nintendo_base64_encode(self.maker_cd),
-			"unitcd": nintendo_base64_encode(self.unit_cd),
-			"macadr": nintendo_base64_encode(self.mac_address),
-			"bssid": nintendo_base64_encode(self.bss_id),
-			"apinfo": nintendo_base64_encode(self.current_access_point_slot),
+			"gameid": "%08X" %game_server_id,
+			"sdkver": self.sdk_version,
+			"titleid": "%016X" % self.title_id,
+			"gamecd":  self.title_product_code,
+			"gamever": "%04X" % self.title_version,
+			"mediatype": self.media_type,
+			"makercd": self.maker_cd,
+			"unitcd": self.unit_cd,
+			"macadr": self.mac_address,
+			"bssid": self.bss_id,
+			"apinfo": self.current_access_point_slot,
 			"fcdcert": self.fcdcert,
-			"devname": nintendo_base64_encode(self.device_name),
-			"servertype": nintendo_base64_encode(self.environment),
-			"fpdver": nintendo_base64_encode(self.fpd_version),
-			"devtime": nintendo_base64_encode(device_time),
-			"lang": nintendo_base64_encode(self.language),
-			"region": nintendo_base64_encode(self.region),
-			"csnum": nintendo_base64_encode(self.serial_number),
-			"uidhmac": nintendo_base64_encode(self.pid_hmac),
-			"userid": nintendo_base64_encode("%i" % self.pid),
-			"action": nintendo_base64_encode("LOGIN"),
+			"devname": self.device_name,
+			"servertype": self.environment,
+			"fpdver": self.fpd_version,
+			"devtime": device_time,
+			"lang": self.language,
+			"region": self.region,
+			"csnum": self.serial_number,
+			"uidhmac": self.pid_hmac,
+			"userid": "%i" % self.pid,
+			"action": "LOGIN",
 			"ingamesn": ""
 		}
 
