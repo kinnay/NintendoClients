@@ -15,6 +15,7 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**class** [FriendsServerV2](#friendsserverv2)</code><br>
 <span class="docs">The server for the `FriendsProtocolV2`.</span>
 
+<code>**class** [AccountExtraInfo](#accountextrainfo)([Structure](common.md))</code><br>
 <code>**class** [BlacklistedPrincipal](#blacklistedprincipal)([Data](common.md))</code><br>
 <code>**class** [Comment](#comment)([Data](common.md))</code><br>
 <code>**class** [FriendInfo](#friendinfo)([Data](common.md))</code><br>
@@ -345,6 +346,17 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 
 <code>**async def get_request_block_settings**(client: [RMCClient](rmc.md#rmcclient), unk: list[int]) -> list[[PrincipalRequestBlockSetting](#principalrequestblocksetting)]</code><br>
 <span class="docs">Handler for method `20`. This method should be overridden by a subclass.</span>
+
+## AccountExtraInfo
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `AccountExtraInfo` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>unk1: int</code><br>
+<code>unk2: int</code><br>
+<code>token: str</code><br>
+</span><br>
 
 ## BlacklistedPrincipal
 <code>**def _\_init__**()</code><br>

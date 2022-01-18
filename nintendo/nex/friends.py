@@ -7,6 +7,30 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class AccountExtraInfo(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+		self.token = None
+	
+	def check_required(self, settings, version):
+		for field in ['unk1', 'unk2', 'token']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.unk1 = stream.u64()
+		self.unk2 = stream.u32()
+		self.token = stream.string()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u64(self.unk1)
+		stream.u32(self.unk2)
+		stream.string(self.token)
+
+
 class FriendMii(common.Structure):
 	def __init__(self):
 		super().__init__()

@@ -1,6 +1,12 @@
 
 // 3DS structures
 
+struct AccountExtraInfo {
+	uint64 unk1;
+	uint32 unk2;
+	string token;
+}
+
 struct FriendMii {
 	uint32 unk1;
 	Mii mii;
