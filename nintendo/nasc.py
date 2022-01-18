@@ -149,7 +149,7 @@ class NASCClient:
 
 		return response
 
-	async def get_nasc_data(self, game_server_id):
+	async def login(self, game_server_id):
 		req = http.HTTPRequest.post("/ac")
 		req.headers["Host"] = self.url
 		req.headers["X-GameId"] = "%08X" % game_server_id
