@@ -121,6 +121,11 @@ class NASCClient:
 		self.fpd_version = 15
 		self.environment = "L1"
 	
+	def set_context(self, context):
+		self.context = context
+	
+	def set_url(self, url): self.url = url
+	
 	def set_sdk_version(self, major_version, minor_version):
 		self.sdk_major_version = major_version
 		self.sdk_minor_version = minor_version
