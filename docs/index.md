@@ -10,14 +10,17 @@ This package lets you communicate with various Wii U and Switch servers. For doc
 ## Features
 This package is able to do everything that's required to access a game server. It also provides a framework to host your own game servers. For example scripts, check out the [github repository](https://github.com/kinnay/nintendo). The following servers are currently supported:
 
-* Wii U:
-	* Game servers (`nex`)
-	* `account.nintendo.net`<br><br>
 * Switch:
 	* Game servers (`nex`)
 	* `dauth-lp1.ndas.srv.nintendo.net`
 	* `aauth-lp1.ndas.srv.nintendo.net`
-	* `e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com`
+	* `e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com`<br><br>
+* Wii U:
+	* Game servers (`nex`)
+	* `account.nintendo.net`<br><br>
+* 3DS:
+	* Game servers (`nex`)
+	* `nasc.nintendowifi.net`
 
 ## Contributing
 Feel free to open a pull request or issue on [github](https://github.com/kinnay/nintendo). If you open a pull request, please try to follow the current code style as much as possible, and consider writing a test for new features and bug fixes.
@@ -67,6 +70,7 @@ Feel free to open a pull request or issue on [github](https://github.com/kinnay/
 * [dauth](reference/dauth.md)
 * [games](reference/games.md)
 * [miis](reference/miis.md)
+* [nasc](reference/nasc.md)
 * [nnas](reference/nnas.md)
 * [sead](reference/sead.md)
 * [switch](reference/switch.md)
