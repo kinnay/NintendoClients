@@ -172,10 +172,6 @@ class NASCClient:
 	def set_fpd_version(self, version): self.fpd_version = version
 	def set_environment(self, environment): self.environment = environment
 
-	def set_user(self, pid, pid_hmac):
-		self.pid = pid
-		self.pid_hmac = pid_hmac
-
 	async def request(self, req):
 		# Apply Nintendo's custom base64 encoding
 		req.form = encode_form(req.form)
