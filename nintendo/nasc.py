@@ -164,7 +164,7 @@ class NASCClient:
 	
 	def set_user(self, pid, pid_hmac):
 		self.pid = pid
-		self.pid_mac = pid_hac
+		self.pid_hmac = pid_hmac
 		self.password = None
 		
 	def set_password(self, password):
