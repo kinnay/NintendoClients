@@ -53,11 +53,14 @@ class NASCError(Exception):
 	def __init__(self, status_code, form):
 		self.status_code = status_code
 		
-		self.return_code = int(form["returncd"].decode())
+		returncd = form["returncd"].decode()
+		self.return_code = None if returncd == "null" else int(returncd)
 		self.retry = bool(int(form["retry"].decode()))
 		self.datetime = parse_date(form["datetime"].decode())
 	
 	def __str__(self):
+		if self.return_code is None:
+			return "NASC request failed with error code null"
 		return "NASC request failed with error code %i" %self.return_code
 
 
@@ -180,8 +183,8 @@ class NASCClient:
 		response = await http.request(self.url, req, self.context)
 		response.form = decode_form(http.formdecode(response.text))
 		
-		return_code = int(response.form["returncd"].decode())
-		if return_code != 1:
+		return_code = response.form["returncd"].decode()
+		if return_code == "null" or int(return_code) != 1:
 			raise NASCError(response.status_code, response.form)
 		
 		return response

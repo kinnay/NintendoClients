@@ -18,7 +18,7 @@ Provides a client for [nasc.nintendowifi.net](https://github.com/kinnay/nintendo
 This exception is raised when the server returns an error code.
 
 `status_code: int`<br>
-`return_code: int`<br>
+`return_code: int | None`<br>
 `retry: bool`<br>
 `datetime: datetime.datetime`
 
