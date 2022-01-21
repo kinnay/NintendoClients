@@ -38,7 +38,7 @@ This exception is raised when the server returns an error code.
 <code>**def set_title**(title_id: int, title_version: int, product_code: str = "----", maker_code: str = "00", media_type: int = MEDIA_TYPE_SYSTEM, rom_id: bytes = None) -> None</code><br>
 <span class="docs">Configures the current title. The `rom_id` is required only for cartridges. This is required for calls to `login`.</span>
 
-<code>**def set_device**(device_id: int, serial_number: str, system_version: int, cert: str = None) -> None</code><br>
+<code>**def set_device**(serial_number: str, mac_address: str, fcd_cert: bytes, name: str = "", unit_code: str = "2") -> None</code><br>
 <span class="docs">Configures the device. This is required for calls to `login`.</span>
 
 <code>**def set_network**(bss_id: str, ap_info: str) -> None</code><br>
