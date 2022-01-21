@@ -104,7 +104,7 @@ class NASCClient:
 		
 		self.serial_number = None
 		self.mac_address = None
-		self.device_cert = None
+		self.fcd_cert = None
 		self.device_name = ""
 		self.unit_code = "2"
 		
@@ -144,10 +144,10 @@ class NASCClient:
 		self.media_type = media_type
 		self.rom_id = rom_id
 	
-	def set_device(self, serial_number, mac_address, certificate, name="", unit_code="2"):
+	def set_device(self, serial_number, mac_address, fcd_cert, name="", unit_code="2"):
 		self.serial_number = serial_number
 		self.mac_address = mac_address
-		self.device_cert = certificate
+		self.fcd_cert = fcd_cert
 		self.device_name = name
 		self.unit_code = unit_code
 	
@@ -220,7 +220,7 @@ class NASCClient:
 		req.form["macadr"] = self.mac_address
 		req.form["bssid"] = self.bss_id
 		req.form["apinfo"] = self.ap_info
-		req.form["fcdcert"] = self.device_cert
+		req.form["fcdcert"] = self.fcd_cert
 		req.form["devname"] = self.device_name.encode("utf-16-le")
 		req.form["servertype"] = self.environment
 		req.form["fpdver"] = "%04X" %self.fpd_version
