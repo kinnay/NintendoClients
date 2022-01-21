@@ -59,7 +59,7 @@ This exception is raised when the server returns an error code.
 <code>**def set_fpd_version**(version: int) -> None</code><br>
 <span class="docs">Changes the content of the `fpdver` parameter and user agent. The default is `15`.</span>
 
-<code>**async def login**(game_server_id: int, ingamesn: str = "") -> [LoginResponse](#loginresponse)</code><br>
+<code>**async def login**(game_server_id: int, nickname: str = "") -> [LoginResponse](#loginresponse)</code><br>
 <span class="docs">Calls the `LOGIN` action on the server and returns the response or raises an exception.</span>
 
 ## LoginResponse

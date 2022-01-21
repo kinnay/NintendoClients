@@ -186,7 +186,7 @@ class NASCClient:
 		
 		return response
 
-	async def login(self, game_server_id, ingamesn=""):
+	async def login(self, game_server_id, nickname=""):
 		if self.title_id is None:
 			raise ValueError("Please configure the title (set_title)")
 		if self.serial_number is None:
@@ -234,7 +234,7 @@ class NASCClient:
 		else:
 			req.form["passwd"] = self.password
 		req.form["action"] = "LOGIN"
-		req.form["ingamesn"] = ingamesn
+		req.form["ingamesn"] = nickname
 		
 		response = await self.request(req)
 		return LoginResponse.parse(response.form)
