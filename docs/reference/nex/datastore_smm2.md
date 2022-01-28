@@ -86,6 +86,7 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 <code>**class** [RegisterUserParam](#registeruserparam)([Structure](common.md))</code><br>
 <code>**class** [RelationObjectReqGetInfo](#relationobjectreqgetinfo)([Structure](common.md))</code><br>
 <code>**class** [ReqGetInfoHeadersInfo](#reqgetinfoheadersinfo)([Structure](common.md))</code><br>
+<code>**class** [SearchCommentsInOrderParam](#searchcommentsinorderparam)([Structure](common.md))</code><br>
 <code>**class** [SearchCoursesBestTimeParam](#searchcoursesbesttimeparam)([Structure](common.md))</code><br>
 <code>**class** [SearchCoursesEndlessModeParam](#searchcoursesendlessmodeparam)([Structure](common.md))</code><br>
 <code>**class** [SearchCoursesEventParam](#searchcourseseventparam)([Structure](common.md))</code><br>
@@ -417,6 +418,14 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 
 <code>**async def search_courses_event**(param: [SearchCoursesEventParam](#searchcourseseventparam)) -> list[[EventCourseInfo](#eventcourseinfo)]</code><br>
 <span class="docs">Calls method `86` on the server.</span>
+
+<code>**async def search_comments_in_order**(param: [SearchCommentsInOrderParam](#searchcommentsinorderparam)) -> [RMCResponse](common.md)</code><br>
+<span class="docs">Calls method `94` on the server. The RMC response has the following attributes:<br>
+<span class="docs">
+<code>comments: list[[CommentInfo](#commentinfo)]</code><br>
+<code>result: bool</code><br>
+</span>
+</span>
 
 <code>**async def search_comments**(data_id: int) -> list[[CommentInfo](#commentinfo)]</code><br>
 <span class="docs">Calls method `95` on the server.</span>
@@ -769,6 +778,14 @@ Provides a client and server for the `DataStoreProtocolSMM2`. This page was gene
 
 <code>**async def search_courses_event**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCoursesEventParam](#searchcourseseventparam)) -> list[[EventCourseInfo](#eventcourseinfo)]</code><br>
 <span class="docs">Handler for method `86`. This method should be overridden by a subclass.</span>
+
+<code>**async def search_comments_in_order**(client: [RMCClient](rmc.md#rmcclient), param: [SearchCommentsInOrderParam](#searchcommentsinorderparam)) -> [RMCResponse](common.md)</code><br>
+<span class="docs">Handler for method `94`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
+<span class="docs">
+<code>comments: list[[CommentInfo](#commentinfo)]</code><br>
+<code>result: bool</code><br>
+</span>
+</span>
 
 <code>**async def search_comments**(client: [RMCClient](rmc.md#rmcclient), data_id: int) -> list[[CommentInfo](#commentinfo)]</code><br>
 <span class="docs">Handler for method `95`. This method should be overridden by a subclass.</span>
@@ -1812,6 +1829,16 @@ The following fields are defined in this class:<br>
 <span class="docs">
 <code>headers: list[[DataStoreKeyValue](#datastorekeyvalue)]</code><br>
 <code>expiration: int</code><br>
+</span><br>
+
+## SearchCommentsInOrderParam
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `SearchCommentsInOrderParam` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>data_id: int</code><br>
+<code>range: [ResultRange](common.md#resultrange) = [ResultRange](common.md#resultrange)()</code><br>
 </span><br>
 
 ## SearchCoursesBestTimeParam
