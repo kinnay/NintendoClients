@@ -1463,6 +1463,27 @@ class GetCoursesEventParam(common.Structure):
 		self.check_required(stream.settings, version)
 
 
+class SearchCommentsInOrderParam(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.data_id = None
+		self.range = common.ResultRange()
+	
+	def check_required(self, settings, version):
+		for field in ['data_id']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.data_id = stream.u64()
+		self.range = stream.extract(common.ResultRange)
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u64(self.data_id)
+		stream.add(self.range)
+
+
 class GetEventCourseGhostParam(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -2865,6 +2886,7 @@ class DataStoreProtocolSMM2:
 	METHOD_SEARCH_COURSES_BEST_TIME = 81
 	METHOD_GET_COURSES_EVENT = 85
 	METHOD_SEARCH_COURSES_EVENT = 86
+	METHOD_SEARCH_COMMENTS_IN_ORDER = 94
 	METHOD_SEARCH_COMMENTS = 95
 	METHOD_GET_DEATH_POSITIONS = 103
 	METHOD_GET_USER_OR_COURSE = 131
@@ -3920,6 +3942,23 @@ class DataStoreClientSMM2(DataStoreProtocolSMM2):
 		logger.info("DataStoreClientSMM2.search_courses_event -> done")
 		return courses
 	
+	async def search_comments_in_order(self, param):
+		logger.info("DataStoreClientSMM2.search_comments_in_order()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(param)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SEARCH_COMMENTS_IN_ORDER, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		obj = rmc.RMCResponse()
+		obj.comments = stream.list(CommentInfo)
+		obj.result = stream.bool()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("DataStoreClientSMM2.search_comments_in_order -> done")
+		return obj
+	
 	async def search_comments(self, data_id):
 		logger.info("DataStoreClientSMM2.search_comments()")
 		#--- request ---
@@ -4142,6 +4181,7 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			self.METHOD_SEARCH_COURSES_BEST_TIME: self.handle_search_courses_best_time,
 			self.METHOD_GET_COURSES_EVENT: self.handle_get_courses_event,
 			self.METHOD_SEARCH_COURSES_EVENT: self.handle_search_courses_event,
+			self.METHOD_SEARCH_COMMENTS_IN_ORDER: self.handle_search_comments_in_order,
 			self.METHOD_SEARCH_COMMENTS: self.handle_search_comments,
 			self.METHOD_GET_DEATH_POSITIONS: self.handle_get_death_positions,
 			self.METHOD_GET_USER_OR_COURSE: self.handle_get_user_or_course,
@@ -4936,6 +4976,21 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
 		output.list(response, output.add)
 	
+	async def handle_search_comments_in_order(self, client, input, output):
+		logger.info("DataStoreServerSMM2.search_comments_in_order()")
+		#--- request ---
+		param = input.extract(SearchCommentsInOrderParam)
+		response = await self.search_comments_in_order(client, param)
+		
+		#--- response ---
+		if not isinstance(response, rmc.RMCResponse):
+			raise RuntimeError("Expected RMCResponse, got %s" %response.__class__.__name__)
+		for field in ['comments', 'result']:
+			if not hasattr(response, field):
+				raise RuntimeError("Missing field in RMCResponse: %s" %field)
+		output.list(response.comments, output.add)
+		output.bool(response.result)
+	
 	async def handle_search_comments(self, client, input, output):
 		logger.info("DataStoreServerSMM2.search_comments()")
 		#--- request ---
@@ -5314,6 +5369,10 @@ class DataStoreServerSMM2(DataStoreProtocolSMM2):
 	
 	async def search_courses_event(self, *args):
 		logger.warning("DataStoreServerSMM2.search_courses_event not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def search_comments_in_order(self, *args):
+		logger.warning("DataStoreServerSMM2.search_comments_in_order not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def search_comments(self, *args):

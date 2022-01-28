@@ -126,6 +126,11 @@ struct GetCoursesParam {
 
 struct GetCoursesEventParam {}
 
+struct SearchCommentsInOrderParam {
+	uint64 data_id;
+	ResultRange range;
+}
+
 struct GetEventCourseGhostParam {
 	uint64 data_id;
 	uint32 time;
@@ -581,6 +586,11 @@ protocol DataStore_SMM2 : DataStore {
 	
 	method(86) search_courses_event(SearchCoursesEventParam param) {
 		list<EventCourseInfo> courses;
+	}
+
+	method(94) search_comments_in_order(SearchCommentsInOrderParam param) {
+		list<CommentInfo> comments;
+		bool result;
 	}
 	
 	method(95) search_comments(uint64 data_id) {
