@@ -37,6 +37,7 @@ SYSTEM_VERSION_DIGEST = {
 	1300: "CusHY#000d0000#r1xneESd4PiTRYIhVIl0bK1ST5L5BUmv_uGPLqc4PPo=",
 	1310: "CusHY#000d0100#plps6S3C43QHhkI2oNvYIFjNxQjTcLdUX2_biEI5w2w=",
 	1320: "CusHY#000d0200#JFVNVuG9x3V5tRshdD9FdJjgHOmzsrgXHocEPvW5eMM=",
+	1321: "CusHY#000d0201#V1i7M7oEhkDaH1lcGlHhGAnyHONMAnTAA6pGdZ7MFqc=",
 }
 
 USER_AGENT = {
@@ -62,6 +63,7 @@ USER_AGENT = {
 	1300: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 13.3.0.0)",
 	1310: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 13.4.0.0)",
 	1320: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 13.4.0.0)",
+	1321: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 13.4.0.0)",
 }
 
 KEY_GENERATION = {
@@ -87,6 +89,7 @@ KEY_GENERATION = {
 	1300: 13,
 	1310: 13,
 	1320: 13,
+	1321: 13,
 }
 
 API_VERSION = {
@@ -112,9 +115,10 @@ API_VERSION = {
 	1300: 7,
 	1310: 7,
 	1320: 7,
+	1321: 7,
 }
 
-LATEST_VERSION = 1320
+LATEST_VERSION = 1321
 
 
 class DAuthError(switch.NDASError): pass
