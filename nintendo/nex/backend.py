@@ -97,13 +97,16 @@ class BackEndClient:
 			response = await self.auth_proto.validate_and_request_ticket_with_custom_data(
 				username, auth_info
 			)
+			return LoginResult(
+				response.pid, response.ticket, bytes.fromhex(response.source_key),
+				response.connection_data.main_station
+			)
 		else:
 			response = await self.auth_proto.validate_and_request_ticket(username)
-			response.source_key = None
-		return LoginResult(
-			response.pid, response.ticket, response.source_key,
-			response.connection_data.main_station
-		)
+			return LoginResult(
+				response.pid, response.ticket, None,
+				response.connection_data.main_station
+			)
 		
 	async def login_with_param(self, username, auth_info):
 		param = authentication.ValidateAndRequestTicketParam()
