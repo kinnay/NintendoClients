@@ -106,7 +106,7 @@ A station url consists of an url scheme and a bunch of parameters. The following
 <code>**def is_global**() -> bool</code><br>
 <span class="docs">Returns `True` if the `type` field indicates that the station address is global (i.e. public and not behind a nat device).</span>
 
-<code>**def is_global**() -> [StationURL](#stationurl)</code><br>
+<code>**def copy**() -> [StationURL](#stationurl)</code><br>
 <span class="docs">Returns a copy of the station url.</span>
 
 <code style="color: blue">@classmethod</code><br>
