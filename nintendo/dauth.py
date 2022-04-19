@@ -38,6 +38,9 @@ SYSTEM_VERSION_DIGEST = {
 	1310: "CusHY#000d0100#plps6S3C43QHhkI2oNvYIFjNxQjTcLdUX2_biEI5w2w=",
 	1320: "CusHY#000d0200#JFVNVuG9x3V5tRshdD9FdJjgHOmzsrgXHocEPvW5eMM=",
 	1321: "CusHY#000d0201#V1i7M7oEhkDaH1lcGlHhGAnyHONMAnTAA6pGdZ7MFqc=",
+	1400: "CusHY#000e0000#35hWb15SBXTnbUfTMLBz9sCnfheuRGis0OTZqa7l8yw=",
+	1410: "CusHY#000e0100#ctIxSPR4jenzQNGc6y4zXIvzvF75ty53jN0T15Rjtmk=",
+	1411: "CusHY#000e0101#uTt4IVydkYqwYArOFR3BzOCmw0MkEeF_tZxHENYDh4E=",
 }
 
 USER_AGENT = {
@@ -64,6 +67,9 @@ USER_AGENT = {
 	1310: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 13.4.0.0)",
 	1320: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 13.4.0.0)",
 	1321: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 13.4.0.0)",
+	1400: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 14.3.0.0)",
+	1410: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 14.3.0.0)",
+	1411: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 14.3.0.0)",
 }
 
 KEY_GENERATION = {
@@ -90,6 +96,9 @@ KEY_GENERATION = {
 	1310: 13,
 	1320: 13,
 	1321: 13,
+	1400: 14,
+	1410: 14,
+	1411: 14,
 }
 
 API_VERSION = {
@@ -116,9 +125,12 @@ API_VERSION = {
 	1310: 7,
 	1320: 7,
 	1321: 7,
+	1400: 7,
+	1410: 7,
+	1411: 7,
 }
 
-LATEST_VERSION = 1321
+LATEST_VERSION = 1411
 
 
 class DAuthError(switch.NDASError): pass
@@ -126,6 +138,7 @@ class DAuthError(switch.NDASError): pass
 
 class DAuthClient:
 	SCSI = 0x146C8AC7B8A0DB52
+	ATUM = 0x3117B250CAB38F45
 	ESHOP = 0x41F4A6491028E3C4
 	BCAT = 0x67BF9945B45248C6
 	SATA = 0x6AC5A6873FE5F68C
@@ -229,7 +242,7 @@ class DAuthClient:
 	async def edge_token(self, client_id, vendor_id="akamai"):
 		challenge = await self.challenge()
 		
-		data = switch.b64decode(challenge["data"])\
+		data = switch.b64decode(challenge["data"])
 		
 		req = http.HTTPRequest.post("/v%i/edge_token" %self.api_version)
 		req.rawform = {
