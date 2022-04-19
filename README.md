@@ -1,9 +1,9 @@
 # Nintendo Clients
 Python package to communicate with Nintendo servers
 
-To import this into your code, run `pip install .` or place the `nintendo` folder somewhere Python can find it.
+This package can be installed with pip: `pip install nintendoclients`.
 
-You might need to adjust your scripts if you pull new commits from this package (it may receive backwards compatibility breaking changes at any time).
+You might need to adjust your scripts if you update the package (it may receive backwards compatibility breaking changes at any time).
 
 Keep in mind that Nintendo is still banning Switch devices. This package tries to mimic the behavior of a real Switch as closely as possible, but using it is at your own risk. If you want to avoid unnecessary requests, adjust the scripts to reuse the tokens: the dauth and aauth tokens are valid for 24 hours and the id token is valid for 3 hours.
 
