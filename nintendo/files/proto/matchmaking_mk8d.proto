@@ -1,0 +1,77 @@
+
+import matchmaking;
+
+struct SimpleSearchObject {
+	uint32 id;
+	pid owner;
+	list<uint32> attributes;
+	qbuffer metadata;
+	uint32 unk2;
+	string code;
+	SimpleSearchDateTimeAttribute datetime;
+	
+	nex 40000 {
+		revision 1 {
+			uint32 unk3;
+			datetime unk4;
+		}
+	}
+}
+
+struct SimpleSearchDateTimeAttribute {
+	uint32 unk1;
+	uint32 unk2;
+	uint32 unk3;
+	uint32 unk4;
+	datetime start;
+	datetime end;
+}
+
+struct SimpleSearchParam {
+	uint32 id = 0;
+	pid owner = 0;
+	list<SimpleSearchCondition> conditions = [];
+	string code = "";
+	ResultRange range;
+	datetime datetime = never;
+}
+
+struct SimpleSearchCondition {
+	uint32 value;
+	uint32 operator;
+}
+
+protocol MatchmakeExtension_MK8D : MatchmakeExtension {
+	method(54) create_simple_search_object(SimpleSearchObject object) {
+		uint32 id;
+	}
+	
+	method update_simple_search_object(uint32 id, SimpleSearchObject object) {}
+	method delete_simple_search_object(uint32 id) {}
+	
+	method search_simple_search_object(SimpleSearchParam param) {
+		list<SimpleSearchObject> objects;
+	}
+	
+	method search_simple_search_object_by_object_ids(list<uint32> ids) {
+		list<SimpleSearchObject> objects;
+	}
+	
+	method join_matchmake_session_with_extra_participants;
+	method custom_get_simple_playing_session;
+	
+	method create_competition(SimpleSearchObject competition) {
+		SimpleSearchObject competition;
+	}
+	
+	method delete_competition(uint32 id) {}
+	method register_favorite_competition(uint32 id) {}
+	method unregister_favorite_competition(uint32 id) {}
+	
+	method get_favorite_competition() {
+		list<SimpleSearchObject> competitions;
+	}
+	
+	method get_team_participants;
+	method find_community_by_owner;
+}

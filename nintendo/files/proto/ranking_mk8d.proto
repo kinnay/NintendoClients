@@ -1,0 +1,71 @@
+
+import ranking;
+
+struct CommonDataList {
+	list<qbuffer> data;
+}
+
+struct CompetitionRankingGetScoreParam {
+	uint32 id;
+	ResultRange range;
+}
+
+struct CompetitionRankingInfo {
+	uint32 unk1;
+	uint32 unk2;
+	list<uint32> unk3;
+}
+
+struct CompetitionRankingInfoGetParam {
+	uint8 unk;
+	ResultRange range;
+}
+
+struct CompetitionRankingScoreData {
+	uint32 unk1;
+	pid pid;
+	uint32 unk2;
+	datetime datetime;
+	uint8 unk3;
+	qbuffer metadata;
+}
+
+struct CompetitionRankingScoreInfo {
+	uint32 unk1;
+	list<CompetitionRankingScoreData> scores;
+	uint32 unk2;
+	list<uint32> unk3;
+}
+
+struct CompetitionRankingUploadScoreParam {
+	uint32 unk1;
+	uint32 unk2;
+	uint32 unk3;
+	uint32 unk4;
+	uint8 unk5;
+	uint32 unk6;
+	bool unk7;
+	qbuffer metadata;
+}
+
+protocol Ranking_MK8D : Ranking {
+	method(16) get_competition_ranking_score(CompetitionRankingGetScoreParam param) {
+		list<CompetitionRankingScoreInfo> info;
+	}
+	
+	method upload_competition_ranking_score(CompetitionRankingUploadScoreParam param) {
+		bool result;
+	}
+	
+	method get_competition_info(CompetitionRankingInfoGetParam param) {
+		list<CompetitionRankingInfo> info;
+	}
+	
+	method upload_score_pack;
+	method get_score_pack;
+	method execute_delete_score_job;
+	
+	method get_commmon_data_by_pid_list(list<pid> pids) {
+		CommonDataList list;
+	}
+}

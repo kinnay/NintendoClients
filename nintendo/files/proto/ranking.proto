@@ -75,8 +75,6 @@ struct RankingChangeAttributesParam {
 }
 
 protocol Ranking : 112 {
-	
-
 	method upload_score(RankingScoreData score_data, uint64 unique_id) {}
 	
 	method delete_score(uint32 category, uint64 unique_id) {}
