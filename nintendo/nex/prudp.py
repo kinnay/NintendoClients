@@ -1046,6 +1046,9 @@ class PRUDPClient:
 					if packet.type == TYPE_DATA:
 						data = self.payload_encoder.decode(packet)
 						await self.unreliable_packets.put(data)
+					elif packet.type == TYPE_DISCONNECT:
+						logger.info("Connection closed by other end point (forcefully)")
+						await self.abort()
 	
 	async def process_reliable(self, packet):
 		substream = packet.substream_id
