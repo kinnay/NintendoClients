@@ -19,5 +19,5 @@ setuptools.setup(
 	package_data = {
 		"nintendo": ["files/config/*", "files/cert/*"]
 	},
-	install_requires = ["anynet == 0.0.13"]
+	install_requires = ["anynet == 0.0.14"]
 )

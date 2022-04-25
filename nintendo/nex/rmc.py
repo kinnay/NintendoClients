@@ -138,29 +138,42 @@ class RMCClient:
 
 	async def __aenter__(self): return self
 	async def __aexit__(self, typ, val, tb):
-		for server in self.servers.values():
-			await server.logout(self)
+		await self.cleanup()
 	
 	def register_server(self, server):
 		if server.PROTOCOL_ID in self.servers:
 			raise ValueError("Server with protocol id %i already exists" %server.PROTOCOL_ID)
 		self.servers[server.PROTOCOL_ID] = server
 	
-	def cleanup(self):
-		self.closed = True
-		for event in self.requests.values():
-			event.set()
-		
+	async def cleanup(self):
+		if not self.closed:
+			self.closed = True
+			for event in self.requests.values():
+				event.set()
+			
+			for server in self.servers.values():
+				await server.logout(self)
+	
+	async def close(self):
+		if not self.closed:
+			await self.cleanup()
+			await self.client.close()
+	
+	async def disconnect(self):
+		if not self.closed:
+			await self.cleanup()
+			await self.client.disconnect()
+	
 	async def start(self, servers):
 		for server in servers:
 			self.register_server(server)
 		
-		while True:
+		while not self.closed:
 			try:
 				data = await self.client.recv()
 			except anyio.EndOfStream:
 				logger.info("Connection was closed")
-				self.cleanup()
+				await self.cleanup()
 				return
 			
 			message = RMCMessage.parse(self.settings, data)

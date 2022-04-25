@@ -56,6 +56,11 @@ OPTIONS = {
 	OPTION_CONNECTION_SIG_LITE: (16, "OPTION_CONNECTION_SIG_LITE", "16s")
 }
 
+STATE_CONNECTING = 0
+STATE_CONNECTED = 1
+STATE_DISCONNECTING = 2
+STATE_DISCONNECTED = 3
+
 
 def encode_options(options):
 	data = b""
@@ -756,15 +761,14 @@ class PRUDPClient:
 		
 		self.credentials = None
 		
-		self.connecting = False
-		self.syn_complete = False
-		self.closed = False
-		
 		self.handshake_event = anyio.Event()
+		self.close_event = anyio.Event()
+		
+		self.state = STATE_CONNECTING
 	
 	async def __aenter__(self): return self
 	async def __aexit__(self, typ, val, tb):
-		await self.abort()
+		await self.cleanup()
 		
 	def bind(self, addr, port, type):
 		self.local_addr = addr
@@ -805,7 +809,7 @@ class PRUDPClient:
 		await self.send_syn()
 		await self.handshake_event.wait()
 		
-		if self.closed:
+		if self.state != STATE_CONNECTED:
 			raise RuntimeError("PRUDP connection failed")
 		
 		self.ping_event = self.scheduler.repeat(self.send_ping, self.ping_timeout)
@@ -813,7 +817,7 @@ class PRUDPClient:
 	async def serve(self, group):
 		self.group = group
 		
-		self.syn_complete = True
+		self.state = STATE_CONNECTED
 		
 		self.sliding_windows[0].skip()
 		
@@ -823,6 +827,9 @@ class PRUDPClient:
 		self.ping_event = self.scheduler.repeat(self.send_ping, self.ping_timeout)
 	
 	async def send(self, data, substream=0):
+		if self.state != STATE_CONNECTED:
+			raise anyio.ClosedResourceError("PRUDP connection is closed")
+		
 		if not 0 <= substream <= self.max_substream_id:
 			raise ValueError("Substream id is invalid")
 		
@@ -842,6 +849,9 @@ class PRUDPClient:
 		await self.send_packet(packet)
 	
 	async def send_unreliable(self, data):
+		if self.state != STATE_CONNECTED:
+			raise anyio.ClosedResourceError("PRUDP connection is closed")
+		
 		packet = PRUDPPacket(TYPE_DATA, FLAG_NEED_ACK | FLAG_HAS_SIZE)
 		packet.payload = data
 		await self.send_packet(packet)
@@ -904,7 +914,7 @@ class PRUDPClient:
 		try:
 			await self.transport.send(packet, self.remote_addr)
 		except util.StreamError:
-			await self.abort()
+			await self.cleanup()
 			return
 		
 		if (packet.flags & FLAG_RELIABLE or packet.type == TYPE_SYN) and packet.flags & FLAG_NEED_ACK:
@@ -918,14 +928,14 @@ class PRUDPClient:
 			try:
 				await self.transport.send(packet, self.remote_addr)
 			except util.StreamError:
-				await self.abort()
+				await self.cleanup()
 				return
 			
 			handle = self.scheduler.schedule(self.resend_packet, self.resend_timeout, packet, counter + 1)
 			self.ack_events[key] = handle
 		else:
 			logger.error("Packet timed out: %s" %packet)
-			await self.abort()
+			await self.cleanup()
 	
 	def schedule_timeout(self, packet):
 		key = (packet.type, packet.substream_id, packet.packet_id)
@@ -962,22 +972,26 @@ class PRUDPClient:
 			raise ValueError("Expected empty connection response")
 		
 	async def handle(self, packet):
+		if self.state == STATE_DISCONNECTED: return
+		
+		if self.state == STATE_CONNECTING and packet.type != TYPE_SYN:
+			raise ValueError("Expected SYN packet")
+		
 		if packet.type == TYPE_SYN:
 			await self.process_syn(packet)
+		elif packet.type == TYPE_CONNECT:
+			await self.process_connect(packet)
 		else:
-			if not self.syn_complete:
-				raise ValueError("Expected SYN packet")
-			
-			if packet.type == TYPE_CONNECT:
-				await self.process_connect(packet)
-			else:
-				await self.process_other(packet)
+			await self.process_other(packet)
 		
 		if packet.flags & FLAG_ACK:
 			key = (packet.type, packet.substream_id, packet.packet_id)
 			if key in self.ack_events:
 				handle = self.ack_events.pop(key)
 				self.scheduler.remove(handle)
+				
+				if packet.type == TYPE_DISCONNECT:
+					await self.cleanup()
 	
 	async def process_syn(self, packet):
 		if packet.signature != self.packet_encoder.calc_packet_signature(packet, b"", b""):
@@ -994,7 +1008,7 @@ class PRUDPClient:
 		
 		key = (packet.type, packet.substream_id, packet.packet_id)
 		if key in self.ack_events:
-			self.syn_complete = True
+			self.state = STATE_CONNECTED
 			
 			self.max_substream_id = packet.max_substream_id
 			self.minor_ver = packet.minor_version
@@ -1048,7 +1062,7 @@ class PRUDPClient:
 						await self.unreliable_packets.put(data)
 					elif packet.type == TYPE_DISCONNECT:
 						logger.info("Connection closed by other end point (forcefully)")
-						await self.abort()
+						await self.cleanup()
 	
 	async def process_reliable(self, packet):
 		substream = packet.substream_id
@@ -1060,7 +1074,7 @@ class PRUDPClient:
 					self.fragment_buffers[substream] = b""
 			elif packet.type == TYPE_DISCONNECT:
 				logger.info("Connection closed by other end point")
-				await self.abort()
+				await self.cleanup()
 	
 	def is_new_aggregate_ack(self, packet):
 		if self.settings["prudp.transport"] == self.settings.TRANSPORT_UDP:
@@ -1104,21 +1118,39 @@ class PRUDPClient:
 			if key in self.ack_events:
 				self.scheduler.remove(self.ack_events.pop(key))
 				
-	async def abort(self):
-		self.closed = True
+	async def cleanup(self):
+		self.state = STATE_DISCONNECTED
 		self.scheduler.remove_all()
 		self.handshake_event.set()
+		self.close_event.set()
 		for queue in self.packets:
-			await queue.close()
-		await self.unreliable_packets.close()
+			await queue.eof()
+		await self.unreliable_packets.eof()
 	
 	async def close(self):
-		logger.debug("[%i] Closing PRUDP connection", self.local_session_id)
+		if self.state == STATE_DISCONNECTED: return
 		
-		packet = PRUDPPacket(TYPE_DISCONNECT, FLAG_RELIABLE | FLAG_NEED_ACK)
-		await self.send_packet(packet)
+		logger.debug("[%i] Closing PRUDP connection forcefully", self.local_session_id)
+		
+		packet = PRUDPPacket(TYPE_DISCONNECT, 0)
+		for i in range(3):
+			await self.send_packet(packet)
+		await self.cleanup()
+	
+	async def disconnect(self):
+		if self.state != STATE_CONNECTED: return
+		
+		try:
+			logger.debug("[%i] Closing PRUDP connection", self.local_session_id)
+			self.state = STATE_DISCONNECTING
+			
+			packet = PRUDPPacket(TYPE_DISCONNECT, FLAG_RELIABLE | FLAG_NEED_ACK)
+			await self.send_packet(packet)
+			await self.close_event.wait()
 
-		logger.debug("PRUDP connection is closed")
+			logger.debug("PRUDP connection is closed")
+		finally:
+			await self.cleanup()
 	
 	async def recv(self, substream=0):
 		return await self.packets[substream].get()
@@ -1181,12 +1213,13 @@ class PRUDPPortTable:
 
 
 class PRUDPServerStream:
-	def __init__(self, settings, transport, handler, key, group):
+	def __init__(self, settings, transport, handler, key, group, disconnect_timeout):
 		self.settings = settings
 		self.transport = transport
 		self.handler = handler
 		self.key = key
 		self.group = group
+		self.disconnect_timeout = disconnect_timeout
 		
 		self.packet_encoder = PRUDPMessageSelector(settings)
 		
@@ -1222,7 +1255,8 @@ class PRUDPServerStream:
 			async with client:
 				await client.serve(group)
 				await self.handler(client)
-				await client.close()
+				with anyio.move_on_after(self.disconnect_timeout):
+					await client.disconnect()
 	
 	async def handle(self, packet, addr):
 		if packet.type == TYPE_SYN and not packet.flags & FLAG_ACK:
@@ -1343,7 +1377,7 @@ class PRUDPClientTransport:
 		self.packet_encoder = PRUDPMessageSelector(settings).select(settings["prudp.version"])
 	
 	@contextlib.asynccontextmanager
-	async def connect(self, port, type=10, credentials=None):
+	async def connect(self, port, type=10, credentials=None, *, disconnect_timeout=None):
 		client = PRUDPClient(self.settings, self, self.settings["prudp.version"])
 		with self.ports.bind(client, type=type) as local_port:
 			client.bind(self.socket.local_address(), local_port, type)
@@ -1353,7 +1387,8 @@ class PRUDPClientTransport:
 				async with client:
 					await client.handshake(credentials, group)
 					yield client
-					await client.close()
+					with anyio.move_on_after(disconnect_timeout):
+						await client.disconnect()
 	
 	def start(self):
 		self.group.start_soon(self.process)
@@ -1394,9 +1429,9 @@ class PRUDPServerTransport:
 		self.packet_encoder = PRUDPMessageSelector(settings)
 	
 	@contextlib.asynccontextmanager
-	async def serve(self, handler, port, type=10, key=None):
+	async def serve(self, handler, port, type=10, key=None, *, disconnect_timeout=None):
 		async with util.create_task_group() as group:
-			stream = PRUDPServerStream(self.settings, self, handler, key, group)
+			stream = PRUDPServerStream(self.settings, self, handler, key, group, disconnect_timeout)
 			with self.ports.bind(stream, port, type) as port:
 				stream.bind(self.local_address(), port, type)
 				yield
@@ -1478,13 +1513,13 @@ def connect_transport_socket(settings, host, port, context):
 		return udp.connect(host, port)
 	elif transport == settings.TRANSPORT_TCP:
 		return tls.connect(host, port, context)
-	return websocket.connect("%s:%i" %(host, port), context, protocols=["NEX"])
+	return websocket.connect("%s:%i" %(host, port), context, protocols=["NEX"], disconnect_timeout=0)
 
 def serve_transport_socket(handler, settings, host, port, context):
 	transport = settings["prudp.transport"]
 	if transport == settings.TRANSPORT_TCP:
 		return tls.serve(handler, host, port, context)
-	return websocket.serve(handler, host, port, context, protocol="NEX")
+	return websocket.serve(handler, host, port, context, protocol="NEX", disconnect_timeout=0)
 
 @contextlib.asynccontextmanager
 async def connect_transport(settings, host, port, context=None):
@@ -1511,13 +1546,13 @@ async def serve_transport(settings, host="", port=0, context=None):
 			yield transport
 
 @contextlib.asynccontextmanager
-async def connect(settings, host, port, vport=1, type=10, context=None, credentials=None):
+async def connect(settings, host, port, vport=1, type=10, context=None, credentials=None, *, disconnect_timeout=None):
 	async with connect_transport(settings, host, port, context) as transport:
-		async with transport.connect(vport, type, credentials) as client:
+		async with transport.connect(vport, type, credentials, disconnect_timeout=disconnect_timeout) as client:
 			yield client
 
 @contextlib.asynccontextmanager
-async def serve(handler, settings, host="", port=0, vport=1, type=10, context=None, key=None):
+async def serve(handler, settings, host="", port=0, vport=1, type=10, context=None, key=None, *, disconnect_timeout=None):
 	async with serve_transport(settings, host, port, context) as transport:
-		async with transport.serve(handler, vport, type, key):
+		async with transport.serve(handler, vport, type, key, disconnect_timeout=disconnect_timeout):
 			yield

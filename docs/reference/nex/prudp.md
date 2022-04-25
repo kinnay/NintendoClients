@@ -31,6 +31,12 @@ Provides a client and server for PRUDP. Originally, PRUDP implemented reliable a
 <code>**async def recv_unreliable**() -> bytes</code><br>
 <span class="docs">Receives an unreliable data packet from the server. Blocks if no unreliable data is available.</span>
 
+<code>**async def close**() -> None</code><br>
+<span class="docs">Closes the connection forcefully by sending an unreliable disconnect packet three times.</span>
+
+<code>**async def disconnect**() -> None</code><br>
+<span class="docs">Closes the connection gracefully by sending a reliable disconnect packet.</span>
+
 <code>**def pid**() -> int</code><br>
 <span class="docs">Returns the user id of the connected client. Returns `None` if the client is connected without credentials.</span>
 

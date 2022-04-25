@@ -526,9 +526,9 @@ class LanServer:
 async def browse(settings, search_criteria, key=None, timeout=1, max=0):
 	challenge_key = secrets.token_bytes(16)
 	challenge_data = secrets.token_bytes(256)
-	async with udp.bind() as sock:
+	async with udp.bind(broadcast=True) as sock:
 		request = make_browse_request(settings, search_criteria, key, challenge_key, challenge_data)
-		await sock.broadcast(request, 30000)
+		await sock.send(request, (util.broadcast_address(), 30000))
 		
 		sessions = []
 		ids = []
