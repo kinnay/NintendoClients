@@ -41,6 +41,7 @@ SYSTEM_VERSION_DIGEST = {
 	1400: "CusHY#000e0000#35hWb15SBXTnbUfTMLBz9sCnfheuRGis0OTZqa7l8yw=",
 	1410: "CusHY#000e0100#ctIxSPR4jenzQNGc6y4zXIvzvF75ty53jN0T15Rjtmk=",
 	1411: "CusHY#000e0101#uTt4IVydkYqwYArOFR3BzOCmw0MkEeF_tZxHENYDh4E=",
+	1412: "CusHY#000e0102#jHk6_VwXVPPl3ijRZ5jRy5MIAcUW_Q2uFdfJ0vrjhCA=",
 }
 
 USER_AGENT = {
@@ -70,6 +71,7 @@ USER_AGENT = {
 	1400: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 14.3.0.0)",
 	1410: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 14.3.0.0)",
 	1411: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 14.3.0.0)",
+	1412: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 14.3.0.0)",
 }
 
 KEY_GENERATION = {
@@ -99,6 +101,7 @@ KEY_GENERATION = {
 	1400: 14,
 	1410: 14,
 	1411: 14,
+	1412: 14,
 }
 
 API_VERSION = {
@@ -128,9 +131,10 @@ API_VERSION = {
 	1400: 7,
 	1410: 7,
 	1411: 7,
+	1412: 7,
 }
 
-LATEST_VERSION = 1411
+LATEST_VERSION = 1412
 
 
 class DAuthError(switch.NDASError): pass
@@ -218,7 +222,7 @@ class DAuthClient:
 		
 		response = await self.request(req)
 		return response.json
-		
+	
 	async def device_token(self, client_id):
 		challenge = await self.challenge()
 		

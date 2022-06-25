@@ -59,9 +59,10 @@ USER_AGENT = {
 	1400: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 14.3.0.0; Add-on 14.3.0.0)",
 	1410: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 14.3.0.0; Add-on 14.3.0.0)",
 	1411: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 14.3.0.0; Add-on 14.3.0.0)",
+	1412: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 14.3.0.0; Add-on 14.3.0.0)",
 }
 
-LATEST_VERSION = 1411
+LATEST_VERSION = 1412
 
 
 class AAuthError(switch.NDASError): pass
