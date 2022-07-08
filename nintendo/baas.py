@@ -1,5 +1,7 @@
 
 from anynet import tls, http
+from enum import Enum
+import json
 
 import logging
 logger = logging.getLogger(__name__)
@@ -47,6 +49,28 @@ class BAASError(Exception):
 		self.instance = error["instance"]
 		self.type = error["type"]
 
+class PresenceState(Enum):
+	INACTIVE = "INACTIVE"
+	ONLINE = "ONLINE"
+	PLAYING = "PLAYING"
+
+class PresenceOperation:
+	def __init__(self, op : str, path : str, value : str):
+
+		if op not in ['add', 'replace']:
+			raise ValueError("Operation must be 'add' or 'replace'")
+
+		self.op = op
+		self.path = path
+		self.value = value
+	
+	def encode(self) -> dict:
+		return {
+			"op": self.op,
+			"path": self.path,
+			"value": self.value
+		}
+		
 
 class BAASClient:
 	def __init__(self):
@@ -113,4 +137,20 @@ class BAASClient:
 		req = http.HTTPRequest.post("/1.0.0/users")
 		
 		response = await self.request(req, access_token, False)
+		return response.json
+
+	async def set_presence(self, baas_id : int, user_id : int, baasLoginAccessToken, state : PresenceState, title_id : int):
+		# Respect header ordering.
+		req = http.HTTPRequest.patch("/1.0.0/users/%016x/device_accounts/%016x" % (user_id, baas_id))
+		req.headers["Content-Type"] = "application/json-patch+json"
+
+		op_pres_state = PresenceOperation("replace", "/presence/state", state.name).encode()
+		op_app_field = PresenceOperation("add", "/presence/extras/friends/appField", "{}").encode()
+		op_app_id = PresenceOperation("add", "/presence/extras/friends/appInfo:appId", "%016x" % title_id).encode()
+		op_group_id = PresenceOperation("add", "/presence/extras/friends/appInfo:presenceGroupId", "%016x" % title_id).encode()
+
+		list_ops = [op_pres_state, op_app_field, op_app_id, op_group_id]
+		req.body = bytes(json.dumps(list_ops), encoding="ascii")
+
+		response = await self.request(req, baasLoginAccessToken, False)
 		return response.json
