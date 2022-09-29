@@ -45,6 +45,7 @@ def parse_date(text):
 #	001: success
 #   109: missing or malformed parameter in request
 #   110: game server is no longer available
+#   119: fpd version is outdated
 #   121: device certificate is invalid
 #   122: uid hmac is invalid
 #   125: game id is invalid
@@ -121,7 +122,7 @@ class NASCClient:
 		self.pid_hmac = None
 		self.password = None
 		
-		self.fpd_version = 15
+		self.fpd_version = 16
 		self.environment = "L1"
 	
 	def set_context(self, context):
