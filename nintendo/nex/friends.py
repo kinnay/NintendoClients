@@ -984,6 +984,19 @@ class FriendsClientV1(FriendsProtocolV1):
 		logger.info("FriendsClientV1.add_friend_by_principal_id -> done")
 		return friend_relationship
 	
+	async def remove_friend_by_principal_id(self, pid):
+		logger.info("FriendsClientV1.remove_friend_by_principal_id()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u32(pid)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_REMOVE_FRIEND_BY_PRINCIPAL_ID, stream.get())
+
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("FriendsClientV1.remove_friend_by_principal_id -> done")
+	
 	async def get_all_friends(self):
 		logger.info("FriendsClientV1.get_all_friends()")
 		#--- request ---
@@ -1561,8 +1574,10 @@ class FriendsServerV1(FriendsProtocolV1):
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_remove_friend_by_principal_id(self, client, input, output):
-		logger.warning("FriendsServerV1.remove_friend_by_principal_id is not supported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("FriendsServerV1.remove_friend_by_principal_id()")
+		#--- request ---
+		pid = input.u32()
+		response = await self.remove_friend_by_principal_id(client, pid)
 	
 	async def handle_get_all_friends(self, client, input, output):
 		logger.info("FriendsServerV1.get_all_friends()")
@@ -1691,6 +1706,10 @@ class FriendsServerV1(FriendsProtocolV1):
 	
 	async def add_friend_by_principal_id(self, *args):
 		logger.warning("FriendsServerV1.add_friend_by_principal_id not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def remove_friend_by_principal_id(self, *args):
+		logger.warning("FriendsServerV1.remove_friend_by_principal_id not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_all_friends(self, *args):
