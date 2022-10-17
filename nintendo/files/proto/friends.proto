@@ -7,24 +7,30 @@ struct AccountExtraInfo {
 	string token;
 }
 
-struct FriendMii {
+struct FriendComment : Data {
+	uint32 unk1;
+	string comment;
+	datetime unk2;
+}
+
+struct FriendKey {
+	uint32 unk1;
+	datetime unk2;
+}
+
+struct FriendMii : Data {
 	uint32 unk1;
 	Mii mii;
 	datetime unk2;
 }
 
-struct FriendMiiList {
+struct FriendMiiList : Data {
 	uint32 unk1;
 	MiiList mii;
 	datetime unk2;
 }
 
-struct FriendMiiRequest {
-	uint32 unk1;
-	datetime unk2;
-}
-
-struct FriendPersistentInfo {
+struct FriendPersistentInfo : Data {
 	pid pid;
 	uint8 region;
 	uint8 country;
@@ -38,18 +44,18 @@ struct FriendPersistentInfo {
 	datetime unk;
 }
 
-struct FriendPicture {
+struct FriendPicture : Data {
 	uint32 unk;
 	buffer data;
 	datetime datetime;
 }
 
-struct FriendPresence {
+struct FriendPresence : Data {
 	uint32 unk;
 	NintendoPresence presence;
 }
 
-struct FriendRelationship {
+struct FriendRelationship : Data {
 	uint32 unk1;
 	uint64 unk2;
 	uint8 unk3;
@@ -60,21 +66,21 @@ struct GameKey : Data {
 	uint16 title_version = 0;
 }
 
-struct Mii {
+struct Mii : Data {
 	string unk1;
 	bool unk2;
 	uint8 unk3;
 	buffer mii_data;
 }
 
-struct MiiList {
+struct MiiList : Data {
 	string unk1;
 	bool unk2;
 	uint8 unk3;
 	list<buffer> mii_datas;
 }
 
-struct MyProfile {
+struct MyProfile : Data {
 	uint8 region;
 	uint8 country;
 	uint8 area;
@@ -85,7 +91,7 @@ struct MyProfile {
 	string unk3;
 }
 
-struct NintendoPresence {
+struct NintendoPresence : Data {
 	uint32 changed_bit_flag;
 	GameKey game_key;
 	string game_mode_description;
@@ -98,7 +104,7 @@ struct NintendoPresence {
 	buffer application_data;
 }
 
-struct PlayedGame {
+struct PlayedGame : Data {
 	GameKey game_key;
 	datetime datetime;
 }
@@ -217,33 +223,41 @@ protocol Friends_V1 : 101 {
 	method update_played_games(list<PlayedGame> played_games) {}
 	method update_preference(bool unk1, bool unk2, bool unk3) {}
 	
-	method get_friend_mii(list<FriendMiiRequest> friends) {
+	method get_friend_mii(list<FriendKey> friends) {
 		list<FriendMii> miis;
 	}
-	method get_friend_mii_list(list<FriendMiiRequest> friends) {
+	method get_friend_mii_list(list<FriendKey> friends) {
 		list<FriendMiiList> mii_lists;
 	}
 	
-	method is_active_game;
-	method get_principal_id_by_local_friend_code;
+	method is_active_game(list<uint32> unk1, GameKey game_key) {
+		list<uint32> unk;
+	}
+	
+	method get_principal_id_by_local_friend_code(uint64 unk1, list<uint64> unk2) {
+		list<FriendRelationship> friend_relationships;
+	}
 
 	method get_friend_relationships(list<uint32> unk) {
 		list<FriendRelationship> friend_relationships;
 	}
 
-	method add_friend_by_principal_id(uint64 unk, uint32 pid) {
+	method add_friend_by_principal_id(uint64 unk, pid pid) {
 		FriendRelationship friend_relationship;
 	}
 	
-	method add_friend_by_principal_ids;
-	method remove_friend_by_local_friend_code;
-	method remove_friend_by_principal_id;
+	method add_friend_by_principal_ids(uint64 unk, list<pid> pids) {
+		list<FriendRelationship> friend_relationships;
+	}
+	
+	method remove_friend_by_local_friend_code(uint64 friend_code) {}
+	method remove_friend_by_principal_id(pid pid) {}
 
 	method get_all_friends() {
 		list<FriendRelationship> friend_relationships;
 	}
 	
-	method update_black_list;
+	method update_black_list(list<uint32> unk) {}
 
 	method sync_friend(uint64 unk1, list<uint32> unk2, list<uint64> unk3) {
 		list<FriendRelationship> friend_list;
@@ -252,14 +266,15 @@ protocol Friends_V1 : 101 {
 	method update_presence(NintendoPresence presence_info, bool unk) {}
 	method update_favorite_game_key(GameKey game_key) {}
 	method update_comment(string comment) {}
-
-	method update_picture;
+	method update_picture(uint32 unk, buffer picture) {}
 
 	method get_friend_presence(list<uint32> unk) {
 		list<FriendPresence> friend_presence_list;
 	}
 	
-	method get_friend_comment;
+	method get_friend_comment(list<FriendKey> friends) {
+		list<FriendComment> comments;
+	}
 
 	method get_friend_picture(list<uint32> unk) {
 		list<FriendPicture> friend_pictures;

@@ -31,7 +31,53 @@ class AccountExtraInfo(common.Structure):
 		stream.string(self.token)
 
 
-class FriendMii(common.Structure):
+class FriendComment(common.Data):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.comment = None
+		self.unk2 = None
+	
+	def check_required(self, settings, version):
+		for field in ['unk1', 'comment', 'unk2']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.unk1 = stream.u32()
+		self.comment = stream.string()
+		self.unk2 = stream.datetime()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u32(self.unk1)
+		stream.string(self.comment)
+		stream.datetime(self.unk2)
+common.DataHolder.register(FriendComment, "FriendComment")
+
+
+class FriendKey(common.Structure):
+	def __init__(self):
+		super().__init__()
+		self.unk1 = None
+		self.unk2 = None
+	
+	def check_required(self, settings, version):
+		for field in ['unk1', 'unk2']:
+			if getattr(self, field) is None:
+				raise ValueError("No value assigned to required field: %s" %field)
+	
+	def load(self, stream, version):
+		self.unk1 = stream.u32()
+		self.unk2 = stream.datetime()
+	
+	def save(self, stream, version):
+		self.check_required(stream.settings, version)
+		stream.u32(self.unk1)
+		stream.datetime(self.unk2)
+
+
+class FriendMii(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.unk1 = None
@@ -53,9 +99,10 @@ class FriendMii(common.Structure):
 		stream.u32(self.unk1)
 		stream.add(self.mii)
 		stream.datetime(self.unk2)
+common.DataHolder.register(FriendMii, "FriendMii")
 
 
-class FriendMiiList(common.Structure):
+class FriendMiiList(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.unk1 = None
@@ -77,30 +124,10 @@ class FriendMiiList(common.Structure):
 		stream.u32(self.unk1)
 		stream.add(self.mii)
 		stream.datetime(self.unk2)
+common.DataHolder.register(FriendMiiList, "FriendMiiList")
 
 
-class FriendMiiRequest(common.Structure):
-	def __init__(self):
-		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
-	
-	def check_required(self, settings, version):
-		for field in ['unk1', 'unk2']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
-	
-	def load(self, stream, version):
-		self.unk1 = stream.u32()
-		self.unk2 = stream.datetime()
-	
-	def save(self, stream, version):
-		self.check_required(stream.settings, version)
-		stream.u32(self.unk1)
-		stream.datetime(self.unk2)
-
-
-class FriendPersistentInfo(common.Structure):
+class FriendPersistentInfo(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.pid = None
@@ -146,9 +173,10 @@ class FriendPersistentInfo(common.Structure):
 		stream.datetime(self.message_updated)
 		stream.datetime(self.friended)
 		stream.datetime(self.unk)
+common.DataHolder.register(FriendPersistentInfo, "FriendPersistentInfo")
 
 
-class FriendPicture(common.Structure):
+class FriendPicture(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.unk = None
@@ -170,9 +198,10 @@ class FriendPicture(common.Structure):
 		stream.u32(self.unk)
 		stream.buffer(self.data)
 		stream.datetime(self.datetime)
+common.DataHolder.register(FriendPicture, "FriendPicture")
 
 
-class FriendPresence(common.Structure):
+class FriendPresence(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.unk = None
@@ -191,9 +220,10 @@ class FriendPresence(common.Structure):
 		self.check_required(stream.settings, version)
 		stream.u32(self.unk)
 		stream.add(self.presence)
+common.DataHolder.register(FriendPresence, "FriendPresence")
 
 
-class FriendRelationship(common.Structure):
+class FriendRelationship(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.unk1 = None
@@ -215,6 +245,7 @@ class FriendRelationship(common.Structure):
 		stream.u32(self.unk1)
 		stream.u64(self.unk2)
 		stream.u8(self.unk3)
+common.DataHolder.register(FriendRelationship, "FriendRelationship")
 
 
 class GameKey(common.Data):
@@ -237,7 +268,7 @@ class GameKey(common.Data):
 common.DataHolder.register(GameKey, "GameKey")
 
 
-class Mii(common.Structure):
+class Mii(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.unk1 = None
@@ -262,9 +293,10 @@ class Mii(common.Structure):
 		stream.bool(self.unk2)
 		stream.u8(self.unk3)
 		stream.buffer(self.mii_data)
+common.DataHolder.register(Mii, "Mii")
 
 
-class MiiList(common.Structure):
+class MiiList(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.unk1 = None
@@ -289,9 +321,10 @@ class MiiList(common.Structure):
 		stream.bool(self.unk2)
 		stream.u8(self.unk3)
 		stream.list(self.mii_datas, stream.buffer)
+common.DataHolder.register(MiiList, "MiiList")
 
 
-class MyProfile(common.Structure):
+class MyProfile(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.region = None
@@ -328,9 +361,10 @@ class MyProfile(common.Structure):
 		stream.u64(self.unk1)
 		stream.string(self.unk2)
 		stream.string(self.unk3)
+common.DataHolder.register(MyProfile, "MyProfile")
 
 
-class NintendoPresence(common.Structure):
+class NintendoPresence(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.changed_bit_flag = None
@@ -373,9 +407,10 @@ class NintendoPresence(common.Structure):
 		stream.pid(self.owner_pid)
 		stream.u32(self.join_group_id)
 		stream.buffer(self.application_data)
+common.DataHolder.register(NintendoPresence, "NintendoPresence")
 
 
-class PlayedGame(common.Structure):
+class PlayedGame(common.Data):
 	def __init__(self):
 		super().__init__()
 		self.game_key = GameKey()
@@ -394,6 +429,7 @@ class PlayedGame(common.Structure):
 		self.check_required(stream.settings, version)
 		stream.add(self.game_key)
 		stream.datetime(self.datetime)
+common.DataHolder.register(PlayedGame, "PlayedGame")
 
 
 class BlacklistedPrincipal(common.Data):
@@ -953,6 +989,38 @@ class FriendsClientV1(FriendsProtocolV1):
 		logger.info("FriendsClientV1.get_friend_mii_list -> done")
 		return mii_lists
 	
+	async def is_active_game(self, unk1, game_key):
+		logger.info("FriendsClientV1.is_active_game()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(unk1, stream.u32)
+		stream.add(game_key)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_IS_ACTIVE_GAME, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		unk = stream.list(stream.u32)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("FriendsClientV1.is_active_game -> done")
+		return unk
+	
+	async def get_principal_id_by_local_friend_code(self, unk1, unk2):
+		logger.info("FriendsClientV1.get_principal_id_by_local_friend_code()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u64(unk1)
+		stream.list(unk2, stream.u64)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_PRINCIPAL_ID_BY_LOCAL_FRIEND_CODE, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		friend_relationships = stream.list(FriendRelationship)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("FriendsClientV1.get_principal_id_by_local_friend_code -> done")
+		return friend_relationships
+	
 	async def get_friend_relationships(self, unk):
 		logger.info("FriendsClientV1.get_friend_relationships()")
 		#--- request ---
@@ -973,7 +1041,7 @@ class FriendsClientV1(FriendsProtocolV1):
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.u64(unk)
-		stream.u32(pid)
+		stream.pid(pid)
 		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_ADD_FRIEND_BY_PRINCIPAL_ID, stream.get())
 		
 		#--- response ---
@@ -983,6 +1051,48 @@ class FriendsClientV1(FriendsProtocolV1):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("FriendsClientV1.add_friend_by_principal_id -> done")
 		return friend_relationship
+	
+	async def add_friend_by_principal_ids(self, unk, pids):
+		logger.info("FriendsClientV1.add_friend_by_principal_ids()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u64(unk)
+		stream.list(pids, stream.pid)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_ADD_FRIEND_BY_PRINCIPAL_IDS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		friend_relationships = stream.list(FriendRelationship)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("FriendsClientV1.add_friend_by_principal_ids -> done")
+		return friend_relationships
+	
+	async def remove_friend_by_local_friend_code(self, friend_code):
+		logger.info("FriendsClientV1.remove_friend_by_local_friend_code()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u64(friend_code)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_REMOVE_FRIEND_BY_LOCAL_FRIEND_CODE, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("FriendsClientV1.remove_friend_by_local_friend_code -> done")
+	
+	async def remove_friend_by_principal_id(self, pid):
+		logger.info("FriendsClientV1.remove_friend_by_principal_id()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.pid(pid)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_REMOVE_FRIEND_BY_PRINCIPAL_ID, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("FriendsClientV1.remove_friend_by_principal_id -> done")
 	
 	async def get_all_friends(self):
 		logger.info("FriendsClientV1.get_all_friends()")
@@ -997,6 +1107,19 @@ class FriendsClientV1(FriendsProtocolV1):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("FriendsClientV1.get_all_friends -> done")
 		return friend_relationships
+	
+	async def update_black_list(self, unk):
+		logger.info("FriendsClientV1.update_black_list()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(unk, stream.u32)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_UPDATE_BLACK_LIST, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("FriendsClientV1.update_black_list -> done")
 	
 	async def sync_friend(self, unk1, unk2, unk3):
 		logger.info("FriendsClientV1.sync_friend()")
@@ -1055,6 +1178,20 @@ class FriendsClientV1(FriendsProtocolV1):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("FriendsClientV1.update_comment -> done")
 	
+	async def update_picture(self, unk, picture):
+		logger.info("FriendsClientV1.update_picture()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u32(unk)
+		stream.buffer(picture)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_UPDATE_PICTURE, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("FriendsClientV1.update_picture -> done")
+	
 	async def get_friend_presence(self, unk):
 		logger.info("FriendsClientV1.get_friend_presence()")
 		#--- request ---
@@ -1069,6 +1206,21 @@ class FriendsClientV1(FriendsProtocolV1):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("FriendsClientV1.get_friend_presence -> done")
 		return friend_presence_list
+	
+	async def get_friend_comment(self, friends):
+		logger.info("FriendsClientV1.get_friend_comment()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.list(friends, stream.add)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_FRIEND_COMMENT, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		comments = stream.list(FriendComment)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("FriendsClientV1.get_friend_comment -> done")
+		return comments
 	
 	async def get_friend_picture(self, unk):
 		logger.info("FriendsClientV1.get_friend_picture()")
@@ -1502,7 +1654,7 @@ class FriendsServerV1(FriendsProtocolV1):
 	async def handle_get_friend_mii(self, client, input, output):
 		logger.info("FriendsServerV1.get_friend_mii()")
 		#--- request ---
-		friends = input.list(FriendMiiRequest)
+		friends = input.list(FriendKey)
 		response = await self.get_friend_mii(client, friends)
 		
 		#--- response ---
@@ -1513,7 +1665,7 @@ class FriendsServerV1(FriendsProtocolV1):
 	async def handle_get_friend_mii_list(self, client, input, output):
 		logger.info("FriendsServerV1.get_friend_mii_list()")
 		#--- request ---
-		friends = input.list(FriendMiiRequest)
+		friends = input.list(FriendKey)
 		response = await self.get_friend_mii_list(client, friends)
 		
 		#--- response ---
@@ -1522,12 +1674,28 @@ class FriendsServerV1(FriendsProtocolV1):
 		output.list(response, output.add)
 	
 	async def handle_is_active_game(self, client, input, output):
-		logger.warning("FriendsServerV1.is_active_game is not supported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("FriendsServerV1.is_active_game()")
+		#--- request ---
+		unk1 = input.list(input.u32)
+		game_key = input.extract(GameKey)
+		response = await self.is_active_game(client, unk1, game_key)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.u32)
 	
 	async def handle_get_principal_id_by_local_friend_code(self, client, input, output):
-		logger.warning("FriendsServerV1.get_principal_id_by_local_friend_code is not supported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("FriendsServerV1.get_principal_id_by_local_friend_code()")
+		#--- request ---
+		unk1 = input.u64()
+		unk2 = input.list(input.u64)
+		response = await self.get_principal_id_by_local_friend_code(client, unk1, unk2)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
 	
 	async def handle_get_friend_relationships(self, client, input, output):
 		logger.info("FriendsServerV1.get_friend_relationships()")
@@ -1544,7 +1712,7 @@ class FriendsServerV1(FriendsProtocolV1):
 		logger.info("FriendsServerV1.add_friend_by_principal_id()")
 		#--- request ---
 		unk = input.u64()
-		pid = input.u32()
+		pid = input.pid()
 		response = await self.add_friend_by_principal_id(client, unk, pid)
 		
 		#--- response ---
@@ -1553,16 +1721,28 @@ class FriendsServerV1(FriendsProtocolV1):
 		output.add(response)
 	
 	async def handle_add_friend_by_principal_ids(self, client, input, output):
-		logger.warning("FriendsServerV1.add_friend_by_principal_ids is not supported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("FriendsServerV1.add_friend_by_principal_ids()")
+		#--- request ---
+		unk = input.u64()
+		pids = input.list(input.pid)
+		response = await self.add_friend_by_principal_ids(client, unk, pids)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
 	
 	async def handle_remove_friend_by_local_friend_code(self, client, input, output):
-		logger.warning("FriendsServerV1.remove_friend_by_local_friend_code is not supported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("FriendsServerV1.remove_friend_by_local_friend_code()")
+		#--- request ---
+		friend_code = input.u64()
+		await self.remove_friend_by_local_friend_code(client, friend_code)
 	
 	async def handle_remove_friend_by_principal_id(self, client, input, output):
-		logger.warning("FriendsServerV1.remove_friend_by_principal_id is not supported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("FriendsServerV1.remove_friend_by_principal_id()")
+		#--- request ---
+		pid = input.pid()
+		await self.remove_friend_by_principal_id(client, pid)
 	
 	async def handle_get_all_friends(self, client, input, output):
 		logger.info("FriendsServerV1.get_all_friends()")
@@ -1575,8 +1755,10 @@ class FriendsServerV1(FriendsProtocolV1):
 		output.list(response, output.add)
 	
 	async def handle_update_black_list(self, client, input, output):
-		logger.warning("FriendsServerV1.update_black_list is not supported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("FriendsServerV1.update_black_list()")
+		#--- request ---
+		unk = input.list(input.u32)
+		await self.update_black_list(client, unk)
 	
 	async def handle_sync_friend(self, client, input, output):
 		logger.info("FriendsServerV1.sync_friend()")
@@ -1611,8 +1793,11 @@ class FriendsServerV1(FriendsProtocolV1):
 		await self.update_comment(client, comment)
 	
 	async def handle_update_picture(self, client, input, output):
-		logger.warning("FriendsServerV1.update_picture is not supported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("FriendsServerV1.update_picture()")
+		#--- request ---
+		unk = input.u32()
+		picture = input.buffer()
+		await self.update_picture(client, unk, picture)
 	
 	async def handle_get_friend_presence(self, client, input, output):
 		logger.info("FriendsServerV1.get_friend_presence()")
@@ -1626,8 +1811,15 @@ class FriendsServerV1(FriendsProtocolV1):
 		output.list(response, output.add)
 	
 	async def handle_get_friend_comment(self, client, input, output):
-		logger.warning("FriendsServerV1.get_friend_comment is not supported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("FriendsServerV1.get_friend_comment()")
+		#--- request ---
+		friends = input.list(FriendKey)
+		response = await self.get_friend_comment(client, friends)
+		
+		#--- response ---
+		if not isinstance(response, list):
+			raise RuntimeError("Expected list, got %s" %response.__class__.__name__)
+		output.list(response, output.add)
 	
 	async def handle_get_friend_picture(self, client, input, output):
 		logger.info("FriendsServerV1.get_friend_picture()")
@@ -1685,6 +1877,14 @@ class FriendsServerV1(FriendsProtocolV1):
 		logger.warning("FriendsServerV1.get_friend_mii_list not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
+	async def is_active_game(self, *args):
+		logger.warning("FriendsServerV1.is_active_game not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_principal_id_by_local_friend_code(self, *args):
+		logger.warning("FriendsServerV1.get_principal_id_by_local_friend_code not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
 	async def get_friend_relationships(self, *args):
 		logger.warning("FriendsServerV1.get_friend_relationships not implemented")
 		raise common.RMCError("Core::NotImplemented")
@@ -1693,8 +1893,24 @@ class FriendsServerV1(FriendsProtocolV1):
 		logger.warning("FriendsServerV1.add_friend_by_principal_id not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
+	async def add_friend_by_principal_ids(self, *args):
+		logger.warning("FriendsServerV1.add_friend_by_principal_ids not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def remove_friend_by_local_friend_code(self, *args):
+		logger.warning("FriendsServerV1.remove_friend_by_local_friend_code not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def remove_friend_by_principal_id(self, *args):
+		logger.warning("FriendsServerV1.remove_friend_by_principal_id not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
 	async def get_all_friends(self, *args):
 		logger.warning("FriendsServerV1.get_all_friends not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def update_black_list(self, *args):
+		logger.warning("FriendsServerV1.update_black_list not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def sync_friend(self, *args):
@@ -1713,8 +1929,16 @@ class FriendsServerV1(FriendsProtocolV1):
 		logger.warning("FriendsServerV1.update_comment not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
+	async def update_picture(self, *args):
+		logger.warning("FriendsServerV1.update_picture not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
 	async def get_friend_presence(self, *args):
 		logger.warning("FriendsServerV1.get_friend_presence not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def get_friend_comment(self, *args):
+		logger.warning("FriendsServerV1.get_friend_comment not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_friend_picture(self, *args):

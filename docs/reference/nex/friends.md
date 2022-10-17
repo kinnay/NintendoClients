@@ -18,27 +18,28 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**class** [AccountExtraInfo](#accountextrainfo)([Structure](common.md))</code><br>
 <code>**class** [BlacklistedPrincipal](#blacklistedprincipal)([Data](common.md))</code><br>
 <code>**class** [Comment](#comment)([Data](common.md))</code><br>
+<code>**class** [FriendComment](#friendcomment)([Data](common.md))</code><br>
 <code>**class** [FriendInfo](#friendinfo)([Data](common.md))</code><br>
-<code>**class** [FriendMii](#friendmii)([Structure](common.md))</code><br>
-<code>**class** [FriendMiiList](#friendmiilist)([Structure](common.md))</code><br>
-<code>**class** [FriendMiiRequest](#friendmiirequest)([Structure](common.md))</code><br>
-<code>**class** [FriendPersistentInfo](#friendpersistentinfo)([Structure](common.md))</code><br>
-<code>**class** [FriendPicture](#friendpicture)([Structure](common.md))</code><br>
-<code>**class** [FriendPresence](#friendpresence)([Structure](common.md))</code><br>
-<code>**class** [FriendRelationship](#friendrelationship)([Structure](common.md))</code><br>
+<code>**class** [FriendKey](#friendkey)([Structure](common.md))</code><br>
+<code>**class** [FriendMii](#friendmii)([Data](common.md))</code><br>
+<code>**class** [FriendMiiList](#friendmiilist)([Data](common.md))</code><br>
+<code>**class** [FriendPersistentInfo](#friendpersistentinfo)([Data](common.md))</code><br>
+<code>**class** [FriendPicture](#friendpicture)([Data](common.md))</code><br>
+<code>**class** [FriendPresence](#friendpresence)([Data](common.md))</code><br>
+<code>**class** [FriendRelationship](#friendrelationship)([Data](common.md))</code><br>
 <code>**class** [FriendRequest](#friendrequest)([Data](common.md))</code><br>
 <code>**class** [FriendRequestMessage](#friendrequestmessage)([Data](common.md))</code><br>
 <code>**class** [GameKey](#gamekey)([Data](common.md))</code><br>
-<code>**class** [Mii](#mii)([Structure](common.md))</code><br>
-<code>**class** [MiiList](#miilist)([Structure](common.md))</code><br>
+<code>**class** [Mii](#mii)([Data](common.md))</code><br>
+<code>**class** [MiiList](#miilist)([Data](common.md))</code><br>
 <code>**class** [MiiV2](#miiv2)([Data](common.md))</code><br>
-<code>**class** [MyProfile](#myprofile)([Structure](common.md))</code><br>
+<code>**class** [MyProfile](#myprofile)([Data](common.md))</code><br>
 <code>**class** [NNAInfo](#nnainfo)([Data](common.md))</code><br>
 <code>**class** [NintendoCreateAccountData](#nintendocreateaccountdata)([Data](common.md))</code><br>
-<code>**class** [NintendoPresence](#nintendopresence)([Structure](common.md))</code><br>
+<code>**class** [NintendoPresence](#nintendopresence)([Data](common.md))</code><br>
 <code>**class** [NintendoPresenceV2](#nintendopresencev2)([Data](common.md))</code><br>
 <code>**class** [PersistentNotification](#persistentnotification)([Data](common.md))</code><br>
-<code>**class** [PlayedGame](#playedgame)([Structure](common.md))</code><br>
+<code>**class** [PlayedGame](#playedgame)([Data](common.md))</code><br>
 <code>**class** [PrincipalBasicInfo](#principalbasicinfo)([Data](common.md))</code><br>
 <code>**class** [PrincipalPreference](#principalpreference)([Data](common.md))</code><br>
 <code>**class** [PrincipalRequestBlockSetting](#principalrequestblocksetting)([Data](common.md))</code><br>
@@ -62,11 +63,17 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def update_preference**(unk1: bool, unk2: bool, unk3: bool) -> None</code><br>
 <span class="docs">Calls method `5` on the server.</span>
 
-<code>**async def get_friend_mii**(friends: list[[FriendMiiRequest](#friendmiirequest)]) -> list[[FriendMii](#friendmii)]</code><br>
+<code>**async def get_friend_mii**(friends: list[[FriendKey](#friendkey)]) -> list[[FriendMii](#friendmii)]</code><br>
 <span class="docs">Calls method `6` on the server.</span>
 
-<code>**async def get_friend_mii_list**(friends: list[[FriendMiiRequest](#friendmiirequest)]) -> list[[FriendMiiList](#friendmiilist)]</code><br>
+<code>**async def get_friend_mii_list**(friends: list[[FriendKey](#friendkey)]) -> list[[FriendMiiList](#friendmiilist)]</code><br>
 <span class="docs">Calls method `7` on the server.</span>
+
+<code>**async def is_active_game**(unk1: list[int], game_key: [GameKey](#gamekey)) -> list[int]</code><br>
+<span class="docs">Calls method `8` on the server.</span>
+
+<code>**async def get_principal_id_by_local_friend_code**(unk1: int, unk2: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
+<span class="docs">Calls method `9` on the server.</span>
 
 <code>**async def get_friend_relationships**(unk: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
 <span class="docs">Calls method `10` on the server.</span>
@@ -74,8 +81,20 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def add_friend_by_principal_id**(unk: int, pid: int) -> [FriendRelationship](#friendrelationship)</code><br>
 <span class="docs">Calls method `11` on the server.</span>
 
+<code>**async def add_friend_by_principal_ids**(unk: int, pids: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
+<span class="docs">Calls method `12` on the server.</span>
+
+<code>**async def remove_friend_by_local_friend_code**(friend_code: int) -> None</code><br>
+<span class="docs">Calls method `13` on the server.</span>
+
+<code>**async def remove_friend_by_principal_id**(pid: int) -> None</code><br>
+<span class="docs">Calls method `14` on the server.</span>
+
 <code>**async def get_all_friends**() -> list[[FriendRelationship](#friendrelationship)]</code><br>
 <span class="docs">Calls method `15` on the server.</span>
+
+<code>**async def update_black_list**(unk: list[int]) -> None</code><br>
+<span class="docs">Calls method `16` on the server.</span>
 
 <code>**async def sync_friend**(unk1: int, unk2: list[int], unk3: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
 <span class="docs">Calls method `17` on the server.</span>
@@ -89,8 +108,14 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def update_comment**(comment: str) -> None</code><br>
 <span class="docs">Calls method `20` on the server.</span>
 
+<code>**async def update_picture**(unk: int, picture: bytes) -> None</code><br>
+<span class="docs">Calls method `21` on the server.</span>
+
 <code>**async def get_friend_presence**(unk: list[int]) -> list[[FriendPresence](#friendpresence)]</code><br>
 <span class="docs">Calls method `22` on the server.</span>
+
+<code>**async def get_friend_comment**(friends: list[[FriendKey](#friendkey)]) -> list[[FriendComment](#friendcomment)]</code><br>
+<span class="docs">Calls method `23` on the server.</span>
 
 <code>**async def get_friend_picture**(unk: list[int]) -> list[[FriendPicture](#friendpicture)]</code><br>
 <span class="docs">Calls method `24` on the server.</span>
@@ -214,11 +239,17 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def update_preference**(client: [RMCClient](rmc.md#rmcclient), unk1: bool, unk2: bool, unk3: bool) -> None</code><br>
 <span class="docs">Handler for method `5`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_friend_mii**(client: [RMCClient](rmc.md#rmcclient), friends: list[[FriendMiiRequest](#friendmiirequest)]) -> list[[FriendMii](#friendmii)]</code><br>
+<code>**async def get_friend_mii**(client: [RMCClient](rmc.md#rmcclient), friends: list[[FriendKey](#friendkey)]) -> list[[FriendMii](#friendmii)]</code><br>
 <span class="docs">Handler for method `6`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_friend_mii_list**(client: [RMCClient](rmc.md#rmcclient), friends: list[[FriendMiiRequest](#friendmiirequest)]) -> list[[FriendMiiList](#friendmiilist)]</code><br>
+<code>**async def get_friend_mii_list**(client: [RMCClient](rmc.md#rmcclient), friends: list[[FriendKey](#friendkey)]) -> list[[FriendMiiList](#friendmiilist)]</code><br>
 <span class="docs">Handler for method `7`. This method should be overridden by a subclass.</span>
+
+<code>**async def is_active_game**(client: [RMCClient](rmc.md#rmcclient), unk1: list[int], game_key: [GameKey](#gamekey)) -> list[int]</code><br>
+<span class="docs">Handler for method `8`. This method should be overridden by a subclass.</span>
+
+<code>**async def get_principal_id_by_local_friend_code**(client: [RMCClient](rmc.md#rmcclient), unk1: int, unk2: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
+<span class="docs">Handler for method `9`. This method should be overridden by a subclass.</span>
 
 <code>**async def get_friend_relationships**(client: [RMCClient](rmc.md#rmcclient), unk: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
 <span class="docs">Handler for method `10`. This method should be overridden by a subclass.</span>
@@ -226,8 +257,20 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def add_friend_by_principal_id**(client: [RMCClient](rmc.md#rmcclient), unk: int, pid: int) -> [FriendRelationship](#friendrelationship)</code><br>
 <span class="docs">Handler for method `11`. This method should be overridden by a subclass.</span>
 
+<code>**async def add_friend_by_principal_ids**(client: [RMCClient](rmc.md#rmcclient), unk: int, pids: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
+<span class="docs">Handler for method `12`. This method should be overridden by a subclass.</span>
+
+<code>**async def remove_friend_by_local_friend_code**(client: [RMCClient](rmc.md#rmcclient), friend_code: int) -> None</code><br>
+<span class="docs">Handler for method `13`. This method should be overridden by a subclass.</span>
+
+<code>**async def remove_friend_by_principal_id**(client: [RMCClient](rmc.md#rmcclient), pid: int) -> None</code><br>
+<span class="docs">Handler for method `14`. This method should be overridden by a subclass.</span>
+
 <code>**async def get_all_friends**(client: [RMCClient](rmc.md#rmcclient)) -> list[[FriendRelationship](#friendrelationship)]</code><br>
 <span class="docs">Handler for method `15`. This method should be overridden by a subclass.</span>
+
+<code>**async def update_black_list**(client: [RMCClient](rmc.md#rmcclient), unk: list[int]) -> None</code><br>
+<span class="docs">Handler for method `16`. This method should be overridden by a subclass.</span>
 
 <code>**async def sync_friend**(client: [RMCClient](rmc.md#rmcclient), unk1: int, unk2: list[int], unk3: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
 <span class="docs">Handler for method `17`. This method should be overridden by a subclass.</span>
@@ -241,8 +284,14 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def update_comment**(client: [RMCClient](rmc.md#rmcclient), comment: str) -> None</code><br>
 <span class="docs">Handler for method `20`. This method should be overridden by a subclass.</span>
 
+<code>**async def update_picture**(client: [RMCClient](rmc.md#rmcclient), unk: int, picture: bytes) -> None</code><br>
+<span class="docs">Handler for method `21`. This method should be overridden by a subclass.</span>
+
 <code>**async def get_friend_presence**(client: [RMCClient](rmc.md#rmcclient), unk: list[int]) -> list[[FriendPresence](#friendpresence)]</code><br>
 <span class="docs">Handler for method `22`. This method should be overridden by a subclass.</span>
+
+<code>**async def get_friend_comment**(client: [RMCClient](rmc.md#rmcclient), friends: list[[FriendKey](#friendkey)]) -> list[[FriendComment](#friendcomment)]</code><br>
+<span class="docs">Handler for method `23`. This method should be overridden by a subclass.</span>
 
 <code>**async def get_friend_picture**(client: [RMCClient](rmc.md#rmcclient), unk: list[int]) -> list[[FriendPicture](#friendpicture)]</code><br>
 <span class="docs">Handler for method `24`. This method should be overridden by a subclass.</span>
@@ -380,6 +429,17 @@ The following fields are defined in this class:<br>
 <code>changed: [DateTime](common.md#datetime)</code><br>
 </span><br>
 
+## FriendComment
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `FriendComment` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>unk1: int</code><br>
+<code>comment: str</code><br>
+<code>unk2: [DateTime](common.md#datetime)</code><br>
+</span><br>
+
 ## FriendInfo
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new `FriendInfo` instance. Required fields must be filled in manually.</span>
@@ -392,6 +452,16 @@ The following fields are defined in this class:<br>
 <code>befriended: [DateTime](common.md#datetime)</code><br>
 <code>last_online: [DateTime](common.md#datetime)</code><br>
 <code>unk: int</code><br>
+</span><br>
+
+## FriendKey
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `FriendKey` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>unk1: int</code><br>
+<code>unk2: [DateTime](common.md#datetime)</code><br>
 </span><br>
 
 ## FriendMii
@@ -413,16 +483,6 @@ The following fields are defined in this class:<br>
 <span class="docs">
 <code>unk1: int</code><br>
 <code>mii: [MiiList](#miilist) = [MiiList](#miilist)()</code><br>
-<code>unk2: [DateTime](common.md#datetime)</code><br>
-</span><br>
-
-## FriendMiiRequest
-<code>**def _\_init__**()</code><br>
-<span class="docs">Creates a new `FriendMiiRequest` instance. Required fields must be filled in manually.</span>
-
-The following fields are defined in this class:<br>
-<span class="docs">
-<code>unk1: int</code><br>
 <code>unk2: [DateTime](common.md#datetime)</code><br>
 </span><br>
 
