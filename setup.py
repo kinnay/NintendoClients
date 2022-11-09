@@ -6,7 +6,7 @@ long_description = \
 
 setuptools.setup(
 	name = "nintendoclients",
-	version = "0.0.3",
+	version = "0.0.4",
 	description = "Nintendo network library",
 	long_description = long_description,
 	author = "Yannik Marchand",
@@ -14,10 +14,10 @@ setuptools.setup(
 	url = "https://github.com/kinnay/NintendoClients",
 	license = "MIT",
 	packages = [
-		"nintendo", "nintendo.enl", "nintendo.nex", "nintendo.pia"
+		"nintendo", "nintendo.nex"
 	],
 	package_data = {
 		"nintendo": ["files/config/*", "files/cert/*"]
 	},
-	install_requires = ["anynet == 0.0.14"]
+	install_requires = ["anynet == 0.0.15"]
 )
