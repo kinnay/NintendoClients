@@ -50,7 +50,7 @@ async def test_baas():
 	
 	async with http.serve(handler, "127.0.0.1", 12345):
 		client = baas.BAASClient()
-		client.set_url("127.0.0.1:12345")
+		client.set_host("127.0.0.1:12345")
 		client.set_system_version(1200)
 		client.set_context(None)
 		response = await client.authenticate("device.token")

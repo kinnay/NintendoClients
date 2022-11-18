@@ -2,8 +2,8 @@
 from Crypto.Hash import CMAC
 from Crypto.Cipher import AES
 from anynet import tls, http
-from nintendo import switch
 import pkg_resources
+import base64
 
 import logging
 logger = logging.getLogger(__name__)
@@ -42,6 +42,8 @@ SYSTEM_VERSION_DIGEST = {
 	1410: "CusHY#000e0100#ctIxSPR4jenzQNGc6y4zXIvzvF75ty53jN0T15Rjtmk=",
 	1411: "CusHY#000e0101#uTt4IVydkYqwYArOFR3BzOCmw0MkEeF_tZxHENYDh4E=",
 	1412: "CusHY#000e0102#jHk6_VwXVPPl3ijRZ5jRy5MIAcUW_Q2uFdfJ0vrjhCA=",
+	1500: "CusHY#000f0000#MJE7we0zvVhAnXN9uCU7fQAM7GiqGHpR5ECuC9G_nuU=",
+	1501: "CusHY#000f0001#TMqizZGvUaBZApmHHQE0Uo7vQ6xWuQxZ8JH87_HnnqI=",
 }
 
 USER_AGENT = {
@@ -72,6 +74,8 @@ USER_AGENT = {
 	1410: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 14.3.0.0)",
 	1411: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 14.3.0.0)",
 	1412: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 14.3.0.0)",
+	1500: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 15.3.0.0)",
+	1501: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 15.3.0.0)",
 }
 
 KEY_GENERATION = {
@@ -102,6 +106,8 @@ KEY_GENERATION = {
 	1410: 14,
 	1411: 14,
 	1412: 14,
+	1500: 15,
+	1501: 15,
 }
 
 API_VERSION = {
@@ -132,12 +138,30 @@ API_VERSION = {
 	1410: 7,
 	1411: 7,
 	1412: 7,
+	1500: 7,
+	1501: 7,
 }
 
-LATEST_VERSION = 1412
+LATEST_VERSION = 1501
 
 
-class DAuthError(switch.NDASError): pass
+class DAuthError(Exception):
+	UNAUTHORIZED_DEVICE = 4
+	SYSTEM_UPDATE_REQUIRED = 7
+	BANNED_DEIVCE = 8
+	INTERNAL_SERVER_ERROR = 9
+	GENERIC = 14
+	CHALLENGE_EXPIRED = 15
+	WRONG_MAC = 16
+	BROKEN_DEVICE = 17
+	
+	def __init__(self, response):
+		self.response = response
+		self.code = response.json["errors"][0]["code"]
+		self.message = response.json["errors"][0]["message"]
+	
+	def __str__(self):
+		return self.message
 
 
 class DAuthClient:
@@ -154,36 +178,33 @@ class DAuthClient:
 	PCTL = 0xDC656EA03B63CF68
 	PREPO = 0xDF51C436BC01C437
 	
-	def __init__(self, keyset):
-		self.keyset = keyset
+	def __init__(self, keys):
+		self.keys = keys
+		
+		self.request_callback = http.request
 		
 		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
 		
-		self.region = 1
-		
-		self.url = "dauth-lp1.ndas.srv.nintendo.net"
+		self.host = "dauth-lp1.ndas.srv.nintendo.net"
 		self.user_agent = USER_AGENT[LATEST_VERSION]
 		self.system_digest = SYSTEM_VERSION_DIGEST[LATEST_VERSION]
 		self.key_generation = KEY_GENERATION[LATEST_VERSION]
 		self.api_version = API_VERSION[LATEST_VERSION]
 		
 		self.power_state = "FA"
+		self.region = 1
 		
-	def set_certificate(self, cert, key):
-		self.context.set_certificate(cert, key)
-	def set_context(self, context):
-		self.context = context
-
-	def set_url(self, url): self.url = url
+	def set_request_callback(self, callback): self.request_callback = callback
+	
+	def set_context(self, context): self.context = context
+	def set_certificate(self, cert, key): self.context.set_certificate(cert, key)
+	
 	def set_power_state(self, state): self.power_state = state
 	def set_platform_region(self, region): self.region = region
 	
-	def set_user_agent(self, user_agent): self.user_agent = user_agent
-	def set_system_digest(self, digest): self.system_digest = digest
-	def set_key_generation(self, keygen): self.key_generation = keygen
-	def set_api_version(self, version): self.api_version = version
+	def set_host(self, host): self.host = host
 	
 	def set_system_version(self, version):
 		if version not in USER_AGENT:
@@ -194,24 +215,20 @@ class DAuthClient:
 		self.api_version = API_VERSION[version]
 		
 	async def request(self, req):
-		req.headers["Host"] = self.url
+		req.headers["Host"] = self.host
 		req.headers["User-Agent"] = self.user_agent
 		req.headers["Accept"] = "*/*"
 		req.headers["X-Nintendo-PowerState"] = self.power_state
 		req.headers["Content-Length"] = 0
 		req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 		
-		response = await http.request(self.url, req, self.context)
-		if response.error():
-			if response.json:
-				logger.error("DAuth request returned errors:")
-				errors = response.json["errors"]
-				for error in errors:
-					logger.error("  (%s) %s", error["code"], error["message"])
-				raise DAuthError(response.status_code, errors)
-			else:
-				logger.error("DAuth request returned status code %i", response.status_code)
-				raise DAuthError(response.status_code)
+		response = await self.request_callback(self.host, req, self.context)
+		if response.json and "errors" in response.json:
+			logger.error("DAuth server returned errors:")
+			for error in response.json["errors"]:
+				logger.error("  (%s) %s", error["code"], error["message"])
+			raise DAuthError(response, errors)
+		response.raise_if_error()
 		return response
 		
 	async def challenge(self):
@@ -226,7 +243,7 @@ class DAuthClient:
 	async def device_token(self, client_id):
 		challenge = await self.challenge()
 		
-		data = switch.b64decode(challenge["data"])
+		data = base64.b64decode(challenge["data"], "-_")
 		
 		req = http.HTTPRequest.post("/v%i/device_auth_token" %self.api_version)
 		req.rawform = {
@@ -246,7 +263,7 @@ class DAuthClient:
 	async def edge_token(self, client_id, vendor_id="akamai"):
 		challenge = await self.challenge()
 		
-		data = switch.b64decode(challenge["data"])
+		data = base64.b64decode(challenge["data"], "-_")
 		
 		req = http.HTTPRequest.post("/v%i/edge_token" %self.api_version)
 		req.rawform = {
@@ -269,14 +286,14 @@ class DAuthClient:
 	def get_master_key(self):
 		keygen = self.key_generation
 		keyname = "master_key_%02x" %(keygen - 1)
-		return self.keyset[keyname]
-		
+		return self.keys[keyname]
+	
 	def decrypt_key(self, key, kek):
 		aes = AES.new(kek, AES.MODE_ECB)
 		return aes.decrypt(key)
 		
 	def calculate_mac(self, form, data):
-		kek_source = self.keyset["aes_kek_generation_source"]
+		kek_source = self.keys["aes_kek_generation_source"]
 		master_key = self.get_master_key()
 		
 		key = self.decrypt_key(kek_source, master_key)
@@ -285,4 +302,4 @@ class DAuthClient:
 		
 		mac = CMAC.new(key, ciphermod=AES)
 		mac.update(form.encode())
-		return switch.b64encode(mac.digest())
+		return base64.b64encode(mac.digest(), b"-_").decode().rstrip("=")

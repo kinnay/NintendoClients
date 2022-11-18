@@ -1,5 +1,5 @@
 
-from nintendo import dauth, switch
+from nintendo import dauth
 from anynet import http
 import pytest
 
@@ -71,11 +71,13 @@ async def test_dauth_1200():
 			return response
 	
 	async with http.serve(handler, "127.0.0.1", 12345):
-		keys = switch.KeySet()
-		keys["aes_kek_generation_source"] = bytes.fromhex("485d45ad27c07c7e538c0183f90ee845")
-		keys["master_key_0a"] = bytes.fromhex("37eed242e0f2ce6f8371e783c1a6a0ae")
+		keys = {
+			"aes_kek_generation_source": bytes.fromhex("485d45ad27c07c7e538c0183f90ee845"),
+			"master_key_0a": bytes.fromhex("37eed242e0f2ce6f8371e783c1a6a0ae")
+		}
+		
 		client = dauth.DAuthClient(keys)
-		client.set_url("127.0.0.1:12345")
+		client.set_host("127.0.0.1:12345")
 		client.set_system_version(1200)
 		client.set_context(None)
 		response = await client.device_token(client.BAAS)
@@ -102,11 +104,13 @@ async def test_dauth_1300():
 			return response
 	
 	async with http.serve(handler, "127.0.0.1", 12345):
-		keys = switch.KeySet()
-		keys["aes_kek_generation_source"] = bytes.fromhex("cae2728f56af642d5d59dfc23bd314a2")
-		keys["master_key_0c"] = bytes.fromhex("f1642c98bddb5850eb23d0cebab7dc05")
+		keys = {
+			"aes_kek_generation_source": bytes.fromhex("cae2728f56af642d5d59dfc23bd314a2"),
+			"master_key_0c": bytes.fromhex("f1642c98bddb5850eb23d0cebab7dc05")
+		}
+		
 		client = dauth.DAuthClient(keys)
-		client.set_url("127.0.0.1:12345")
+		client.set_host("127.0.0.1:12345")
 		client.set_system_version(1300)
 		client.set_context(None)
 		response = await client.device_token(client.BAAS)

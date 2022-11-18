@@ -5,9 +5,9 @@ from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
 from anynet import tls, http
-from nintendo import switch
 import pkg_resources
 import struct
+import base64
 
 import logging
 logger = logging.getLogger(__name__)
@@ -60,39 +60,92 @@ USER_AGENT = {
 	1410: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 14.3.0.0; Add-on 14.3.0.0)",
 	1411: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 14.3.0.0; Add-on 14.3.0.0)",
 	1412: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 14.3.0.0; Add-on 14.3.0.0)",
+	1500: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 15.3.0.0; Add-on 15.3.0.0)",
+	1501: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 15.3.0.0; Add-on 15.3.0.0)",
 }
 
-LATEST_VERSION = 1412
+API_VERSION = {
+	 900: 3,
+	 901: 3,
+	 910: 3,
+	 920: 3,
+	1000: 3,
+	1001: 3,
+	1002: 3,
+	1003: 3,
+	1004: 3,
+	1010: 3,
+	1011: 3,
+	1020: 3,
+	1100: 3,
+	1101: 3,
+	1200: 3,
+	1201: 3,
+	1202: 3,
+	1203: 3,
+	1210: 3,
+	1300: 3,
+	1310: 3,
+	1320: 3,
+	1321: 3,
+	1400: 3,
+	1410: 3,
+	1411: 3,
+	1412: 3,
+	1500: 4,
+	1501: 4,
+}
+
+LATEST_VERSION = 1501
 
 
-class AAuthError(switch.NDASError): pass
+class AAuthError(Exception):
+	DEVICE_TOKEN_EXPIRED = 103
+	ROMID_BANNED = 105
+	UNAUTHORIZED_APPLICATION = 106
+	SERVICE_CLOSED = 109
+	APPLICATION_UPDATE_REQUIRED = 111
+	INTERNAL_SERVER_ERROR = 112
+	GENERIC = 118
+	REGION_MISMATCH = 121
+	
+	def __init__(self, response):
+		self.response = response
+		self.code = int(response.json["errors"][0]["code"])
+		self.message = response.json["errors"][0]["message"]
+	
+	def __str__(self):
+		return self.message
 
 
 class AAuthClient:
 	def __init__(self):
-		self.url = "aauth-lp1.ndas.srv.nintendo.net"
-		
-		self.user_agent = USER_AGENT[LATEST_VERSION]
-		self.power_state = "FA"
+		self.request_callback = http.request
 		
 		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
+		
+		self.host = "aauth-lp1.ndas.srv.nintendo.net"
+		self.user_agent = USER_AGENT[LATEST_VERSION]
+		self.api_version = API_VERSION[LATEST_VERSION]
+		
+		self.power_state = "FA"
 	
-	def set_url(self, url): self.url = url
-	def set_user_agent(self, user_agent): self.user_agent = user_agent
+	def set_request_callback(self, callback): self.request_callback = callback
+	def set_context(self, context): self.context = context
+	
+	def set_host(self, host): self.host = host
 	def set_power_state(self, state): self.power_state = state
-	
-	def set_context(self, context):
-		self.context = context
 	
 	def set_system_version(self, version):
 		if version not in USER_AGENT:
 			raise ValueError("Unknown system version")
 		self.user_agent = USER_AGENT[version]
+		self.api_version = API_VERSION[version]
 	
 	async def request(self, req, use_power_state):
-		req.headers["Host"] = self.url
+		req.headers["Host"] = self.host
 		req.headers["User-Agent"] = self.user_agent
 		req.headers["Accept"] = "*/*"
 		if use_power_state:
@@ -100,20 +153,18 @@ class AAuthClient:
 		req.headers["Content-Length"] = 0
 		req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 		
-		response = await http.request(self.url, req, self.context)
-		if response.error():
-			if response.json:
-				logger.error("AAuth server returned errors:")
-				errors = response.json["errors"]
-				for error in errors:
-					logger.error("  (%s) %s", error["code"], error["message"])
-				raise AAuthError(response.status_code, errors)
-			else:
-				logger.error("AAuth server returned status code %i", response.status_code)
-				raise AAuthError(response.status_code)
+		response = await self.request_callback(self.host, req, self.context)
+		if response.json and "errors" in response.json:
+			logger.error("AAuth server returned errors:")
+			for error in response.json["errors"]:
+				logger.error("  (%s) %s", error["code"], error["message"])
+			raise AAuthError(response, errors)
+		response.raise_if_error()
 		return response
-		
+	
 	def verify_ticket(self, ticket, title_id):
+		# Verify ticket, in case someone accidentally
+		# provides the wrong ticket
 		if len(ticket) != 0x2C0:
 			raise ValueError("Ticket has unexpected size")
 		if struct.unpack_from("<I", ticket)[0] != 0x10004:
@@ -122,13 +173,19 @@ class AAuthClient:
 			raise ValueError("Ticket has different title id")
 		if struct.unpack_from(">Q", ticket, 0x2A8)[0] != ticket[0x285]:
 			raise ValueError("Ticket has inconsistent master key revision")
-
+	
+	def verify_token(self, token):
+		# Just a basic check, to make sure that people do not
+		# accidentally pass a ticket instead of a JWT
+		if not isinstance(token, str) or token.count(".") != 2:
+			raise ValueError("Cert must contain a valid JWT")
+	
 	async def get_time(self):
 		req = http.HTTPRequest.get("/v1/time")
-		req.headers["Host"] = self.url
+		req.headers["Host"] = self.host
 		req.headers["Accept"] = "*/*"
 		
-		response = await http.request(self.url, req, self.context)
+		response = await http.request(self.host, req, self.context)
 		response.raise_if_error()
 		
 		time = int(response.headers["X-NINTENDO-UNIXTIME"])
@@ -147,7 +204,7 @@ class AAuthClient:
 	# Warning: do not use auth_nocert on a production server.
 	# It will immediately ban your Switch.
 	async def auth_nocert(self, title_id, title_version, device_token):
-		req = http.HTTPRequest.post("/v3/application_auth_token")
+		req = http.HTTPRequest.post("/v%i/application_auth_token" %self.api_version)
 		req.form = {
 			"application_id": "%016x" %title_id,
 			"application_version": "%08x" %title_version,
@@ -159,7 +216,7 @@ class AAuthClient:
 		return response.json
 
 	async def auth_system(self, title_id, title_version, device_token):
-		req = http.HTTPRequest.post("/v3/application_auth_token")
+		req = http.HTTPRequest.post("/v%i/application_auth_token" %self.api_version)
 		req.form = {
 			"application_id": "%016x" %title_id,
 			"application_version": "%08x" %title_version,
@@ -170,28 +227,34 @@ class AAuthClient:
 		response = await self.request(req, True)
 		return response.json
 
-	async def auth_digital(self, title_id, title_version, device_token, ticket):
-		self.verify_ticket(ticket, title_id)
-		
-		plain_key = get_random_bytes(16)
-		
-		aes = AES.new(plain_key, AES.MODE_CBC, iv=bytes(16))
-		encrypted_ticket = aes.encrypt(pad(ticket, 16))
-		
-		rsa_key = RSA.construct((RSA_MODULUS, RSA_EXPONENT))
-		rsa = PKCS1_OAEP.new(rsa_key, SHA256)
-		encrypted_key = rsa.encrypt(plain_key)
-	
-		req = http.HTTPRequest.post("/v3/application_auth_token")
+	async def auth_digital(self, title_id, title_version, device_token, cert):
+		req = http.HTTPRequest.post("/v%i/application_auth_token" %self.api_version)
 		req.form = {
 			"application_id": "%016x" %title_id,
 			"application_version": "%08x" %title_version,
 			"device_auth_token": device_token,
-			"media_type": "DIGITAL",
-			
-			"cert": switch.b64encode(encrypted_ticket),
-			"cert_key": switch.b64encode(encrypted_key)
+			"media_type": "DIGITAL"
 		}
+		
+		if self.api_version == 3:
+			self.verify_ticket(cert, title_id)
+			
+			plain_key = get_random_bytes(16)
+			
+			aes = AES.new(plain_key, AES.MODE_CBC, iv=bytes(16))
+			encrypted_ticket = aes.encrypt(pad(cert, 16))
+			
+			rsa_key = RSA.construct((RSA_MODULUS, RSA_EXPONENT))
+			rsa = PKCS1_OAEP.new(rsa_key, SHA256)
+			encrypted_key = rsa.encrypt(plain_key)
+		
+			req.form["cert"] = base64.b64encode(encrypted_ticket, b"-_").decode().rstrip("=")
+			req.form["cert_key"] = base64.b64encode(encrypted_key, b"-_").decode().rstrip("=")
+		
+		elif self.api_version == 4:
+			self.verify_token(cert)
+			
+			req.form["cert"] = cert
 		
 		response = await self.request(req, True)
 		return response.json

@@ -9,31 +9,32 @@ Provides a client for the [BaaS server](https://github.com/kinnay/nintendo/wiki/
 <span class="docs">The `BaaS` client.</span>
 
 ## BAASError
-`status: int`<br>
+<code>response: [HTTPResponse](https://anynet.readthedocs.io/en/latest/reference/http/#httpresponse)</code><br>
+`type: str`<br>
 `name: str`<br>
 `title: str`<br>
 `detail: str`<br>
-`instance: str`<br>
-`type: str`
+`status: int`<br>
+`instance: str`
 
 ## BAASClient
 <code>**def _\_init__**()</code><br>
 <span class="docs">Creates a new `BaaS` client.</span>
 
-<code>**def set_url**(url: str) -> None</code><br>
-<span class="docs">Changes the server to which the HTTP requests are sent. The default is `e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com`.
+<code>**def set_request_callback**(callback: Callable) -> None</code><br>
+<span class="docs">By default, requests are performed with [`http.request`](https://anynet.readthedocs.io/en/latest/reference/http). This method lets you provide a custom callback instead.</span>
 
-<code>**def set_user_agent**(user_agent: str) -> None</code><br>
-<span class="docs">Changes the user agent of the `BaaS` client. The default depends on the latest system version.
+<code>**def set_context**(context: [TLSContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscontext)) -> None</code><br>
+<span class="docs">Changes the TLS context. By default, the server certificate is verified with default authorities.</span>
+
+<code>**def set_host**(host: str) -> None</code><br>
+<span class="docs">Changes the server to which the HTTP requests are sent. The default is `e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com`.
 
 <code>**def set_power_state**(state: str) -> None</code><br>
 <span class="docs">Changes the content of the `X-Nintendo-PowerState` header. The default is `"FA"`.
 
 <code>**def set_system_version**(version: int) -> None</code></br>
-<span class="docs">Updates the user agent for the given system version. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` and later are supported.</span>
-
-<code>**def set_context**(context: [TLSContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscontext)) -> None</code><br>
-<span class="docs">Changes the TLS context. By default, the server certificate is verified with default authorities.</span>
+<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` up to `15.0.1` are supported.</span>
 
 <code>**async def authenticate**(device_token: str) -> dict</code><br>
 <span class="docs">Requests an authorization token with `/1.0.0/application/token`. This method must be called before any other requests can be made. The device token can be obtained from the [`dauth server`](dauth.md).</span>

@@ -2,10 +2,11 @@
 from nintendo.baas import BAASClient
 from nintendo.dauth import DAuthClient
 from nintendo.aauth import AAuthClient
-from nintendo.switch import ProdInfo, KeySet
+from nintendo.dragons import DragonsClient
 from nintendo.nex import backend, authentication, \
 	settings, datastore_smm2 as datastore
-from nintendo.games import SMM2
+from nintendo.games import Tetris99
+from nintendo import switch
 from anynet import http
 import anyio
 
@@ -13,7 +14,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-SYSTEM_VERSION = 1412 #14.1.2
+SYSTEM_VERSION = 1501 #15.0.1
 
 # You can get your user id and password from
 # su/baas/<guid>.dat in save folder 8000000000000010.
@@ -33,10 +34,10 @@ BAAS_PASSWORD = "..." # Should be 40 characters
 PATH_KEYS = "/path/to/prod.keys"
 PATH_PRODINFO = "/path/to/PRODINFO"
 
-# Tickets can be dumped with nxdumptool.
-# You need the base ticket, not an update ticket.
-# Do not remove console specific data.
-PATH_TICKET = "/path/to/ticket"
+# These can be obtained by calling publish_device_linked_elicenses (see docs)
+ELICENSE_ID = "..." # 32 hex digits
+NA_ID = 0x0123456789abcdef # 16 hex digits
+
 
 COURSE_ID = "2J53K2Y9G"
 
@@ -80,41 +81,54 @@ async def download_thumbnail(store, info, filename):
 
 
 async def main():
-	keys = KeySet.load(PATH_KEYS)
-	info = ProdInfo(keys, PATH_PRODINFO)
+	keys = switch.load_keys(PATH_KEYS)
 	
-	with open(PATH_TICKET, "rb") as f:
-		ticket = f.read()
-	
+	info = switch.ProdInfo(keys, PATH_PRODINFO)
 	cert = info.get_tls_cert()
 	pkey = info.get_tls_key()
 	
 	dauth = DAuthClient(keys)
 	dauth.set_certificate(cert, pkey)
 	dauth.set_system_version(SYSTEM_VERSION)
-	response = await dauth.device_token(dauth.BAAS)
-	device_token = response["device_auth_token"]
+	
+	dragons = DragonsClient()
+	dragons.set_certificate(cert, pkey)
+	dragons.set_system_version(SYSTEM_VERSION)
 	
 	aauth = AAuthClient()
 	aauth.set_system_version(SYSTEM_VERSION)
-	response = await aauth.auth_digital(
-		SMM2.TITLE_ID, SMM2.LATEST_VERSION,
-		device_token, ticket
-	)
-	app_token = response["application_auth_token"]
 	
 	baas = BAASClient()
 	baas.set_system_version(SYSTEM_VERSION)
 	
-	response = await baas.authenticate(device_token)
+	# Request a device authentication token for dragons
+	response = await dauth.device_token(dauth.DRAGONS)
+	device_token_dragons = response["device_auth_token"]
+	
+	# Request a device authentication token for aauth and bass
+	response = await dauth.device_token(dauth.BAAS)
+	device_token_baas = response["device_auth_token"]
+	
+	# Request a contents authorization token from dragons
+	response = await dragons.contents_authorization_token_for_aauth(device_token_dragons, ELICENSE_ID, NA_ID, SMM2.TITLE_ID)
+	contents_token = response["contents_authorization_token"]
+	
+	# Request an application authentication token
+	response = await aauth.auth_digital(SMM2.TITLE_ID, SMM2.LATEST_VERSION, device_token_baas, contents_token)
+	app_token = response["application_auth_token"]
+	
+	# Request an anonymous access token for baas
+	response = await baas.authenticate(device_token_baas)
 	access_token = response["accessToken"]
 	
+	# Log in on the baas server
 	response = await baas.login(
 		BAAS_USER_ID, BAAS_PASSWORD, access_token, app_token
 	)
 	user_id = int(response["user"]["id"], 16)
 	id_token = response["idToken"]
 	
+	# Set up authentication info for nex server
 	auth_info = authentication.AuthenticationInfo()
 	auth_info.token = id_token
 	auth_info.ngs_version = 4 #Switch

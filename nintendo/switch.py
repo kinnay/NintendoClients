@@ -4,53 +4,20 @@ from Crypto.PublicKey import RSA
 from anynet import tls
 import hashlib
 import struct
-import base64
-
-import logging
-logger = logging.getLogger(__name__)
+import os
 
 
-def b64encode(data):
-	return base64.b64encode(data, b"-_").decode().rstrip("=")
+def load_keys(filename):
+	with open(filename) as f:
+		lines = f.readlines()
 	
-def b64decode(text):
-	length = (len(text) + 3) & ~3
-	text = text.ljust(length, "=")
-	return base64.b64decode(text.encode(), b"-_")
-
-
-class NDASError(Exception):
-	def __init__(self, status_code, errors=None):
-		self.status_code = status_code
-		self.errors = errors
-	
-	def __str__(self):
-		if self.errors is not None:
-			return self.errors[0]["message"]
-		return "Server returned status code: %i" %self.status_code
-
-
-class KeySet:
-	def __init__(self):
-		self.keys = {}
-	
-	def __getitem__(self, key):
-		return self.keys[key]
-	def __setitem__(self, key, value):
-		self.keys[key] = value
-		
-	@classmethod
-	def load(cls, filename):
-		keyset = cls()
-		with open(filename) as f:
-			lines = f.readlines()
-			
-		for line in lines:
-			line = line.strip()
-			if line:
-				name, key = line.split("=")
-				keyset[name.strip()] = bytes.fromhex(key)
-		return keyset
+	keys = {}
+	for line in lines:
+		line = line.strip()
+		if line:
+			name, key = line.split("=")
+			keys[name.strip()] = bytes.fromhex(key)
+	return keys
 
 
 table = [
@@ -70,8 +37,8 @@ def crc16(data):
 
 
 class ProdInfo:
-	def __init__(self, keyset, filename):
-		self.keyset = keyset
+	def __init__(self, keys, filename):
+		self.keys = keys
 		with open(filename, "rb") as f:
 			self.data = f.read()
 			
@@ -102,7 +69,7 @@ class ProdInfo:
 		initial = self.data[0x3AE0 : 0x3AF0]
 		cipher = self.data[0x3AF0 : 0x3BF0]
 		
-		kek = self.keyset["ssl_rsa_kek"]
+		kek = self.keys["ssl_rsa_kek"]
 		aes = AES.new(kek, AES.MODE_CTR, nonce=b"", initial_value=initial)
 		d = int.from_bytes(aes.decrypt(cipher), "big")
 		

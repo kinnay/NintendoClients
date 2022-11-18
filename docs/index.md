@@ -14,10 +14,11 @@ This package is able to do everything that's required to access a game server. I
 	* Game servers (`nex`)
 	* `dauth-lp1.ndas.srv.nintendo.net`
 	* `aauth-lp1.ndas.srv.nintendo.net`
-	* `e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com`<br><br>
+	* `dragons.hac.lp1.dragons.nintendo.net`
+	* `e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com`
 * Wii U:
 	* Game servers (`nex`)
-	* `account.nintendo.net`<br><br>
+	* `account.nintendo.net`
 * 3DS:
 	* Game servers (`nex`)
 	* `nasc.nintendowifi.net`
@@ -27,8 +28,6 @@ Feel free to open a pull request or issue on [github](https://github.com/kinnay/
 
 ## API Reference
 
-* enl
-	* [crypto](reference/enl/crypto.md)
 * nex
 	* [aauser](reference/nex/aauser.md)
 	* [account](reference/nex/account.md)
@@ -61,16 +60,12 @@ Feel free to open a pull request or issue on [github](https://github.com/kinnay/
 	* [streams](reference/nex/streams.md)
 	* [subscriber](reference/nex/subscriber.md)
 	* [utility](reference/nex/utility.md)
-* pia
-	* [lan](reference/pia/lan.md)
-	* [settings](reference/pia/settings.md)
-	* [types](reference/pia/types.md)
 * [aauth](reference/aauth.md)
 * [baas](reference/baas.md)
 * [dauth](reference/dauth.md)
+* [dragons](reference/dragons.md)
 * [games](reference/games.md)
 * [miis](reference/miis.md)
 * [nasc](reference/nasc.md)
 * [nnas](reference/nnas.md)
-* [sead](reference/sead.md)
 * [switch](reference/switch.md)
