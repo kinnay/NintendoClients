@@ -35,6 +35,7 @@ PATH_KEYS = "/path/to/prod.keys"
 PATH_PRODINFO = "/path/to/PRODINFO"
 
 # These can be obtained by calling publish_device_linked_elicenses (see docs)
+# or with a mitm on your Switch (this is probably safer)
 ELICENSE_ID = "..." # 32 hex digits
 NA_ID = 0x0123456789abcdef # 16 hex digits
 

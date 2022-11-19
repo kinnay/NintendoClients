@@ -1,23 +1,29 @@
 # Nintendo Clients
-Python package to communicate with Nintendo servers
+> :warning: Keep in mind that Nintendo is actively banning Switch devices. This package tries to mimic the behavior of a real Switch as closely as possible, but using it is at your own risk. Make sure that you know what you are doing.
 
-This package can be installed with pip: `pip install nintendoclients`.
+This package implements a client for various 3DS, Wii U and Switch servers. The following servers are currently supported:
 
-You might need to adjust your scripts if you update the package (it may receive backwards compatibility breaking changes at any time).
+* Switch
+  * Game servers (NEX)
+  * https://dauth-lp1.ndas.srv.nintendo.net
+  * https://aauth-lp1.ndas.srv.nintendo.net
+  * https://dragons.hac.lp1.dragons.nintendo.net (partially)
+  * https://e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com (partially)
+* Wii U
+  * Game servers (NEX)
+  * https://account.nintendo.net (partially)
+* 3DS
+  * Game servers (NEX)
+  * https://nasc.nintendowifi.net (partially)
 
-Keep in mind that Nintendo is still banning Switch devices. This package tries to mimic the behavior of a real Switch as closely as possible, but using it is at your own risk. If you want to avoid unnecessary requests, adjust the scripts to reuse the tokens: the dauth and aauth tokens are valid for 24 hours and the id token is valid for 3 hours.
+### Installation
+This package requires Python 3.8 or later and can be installed with pip: `pip install nintendoclients`.
 
-The Switch examples that require application authentication only support digital titles (no game cards).
+This package does not have a stable interface yet (it may receive backwards compatibility breaking changes at any time). If you use it in a project, it is recommended to pin a specific version.
 
 ### Documentation
 * [Nintendo's servers and protocols](https://github.com/Kinnay/NintendoClients/wiki)
 * [The classes and functions in this package](https://nintendoclients.readthedocs.io)
-
-### Requirements
-* Python 3.8 or higher
-* https://github.com/kinnay/anynet
-
-If you install this package with `pip install .` all requirements (except for Python itself) will be installed automatically.
 
 ### Example scripts
 * **switch/**
