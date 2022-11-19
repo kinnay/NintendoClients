@@ -6,7 +6,7 @@ long_description = \
 
 setuptools.setup(
 	name = "nintendoclients",
-	version = "0.0.4",
+	version = "0.0.5",
 	description = "Nintendo network library",
 	long_description = long_description,
 	author = "Yannik Marchand",
@@ -19,5 +19,8 @@ setuptools.setup(
 	package_data = {
 		"nintendo": ["files/config/*", "files/cert/*"]
 	},
-	install_requires = ["anynet == 0.0.15"]
+	install_requires = [
+		"anynet == 0.0.18",
+		"pycryptodome"
+	]
 )
