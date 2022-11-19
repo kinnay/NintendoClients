@@ -49,6 +49,10 @@ class ProdInfo:
 		if crc16(self.data[offset : end]) != expected:
 			raise ValueError("CRC16 check failed")
 	
+	def get_device_id(self):
+		self.check(0x2A90, 0x250)
+		return int(self.data[0x2B56:0x2B66], 16)
+	
 	def get_tls_cert(self):
 		self.check(0xAD0, 0x10)
 		
