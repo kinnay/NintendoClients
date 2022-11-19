@@ -20,8 +20,8 @@ Provides a client for the [dragons servers](https://github.com/kinnay/nintendo/w
 If present, the `invalid_params` field contains a list of dictionaries, each of which provides two keys: `name` and `reason`.
 
 ## DragonsClient
-<code>**def _\_init__**()</code><br>
-<span class="docs">Creates a new dragons client.</span>
+<code>**def _\_init__**(device_id: int = None)</code><br>
+<span class="docs">Creates a new dragons client. The device id is required for all methods except for `contents_authorization_token_for_aauth`.</span>
 
 <code>**def set_request_callback**(callback: Callable) -> None</code><br>
 <span class="docs">By default, requests are performed with [`http.request`](https://anynet.readthedocs.io/en/latest/reference/http). This method lets you provide a custom callback instead.</span>
@@ -44,6 +44,9 @@ If present, the `invalid_params` field contains a list of dictionaries, each of 
 
 <code>**async def publish_device_linked_elicenses**(device_token: str) -> dict</code><br>
 <span class="docs">Requests all elicenses that are linked to the given device. The device token can be obtained from the [`dauth server`](dauth.md).</span>
+
+<code>**async def exercise_elicense**(device_token: str, elicense_ids: list[str], account_ids: list[int], current_account_id: int) -> None</code><br>
+<span class="docs">Calls `/v1/elicenses/exercise` with the given parameters.</span>
 
 <code>**async def contents_authorization_token_for_aauth**(device_token: str, elicense_id: str, na_id: int, title_id: int) -> dict</code><br>
 <span class="docs">Requests a contents authorization token for [aauth](aauth.md). The device token can be obtained from the [`dauth server`](dauth.md).</span>

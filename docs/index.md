@@ -1,7 +1,7 @@
 
 ## Welcome to NintendoClients
 
-This package lets you communicate with various Wii U and Switch servers. For documentation about the servers and protocols click [here](https://github.com/kinnay/nintendo/wiki).
+This package lets you communicate with various 3DS, Wii U and Switch servers. For documentation about the servers and protocols click [here](https://github.com/kinnay/nintendo/wiki).
 
 * [Features](#features)
 * [Contributing](#contributing)
