@@ -5,7 +5,7 @@ from nintendo.aauth import AAuthClient
 from nintendo.dragons import DragonsClient
 from nintendo.nex import backend, authentication, \
 	settings, datastore_smm2 as datastore
-from nintendo.games import Tetris99
+from nintendo.games import SMM2
 from nintendo import switch
 from anynet import http
 import anyio
