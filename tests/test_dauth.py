@@ -116,3 +116,20 @@ async def test_dauth_1300():
 		response = await client.device_token(client.BAAS)
 		token = response["device_auth_token"]
 		assert token == "device token"
+
+@pytest.mark.anyio
+async def test_dauth_error():
+	async def handler(client, request):
+		response = http.HTTPResponse(400)
+		response.json = {
+			"errors": [{"code": "0014", "message": "Invalid parameter in request."}]
+		}
+		return response
+	
+	async with http.serve(handler, "127.0.0.1", 12345):
+		client = dauth.DAuthClient({})
+		client.set_host("127.0.0.1:12345")
+		client.set_system_version(1300)
+		client.set_context(None)
+		with pytest.raises(dauth.DAuthError):
+			await client.challenge()

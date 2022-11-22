@@ -227,7 +227,7 @@ class DAuthClient:
 			logger.error("DAuth server returned errors:")
 			for error in response.json["errors"]:
 				logger.error("  (%s) %s", error["code"], error["message"])
-			raise DAuthError(response, errors)
+			raise DAuthError(response)
 		response.raise_if_error()
 		return response
 		

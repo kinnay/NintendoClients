@@ -75,3 +75,20 @@ async def test_aauth_1500():
 			0x0100123001234000, 0x70000, "device.token", "token.from.dragons"
 		)
 		assert response["application_auth_token"] == "application token"
+
+@pytest.mark.anyio
+async def test_aauth_error():
+	async def handler(client, request):
+		response = http.HTTPResponse(400)
+		response.json = {
+			"errors": [{"code": "0118", "message": "Invalid parameter in request."}]
+		}
+		return response
+	
+	async with http.serve(handler, "127.0.0.1", 12345):
+		client = aauth.AAuthClient()
+		client.set_host("127.0.0.1:12345")
+		client.set_system_version(1500)
+		client.set_context(None)
+		with pytest.raises(aauth.AAuthError):
+			await client.auth_nocert(0, 0, "device.token")

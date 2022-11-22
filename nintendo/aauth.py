@@ -158,7 +158,7 @@ class AAuthClient:
 			logger.error("AAuth server returned errors:")
 			for error in response.json["errors"]:
 				logger.error("  (%s) %s", error["code"], error["message"])
-			raise AAuthError(response, errors)
+			raise AAuthError(response)
 		response.raise_if_error()
 		return response
 	
