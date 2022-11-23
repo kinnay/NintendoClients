@@ -2,11 +2,19 @@
 # Module: <code>nintendo.baas</code>
 Provides a client for the [BaaS server](https://github.com/kinnay/nintendo/wiki/BAAS-Server).
 
+<code>**class** [PresenceState](#presencestate)</code><br>
+<span class="docs">Provides predefined constants for the presence state.</span>
+
 <code>**class** [BAASError](#baaserror)(Exception)</code><br>
 <span class="docs">Raised when the `BaaS` server returns an error code.</span>
 
 <code>**class** [BAASClient](#baasclient)</code><br>
 <span class="docs">The `BaaS` client.</span>
+
+## PresenceState
+`INACTIVE: str = "INACTIVE"`<br>
+`ONLINE: str = "ONLINE"`<br>
+`PLAYING: str = "PLAYING"`
 
 ## BAASError
 <code>response: [HTTPResponse](https://anynet.readthedocs.io/en/latest/reference/http/#httpresponse)</code><br>
@@ -44,3 +52,9 @@ Provides a client for the [BaaS server](https://github.com/kinnay/nintendo/wiki/
 
 <code>**async def register**(access_token: str) -> dict</code><br>
 <span class="docs">Registers a new device account on the `BaaS` server.</span>
+
+<code>**async def update_presence**(user_id: int, device_account_id: int, access_token: str, state: str, title_id: int, presence_group_id: int, app_fields: dict[str, str] = {}) -> dict</code><br>
+<span class="docs">Updates your presence state by patching `/1.0.0/users/<id>/device_accounts/<id>`.</span>
+
+<code>**async def get_friends**(user_id: int, access_token: str, count: int = 300)</code><br>
+<span class="docs">Requests your friend list with `/2.0.0/users/<id>/friends`.</span>

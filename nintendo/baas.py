@@ -1,9 +1,13 @@
 
 from anynet import tls, http
+import json
 
 import logging
 logger = logging.getLogger(__name__)
 
+
+MODULE_ACCOUNT = "nnAccount"
+MODULE_FRIENDS = "nnFriends"
 
 USER_AGENT = {
 	 900: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
@@ -40,6 +44,12 @@ USER_AGENT = {
 LATEST_VERSION = 1501
 
 
+class PresenceState:
+	INACTIVE = "INACTIVE"
+	ONLINE = "ONLINE"
+	PLAYING = "PLAYING"
+
+
 class BAASError(Exception):
 	def __init__(self, response):
 		self.response = response
@@ -56,17 +66,13 @@ class BAASError(Exception):
 
 
 class BAASClient:
-	ACCOUNT = "nnAccount"
-	FRIENDS = "nnFriends"
-	
 	def __init__(self):
 		self.request_callback = http.request
 		
 		self.context = tls.TLSContext()
 		
 		self.host = "e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com"
-		self.user_agent_account = USER_AGENT[LATEST_VERSION] %self.ACCOUNT
-		self.user_agent_friends = USER_AGENT[LATEST_VERSION] %self.FRIENDS
+		self.user_agent = USER_AGENT[LATEST_VERSION]
 		self.power_state = "FA"
 	
 	def set_request_callback(self, callback): self.request_callback = callback
@@ -78,20 +84,33 @@ class BAASClient:
 	def set_system_version(self, version):
 		if version not in USER_AGENT:
 			raise ValueError("Unknown system version")
-		self.user_agent_account = USER_AGENT[version] %self.ACCOUNT
-		self.user_agent_friends = USER_AGENT[version] %self.FRIENDS
+		self.user_agent = USER_AGENT[version]
 		
-	async def request(self, req, token, user_agent, *, use_power_state=False):
+	async def request(self, req, token, module, *, use_power_state=False):
+		# This is somewhat complicated because we want to
+		# put the headers in the correct order
+		content_type = "application/x-www-form-urlencoded"
+		if req.json is not None:
+			content_type = "application/json-patch+json" if req.method == "PATCH" else "application/json"
+		
 		req.headers["Host"] = self.host
-		req.headers["User-Agent"] = user_agent
+		req.headers["User-Agent"] = self.user_agent %module
 		req.headers["Accept"] = "*/*"
+		if module == MODULE_FRIENDS and req.json is not None:
+			req.headers["Content-Type"] = content_type
 		if token:
 			req.headers["Authorization"] = "Bearer " + token
 		if use_power_state:
 			req.headers["X-Nintendo-PowerState"] = self.power_state
-		if req.method == "POST":
-			req.headers["Content-Length"] = 0
-			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
+		
+		if req.method != "GET":
+			if req.json is None:
+				req.headers["Content-Length"] = 0
+				req.headers["Content-Type"] = content_type
+			else:
+				if module != MODULE_FRIENDS:
+					req.headers["Content-Type"] = content_type
+				req.headers["Content-Length"] = 0
 		
 		response = await self.request_callback(self.host, req, self.context)
 		if response.json and "errorCode" in response.json:
@@ -99,7 +118,7 @@ class BAASClient:
 			raise BAASError(response)
 		response.raise_if_error()
 		return response
-		
+	
 	async def authenticate(self, device_token):
 		req = http.HTTPRequest.post("/1.0.0/application/token")
 		req.form = {
@@ -107,7 +126,7 @@ class BAASClient:
 			"assertion": device_token
 		}
 
-		response = await self.request(req, None, self.user_agent_account, use_power_state=True)
+		response = await self.request(req, None, MODULE_ACCOUNT, use_power_state=True)
 		return response.json
 	
 	async def login(self, id, password, access_token, app_token=None, skip_verification=False):
@@ -122,11 +141,30 @@ class BAASClient:
 		if skip_verification:
 			req.form["skipOp2Verification"] = "1"
 			
-		response = await self.request(req, access_token, self.user_agent_account, use_power_state=True)
+		response = await self.request(req, access_token, MODULE_ACCOUNT, use_power_state=True)
 		return response.json
 	
 	async def register(self, access_token):
 		req = http.HTTPRequest.post("/1.0.0/users")
 		
-		response = await self.request(req, access_token, self.user_agent_account)
+		response = await self.request(req, access_token, MODULE_ACCOUNT)
+		return response.json
+	
+	async def update_presence(self, user_id, device_account_id, access_token, state, title_id, presence_group_id, app_fields={}):
+		app_fields = json.dumps(app_fields, separators=(",", ":"))
+		
+		req = http.HTTPRequest.patch("/1.0.0/users/%016x/device_accounts/%016x" %(user_id, device_account_id))
+		req.json = [
+			{"op": "replace", "path": "/presence/state", "value": state},
+			{"op": "add", "path": "/presence/extras/friends/appField", "value": app_fields},
+			{"op": "add", "path": "/presence/extras/friends/appInfo:appId", "value": "%016x" %title_id},
+			{"op": "add", "path": "/presence/extras/friends/appInfo:presenceGroupId", "value": "%016x" %presence_group_id}
+		]
+		response = await self.request(req, access_token, MODULE_FRIENDS)
+		return response.json
+	
+	async def get_friends(self, user_id, access_token, count=300):
+		req = http.HTTPRequest.get("/2.0.0/users/%016x/friends" %user_id)
+		req.params = {"count": 300}
+		response = await self.request(req, access_token, MODULE_FRIENDS)
 		return response.json
