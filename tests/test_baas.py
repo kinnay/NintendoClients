@@ -7,7 +7,7 @@ import struct
 
 AUTHENTICATE_REQUEST = \
 	"POST /1.0.0/application/token HTTP/1.1\r\n" \
-	"Host: 127.0.0.1:12345\r\n" \
+	"Host: localhost:12345\r\n" \
 	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 12.3.0.0; Add-on 12.3.0.0)\r\n" \
 	"Accept: */*\r\n" \
 	"X-Nintendo-PowerState: FA\r\n" \
@@ -17,7 +17,7 @@ AUTHENTICATE_REQUEST = \
 
 LOGIN_REQUEST = \
 	"POST /1.0.0/login HTTP/1.1\r\n" \
-	"Host: 127.0.0.1:12345\r\n" \
+	"Host: localhost:12345\r\n" \
 	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 12.3.0.0; Add-on 12.3.0.0)\r\n" \
 	"Accept: */*\r\n" \
 	"Authorization: Bearer access.token\r\n" \
@@ -30,7 +30,7 @@ LOGIN_REQUEST = \
 
 REGISTER_REQUEST = \
 	"POST /1.0.0/users HTTP/1.1\r\n" \
-	"Host: 127.0.0.1:12345\r\n" \
+	"Host: localhost:12345\r\n" \
 	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 15.3.0.0; Add-on 15.3.0.0)\r\n" \
 	"Accept: */*\r\n" \
 	"Authorization: Bearer access.token\r\n" \
@@ -40,7 +40,7 @@ REGISTER_REQUEST = \
 
 UPDATE_PRESENCE_REQUEST = \
 	"PATCH /1.0.0/users/aaaaaaaaaaaaaaaa/device_accounts/bbbbbbbbbbbbbbbb HTTP/1.1\r\n" \
-	"Host: 127.0.0.1:12345\r\n" \
+	"Host: localhost:12345\r\n" \
 	"User-Agent: libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 15.3.0.0; Add-on 15.3.0.0)\r\n" \
 	"Accept: */*\r\n" \
 	"Content-Type: application/json-patch+json\r\n" \
@@ -54,7 +54,7 @@ UPDATE_PRESENCE_REQUEST = \
 
 GET_FRIENDS_REQUEST = \
 	"GET /2.0.0/users/aaaaaaaaaaaaaaaa/friends?count=300 HTTP/1.1\r\n" \
-	"Host: 127.0.0.1:12345\r\n" \
+	"Host: localhost:12345\r\n" \
 	"User-Agent: libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 15.3.0.0; Add-on 15.3.0.0)\r\n" \
 	"Accept: */*\r\n" \
 	"Authorization: Bearer access.token\r\n" \
@@ -71,9 +71,9 @@ async def test_authentication():
 		}
 		return response
 	
-	async with http.serve(handler, "127.0.0.1", 12345):
+	async with http.serve(handler, "localhost", 12345):
 		client = baas.BAASClient()
-		client.set_host("127.0.0.1:12345")
+		client.set_host("localhost:12345")
 		client.set_system_version(1200)
 		client.set_context(None)
 		response = await client.authenticate("device.token")
@@ -89,9 +89,9 @@ async def test_login():
 		}
 		return response
 	
-	async with http.serve(handler, "127.0.0.1", 12345):
+	async with http.serve(handler, "localhost", 12345):
 		client = baas.BAASClient()
-		client.set_host("127.0.0.1:12345")
+		client.set_host("localhost:12345")
 		client.set_system_version(1200)
 		client.set_context(None)
 		response = await client.login(
@@ -105,9 +105,9 @@ async def test_register():
 		assert request.encode().decode() == REGISTER_REQUEST
 		return http.HTTPResponse(200)
 	
-	async with http.serve(handler, "127.0.0.1", 12345):
+	async with http.serve(handler, "localhost", 12345):
 		client = baas.BAASClient()
-		client.set_host("127.0.0.1:12345")
+		client.set_host("localhost:12345")
 		client.set_system_version(1501)
 		client.set_context(None)
 		await client.register("access.token")
@@ -118,9 +118,9 @@ async def test_update_presence():
 		assert request.encode().decode() == UPDATE_PRESENCE_REQUEST
 		return http.HTTPResponse(200)
 	
-	async with http.serve(handler, "127.0.0.1", 12345):
+	async with http.serve(handler, "localhost", 12345):
 		client = baas.BAASClient()
-		client.set_host("127.0.0.1:12345")
+		client.set_host("localhost:12345")
 		client.set_system_version(1501)
 		client.set_context(None)
 		await client.update_presence(
@@ -134,9 +134,9 @@ async def test_get_friends():
 		assert request.encode().decode() == GET_FRIENDS_REQUEST
 		return http.HTTPResponse(200)
 	
-	async with http.serve(handler, "127.0.0.1", 12345):
+	async with http.serve(handler, "localhost", 12345):
 		client = baas.BAASClient()
-		client.set_host("127.0.0.1:12345")
+		client.set_host("localhost:12345")
 		client.set_system_version(1501)
 		client.set_context(None)
 		await client.get_friends(0xaaaaaaaaaaaaaaaa, "access.token")

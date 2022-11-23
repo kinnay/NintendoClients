@@ -12,7 +12,7 @@ TEST_APPLICATION_ID = 0x010040600C5CE000
 
 PUBLISH_DEVICE_LINKED_ELICENSES_REQUEST = \
 	"POST /v1/rights/publish_device_linked_elicenses HTTP/1.1\r\n" \
-	"Host: 127.0.0.1:12345\r\n" \
+	"Host: localhost:12345\r\n" \
 	"Accept: */*\r\n" \
 	"User-Agent: NintendoSDK Firmware/15.0.0-4.0 (platform:NX; did:0000000012345678; eid:lp1)\r\n" \
 	"DeviceAuthorization: Bearer device.token\r\n" \
@@ -22,7 +22,7 @@ PUBLISH_DEVICE_LINKED_ELICENSES_REQUEST = \
 
 EXERCISE_ELICENSE_REQUEST = \
 	"POST /v1/elicenses/exercise HTTP/1.1\r\n" \
-	"Host: 127.0.0.1:12345\r\n" \
+	"Host: localhost:12345\r\n" \
 	"Accept: */*\r\n" \
 	"User-Agent: NintendoSDK Firmware/15.0.0-4.0 (platform:NX; did:0000000012345678; eid:lp1)\r\n" \
 	"DeviceAuthorization: Bearer device.token\r\n" \
@@ -34,7 +34,7 @@ EXERCISE_ELICENSE_REQUEST = \
 
 AAUTH_TOKEN_REQUEST = \
 	"POST /v1/contents_authorization_token_for_aauth/issue HTTP/1.1\r\n" \
-	"Host: 127.0.0.1:12345\r\n" \
+	"Host: localhost:12345\r\n" \
 	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 15.3.0.0)\r\n" \
 	"Accept: */*\r\n" \
 	"Content-Type: application/json\r\n" \
@@ -53,9 +53,9 @@ async def test_publish_device_linked_elicenses():
 		response.json = {"elicenses": []}
 		return response
 	
-	async with http.serve(handler, "127.0.0.1", 12345):
+	async with http.serve(handler, "localhost", 12345):
 		client = dragons.DragonsClient(TEST_DEVICE_ID)
-		client.set_hosts("127.0.0.1:12345", None, None)
+		client.set_hosts("localhost:12345", None, None)
 		client.set_system_version(1500)
 		client.set_context(None)
 		response = await client.publish_device_linked_elicenses(TEST_DEVICE_TOKEN)
@@ -69,9 +69,9 @@ async def test_exercise_elicense():
 		response = http.HTTPResponse(200)
 		return response
 	
-	async with http.serve(handler, "127.0.0.1", 12345):
+	async with http.serve(handler, "localhost", 12345):
 		client = dragons.DragonsClient(TEST_DEVICE_ID)
-		client.set_hosts("127.0.0.1:12345", None, None)
+		client.set_hosts("localhost:12345", None, None)
 		client.set_system_version(1500)
 		client.set_context(None)
 		await client.exercise_elicense(
@@ -89,9 +89,9 @@ async def test_contents_authorization_token_for_aauth():
 		}
 		return response
 	
-	async with http.serve(handler, "127.0.0.1", 12345):
+	async with http.serve(handler, "localhost", 12345):
 		client = dragons.DragonsClient()
-		client.set_hosts("127.0.0.1:12345", None, None)
+		client.set_hosts("localhost:12345", None, None)
 		client.set_system_version(1500)
 		client.set_context(None)
 		response = await client.contents_authorization_token_for_aauth(
