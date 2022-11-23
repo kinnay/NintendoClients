@@ -131,5 +131,9 @@ async def test_dauth_error():
 		client.set_host("localhost:12345")
 		client.set_system_version(1300)
 		client.set_context(None)
-		with pytest.raises(dauth.DAuthError):
+		try:
 			await client.challenge()
+		except dauth.DAuthError as e:
+			assert e.code == dauth.DAuthError.GENERIC
+		else:
+			pytest.fail("DAuth client should have raised an exception")

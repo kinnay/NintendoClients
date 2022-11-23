@@ -157,7 +157,7 @@ class DAuthError(Exception):
 	
 	def __init__(self, response):
 		self.response = response
-		self.code = response.json["errors"][0]["code"]
+		self.code = int(response.json["errors"][0]["code"])
 		self.message = response.json["errors"][0]["message"]
 	
 	def __str__(self):
