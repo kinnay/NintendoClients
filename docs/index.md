@@ -16,6 +16,7 @@ This package is able to do everything that's required to access a game server. I
 	* `aauth-lp1.ndas.srv.nintendo.net`
 	* `dragons.hac.lp1.dragons.nintendo.net`
 	* `e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com`
+	* `api.lp1.five.nintendo.net`
 * Wii U:
 	* Game servers (`nex`)
 	* `account.nintendo.net`
@@ -64,6 +65,7 @@ Feel free to open a pull request or issue on [github](https://github.com/kinnay/
 * [baas](reference/baas.md)
 * [dauth](reference/dauth.md)
 * [dragons](reference/dragons.md)
+* [five](reference/five.md)
 * [games](reference/games.md)
 * [miis](reference/miis.md)
 * [nasc](reference/nasc.md)
