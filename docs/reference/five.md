@@ -34,7 +34,7 @@ The error can be inspected using the following attributes:
 <span class="docs">Changes the TLS context. By default, the server certificate is verified with `Nintendo CA - G3`.</span>
 
 <code>**def set_host**(url: str) -> None</code><br>
-<span class="docs">Changes the server to which the HTTP requests are sent. The default is `aauth-lp1.ndas.srv.nintendo.net`.
+<span class="docs">Changes the server to which the HTTP requests are sent. The default is `app.lp1.five.nintendo.net`.
 
 <code>**def set_system_version**(version: int) -> None</code></br>
 <span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` up to `15.0.1` are supported.</span>
