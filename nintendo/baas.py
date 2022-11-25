@@ -165,6 +165,6 @@ class BAASClient:
 	
 	async def get_friends(self, user_id, access_token, count=300):
 		req = http.HTTPRequest.get("/2.0.0/users/%016x/friends" %user_id)
-		req.params = {"count": 300}
+		req.params = {"count": count}
 		response = await self.request(req, access_token, MODULE_FRIENDS)
 		return response.json
