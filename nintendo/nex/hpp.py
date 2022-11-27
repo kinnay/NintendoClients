@@ -1,5 +1,5 @@
 
-from nintendo.nex import kerberos, rmc
+from nintendo.nex import kerberos, rmc, streams
 from anynet import http, tls
 import pkg_resources
 import secrets
@@ -41,7 +41,7 @@ class HppClient:
 		
 		data = message.encode()
 		
-		key1 = bytes.fromhex(self.access_key).ljust(8, b"\0")
+		key1 = bytes.fromhex(self.settings["prudp.access_key"]).ljust(8, b"\0")
 		key2 = self.key_derivation.derive_key(self.password.encode(), self.pid)
 		
 		signature1 = hmac.new(key1, data, hashlib.md5).hexdigest()
@@ -61,7 +61,7 @@ class HppClient:
 		req.boundary = "--------BOUNDARY--------" + random
 		req.files = {"file": data}
 		
-		response = await http.request(req, self.context)
+		response = await http.request(self.host(), req, self.context)
 		if response.error():
 			raise ValueError("Hpp request failed with status %i" %response.status_code)
 		
