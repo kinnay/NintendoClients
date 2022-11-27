@@ -1,5 +1,5 @@
 
-from nintendo.nex import kerberos, rmc, streams
+from nintendo.nex import common, kerberos, rmc, streams
 from anynet import http, tls
 import pkg_resources
 import secrets
