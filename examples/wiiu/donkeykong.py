@@ -1,6 +1,5 @@
 
 from nintendo.nex import backend, ranking, datastore, settings
-from nintendo.games import DKCTF
 from nintendo import nnas
 from anynet import http
 import anyio
@@ -19,18 +18,25 @@ LANGUAGE = "en"
 USERNAME = "..." #Nintendo network id
 PASSWORD = "..." #Nintendo network password
 
+TITLE_ID = 0x0005000010138300
+TITLE_VERSION = 17
+
+GAME_SERVER_ID = 0x10144800
+ACCESS_KEY = "7fcf384a"
+NEX_VERSION = 30400
+
 
 async def main():
 	nas = nnas.NNASClient()
 	nas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION)
-	nas.set_title(DKCTF.TITLE_ID_EUR, DKCTF.LATEST_VERSION)
+	nas.set_title(TITLE_ID, TITLE_VERSION)
 	nas.set_locale(REGION, COUNTRY, LANGUAGE)
 	
 	access_token = await nas.login(USERNAME, PASSWORD)
-	nex_token = await nas.get_nex_token(access_token.token, DKCTF.GAME_SERVER_ID)
+	nex_token = await nas.get_nex_token(access_token.token, GAME_SERVER_ID)
 
 	s = settings.default()
-	s.configure(DKCTF.ACCESS_KEY, DKCTF.NEX_VERSION)
+	s.configure(ACCESS_KEY, NEX_VERSION)
 	async with backend.connect(s, nex_token.host, nex_token.port) as be:
 		async with be.login(str(nex_token.pid), nex_token.password) as client:
 			order_param = ranking.RankingOrderParam()

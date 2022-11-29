@@ -5,7 +5,6 @@ from nintendo.aauth import AAuthClient
 from nintendo.dragons import DragonsClient
 from nintendo.nex import backend, authentication, \
 	settings, datastore_smm2 as datastore
-from nintendo.games import SMM2
 from nintendo import switch
 from anynet import http
 import anyio
@@ -40,7 +39,16 @@ ELICENSE_ID = "..." # 32 hex digits
 NA_ID = 0x0123456789abcdef # 16 hex digits
 
 
-HOST = "g%08x-lp1.s.n.srv.nintendo.net" %SMM2.GAME_SERVER_ID
+TITLE_ID = 0x01009B90006DC000
+TITLE_VERSION = 0x60000
+
+GAME_SERVER_ID = 0x22306D00
+ACCESS_KEY = "fdf6617f"
+NEX_VERSION = 40605
+CLIENT_VERSION = 60
+
+
+HOST = "g%08x-lp1.s.n.srv.nintendo.net" %GAME_SERVER_ID
 PORT = 443
 
 
@@ -74,11 +82,11 @@ async def main():
 	device_token_baas = response["device_auth_token"]
 	
 	# Request a contents authorization token from dragons
-	response = await dragons.contents_authorization_token_for_aauth(device_token_dragons, ELICENSE_ID, NA_ID, SMM2.TITLE_ID)
+	response = await dragons.contents_authorization_token_for_aauth(device_token_dragons, ELICENSE_ID, NA_ID, TITLE_ID)
 	contents_token = response["contents_authorization_token"]
 	
 	# Request an application authentication token
-	response = await aauth.auth_digital(SMM2.TITLE_ID, SMM2.LATEST_VERSION, device_token_baas, contents_token)
+	response = await aauth.auth_digital(TITLE_ID, TITLE_VERSION, device_token_baas, contents_token)
 	app_token = response["application_auth_token"]
 	
 	# Request an anonymous access token for baas
@@ -99,7 +107,7 @@ async def main():
 	auth_info.token_type = 2
 	
 	s = settings.load("switch")
-	s.configure(SMM2.ACCESS_KEY, SMM2.NEX_VERSION, SMM2.CLIENT_VERSION)
+	s.configure(ACCESS_KEY, NEX_VERSION, CLIENT_VERSION)
 	async with backend.connect(s, HOST, PORT) as be:
 		async with be.login(str(user_id), auth_info=auth_info) as client:
 			# Search for ninji courses

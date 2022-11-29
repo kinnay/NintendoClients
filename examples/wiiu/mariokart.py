@@ -1,6 +1,5 @@
 
 from nintendo.nex import backend, ranking, datastore, settings
-from nintendo.games import MK8
 from nintendo import nnas
 from anynet import http
 import anyio
@@ -23,6 +22,13 @@ PASSWORD = "..." #Nintendo network password
 
 TRACK_ID = 27 #Mario Kart Stadium
 
+TITLE_ID = 0x000500001010ED00
+TITLE_VERSION = 64
+
+GAME_SERVER_ID = 0x1010EB00
+ACCESS_KEY = "25dbf96a"
+NEX_VERSION = 30504
+
 
 def format_time(score):
 	millisec = score % 1000
@@ -34,14 +40,14 @@ def format_time(score):
 async def main():
 	nas = nnas.NNASClient()
 	nas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION)
-	nas.set_title(MK8.TITLE_ID_EUR, MK8.LATEST_VERSION)
+	nas.set_title(TITLE_ID, LATEST_VERSION)
 	nas.set_locale(REGION_ID, COUNTRY_NAME, LANGUAGE)
 	
 	access_token = await nas.login(USERNAME, PASSWORD)
-	nex_token = await nas.get_nex_token(access_token.token, MK8.GAME_SERVER_ID)
+	nex_token = await nas.get_nex_token(access_token.token, GAME_SERVER_ID)
 	
 	s = settings.default()
-	s.configure(MK8.ACCESS_KEY, MK8.NEX_VERSION)
+	s.configure(ACCESS_KEY, NEX_VERSION)
 	async with backend.connect(s, nex_token.host, nex_token.port) as be:
 		async with be.login(str(nex_token.pid), nex_token.password) as client:
 			ranking_client = ranking.RankingClient(client)

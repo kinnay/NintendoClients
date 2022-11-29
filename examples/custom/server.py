@@ -1,7 +1,6 @@
 
 from nintendo.nex import rmc, kerberos, friends, \
 	authentication, common, settings
-from nintendo.games import Friends
 import collections
 import secrets
 
@@ -96,7 +95,7 @@ class FriendsServer(friends.FriendsServerV1):
 
 async def main():
 	s = settings.load("friends")
-	s.configure(Friends.ACCESS_KEY, Friends.NEX_VERSION)
+	s.configure("ridfebb9", 20000)
 	
 	auth_servers = [
 		AuthenticationServer(s)

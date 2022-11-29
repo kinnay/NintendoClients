@@ -1,6 +1,5 @@
 
 from nintendo.nex import backend, friends, common, settings
-from nintendo.games import Friends
 from nintendo import nnas
 import anyio
 
@@ -20,6 +19,13 @@ PASSWORD = "..." #Nintendo network password
 
 BIRTHDAY = common.DateTime.make(2000, 12, 31)
 
+TITLE_ID = 0x10001C00
+TITLE_VERSION = 0
+
+GAME_SERVER_ID = 0x3200
+ACCESS_KEY = "ridfebb9"
+NEX_VERSION = 20000
+
 
 def print_requests(requests):
 	for request in requests:
@@ -38,17 +44,17 @@ def print_requests(requests):
 async def main():
 	nas = nnas.NNASClient()
 	nas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION)
-	nas.set_title(Friends.TITLE_ID_EUR, Friends.LATEST_VERSION)
+	nas.set_title(TITLE_ID, LATEST_VERSION)
 	nas.set_locale(REGION, COUNTRY, LANGUAGE)
 	
 	access_token = await nas.login(USERNAME, PASSWORD)
-	nex_token = await nas.get_nex_token(access_token.token, Friends.GAME_SERVER_ID)
+	nex_token = await nas.get_nex_token(access_token.token, GAME_SERVER_ID)
 
 	pid = await nas.get_pid(USERNAME)
 	mii = await nas.get_mii(pid)
 	
 	s = settings.load("friends")
-	s.configure(Friends.ACCESS_KEY, Friends.NEX_VERSION)
+	s.configure(ACCESS_KEY, NEX_VERSION)
 	async with backend.connect(s, nex_token.host, nex_token.port) as be:
 		async with be.login(str(nex_token.pid), nex_token.password) as client:
 			nna_info = friends.NNAInfo()

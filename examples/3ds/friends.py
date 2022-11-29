@@ -1,7 +1,6 @@
 
 from nintendo import nasc
 from nintendo.nex import backend, friends, settings
-from nintendo.games import Friends3DS
 import anyio
 
 import logging
@@ -26,17 +25,18 @@ REGION = 3 # EUR
 LANGUAGE = 2
 
 
+
 async def main():
 	client = nasc.NASCClient()
-	client.set_title(Friends3DS.TITLE_ID_EUR, Friends3DS.LATEST_VERSION)
+	client.set_title(0x0004013000003202, 20000)
 	client.set_device(SERIAL_NUMBER, MAC_ADDRESS, DEVICE_CERT, DEVICE_NAME)
 	client.set_locale(REGION, LANGUAGE)
 	client.set_user(PID, PID_HMAC)
 	
-	response = await client.login(Friends3DS.GAME_SERVER_ID)
+	response = await client.login(0x3200)
 
 	s = settings.load("friends")
-	s.configure(Friends3DS.ACCESS_KEY, Friends3DS.NEX_VERSION)
+	s.configure("ridfebb9", 20000)
 	async with backend.connect(s, response.host, response.port) as be:
 		async with be.login(str(PID), NEX_PASSWORD) as client:
 			friends_client = friends.FriendsClientV1(client)

@@ -4,7 +4,6 @@ from nintendo.dauth import DAuthClient
 from nintendo.aauth import AAuthClient
 from nintendo.dragons import DragonsClient
 from nintendo.nex import backend, authentication, matchmaking, settings
-from nintendo.games import ACNH
 from nintendo import switch
 import anyio
 
@@ -37,10 +36,19 @@ PATH_PRODINFO = "/path/to/PRODINFO"
 ELICENSE_ID = "..." # 32 hex digits
 NA_ID = 0x0123456789abcdef # 16 hex digits
 
-
 CODE = "ABCDE" # Dodo code
 
-HOST = "g%08x-lp1.s.n.srv.nintendo.net" %ACNH.GAME_SERVER_ID
+
+TITLE_ID = 0x01006F8002326000
+TITLE_VERSION = 0x1C0000
+
+GAME_SERVER_ID = 0x2EE2E300
+ACCESS_KEY = "v43a10em"
+NEX_VERSION = 40604
+CLIENT_VERSION = 2
+
+
+HOST = "g%08x-lp1.s.n.srv.nintendo.net" %GAME_SERVER_ID
 PORT = 443
 
 
@@ -74,11 +82,11 @@ async def main():
 	device_token_baas = response["device_auth_token"]
 	
 	# Request a contents authorization token from dragons
-	response = await dragons.contents_authorization_token_for_aauth(device_token_dragons, ELICENSE_ID, NA_ID, ACNH.TITLE_ID)
+	response = await dragons.contents_authorization_token_for_aauth(device_token_dragons, ELICENSE_ID, NA_ID, TITLE_ID)
 	contents_token = response["contents_authorization_token"]
 	
 	# Request an application authentication token
-	response = await aauth.auth_digital(ACNH.TITLE_ID, ACNH.LATEST_VERSION, device_token_baas, contents_token)
+	response = await aauth.auth_digital(TITLE_ID, TITLE_VERSION, device_token_baas, contents_token)
 	app_token = response["application_auth_token"]
 	
 	# Request an anonymous access token for baas
@@ -100,7 +108,7 @@ async def main():
 	
 	# Establish connection with nex server
 	s = settings.load("switch")
-	s.configure(ACNH.ACCESS_KEY, ACNH.NEX_VERSION, ACNH.CLIENT_VERSION)
+	s.configure(ACCESS_KEY, NEX_VERSION, CLIENT_VERSION)
 	async with backend.connect(s, HOST, PORT) as be:
 		async with be.login(str(user_id), auth_info=auth_info) as client:
 			mm = matchmaking.MatchmakeExtensionClient(client)

@@ -66,7 +66,6 @@ Feel free to open a pull request or issue on [github](https://github.com/kinnay/
 * [dauth](reference/dauth.md)
 * [dragons](reference/dragons.md)
 * [five](reference/five.md)
-* [games](reference/games.md)
 * [miis](reference/miis.md)
 * [nasc](reference/nasc.md)
 * [nnas](reference/nnas.md)
