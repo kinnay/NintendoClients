@@ -12,17 +12,17 @@ This package is able to do everything that's required to access a game server. I
 
 * Switch:
 	* Game servers (`nex`)
-	* `dauth-lp1.ndas.srv.nintendo.net`
-	* `aauth-lp1.ndas.srv.nintendo.net`
-	* `dragons.hac.lp1.dragons.nintendo.net`
-	* `e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com`
-	* `app.lp1.five.nintendo.net`
+	* https://dauth-lp1.ndas.srv.nintendo.net
+	* https://aauth-lp1.ndas.srv.nintendo.net
+	* https://dragons.hac.lp1.dragons.nintendo.net (partially)
+	* https://e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com (partially)
+	* https://app.lp1.five.nintendo.net
 * Wii U:
 	* Game servers (`nex`)
-	* `account.nintendo.net`
+	* https://account.nintendo.net
 * 3DS:
 	* Game servers (`nex`)
-	* `nasc.nintendowifi.net`
+	* https://nasc.nintendowifi.net
 
 ## Contributing
 Feel free to open a pull request or issue on [github](https://github.com/kinnay/nintendo). If you open a pull request, please try to follow the current code style as much as possible, and consider writing a test for new features and bug fixes.

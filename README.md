@@ -1,21 +1,7 @@
 # Nintendo Clients
 > :warning: Keep in mind that Nintendo is actively banning Switch devices. This package tries to mimic the behavior of a real Switch as closely as possible, but using it is at your own risk. Make sure that you know what you are doing.
 
-This package implements a client for various 3DS, Wii U and Switch servers. The following servers are currently supported:
-
-* Switch
-  * Game servers (NEX)
-  * https://dauth-lp1.ndas.srv.nintendo.net
-  * https://aauth-lp1.ndas.srv.nintendo.net
-  * https://dragons.hac.lp1.dragons.nintendo.net (partially)
-  * https://e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com (partially)
-  * https://app.lp1.five.nintendo.net
-* Wii U
-  * Game servers (NEX)
-  * https://account.nintendo.net (partially)
-* 3DS
-  * Game servers (NEX)
-  * https://nasc.nintendowifi.net (partially)
+This package implements a client for various 3DS, Wii U and Switch servers. Check out the [documentation](nintendoclients.readthedocs.io) for the list of servers that are currently supported.
 
 ### Installation
 This package requires Python 3.8 or later and can be installed with pip: `pip install nintendoclients`.
