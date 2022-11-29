@@ -142,6 +142,20 @@ class DragonsClient:
 		response.raise_if_error()
 		return response
 	
+	async def publish_elicense_archive(self, device_token, challenge, certificate, account_id):
+		req = http.HTTPRequest.post("/v1/elicense_archives/publish")
+		req.json = {
+			"challenge": challenge,
+			"certificate": base64.b64encode(certificate).decode()
+		}
+		
+		response = await self.request(req, self.host_dragons, device_token, account_id=account_id)
+		return response.json
+	
+	async def report_elicense_archive(self, device_token, elicense_archive_id, account_id):
+		req = http.HTTPRequest.put("/v1/elicense_archives/%s/report" %elicense_archive_id)
+		await self.request(req, self.host_dragons, device_token, account_id=account_id)
+	
 	async def publish_device_linked_elicenses(self, device_token):
 		req = http.HTTPRequest.post("/v1/rights/publish_device_linked_elicenses")
 		response = await self.request(req, self.host_dragons, device_token)
