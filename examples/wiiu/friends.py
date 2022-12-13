@@ -44,7 +44,7 @@ def print_requests(requests):
 async def main():
 	nas = nnas.NNASClient()
 	nas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION)
-	nas.set_title(TITLE_ID, LATEST_VERSION)
+	nas.set_title(TITLE_ID, TITLE_VERSION)
 	nas.set_locale(REGION, COUNTRY, LANGUAGE)
 	
 	access_token = await nas.login(USERNAME, PASSWORD)

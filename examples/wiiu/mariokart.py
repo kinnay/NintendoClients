@@ -40,7 +40,7 @@ def format_time(score):
 async def main():
 	nas = nnas.NNASClient()
 	nas.set_device(DEVICE_ID, SERIAL_NUMBER, SYSTEM_VERSION)
-	nas.set_title(TITLE_ID, LATEST_VERSION)
+	nas.set_title(TITLE_ID, TITLE_VERSION)
 	nas.set_locale(REGION_ID, COUNTRY_NAME, LANGUAGE)
 	
 	access_token = await nas.login(USERNAME, PASSWORD)
