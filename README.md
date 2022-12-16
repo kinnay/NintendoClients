@@ -17,7 +17,6 @@ This package does not have a stable interface yet (it may receive backwards comp
     * **smm2_level.py:** Downloads a Super Mario Maker 2 level and its thumbnails, and prints information about both the level and its creator.
     * **smm2_ninji.py:** Requests the list of ninji courses and downloads a replay file.
     * **animalcrossing.py:** Searches for an island by dodo code and prints information about it.
-    * **gamebuilder.py:** Downloads a game from Game Builder Garage, and requests basic metadata such as its creation date.
     <br><br>
 * **wiiu/**
     * **donkeykong.py:** Downloads DKC Tropical Freeze rankings and the replay file of the world record.
@@ -26,8 +25,8 @@ This package does not have a stable interface yet (it may receive backwards comp
     * **friends.py:** Requests your friend list, incoming and outgoing friend requests, and blacklist.
     <br><br>
 * **3ds/**
-	* **friends.py:** Changes your comment to 'Hello World'.
-	<br><br>
+    * **friends.py:** Changes your comment to 'Hello World'.
+    <br><br>
 * **custom/**
     * **server.py:** Shows how to create a simple game server with both an authentication server and a secure server.
     * **server_login.py:** Logs in on a game server and disconnects immediately. This can be used to test custom servers.
