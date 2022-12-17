@@ -1814,7 +1814,7 @@ class MatchMakingClientExt(MatchMakingProtocolExt):
 		
 		#--- response ---
 		stream = streams.StreamIn(data, self.settings)
-		result = stream.bool()
+		result = stream.string()
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("MatchMakingClientExt.get_gathering_relations -> done")
@@ -3655,9 +3655,9 @@ class MatchMakingServerExt(MatchMakingProtocolExt):
 		response = await self.get_gathering_relations(client, id, descr)
 		
 		#--- response ---
-		if not isinstance(response, bool):
-			raise RuntimeError("Expected bool, got %s" %response.__class__.__name__)
-		output.bool(response)
+		if not isinstance(response, str):
+			raise RuntimeError("Expected str, got %s" %response.__class__.__name__)
+		output.string(response)
 	
 	async def handle_delete_from_deletions(self, client, input, output):
 		logger.info("MatchMakingServerExt.delete_from_deletions()")
