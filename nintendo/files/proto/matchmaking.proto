@@ -452,7 +452,7 @@ protocol MatchMaking_Ext : 50 {
 	}
 	
 	method get_gathering_relations(uint32 id, string descr) {
-		bool result;
+		string result;
 	}
 	
 	method delete_from_deletions(list<uint32> deletions, pid pid) {}

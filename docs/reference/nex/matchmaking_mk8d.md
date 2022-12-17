@@ -238,7 +238,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def get_participants_urls**(gids: list[int]) -> list[[GatheringURLs](#gatheringurls)]</code><br>
 <span class="docs">Calls method `4` on the server.</span>
 
-<code>**async def get_gathering_relations**(id: int, descr: str) -> bool</code><br>
+<code>**async def get_gathering_relations**(id: int, descr: str) -> str</code><br>
 <span class="docs">Calls method `5` on the server.</span>
 
 <code>**async def delete_from_deletions**(deletions: list[int], pid: int) -> None</code><br>
@@ -693,7 +693,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def get_participants_urls**(client: [RMCClient](rmc.md#rmcclient), gids: list[int]) -> list[[GatheringURLs](#gatheringurls)]</code><br>
 <span class="docs">Handler for method `4`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_gathering_relations**(client: [RMCClient](rmc.md#rmcclient), id: int, descr: str) -> bool</code><br>
+<code>**async def get_gathering_relations**(client: [RMCClient](rmc.md#rmcclient), id: int, descr: str) -> str</code><br>
 <span class="docs">Handler for method `5`. This method should be overridden by a subclass.</span>
 
 <code>**async def delete_from_deletions**(client: [RMCClient](rmc.md#rmcclient), deletions: list[int], pid: int) -> None</code><br>
