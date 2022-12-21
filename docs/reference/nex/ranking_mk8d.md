@@ -86,6 +86,9 @@ Provides a client and server for the `RankingProtocolMK8D`. This page was genera
 <code>**async def get_competition_info**(param: [CompetitionRankingInfoGetParam](#competitionrankinginfogetparam)) -> list[[CompetitionRankingInfo](#competitionrankinginfo)]</code><br>
 <span class="docs">Calls method `18` on the server.</span>
 
+<code>**async def upload_score_pack**(score_data: [RankingScoreData](#rankingscoredata), metadata: bytes) -> None</code><br>
+<span class="docs">Calls method `19` on the server.</span>
+
 <code>**async def get_commmon_data_by_pid_list**(pids: list[int]) -> [CommonDataList](#commondatalist)</code><br>
 <span class="docs">Calls method `22` on the server.</span>
 
@@ -149,6 +152,9 @@ Provides a client and server for the `RankingProtocolMK8D`. This page was genera
 
 <code>**async def get_competition_info**(client: [RMCClient](rmc.md#rmcclient), param: [CompetitionRankingInfoGetParam](#competitionrankinginfogetparam)) -> list[[CompetitionRankingInfo](#competitionrankinginfo)]</code><br>
 <span class="docs">Handler for method `18`. This method should be overridden by a subclass.</span>
+
+<code>**async def upload_score_pack**(client: [RMCClient](rmc.md#rmcclient), score_data: [RankingScoreData](#rankingscoredata), metadata: bytes) -> None</code><br>
+<span class="docs">Handler for method `19`. This method should be overridden by a subclass.</span>
 
 <code>**async def get_commmon_data_by_pid_list**(client: [RMCClient](rmc.md#rmcclient), pids: list[int]) -> [CommonDataList](#commondatalist)</code><br>
 <span class="docs">Handler for method `22`. This method should be overridden by a subclass.</span>
