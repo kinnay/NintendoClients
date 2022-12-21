@@ -729,6 +729,20 @@ class RankingClientMK8D(RankingProtocolMK8D):
 		logger.info("RankingClientMK8D.get_competition_info -> done")
 		return info
 	
+	async def upload_score_pack(self, score_data, metadata):
+		logger.info("RankingClientMK8D.upload_score_pack()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.add(score_data)
+		stream.qbuffer(metadata)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_UPLOAD_SCORE_PACK, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("RankingClientMK8D.upload_score_pack -> done")
+	
 	async def get_commmon_data_by_pid_list(self, pids):
 		logger.info("RankingClientMK8D.get_commmon_data_by_pid_list()")
 		#--- request ---
@@ -972,8 +986,11 @@ class RankingServerMK8D(RankingProtocolMK8D):
 		output.list(response, output.add)
 	
 	async def handle_upload_score_pack(self, client, input, output):
-		logger.warning("RankingServerMK8D.upload_score_pack is not supported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("RankingServerMK8D.upload_score_pack()")
+		#--- request ---
+		score_data = input.extract(RankingScoreData)
+		metadata = input.qbuffer()
+		await self.upload_score_pack(client, score_data, metadata)
 	
 	async def handle_get_score_pack(self, client, input, output):
 		logger.warning("RankingServerMK8D.get_score_pack is not supported")
@@ -1064,6 +1081,10 @@ class RankingServerMK8D(RankingProtocolMK8D):
 	
 	async def get_competition_info(self, *args):
 		logger.warning("RankingServerMK8D.get_competition_info not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def upload_score_pack(self, *args):
+		logger.warning("RankingServerMK8D.upload_score_pack not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_commmon_data_by_pid_list(self, *args):

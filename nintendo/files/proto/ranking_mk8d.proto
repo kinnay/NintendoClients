@@ -61,7 +61,7 @@ protocol Ranking_MK8D : Ranking {
 		list<CompetitionRankingInfo> info;
 	}
 	
-	method upload_score_pack;
+	method upload_score_pack(RankingScoreData score_data, qbuffer metadata) {}
 	method get_score_pack;
 	method execute_delete_score_job;
 	
