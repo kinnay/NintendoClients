@@ -8,6 +8,7 @@ from nintendo.nex import backend, authentication, \
 from nintendo import switch
 from anynet import http
 import anyio
+import zlib
 
 import logging
 logging.basicConfig(level=logging.INFO)
