@@ -344,7 +344,7 @@ protocol MatchMaking : 21 {
 		list<anydata> gatherings;
 	}
 	
-	method find_by_single_id(list<uint32> id) {
+	method find_by_single_id(uint32 gid) {
 		bool result;
 		anydata gathering;
 	}

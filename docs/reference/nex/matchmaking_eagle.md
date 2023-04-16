@@ -121,7 +121,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def find_by_id**(ids: list[int]) -> list[[Data](common.md)]</code><br>
 <span class="docs">Calls method `20` on the server.</span>
 
-<code>**async def find_by_single_id**(id: list[int]) -> [RMCResponse](common.md)</code><br>
+<code>**async def find_by_single_id**(gid: int) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `21` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>result: bool</code><br>
@@ -546,7 +546,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def find_by_id**(client: [RMCClient](rmc.md#rmcclient), ids: list[int]) -> list[[Data](common.md)]</code><br>
 <span class="docs">Handler for method `20`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_single_id**(client: [RMCClient](rmc.md#rmcclient), id: list[int]) -> [RMCResponse](common.md)</code><br>
+<code>**async def find_by_single_id**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `21`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>result: bool</code><br>
