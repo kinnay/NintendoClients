@@ -1373,11 +1373,11 @@ class MatchMakingClient(MatchMakingProtocol):
 		logger.info("MatchMakingClient.find_by_id -> done")
 		return gatherings
 	
-	async def find_by_single_id(self, id):
+	async def find_by_single_id(self, gid):
 		logger.info("MatchMakingClient.find_by_single_id()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
-		stream.list(id, stream.u32)
+		stream.u32(gid)
 		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_FIND_BY_SINGLE_ID, stream.get())
 		
 		#--- response ---
@@ -3157,8 +3157,8 @@ class MatchMakingServer(MatchMakingProtocol):
 	async def handle_find_by_single_id(self, client, input, output):
 		logger.info("MatchMakingServer.find_by_single_id()")
 		#--- request ---
-		id = input.list(input.u32)
-		response = await self.find_by_single_id(client, id)
+		gid = input.u32()
+		response = await self.find_by_single_id(client, gid)
 		
 		#--- response ---
 		if not isinstance(response, rmc.RMCResponse):
