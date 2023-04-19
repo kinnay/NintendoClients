@@ -12,6 +12,15 @@ class MatchmakeSystem:
 	FRIENDS = 2
 
 
+class SimpleSearchConditionOperator:
+	ANY = 0
+	EQUAL = 1
+	GREATER_THAN = 2
+	LESS_THAN = 3
+	GREATER_THAN_OR_EQUAL = 4
+	LESS_THAN_OR_EQUAL = 5
+
+
 class Gathering(common.Structure):
 	def __init__(self):
 		super().__init__()
@@ -3098,6 +3107,25 @@ class MatchmakeExtensionClientMK8D(MatchmakeExtensionProtocolMK8D):
 		logger.info("MatchmakeExtensionClientMK8D.search_simple_search_object_by_object_ids -> done")
 		return objects
 	
+	async def join_matchmake_session_with_extra_participants(self, gid, join_message, ignore_blacklist, participation_count, extra_participants):
+		logger.info("MatchmakeExtensionClientMK8D.join_matchmake_session_with_extra_participants()")
+		#--- request ---
+		stream = streams.StreamOut(self.settings)
+		stream.u32(gid)
+		stream.string(join_message)
+		stream.bool(ignore_blacklist)
+		stream.u16(participation_count)
+		stream.u32(extra_participants)
+		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_JOIN_MATCHMAKE_SESSION_WITH_EXTRA_PARTICIPANTS, stream.get())
+		
+		#--- response ---
+		stream = streams.StreamIn(data, self.settings)
+		session_key = stream.buffer()
+		if not stream.eof():
+			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
+		logger.info("MatchmakeExtensionClientMK8D.join_matchmake_session_with_extra_participants -> done")
+		return session_key
+	
 	async def create_competition(self, competition):
 		logger.info("MatchmakeExtensionClientMK8D.create_competition()")
 		#--- request ---
@@ -4900,8 +4928,19 @@ class MatchmakeExtensionServerMK8D(MatchmakeExtensionProtocolMK8D):
 		output.list(response, output.add)
 	
 	async def handle_join_matchmake_session_with_extra_participants(self, client, input, output):
-		logger.warning("MatchmakeExtensionServerMK8D.join_matchmake_session_with_extra_participants is not supported")
-		raise common.RMCError("Core::NotImplemented")
+		logger.info("MatchmakeExtensionServerMK8D.join_matchmake_session_with_extra_participants()")
+		#--- request ---
+		gid = input.u32()
+		join_message = input.string()
+		ignore_blacklist = input.bool()
+		participation_count = input.u16()
+		extra_participants = input.u32()
+		response = await self.join_matchmake_session_with_extra_participants(client, gid, join_message, ignore_blacklist, participation_count, extra_participants)
+		
+		#--- response ---
+		if not isinstance(response, bytes):
+			raise RuntimeError("Expected bytes, got %s" %response.__class__.__name__)
+		output.buffer(response)
 	
 	async def handle_custom_get_simple_playing_session(self, client, input, output):
 		logger.warning("MatchmakeExtensionServerMK8D.custom_get_simple_playing_session is not supported")
@@ -5184,6 +5223,10 @@ class MatchmakeExtensionServerMK8D(MatchmakeExtensionProtocolMK8D):
 	
 	async def search_simple_search_object_by_object_ids(self, *args):
 		logger.warning("MatchmakeExtensionServerMK8D.search_simple_search_object_by_object_ids not implemented")
+		raise common.RMCError("Core::NotImplemented")
+	
+	async def join_matchmake_session_with_extra_participants(self, *args):
+		logger.warning("MatchmakeExtensionServerMK8D.join_matchmake_session_with_extra_participants not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def create_competition(self, *args):

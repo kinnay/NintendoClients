@@ -1,6 +1,15 @@
 
 import matchmaking;
 
+enum SimpleSearchConditionOperator {
+	ANY = 0,
+	EQUAL = 1,
+	GREATER_THAN = 2,
+	LESS_THAN = 3,
+	GREATER_THAN_OR_EQUAL  = 4,
+	LESS_THAN_OR_EQUAL = 5
+}
+
 struct SimpleSearchObject {
 	uint32 id;
 	pid owner;
@@ -57,7 +66,10 @@ protocol MatchmakeExtension_MK8D : MatchmakeExtension {
 		list<SimpleSearchObject> objects;
 	}
 	
-	method join_matchmake_session_with_extra_participants;
+	method join_matchmake_session_with_extra_participants(uint32 gid, string join_message, bool ignore_blacklist, uint16 participation_count, uint32 extra_participants) {
+		buffer session_key;
+	}
+
 	method custom_get_simple_playing_session;
 	
 	method create_competition(SimpleSearchObject competition) {
