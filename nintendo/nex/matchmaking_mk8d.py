@@ -279,6 +279,18 @@ class MatchmakeSession(Gathering):
 		self.system_password_enabled = False
 		self.codeword = ""
 	
+	def max_version(self, settings):
+		version = 0
+		if settings["nex.version"] >= 30600:
+			version = 1
+		if settings["nex.version"] >= 30700:
+			version = 2
+		if settings["nex.version"] >= 30800:
+			version = 3
+		if settings["nex.version"] >= 40000:
+			version = 0
+		return version
+	
 	def check_required(self, settings, version):
 		if settings["nex.version"] >= 30500:
 			pass
@@ -286,8 +298,18 @@ class MatchmakeSession(Gathering):
 			pass
 		if settings["nex.version"] >= 30500:
 			pass
+		if settings["nex.version"] >= 30600:
+			if version >= 1:
+				pass
+		if settings["nex.version"] >= 30700:
+			if version >= 2:
+				pass
+		if settings["nex.version"] >= 30800:
+			if version >= 3:
+				pass
 		if settings["nex.version"] >= 40000:
-			pass
+			if version >= 0:
+				pass
 	
 	def load(self, stream, version):
 		self.game_mode = stream.u32()
@@ -302,14 +324,21 @@ class MatchmakeSession(Gathering):
 			self.session_key = stream.buffer()
 		if stream.settings["nex.version"] >= 30500:
 			self.option = stream.u32()
+		if stream.settings["nex.version"] >= 30600:
+			if version >= 1:
+				self.param = stream.extract(MatchmakeParam)
+				self.started_time = stream.datetime()
+		if stream.settings["nex.version"] >= 30700:
+			if version >= 2:
+				self.user_password = stream.string()
+		if stream.settings["nex.version"] >= 30800:
+			if version >= 3:
+				self.refer_gid = stream.u32()
+				self.user_password_enabled = stream.bool()
+				self.system_password_enabled = stream.bool()
 		if stream.settings["nex.version"] >= 40000:
-			self.param = stream.extract(MatchmakeParam)
-			self.started_time = stream.datetime()
-			self.user_password = stream.string()
-			self.refer_gid = stream.u32()
-			self.user_password_enabled = stream.bool()
-			self.system_password_enabled = stream.bool()
-			self.codeword = stream.string()
+			if version >= 0:
+				self.codeword = stream.string()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
@@ -325,14 +354,21 @@ class MatchmakeSession(Gathering):
 			stream.buffer(self.session_key)
 		if stream.settings["nex.version"] >= 30500:
 			stream.u32(self.option)
+		if stream.settings["nex.version"] >= 30600:
+			if version >= 1:
+				stream.add(self.param)
+				stream.datetime(self.started_time)
+		if stream.settings["nex.version"] >= 30700:
+			if version >= 2:
+				stream.string(self.user_password)
+		if stream.settings["nex.version"] >= 30800:
+			if version >= 3:
+				stream.u32(self.refer_gid)
+				stream.bool(self.user_password_enabled)
+				stream.bool(self.system_password_enabled)
 		if stream.settings["nex.version"] >= 40000:
-			stream.add(self.param)
-			stream.datetime(self.started_time)
-			stream.string(self.user_password)
-			stream.u32(self.refer_gid)
-			stream.bool(self.user_password_enabled)
-			stream.bool(self.system_password_enabled)
-			stream.string(self.codeword)
+			if version >= 0:
+				stream.string(self.codeword)
 common.DataHolder.register(MatchmakeSession, "MatchmakeSession")
 
 

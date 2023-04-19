@@ -1189,15 +1189,36 @@ If `nex.version` >= 30500:<br>
 <span class="docs">
 <code>option: int = 0</code><br>
 </span><br>
-If `nex.version` >= 40000:<br>
+If `nex.version` >= 30600:<br>
+<span class="docs">
+If `revision` >= 1:<br>
 <span class="docs">
 <code>param: [MatchmakeParam](#matchmakeparam) = [MatchmakeParam](#matchmakeparam)()</code><br>
 <code>started_time: [DateTime](common.md#datetime) = [DateTime](common.md#datetime).never()</code><br>
+</span><br>
+</span><br>
+If `nex.version` >= 30700:<br>
+<span class="docs">
+If `revision` >= 2:<br>
+<span class="docs">
 <code>user_password: str = ""</code><br>
+</span><br>
+</span><br>
+If `nex.version` >= 30800:<br>
+<span class="docs">
+If `revision` >= 3:<br>
+<span class="docs">
 <code>refer_gid: int = 0</code><br>
 <code>user_password_enabled: bool = False</code><br>
 <code>system_password_enabled: bool = False</code><br>
+</span><br>
+</span><br>
+If `nex.version` >= 40000:<br>
+<span class="docs">
+If `revision` >= 0:<br>
+<span class="docs">
 <code>codeword: str = ""</code><br>
+</span><br>
 </span><br>
 </span><br>
 
