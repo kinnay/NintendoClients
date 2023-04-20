@@ -379,39 +379,39 @@ class CompetitionRankingScoreInfo(common.Structure):
 class CompetitionRankingUploadScoreParam(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
+		self.id = None
+		self.season_id = None
 		self.unk3 = None
-		self.unk4 = None
-		self.unk5 = None
-		self.unk6 = None
-		self.unk7 = None
+		self.score = None
+		self.team_id = None
+		self.team_score = None
+		self.is_first_upload = None
 		self.metadata = None
 	
 	def check_required(self, settings, version):
-		for field in ['unk1', 'unk2', 'unk3', 'unk4', 'unk5', 'unk6', 'unk7', 'metadata']:
+		for field in ['id', 'season_id', 'unk3', 'score', 'team_id', 'team_score', 'is_first_upload', 'metadata']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk1 = stream.u32()
-		self.unk2 = stream.u32()
+		self.id = stream.u32()
+		self.season_id = stream.u32()
 		self.unk3 = stream.u32()
-		self.unk4 = stream.u32()
-		self.unk5 = stream.u8()
-		self.unk6 = stream.u32()
-		self.unk7 = stream.bool()
+		self.score = stream.u32()
+		self.team_id = stream.u8()
+		self.team_score = stream.u32()
+		self.is_first_upload = stream.bool()
 		self.metadata = stream.qbuffer()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.u32(self.unk1)
-		stream.u32(self.unk2)
+		stream.u32(self.id)
+		stream.u32(self.season_id)
 		stream.u32(self.unk3)
-		stream.u32(self.unk4)
-		stream.u8(self.unk5)
-		stream.u32(self.unk6)
-		stream.bool(self.unk7)
+		stream.u32(self.score)
+		stream.u8(self.team_id)
+		stream.u32(self.team_score)
+		stream.bool(self.is_first_upload)
 		stream.qbuffer(self.metadata)
 
 

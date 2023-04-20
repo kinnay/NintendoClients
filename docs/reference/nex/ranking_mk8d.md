@@ -257,13 +257,13 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: int</code><br>
-<code>unk2: int</code><br>
+<code>id: int</code><br>
+<code>season_id: int</code><br>
 <code>unk3: int</code><br>
-<code>unk4: int</code><br>
-<code>unk5: int</code><br>
-<code>unk6: int</code><br>
-<code>unk7: bool</code><br>
+<code>score: int</code><br>
+<code>team_id: int</code><br>
+<code>team_score: int</code><br>
+<code>is_first_upload: bool</code><br>
 <code>metadata: bytes</code><br>
 </span><br>
 

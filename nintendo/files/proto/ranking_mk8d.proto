@@ -38,13 +38,13 @@ struct CompetitionRankingScoreInfo {
 }
 
 struct CompetitionRankingUploadScoreParam {
-	uint32 unk1;
-	uint32 unk2;
+	uint32 id;
+	uint32 season_id;
 	uint32 unk3;
-	uint32 unk4;
-	uint8 unk5;
-	uint32 unk6;
-	bool unk7;
+	uint32 score;
+	uint8 team_id;
+	uint32 team_score;
+	bool is_first_upload;
 	qbuffer metadata;
 }
 
