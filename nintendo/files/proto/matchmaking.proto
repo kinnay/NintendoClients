@@ -96,14 +96,31 @@ struct MatchmakeSession : Gathering {
 		uint32 option = 0;
 	}
 	
+	nex 30600 {
+		revision 1 {
+			MatchmakeParam param;
+			datetime started_time = 0;
+		}
+	}
+
+	nex 30700 {
+		revision 2 {
+			string user_password = "";
+		}
+	}
+
+	nex 30800 {
+		revision 3 {
+			uint32 refer_gid = 0;
+			bool user_password_enabled = false;
+			bool system_password_enabled = false;
+		}
+	}
+
 	nex 40000 {
-		MatchmakeParam param;
-		datetime started_time = 0;
-		string user_password = "";
-		uint32 refer_gid = 0;
-		bool user_password_enabled = false;
-		bool system_password_enabled = false;
-		string codeword = "";
+		revision 0 {
+			string codeword = "";
+		}
 	}
 }
 

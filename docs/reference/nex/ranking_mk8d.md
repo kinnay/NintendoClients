@@ -210,9 +210,9 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: int</code><br>
-<code>unk2: int</code><br>
-<code>unk3: list[int]</code><br>
+<code>id: int</code><br>
+<code>num_participants: int</code><br>
+<code>team_scores: list[int]</code><br>
 </span><br>
 
 ## CompetitionRankingInfoGetParam
@@ -221,7 +221,7 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk: int</code><br>
+<code>rank_order: int</code><br>
 <code>range: [ResultRange](common.md#resultrange) = [ResultRange](common.md#resultrange)()</code><br>
 </span><br>
 
@@ -231,11 +231,11 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: int</code><br>
+<code>rank: int</code><br>
 <code>pid: int</code><br>
-<code>unk2: int</code><br>
-<code>datetime: [DateTime](common.md#datetime)</code><br>
-<code>unk3: int</code><br>
+<code>score: int</code><br>
+<code>last_update: [DateTime](common.md#datetime)</code><br>
+<code>team_id: int = 255</code><br>
 <code>metadata: bytes</code><br>
 </span><br>
 
@@ -245,10 +245,10 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: int</code><br>
+<code>season_id: int</code><br>
 <code>scores: list[[CompetitionRankingScoreData](#competitionrankingscoredata)]</code><br>
-<code>unk2: int</code><br>
-<code>unk3: list[int]</code><br>
+<code>num_participants: int</code><br>
+<code>team_scores: list[int]</code><br>
 </span><br>
 
 ## CompetitionRankingUploadScoreParam
@@ -257,13 +257,13 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: int</code><br>
-<code>unk2: int</code><br>
+<code>id: int</code><br>
+<code>season_id: int</code><br>
 <code>unk3: int</code><br>
-<code>unk4: int</code><br>
-<code>unk5: int</code><br>
-<code>unk6: int</code><br>
-<code>unk7: bool</code><br>
+<code>score: int</code><br>
+<code>team_id: int</code><br>
+<code>team_score: int</code><br>
+<code>is_first_upload: bool</code><br>
 <code>metadata: bytes</code><br>
 </span><br>
 

@@ -28,6 +28,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <span class="docs">The server for the `MatchmakeExtensionProtocolMK8D`.</span>
 
 <code>**class** [MatchmakeSystem](#matchmakesystem)</code><br>
+<code>**class** [SimpleSearchConditionOperator](#simplesearchconditionoperator)</code><br>
 
 <code>**class** [AutoMatchmakeParam](#automatchmakeparam)([Structure](common.md))</code><br>
 <code>**class** [CreateMatchmakeSessionParam](#creatematchmakesessionparam)([Structure](common.md))</code><br>
@@ -495,6 +496,9 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def search_simple_search_object_by_object_ids**(ids: list[int]) -> list[[SimpleSearchObject](#simplesearchobject)]</code><br>
 <span class="docs">Calls method `58` on the server.</span>
 
+<code>**async def join_matchmake_session_with_extra_participants**(gid: int, join_message: str, ignore_blacklist: bool, participation_count: int, extra_participants: int) -> bytes</code><br>
+<span class="docs">Calls method `59` on the server.</span>
+
 <code>**async def create_competition**(competition: [SimpleSearchObject](#simplesearchobject)) -> [SimpleSearchObject](#simplesearchobject)</code><br>
 <span class="docs">Calls method `61` on the server.</span>
 
@@ -956,6 +960,9 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def search_simple_search_object_by_object_ids**(client: [RMCClient](rmc.md#rmcclient), ids: list[int]) -> list[[SimpleSearchObject](#simplesearchobject)]</code><br>
 <span class="docs">Handler for method `58`. This method should be overridden by a subclass.</span>
 
+<code>**async def join_matchmake_session_with_extra_participants**(client: [RMCClient](rmc.md#rmcclient), gid: int, join_message: str, ignore_blacklist: bool, participation_count: int, extra_participants: int) -> bytes</code><br>
+<span class="docs">Handler for method `59`. This method should be overridden by a subclass.</span>
+
 <code>**async def create_competition**(client: [RMCClient](rmc.md#rmcclient), competition: [SimpleSearchObject](#simplesearchobject)) -> [SimpleSearchObject](#simplesearchobject)</code><br>
 <span class="docs">Handler for method `61`. This method should be overridden by a subclass.</span>
 
@@ -976,6 +983,17 @@ This class defines the following constants:<br>
 <span class="docs">
 `GLOBAL = 1`<br>
 `FRIENDS = 2`<br>
+</span>
+
+## SimpleSearchConditionOperator
+This class defines the following constants:<br>
+<span class="docs">
+`ANY = 0`<br>
+`EQUAL = 1`<br>
+`GREATER_THAN = 2`<br>
+`LESS_THAN = 3`<br>
+`GREATER_THAN_OR_EQUAL = 4`<br>
+`LESS_THAN_OR_EQUAL = 5`<br>
 </span>
 
 ## AutoMatchmakeParam
@@ -1243,15 +1261,36 @@ If `nex.version` >= 30500:<br>
 <span class="docs">
 <code>option: int = 0</code><br>
 </span><br>
-If `nex.version` >= 40000:<br>
+If `nex.version` >= 30600:<br>
+<span class="docs">
+If `revision` >= 1:<br>
 <span class="docs">
 <code>param: [MatchmakeParam](#matchmakeparam) = [MatchmakeParam](#matchmakeparam)()</code><br>
 <code>started_time: [DateTime](common.md#datetime) = [DateTime](common.md#datetime).never()</code><br>
+</span><br>
+</span><br>
+If `nex.version` >= 30700:<br>
+<span class="docs">
+If `revision` >= 2:<br>
+<span class="docs">
 <code>user_password: str = ""</code><br>
+</span><br>
+</span><br>
+If `nex.version` >= 30800:<br>
+<span class="docs">
+If `revision` >= 3:<br>
+<span class="docs">
 <code>refer_gid: int = 0</code><br>
 <code>user_password_enabled: bool = False</code><br>
 <code>system_password_enabled: bool = False</code><br>
+</span><br>
+</span><br>
+If `nex.version` >= 40000:<br>
+<span class="docs">
+If `revision` >= 0:<br>
+<span class="docs">
 <code>codeword: str = ""</code><br>
+</span><br>
 </span><br>
 </span><br>
 
