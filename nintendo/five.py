@@ -42,9 +42,10 @@ USER_AGENT = {
 	1600: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 16.2.0.0; Add-on 16.2.0.0)",
 	1601: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 16.2.0.0; Add-on 16.2.0.0)",
 	1602: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 16.2.0.0; Add-on 16.2.0.0)",
+	1603: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 16.2.0.0; Add-on 16.2.0.0)",
 }
 
-LATEST_VERSION = 1602
+LATEST_VERSION = 1603
 
 LANGUAGES = [
 	"en-US", "en-GB", "ja", "fr", "de", "es-419", "es", "it", "nl"
