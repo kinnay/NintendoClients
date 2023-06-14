@@ -15,8 +15,8 @@ struct SimpleSearchObject {
 	pid owner;
 	list<uint32> attributes;
 	qbuffer metadata;
-	uint32 unk2;
-	string code;
+	uint32 community_id;
+	string community_code;
 	SimpleSearchDateTimeAttribute datetime;
 	
 	nex 40000 {
@@ -28,19 +28,19 @@ struct SimpleSearchObject {
 }
 
 struct SimpleSearchDateTimeAttribute {
-	uint32 unk1;
-	uint32 unk2;
-	uint32 unk3;
-	uint32 unk4;
-	datetime start;
-	datetime end;
+	uint32 start_daytime;
+	uint32 end_daytime;
+	uint32 start_time;
+	uint32 end_time;
+	datetime start_datetime;
+	datetime end_datetime;
 }
 
 struct SimpleSearchParam {
 	uint32 id = 0;
 	pid owner = 0;
 	list<SimpleSearchCondition> conditions = [];
-	string code = "";
+	string community_code = "";
 	ResultRange range;
 	datetime datetime = never;
 }

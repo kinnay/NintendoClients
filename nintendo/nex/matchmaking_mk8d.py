@@ -957,8 +957,8 @@ class SimpleSearchObject(common.Structure):
 		self.owner = None
 		self.attributes = None
 		self.metadata = None
-		self.unk2 = None
-		self.code = None
+		self.community_id = None
+		self.community_code = None
 		self.datetime = SimpleSearchDateTimeAttribute()
 		self.unk3 = None
 		self.unk4 = None
@@ -970,7 +970,7 @@ class SimpleSearchObject(common.Structure):
 		return version
 	
 	def check_required(self, settings, version):
-		for field in ['id', 'owner', 'attributes', 'metadata', 'unk2', 'code']:
+		for field in ['id', 'owner', 'attributes', 'metadata', 'community_id', 'community_code']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 		if settings["nex.version"] >= 40000:
@@ -984,8 +984,8 @@ class SimpleSearchObject(common.Structure):
 		self.owner = stream.pid()
 		self.attributes = stream.list(stream.u32)
 		self.metadata = stream.qbuffer()
-		self.unk2 = stream.u32()
-		self.code = stream.string()
+		self.community_id = stream.u32()
+		self.community_code = stream.string()
 		self.datetime = stream.extract(SimpleSearchDateTimeAttribute)
 		if stream.settings["nex.version"] >= 40000:
 			if version >= 1:
@@ -998,8 +998,8 @@ class SimpleSearchObject(common.Structure):
 		stream.pid(self.owner)
 		stream.list(self.attributes, stream.u32)
 		stream.qbuffer(self.metadata)
-		stream.u32(self.unk2)
-		stream.string(self.code)
+		stream.u32(self.community_id)
+		stream.string(self.community_code)
 		stream.add(self.datetime)
 		if stream.settings["nex.version"] >= 40000:
 			if version >= 1:
@@ -1010,34 +1010,34 @@ class SimpleSearchObject(common.Structure):
 class SimpleSearchDateTimeAttribute(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
-		self.unk3 = None
-		self.unk4 = None
-		self.start = None
-		self.end = None
+		self.start_daytime = None
+		self.end_daytime = None
+		self.start_time = None
+		self.end_time = None
+		self.start_datetime = None
+		self.end_datetime = None
 	
 	def check_required(self, settings, version):
-		for field in ['unk1', 'unk2', 'unk3', 'unk4', 'start', 'end']:
+		for field in ['start_daytime', 'end_daytime', 'start_time', 'end_time', 'start_datetime', 'end_datetime']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk1 = stream.u32()
-		self.unk2 = stream.u32()
-		self.unk3 = stream.u32()
-		self.unk4 = stream.u32()
-		self.start = stream.datetime()
-		self.end = stream.datetime()
+		self.start_daytime = stream.u32()
+		self.end_daytime = stream.u32()
+		self.start_time = stream.u32()
+		self.end_time = stream.u32()
+		self.start_datetime = stream.datetime()
+		self.end_datetime = stream.datetime()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.u32(self.unk1)
-		stream.u32(self.unk2)
-		stream.u32(self.unk3)
-		stream.u32(self.unk4)
-		stream.datetime(self.start)
-		stream.datetime(self.end)
+		stream.u32(self.start_daytime)
+		stream.u32(self.end_daytime)
+		stream.u32(self.start_time)
+		stream.u32(self.end_time)
+		stream.datetime(self.start_datetime)
+		stream.datetime(self.end_datetime)
 
 
 class SimpleSearchParam(common.Structure):
@@ -1046,7 +1046,7 @@ class SimpleSearchParam(common.Structure):
 		self.id = 0
 		self.owner = 0
 		self.conditions = []
-		self.code = ""
+		self.community_code = ""
 		self.range = common.ResultRange()
 		self.datetime = common.DateTime(0)
 	
@@ -1057,7 +1057,7 @@ class SimpleSearchParam(common.Structure):
 		self.id = stream.u32()
 		self.owner = stream.pid()
 		self.conditions = stream.list(SimpleSearchCondition)
-		self.code = stream.string()
+		self.community_code = stream.string()
 		self.range = stream.extract(common.ResultRange)
 		self.datetime = stream.datetime()
 	
@@ -1066,7 +1066,7 @@ class SimpleSearchParam(common.Structure):
 		stream.u32(self.id)
 		stream.pid(self.owner)
 		stream.list(self.conditions, stream.add)
-		stream.string(self.code)
+		stream.string(self.community_code)
 		stream.add(self.range)
 		stream.datetime(self.datetime)
 
