@@ -1400,12 +1400,12 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: int</code><br>
-<code>unk2: int</code><br>
-<code>unk3: int</code><br>
-<code>unk4: int</code><br>
-<code>start: [DateTime](common.md#datetime)</code><br>
-<code>end: [DateTime](common.md#datetime)</code><br>
+<code>start_daytime: int</code><br>
+<code>end_daytime: int</code><br>
+<code>start_time: int</code><br>
+<code>end_time: int</code><br>
+<code>start_datetime: [DateTime](common.md#datetime)</code><br>
+<code>end_datetime: [DateTime](common.md#datetime)</code><br>
 </span><br>
 
 ## SimpleSearchObject
@@ -1418,8 +1418,8 @@ The following fields are defined in this class:<br>
 <code>owner: int</code><br>
 <code>attributes: list[int]</code><br>
 <code>metadata: bytes</code><br>
-<code>unk2: int</code><br>
-<code>code: str</code><br>
+<code>community_id: int</code><br>
+<code>community_code: str</code><br>
 <code>datetime: [SimpleSearchDateTimeAttribute](#simplesearchdatetimeattribute) = [SimpleSearchDateTimeAttribute](#simplesearchdatetimeattribute)()</code><br>
 If `nex.version` >= 40000:<br>
 <span class="docs">
@@ -1440,7 +1440,7 @@ The following fields are defined in this class:<br>
 <code>id: int = 0</code><br>
 <code>owner: int = 0</code><br>
 <code>conditions: list[[SimpleSearchCondition](#simplesearchcondition)] = []</code><br>
-<code>code: str = ""</code><br>
+<code>community_code: str = ""</code><br>
 <code>range: [ResultRange](common.md#resultrange) = [ResultRange](common.md#resultrange)()</code><br>
 <code>datetime: [DateTime](common.md#datetime) = [DateTime](common.md#datetime).never()</code><br>
 </span><br>
