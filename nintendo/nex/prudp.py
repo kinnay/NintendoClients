@@ -896,12 +896,12 @@ class PRUDPClient:
 		packet.source_type = self.local_type
 		packet.dest_port = self.remote_port
 		packet.dest_type = self.remote_type
-		if not packet.flags & FLAG_ACK:
+		if not packet.flags & (FLAG_ACK | FLAG_MULTI_ACK):
 			packet.packet_id = self.sequence_mgr.assign(packet)
 		if packet.type != TYPE_SYN:
 			packet.session_id = self.local_session_id
 		
-		if packet.type == TYPE_DATA and not packet.flags & FLAG_ACK:
+		if packet.type == TYPE_DATA and not packet.flags & (FLAG_ACK | FLAG_MULTI_ACK):
 			packet.payload = self.payload_encoder.encode(packet)
 		
 		if packet.type == TYPE_SYN:
