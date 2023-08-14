@@ -73,7 +73,7 @@ class ProdInfo:
 		initial = self.data[0x3AE0 : 0x3AF0]
 		cipher = self.data[0x3AF0 : 0x3BF0]
 		
-		kek = self.keys["ssl_rsa_kek"]
+		kek = self.keys["ssl_rsa_kek_personalized"] if "ssl_rsa_kek_personalized" in self.keys else self.keys["ssl_rsa_kek"]
 		aes = AES.new(kek, AES.MODE_CTR, nonce=b"", initial_value=initial)
 		d = int.from_bytes(aes.decrypt(cipher), "big")
 		
