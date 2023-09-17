@@ -238,11 +238,11 @@ protocol Friends_V1 : 101 {
 		list<FriendRelationship> friend_relationships;
 	}
 
-	method get_friend_relationships(list<uint32> unk) {
+	method get_friend_relationships(list<pid> principal_ids) {
 		list<FriendRelationship> friend_relationships;
 	}
 
-	method add_friend_by_principal_id(uint64 unk, pid pid) {
+	method add_friend_by_principal_id(uint64 friend_seed, pid pid) {
 		FriendRelationship friend_relationship;
 	}
 	
@@ -259,7 +259,7 @@ protocol Friends_V1 : 101 {
 	
 	method update_black_list(list<uint32> unk) {}
 
-	method sync_friend(uint64 unk1, list<uint32> unk2, list<uint64> unk3) {
+	method sync_friend(uint64 friend_seed, list<pid> principal_ids, list<uint64> unk) {
 		list<FriendRelationship> friend_list;
 	}
 
@@ -268,7 +268,7 @@ protocol Friends_V1 : 101 {
 	method update_comment(string comment) {}
 	method update_picture(uint32 unk, buffer picture) {}
 
-	method get_friend_presence(list<uint32> unk) {
+	method get_friend_presence(list<pid> principal_ids) {
 		list<FriendPresence> friend_presence_list;
 	}
 	
@@ -276,11 +276,11 @@ protocol Friends_V1 : 101 {
 		list<FriendComment> comments;
 	}
 
-	method get_friend_picture(list<uint32> unk) {
+	method get_friend_picture(list<pid> principal_ids) {
 		list<FriendPicture> friend_pictures;
 	}
 
-	method get_friend_persistent_info(list<uint32> unk) {
+	method get_friend_persistent_info(list<pid> principal_ids) {
 		list<FriendPersistentInfo> persistent_infos;
 	}
 
