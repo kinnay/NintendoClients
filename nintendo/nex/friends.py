@@ -271,27 +271,27 @@ common.DataHolder.register(GameKey, "GameKey")
 class Mii(common.Data):
 	def __init__(self):
 		super().__init__()
+		self.name = None
 		self.unk1 = None
 		self.unk2 = None
-		self.unk3 = None
 		self.mii_data = None
 	
 	def check_required(self, settings, version):
-		for field in ['unk1', 'unk2', 'unk3', 'mii_data']:
+		for field in ['name', 'unk1', 'unk2', 'mii_data']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk1 = stream.string()
-		self.unk2 = stream.bool()
-		self.unk3 = stream.u8()
+		self.name = stream.string()
+		self.unk1 = stream.bool()
+		self.unk2 = stream.u8()
 		self.mii_data = stream.buffer()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.string(self.unk1)
-		stream.bool(self.unk2)
-		stream.u8(self.unk3)
+		stream.string(self.name)
+		stream.bool(self.unk1)
+		stream.u8(self.unk2)
 		stream.buffer(self.mii_data)
 common.DataHolder.register(Mii, "Mii")
 

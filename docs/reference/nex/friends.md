@@ -581,9 +581,9 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: str</code><br>
-<code>unk2: bool</code><br>
-<code>unk3: int</code><br>
+<code>name: str</code><br>
+<code>unk1: bool</code><br>
+<code>unk2: int</code><br>
 <code>mii_data: bytes</code><br>
 </span><br>
 

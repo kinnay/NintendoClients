@@ -67,9 +67,9 @@ struct GameKey : Data {
 }
 
 struct Mii : Data {
-	string unk1;
-	bool unk2;
-	uint8 unk3;
+	string name;
+	bool unk1;
+	uint8 unk2;
 	buffer mii_data;
 }
 
