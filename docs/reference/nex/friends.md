@@ -532,9 +532,9 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: int</code><br>
-<code>unk2: int</code><br>
-<code>unk3: int</code><br>
+<code>pid: int</code><br>
+<code>friend_code: int</code><br>
+<code>is_complete: int</code><br>
 </span><br>
 
 ## FriendRequest

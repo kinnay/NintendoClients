@@ -56,9 +56,9 @@ struct FriendPresence : Data {
 }
 
 struct FriendRelationship : Data {
-	uint32 unk1;
-	uint64 unk2;
-	uint8 unk3;
+	pid pid;
+	uint64 friend_code;
+	uint8 is_complete;
 }
 
 struct GameKey : Data {
