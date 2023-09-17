@@ -522,7 +522,7 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk: int</code><br>
+<code>pid: int</code><br>
 <code>presence: [NintendoPresence](#nintendopresence) = [NintendoPresence](#nintendopresence)()</code><br>
 </span><br>
 

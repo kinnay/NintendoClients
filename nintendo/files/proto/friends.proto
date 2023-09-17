@@ -51,7 +51,7 @@ struct FriendPicture : Data {
 }
 
 struct FriendPresence : Data {
-	uint32 unk;
+	pid pid;
 	NintendoPresence presence;
 }
 

@@ -204,21 +204,21 @@ common.DataHolder.register(FriendPicture, "FriendPicture")
 class FriendPresence(common.Data):
 	def __init__(self):
 		super().__init__()
-		self.unk = None
+		self.pid = None
 		self.presence = NintendoPresence()
 	
 	def check_required(self, settings, version):
-		for field in ['unk']:
+		for field in ['pid']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk = stream.u32()
+		self.pid = stream.pid()
 		self.presence = stream.extract(NintendoPresence)
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.u32(self.unk)
+		stream.pid(self.pid)
 		stream.add(self.presence)
 common.DataHolder.register(FriendPresence, "FriendPresence")
 
