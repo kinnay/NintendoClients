@@ -80,25 +80,25 @@ class FriendKey(common.Structure):
 class FriendMii(common.Data):
 	def __init__(self):
 		super().__init__()
-		self.unk1 = None
+		self.pid = None
 		self.mii = Mii()
-		self.unk2 = None
+		self.unk1 = None
 	
 	def check_required(self, settings, version):
-		for field in ['unk1', 'unk2']:
+		for field in ['pid', 'unk1']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk1 = stream.u32()
+		self.pid = stream.pid()
 		self.mii = stream.extract(Mii)
-		self.unk2 = stream.datetime()
+		self.unk1 = stream.datetime()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.u32(self.unk1)
+		stream.pid(self.pid)
 		stream.add(self.mii)
-		stream.datetime(self.unk2)
+		stream.datetime(self.unk1)
 common.DataHolder.register(FriendMii, "FriendMii")
 
 

@@ -470,9 +470,9 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: int</code><br>
+<code>pid: int</code><br>
 <code>mii: [Mii](#mii) = [Mii](#mii)()</code><br>
-<code>unk2: [DateTime](common.md#datetime)</code><br>
+<code>unk1: [DateTime](common.md#datetime)</code><br>
 </span><br>
 
 ## FriendMiiList

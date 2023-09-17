@@ -19,9 +19,9 @@ struct FriendKey {
 }
 
 struct FriendMii : Data {
-	uint32 unk1;
+	pid pid;
 	Mii mii;
-	datetime unk2;
+	datetime unk1;
 }
 
 struct FriendMiiList : Data {
