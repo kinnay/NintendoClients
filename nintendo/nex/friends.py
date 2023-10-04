@@ -80,25 +80,25 @@ class FriendKey(common.Structure):
 class FriendMii(common.Data):
 	def __init__(self):
 		super().__init__()
-		self.unk1 = None
+		self.pid = None
 		self.mii = Mii()
-		self.unk2 = None
+		self.unk1 = None
 	
 	def check_required(self, settings, version):
-		for field in ['unk1', 'unk2']:
+		for field in ['pid', 'unk1']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk1 = stream.u32()
+		self.pid = stream.pid()
 		self.mii = stream.extract(Mii)
-		self.unk2 = stream.datetime()
+		self.unk1 = stream.datetime()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.u32(self.unk1)
+		stream.pid(self.pid)
 		stream.add(self.mii)
-		stream.datetime(self.unk2)
+		stream.datetime(self.unk1)
 common.DataHolder.register(FriendMii, "FriendMii")
 
 
@@ -204,21 +204,21 @@ common.DataHolder.register(FriendPicture, "FriendPicture")
 class FriendPresence(common.Data):
 	def __init__(self):
 		super().__init__()
-		self.unk = None
+		self.pid = None
 		self.presence = NintendoPresence()
 	
 	def check_required(self, settings, version):
-		for field in ['unk']:
+		for field in ['pid']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk = stream.u32()
+		self.pid = stream.pid()
 		self.presence = stream.extract(NintendoPresence)
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.u32(self.unk)
+		stream.pid(self.pid)
 		stream.add(self.presence)
 common.DataHolder.register(FriendPresence, "FriendPresence")
 
@@ -226,25 +226,25 @@ common.DataHolder.register(FriendPresence, "FriendPresence")
 class FriendRelationship(common.Data):
 	def __init__(self):
 		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
-		self.unk3 = None
+		self.pid = None
+		self.friend_code = None
+		self.is_complete = None
 	
 	def check_required(self, settings, version):
-		for field in ['unk1', 'unk2', 'unk3']:
+		for field in ['pid', 'friend_code', 'is_complete']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk1 = stream.u32()
-		self.unk2 = stream.u64()
-		self.unk3 = stream.u8()
+		self.pid = stream.pid()
+		self.friend_code = stream.u64()
+		self.is_complete = stream.u8()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.u32(self.unk1)
-		stream.u64(self.unk2)
-		stream.u8(self.unk3)
+		stream.pid(self.pid)
+		stream.u64(self.friend_code)
+		stream.u8(self.is_complete)
 common.DataHolder.register(FriendRelationship, "FriendRelationship")
 
 
@@ -271,27 +271,27 @@ common.DataHolder.register(GameKey, "GameKey")
 class Mii(common.Data):
 	def __init__(self):
 		super().__init__()
+		self.name = None
 		self.unk1 = None
 		self.unk2 = None
-		self.unk3 = None
 		self.mii_data = None
 	
 	def check_required(self, settings, version):
-		for field in ['unk1', 'unk2', 'unk3', 'mii_data']:
+		for field in ['name', 'unk1', 'unk2', 'mii_data']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk1 = stream.string()
-		self.unk2 = stream.bool()
-		self.unk3 = stream.u8()
+		self.name = stream.string()
+		self.unk1 = stream.bool()
+		self.unk2 = stream.u8()
 		self.mii_data = stream.buffer()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.string(self.unk1)
-		stream.bool(self.unk2)
-		stream.u8(self.unk3)
+		stream.string(self.name)
+		stream.bool(self.unk1)
+		stream.u8(self.unk2)
 		stream.buffer(self.mii_data)
 common.DataHolder.register(Mii, "Mii")
 
@@ -1021,11 +1021,11 @@ class FriendsClientV1(FriendsProtocolV1):
 		logger.info("FriendsClientV1.get_principal_id_by_local_friend_code -> done")
 		return friend_relationships
 	
-	async def get_friend_relationships(self, unk):
+	async def get_friend_relationships(self, principal_ids):
 		logger.info("FriendsClientV1.get_friend_relationships()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
-		stream.list(unk, stream.u32)
+		stream.list(principal_ids, stream.pid)
 		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_FRIEND_RELATIONSHIPS, stream.get())
 		
 		#--- response ---
@@ -1036,11 +1036,11 @@ class FriendsClientV1(FriendsProtocolV1):
 		logger.info("FriendsClientV1.get_friend_relationships -> done")
 		return friend_relationships
 	
-	async def add_friend_by_principal_id(self, unk, pid):
+	async def add_friend_by_principal_id(self, friend_seed, pid):
 		logger.info("FriendsClientV1.add_friend_by_principal_id()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
-		stream.u64(unk)
+		stream.u64(friend_seed)
 		stream.pid(pid)
 		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_ADD_FRIEND_BY_PRINCIPAL_ID, stream.get())
 		
@@ -1121,13 +1121,13 @@ class FriendsClientV1(FriendsProtocolV1):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("FriendsClientV1.update_black_list -> done")
 	
-	async def sync_friend(self, unk1, unk2, unk3):
+	async def sync_friend(self, friend_seed, principal_ids, unk):
 		logger.info("FriendsClientV1.sync_friend()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
-		stream.u64(unk1)
-		stream.list(unk2, stream.u32)
-		stream.list(unk3, stream.u64)
+		stream.u64(friend_seed)
+		stream.list(principal_ids, stream.pid)
+		stream.list(unk, stream.u64)
 		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_SYNC_FRIEND, stream.get())
 		
 		#--- response ---
@@ -1192,11 +1192,11 @@ class FriendsClientV1(FriendsProtocolV1):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("FriendsClientV1.update_picture -> done")
 	
-	async def get_friend_presence(self, unk):
+	async def get_friend_presence(self, principal_ids):
 		logger.info("FriendsClientV1.get_friend_presence()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
-		stream.list(unk, stream.u32)
+		stream.list(principal_ids, stream.pid)
 		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_FRIEND_PRESENCE, stream.get())
 		
 		#--- response ---
@@ -1222,11 +1222,11 @@ class FriendsClientV1(FriendsProtocolV1):
 		logger.info("FriendsClientV1.get_friend_comment -> done")
 		return comments
 	
-	async def get_friend_picture(self, unk):
+	async def get_friend_picture(self, principal_ids):
 		logger.info("FriendsClientV1.get_friend_picture()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
-		stream.list(unk, stream.u32)
+		stream.list(principal_ids, stream.pid)
 		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_FRIEND_PICTURE, stream.get())
 		
 		#--- response ---
@@ -1237,11 +1237,11 @@ class FriendsClientV1(FriendsProtocolV1):
 		logger.info("FriendsClientV1.get_friend_picture -> done")
 		return friend_pictures
 	
-	async def get_friend_persistent_info(self, unk):
+	async def get_friend_persistent_info(self, principal_ids):
 		logger.info("FriendsClientV1.get_friend_persistent_info()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
-		stream.list(unk, stream.u32)
+		stream.list(principal_ids, stream.pid)
 		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_FRIEND_PERSISTENT_INFO, stream.get())
 		
 		#--- response ---
@@ -1700,8 +1700,8 @@ class FriendsServerV1(FriendsProtocolV1):
 	async def handle_get_friend_relationships(self, client, input, output):
 		logger.info("FriendsServerV1.get_friend_relationships()")
 		#--- request ---
-		unk = input.list(input.u32)
-		response = await self.get_friend_relationships(client, unk)
+		principal_ids = input.list(input.pid)
+		response = await self.get_friend_relationships(client, principal_ids)
 		
 		#--- response ---
 		if not isinstance(response, list):
@@ -1711,9 +1711,9 @@ class FriendsServerV1(FriendsProtocolV1):
 	async def handle_add_friend_by_principal_id(self, client, input, output):
 		logger.info("FriendsServerV1.add_friend_by_principal_id()")
 		#--- request ---
-		unk = input.u64()
+		friend_seed = input.u64()
 		pid = input.pid()
-		response = await self.add_friend_by_principal_id(client, unk, pid)
+		response = await self.add_friend_by_principal_id(client, friend_seed, pid)
 		
 		#--- response ---
 		if not isinstance(response, FriendRelationship):
@@ -1763,10 +1763,10 @@ class FriendsServerV1(FriendsProtocolV1):
 	async def handle_sync_friend(self, client, input, output):
 		logger.info("FriendsServerV1.sync_friend()")
 		#--- request ---
-		unk1 = input.u64()
-		unk2 = input.list(input.u32)
-		unk3 = input.list(input.u64)
-		response = await self.sync_friend(client, unk1, unk2, unk3)
+		friend_seed = input.u64()
+		principal_ids = input.list(input.pid)
+		unk = input.list(input.u64)
+		response = await self.sync_friend(client, friend_seed, principal_ids, unk)
 		
 		#--- response ---
 		if not isinstance(response, list):
@@ -1802,8 +1802,8 @@ class FriendsServerV1(FriendsProtocolV1):
 	async def handle_get_friend_presence(self, client, input, output):
 		logger.info("FriendsServerV1.get_friend_presence()")
 		#--- request ---
-		unk = input.list(input.u32)
-		response = await self.get_friend_presence(client, unk)
+		principal_ids = input.list(input.pid)
+		response = await self.get_friend_presence(client, principal_ids)
 		
 		#--- response ---
 		if not isinstance(response, list):
@@ -1824,8 +1824,8 @@ class FriendsServerV1(FriendsProtocolV1):
 	async def handle_get_friend_picture(self, client, input, output):
 		logger.info("FriendsServerV1.get_friend_picture()")
 		#--- request ---
-		unk = input.list(input.u32)
-		response = await self.get_friend_picture(client, unk)
+		principal_ids = input.list(input.pid)
+		response = await self.get_friend_picture(client, principal_ids)
 		
 		#--- response ---
 		if not isinstance(response, list):
@@ -1835,8 +1835,8 @@ class FriendsServerV1(FriendsProtocolV1):
 	async def handle_get_friend_persistent_info(self, client, input, output):
 		logger.info("FriendsServerV1.get_friend_persistent_info()")
 		#--- request ---
-		unk = input.list(input.u32)
-		response = await self.get_friend_persistent_info(client, unk)
+		principal_ids = input.list(input.pid)
+		response = await self.get_friend_persistent_info(client, principal_ids)
 		
 		#--- response ---
 		if not isinstance(response, list):

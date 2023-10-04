@@ -75,10 +75,10 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def get_principal_id_by_local_friend_code**(unk1: int, unk2: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
 <span class="docs">Calls method `9` on the server.</span>
 
-<code>**async def get_friend_relationships**(unk: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
+<code>**async def get_friend_relationships**(principal_ids: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
 <span class="docs">Calls method `10` on the server.</span>
 
-<code>**async def add_friend_by_principal_id**(unk: int, pid: int) -> [FriendRelationship](#friendrelationship)</code><br>
+<code>**async def add_friend_by_principal_id**(friend_seed: int, pid: int) -> [FriendRelationship](#friendrelationship)</code><br>
 <span class="docs">Calls method `11` on the server.</span>
 
 <code>**async def add_friend_by_principal_ids**(unk: int, pids: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
@@ -96,7 +96,7 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def update_black_list**(unk: list[int]) -> None</code><br>
 <span class="docs">Calls method `16` on the server.</span>
 
-<code>**async def sync_friend**(unk1: int, unk2: list[int], unk3: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
+<code>**async def sync_friend**(friend_seed: int, principal_ids: list[int], unk: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
 <span class="docs">Calls method `17` on the server.</span>
 
 <code>**async def update_presence**(presence_info: [NintendoPresence](#nintendopresence), unk: bool) -> None</code><br>
@@ -111,16 +111,16 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def update_picture**(unk: int, picture: bytes) -> None</code><br>
 <span class="docs">Calls method `21` on the server.</span>
 
-<code>**async def get_friend_presence**(unk: list[int]) -> list[[FriendPresence](#friendpresence)]</code><br>
+<code>**async def get_friend_presence**(principal_ids: list[int]) -> list[[FriendPresence](#friendpresence)]</code><br>
 <span class="docs">Calls method `22` on the server.</span>
 
 <code>**async def get_friend_comment**(friends: list[[FriendKey](#friendkey)]) -> list[[FriendComment](#friendcomment)]</code><br>
 <span class="docs">Calls method `23` on the server.</span>
 
-<code>**async def get_friend_picture**(unk: list[int]) -> list[[FriendPicture](#friendpicture)]</code><br>
+<code>**async def get_friend_picture**(principal_ids: list[int]) -> list[[FriendPicture](#friendpicture)]</code><br>
 <span class="docs">Calls method `24` on the server.</span>
 
-<code>**async def get_friend_persistent_info**(unk: list[int]) -> list[[FriendPersistentInfo](#friendpersistentinfo)]</code><br>
+<code>**async def get_friend_persistent_info**(principal_ids: list[int]) -> list[[FriendPersistentInfo](#friendpersistentinfo)]</code><br>
 <span class="docs">Calls method `25` on the server.</span>
 
 <code>**async def send_invitation**(unk: list[int]) -> None</code><br>
@@ -251,10 +251,10 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def get_principal_id_by_local_friend_code**(client: [RMCClient](rmc.md#rmcclient), unk1: int, unk2: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
 <span class="docs">Handler for method `9`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_friend_relationships**(client: [RMCClient](rmc.md#rmcclient), unk: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
+<code>**async def get_friend_relationships**(client: [RMCClient](rmc.md#rmcclient), principal_ids: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
 <span class="docs">Handler for method `10`. This method should be overridden by a subclass.</span>
 
-<code>**async def add_friend_by_principal_id**(client: [RMCClient](rmc.md#rmcclient), unk: int, pid: int) -> [FriendRelationship](#friendrelationship)</code><br>
+<code>**async def add_friend_by_principal_id**(client: [RMCClient](rmc.md#rmcclient), friend_seed: int, pid: int) -> [FriendRelationship](#friendrelationship)</code><br>
 <span class="docs">Handler for method `11`. This method should be overridden by a subclass.</span>
 
 <code>**async def add_friend_by_principal_ids**(client: [RMCClient](rmc.md#rmcclient), unk: int, pids: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
@@ -272,7 +272,7 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def update_black_list**(client: [RMCClient](rmc.md#rmcclient), unk: list[int]) -> None</code><br>
 <span class="docs">Handler for method `16`. This method should be overridden by a subclass.</span>
 
-<code>**async def sync_friend**(client: [RMCClient](rmc.md#rmcclient), unk1: int, unk2: list[int], unk3: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
+<code>**async def sync_friend**(client: [RMCClient](rmc.md#rmcclient), friend_seed: int, principal_ids: list[int], unk: list[int]) -> list[[FriendRelationship](#friendrelationship)]</code><br>
 <span class="docs">Handler for method `17`. This method should be overridden by a subclass.</span>
 
 <code>**async def update_presence**(client: [RMCClient](rmc.md#rmcclient), presence_info: [NintendoPresence](#nintendopresence), unk: bool) -> None</code><br>
@@ -287,16 +287,16 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def update_picture**(client: [RMCClient](rmc.md#rmcclient), unk: int, picture: bytes) -> None</code><br>
 <span class="docs">Handler for method `21`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_friend_presence**(client: [RMCClient](rmc.md#rmcclient), unk: list[int]) -> list[[FriendPresence](#friendpresence)]</code><br>
+<code>**async def get_friend_presence**(client: [RMCClient](rmc.md#rmcclient), principal_ids: list[int]) -> list[[FriendPresence](#friendpresence)]</code><br>
 <span class="docs">Handler for method `22`. This method should be overridden by a subclass.</span>
 
 <code>**async def get_friend_comment**(client: [RMCClient](rmc.md#rmcclient), friends: list[[FriendKey](#friendkey)]) -> list[[FriendComment](#friendcomment)]</code><br>
 <span class="docs">Handler for method `23`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_friend_picture**(client: [RMCClient](rmc.md#rmcclient), unk: list[int]) -> list[[FriendPicture](#friendpicture)]</code><br>
+<code>**async def get_friend_picture**(client: [RMCClient](rmc.md#rmcclient), principal_ids: list[int]) -> list[[FriendPicture](#friendpicture)]</code><br>
 <span class="docs">Handler for method `24`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_friend_persistent_info**(client: [RMCClient](rmc.md#rmcclient), unk: list[int]) -> list[[FriendPersistentInfo](#friendpersistentinfo)]</code><br>
+<code>**async def get_friend_persistent_info**(client: [RMCClient](rmc.md#rmcclient), principal_ids: list[int]) -> list[[FriendPersistentInfo](#friendpersistentinfo)]</code><br>
 <span class="docs">Handler for method `25`. This method should be overridden by a subclass.</span>
 
 <code>**async def send_invitation**(client: [RMCClient](rmc.md#rmcclient), unk: list[int]) -> None</code><br>
@@ -470,9 +470,9 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: int</code><br>
+<code>pid: int</code><br>
 <code>mii: [Mii](#mii) = [Mii](#mii)()</code><br>
-<code>unk2: [DateTime](common.md#datetime)</code><br>
+<code>unk1: [DateTime](common.md#datetime)</code><br>
 </span><br>
 
 ## FriendMiiList
@@ -522,7 +522,7 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk: int</code><br>
+<code>pid: int</code><br>
 <code>presence: [NintendoPresence](#nintendopresence) = [NintendoPresence](#nintendopresence)()</code><br>
 </span><br>
 
@@ -532,9 +532,9 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: int</code><br>
-<code>unk2: int</code><br>
-<code>unk3: int</code><br>
+<code>pid: int</code><br>
+<code>friend_code: int</code><br>
+<code>is_complete: int</code><br>
 </span><br>
 
 ## FriendRequest
@@ -581,9 +581,9 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: str</code><br>
-<code>unk2: bool</code><br>
-<code>unk3: int</code><br>
+<code>name: str</code><br>
+<code>unk1: bool</code><br>
+<code>unk2: int</code><br>
 <code>mii_data: bytes</code><br>
 </span><br>
 
