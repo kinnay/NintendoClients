@@ -47,9 +47,10 @@ FIRMWARE_VERSIONS = {
 	1601: "16.0.1-1.0",
 	1602: "16.0.2-1.0",
 	1603: "16.0.3-1.0",
+	1610: "16.1.0-1.0",
 }
 
-LATEST_VERSION = 1603
+LATEST_VERSION = 1610
 
 
 class DragonsError(Exception):

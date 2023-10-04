@@ -48,6 +48,7 @@ SYSTEM_VERSION_DIGEST = {
 	1601: "CusHY#00100001#qHay53MkzVLOUU_Iy7_kyPlUMnaoi7HXCAmESYTft_c=",
 	1602: "CusHY#00100002#qjeCnaxVt5NjGjxosJOMVw-ZyR219B3qgAB3YtSil6g=",
 	1603: "CusHY#00100003#Lis4m_Z4pXlDAaBBxeRO66_glyu92IAf2-dHKNxYAJs=",
+	1610: "CusHY#00100100#3kOLHmbuMWa-kHN-SMtCkgNvwdwBHIb2b4f60BNNmrw=",
 }
 
 USER_AGENT = {
@@ -84,6 +85,7 @@ USER_AGENT = {
 	1601: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 16.2.0.0)",
 	1602: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 16.2.0.0)",
 	1603: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 16.2.0.0)",
+	1610: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 16.2.0.0)",
 }
 
 KEY_GENERATION = {
@@ -120,6 +122,7 @@ KEY_GENERATION = {
 	1601: 16,
 	1602: 16,
 	1603: 16,
+	1610: 16,
 }
 
 API_VERSION = {
@@ -156,9 +159,10 @@ API_VERSION = {
 	1601: 7,
 	1602: 7,
 	1603: 7,
+	1610: 7,
 }
 
-LATEST_VERSION = 1603
+LATEST_VERSION = 1610
 
 
 class DAuthError(Exception):
