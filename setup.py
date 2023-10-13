@@ -20,7 +20,7 @@ setuptools.setup(
 		"nintendo": ["files/config/*", "files/cert/*"]
 	},
 	install_requires = [
-		"anynet == 0.0.19",
+		"anynet ~= 1.0",
 		"pycryptodome"
 	]
 )

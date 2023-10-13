@@ -1,7 +1,8 @@
 
-from nintendo.nex import kerberos, streams as streams_nex
+from Crypto.Cipher import ARC4
 from anynet import udp, tls, websocket, util, \
-	scheduler, crypto, streams, queue
+	scheduler, streams, queue
+from nintendo.nex import kerberos, streams as streams_nex
 import contextlib
 import hashlib
 import struct
@@ -535,15 +536,15 @@ class PRUDPMessageSelector:
 	
 class RC4Encryption:
 	def __init__(self, key):
-		self.rc4enc = crypto.RC4(key)
-		self.rc4dec = crypto.RC4(key)
+		self.rc4enc = ARC4.new(key)
+		self.rc4dec = ARC4.new(key)
 	
 	def set_key(self, key):
-		self.rc4enc.set_key(key)
-		self.rc4dec.set_key(key)
+		self.rc4enc = ARC4.new(key)
+		self.rc4dec = ARC4.new(key)
 		
-	def encrypt(self, data): return self.rc4enc.crypt(data)
-	def decrypt(self, data): return self.rc4dec.crypt(data)
+	def encrypt(self, data): return self.rc4enc.encrypt(data)
+	def decrypt(self, data): return self.rc4dec.decrypt(data)
 	
 	
 class DummyEncryption:
@@ -1244,11 +1245,12 @@ class PRUDPServerStream:
 	
 	async def start_client(self, client):
 		key = (client.remote_address(), client.remote_port, client.remote_type)
-		with util.catch(Exception):
-			try:
-				await self.serve_client(client)
-			finally:
-				del self.clients[key]
+		try:
+			await self.serve_client(client)
+		except Exception as e:
+			logger.warning("An exception occurred while serving a client: %s" %e)
+		finally:
+			del self.clients[key]
 	
 	async def serve_client(self, client):
 		async with util.create_task_group() as group:
@@ -1399,10 +1401,12 @@ class PRUDPClientTransport:
 			await self.process_data(data)
 			
 	async def process_data(self, data):
-		with util.catch(Exception):
+		try:
 			packets = self.packet_encoder.decode(data)
 			for packet in packets:
 				await self.process_packet(packet)
+		except Exception as e:
+			logger.warning("[CLI] An exception occurred while processing a packet: %s" %e)
 	
 	async def process_packet(self, packet):
 		logger.debug("[CLI] Received packet: %s" %packet)
@@ -1443,10 +1447,12 @@ class PRUDPServerTransport:
 		await self.sendto(data, addr)
 		
 	async def process_data(self, data, addr):
-		with util.catch(Exception):
+		try:
 			packets = self.packet_encoder.decode(data)
 			for packet in packets:
 				await self.process_packet(packet, addr)
+		except Exception as e:
+			logger.warning("[SRV] An exception occurred while processing a packet: %s" %e)
 	
 	async def process_packet(self, packet, addr):
 		logger.debug("[SRV] Received packet from %s: %s" %(addr, packet))

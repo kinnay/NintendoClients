@@ -1,6 +1,6 @@
 
+from Crypto.Cipher import ARC4
 from nintendo.nex import streams
-from anynet import crypto
 import struct
 import secrets
 import hashlib
@@ -39,7 +39,6 @@ class KeyDerivationNew:
 class KerberosEncryption:
 	def __init__(self, key):
 		self.key = key
-		self.rc4 = crypto.RC4(key, True)
 		
 	def check(self, buffer):
 		data = buffer[:-0x10]
@@ -50,10 +49,10 @@ class KerberosEncryption:
 	def decrypt(self, buffer):
 		if not self.check(buffer):
 			raise ValueError("Invalid Kerberos checksum (incorrect password)")
-		return self.rc4.crypt(buffer[:-0x10])
+		return ARC4.new(self.key).decrypt(buffer[:-0x10])
 		
 	def encrypt(self, buffer):
-		encrypted = self.rc4.crypt(buffer)
+		encrypted = ARC4.new(self.key).encrypt(buffer)
 		mac = hmac.new(self.key, encrypted, digestmod=hashlib.md5)
 		return encrypted + mac.digest()
 

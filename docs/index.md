@@ -14,8 +14,8 @@ This package is able to do everything that's required to access a game server. I
 	* Game servers (`nex`)
 	* https://dauth-lp1.ndas.srv.nintendo.net
 	* https://aauth-lp1.ndas.srv.nintendo.net
-	* https://dragons.hac.lp1.dragons.nintendo.net (partially)
-	* https://e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com (partially)
+	* https://dragons.hac.lp1.dragons.nintendo.net
+	* https://e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com
 	* https://app.lp1.five.nintendo.net
 * Wii U:
 	* Game servers (`nex`)
