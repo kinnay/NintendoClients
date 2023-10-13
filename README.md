@@ -1,12 +1,10 @@
 # Nintendo Clients
-> :warning: Keep in mind that Nintendo is actively banning Switch devices. This package tries to mimic the behavior of a real Switch as closely as possible, but using it is at your own risk. Make sure that you know what you are doing.
+> :warning: Keep in mind that Nintendo bans Switch devices that show suspicious behavior. This package tries to mimic the behavior of a real Switch as closely as possible, but using it is at your own risk. Make sure that you know what you are doing.
 
 This package implements a client for various 3DS, Wii U and Switch servers. Check out the [documentation](https://nintendoclients.readthedocs.io) for the list of servers that are currently supported.
 
 ### Installation
 This package requires Python 3.8 or later and can be installed with pip: `pip install nintendoclients`.
-
-This package does not have a stable interface yet (it may receive backwards compatibility breaking changes at any time). If you use it in a project, it is recommended to pin a specific version.
 
 ### Documentation
 * [Nintendo's servers and protocols](https://github.com/Kinnay/NintendoClients/wiki)

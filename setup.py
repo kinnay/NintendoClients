@@ -6,7 +6,7 @@ long_description = \
 
 setuptools.setup(
 	name = "nintendoclients",
-	version = "0.0.8",
+	version = "1.0.0",
 	description = "Nintendo network library",
 	long_description = long_description,
 	author = "Yannik Marchand",

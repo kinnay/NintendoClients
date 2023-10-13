@@ -6,6 +6,7 @@ This package lets you communicate with various 3DS, Wii U and Switch servers. Fo
 * [Features](#features)
 * [Contributing](#contributing)
 * [API Reference](#api-reference)
+* [Changelog](changelog)
 
 ## Features
 This package is able to do everything that's required to access a game server. It also provides a framework to host your own game servers. For example scripts, check out the [github repository](https://github.com/kinnay/nintendo). The following servers are currently supported:
