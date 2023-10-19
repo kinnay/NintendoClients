@@ -24,8 +24,8 @@ struct RankingOrderParam {
 	uint8 group_index = 255;
 	uint8 group_num = 0;
 	uint8 time_scope = 2;
-	uint32 offset;
-	uint8 count;
+	uint32 offset = 0;
+	uint8 count = 10;
 }
 
 struct RankingRankData {

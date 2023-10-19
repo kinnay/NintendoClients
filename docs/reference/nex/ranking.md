@@ -180,8 +180,8 @@ The following fields are defined in this class:<br>
 <code>group_index: int = 255</code><br>
 <code>group_num: int = 0</code><br>
 <code>time_scope: int = 2</code><br>
-<code>offset: int</code><br>
-<code>count: int</code><br>
+<code>offset: int = 0</code><br>
+<code>count: int = 10</code><br>
 </span><br>
 
 ## RankingRankData

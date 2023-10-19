@@ -34,13 +34,11 @@ class RankingOrderParam(common.Structure):
 		self.group_index = 255
 		self.group_num = 0
 		self.time_scope = 2
-		self.offset = None
-		self.count = None
+		self.offset = 0
+		self.count = 10
 	
 	def check_required(self, settings, version):
-		for field in ['offset', 'count']:
-			if getattr(self, field) is None:
-				raise ValueError("No value assigned to required field: %s" %field)
+		pass
 	
 	def load(self, stream, version):
 		self.order_calc = stream.u8()
