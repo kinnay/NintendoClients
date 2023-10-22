@@ -15,6 +15,7 @@ This package requires Python 3.8 or later and can be installed with pip: `pip in
     * **smm2_level.py:** Downloads a Super Mario Maker 2 level and its thumbnails, and prints information about both the level and its creator.
     * **smm2_ninji.py:** Requests the list of ninji courses and downloads a replay file.
     * **animalcrossing.py:** Searches for an island by dodo code and prints information about it.
+    * **system_update.py:** Downloads the latest system update and unpacks it into exefs and romfs.
     <br><br>
 * **wiiu/**
     * **donkeykong.py:** Downloads DKC Tropical Freeze rankings and the replay file of the world record.
