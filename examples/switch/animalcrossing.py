@@ -1,8 +1,5 @@
 
-from nintendo.baas import BAASClient
-from nintendo.dauth import DAuthClient
-from nintendo.aauth import AAuthClient
-from nintendo.dragons import DragonsClient
+from nintendo.switch import dauth, aauth, baas, dragons
 from nintendo.nex import backend, authentication, matchmaking, settings
 from nintendo import switch
 import anyio
@@ -59,42 +56,42 @@ async def main():
 	cert = info.get_tls_cert()
 	pkey = info.get_tls_key()
 	
-	dauth = DAuthClient(keys)
-	dauth.set_certificate(cert, pkey)
-	dauth.set_system_version(SYSTEM_VERSION)
+	dauth_client = dauth.DAuthClient(keys)
+	dauth_client.set_certificate(cert, pkey)
+	dauth_client.set_system_version(SYSTEM_VERSION)
 	
-	dragons = DragonsClient()
-	dragons.set_certificate(cert, pkey)
-	dragons.set_system_version(SYSTEM_VERSION)
+	dragons_client = dragons.DragonsClient()
+	dragons_client.set_certificate(cert, pkey)
+	dragons_client.set_system_version(SYSTEM_VERSION)
 	
-	aauth = AAuthClient()
-	aauth.set_system_version(SYSTEM_VERSION)
+	aauth_client = aauth.AAuthClient()
+	aauth_client.set_system_version(SYSTEM_VERSION)
 	
-	baas = BAASClient()
-	baas.set_system_version(SYSTEM_VERSION)
+	baas_client = baas.BAASClient()
+	baas_client.set_system_version(SYSTEM_VERSION)
 	
 	# Request a device authentication token for dragons
-	response = await dauth.device_token(dauth.DRAGONS)
+	response = await dauth_client.device_token(dauth.DRAGONS)
 	device_token_dragons = response["device_auth_token"]
 	
 	# Request a device authentication token for aauth and bass
-	response = await dauth.device_token(dauth.BAAS)
+	response = await dauth_client.device_token(dauth.BAAS)
 	device_token_baas = response["device_auth_token"]
 	
 	# Request a contents authorization token from dragons
-	response = await dragons.contents_authorization_token_for_aauth(device_token_dragons, ELICENSE_ID, NA_ID, TITLE_ID)
+	response = await dragons_client.contents_authorization_token_for_aauth(device_token_dragons, ELICENSE_ID, NA_ID, TITLE_ID)
 	contents_token = response["contents_authorization_token"]
 	
 	# Request an application authentication token
-	response = await aauth.auth_digital(TITLE_ID, TITLE_VERSION, device_token_baas, contents_token)
+	response = await aauth_client.auth_digital(TITLE_ID, TITLE_VERSION, device_token_baas, contents_token)
 	app_token = response["application_auth_token"]
 	
 	# Request an anonymous access token for baas
-	response = await baas.authenticate(device_token_baas)
+	response = await baas_client.authenticate(device_token_baas)
 	access_token = response["accessToken"]
 	
 	# Log in on the baas server
-	response = await baas.login(
+	response = await baas_client.login(
 		BAAS_USER_ID, BAAS_PASSWORD, access_token, app_token
 	)
 	user_id = int(response["user"]["id"], 16)
