@@ -53,8 +53,8 @@ class AtumnClient:
 		response.raise_if_error()
 		return response
 
-	async def download_content_metadata(self, title_id, title_version, *, is_system_update=False):
-		content_type = "s" if is_system_update else "a"
+	async def download_content_metadata(self, title_id, title_version, *, system_update=False):
+		content_type = "s" if system_update else "a"
 
 		req = http.HTTPRequest.head("/t/%c/%016x/%i" %(content_type, title_id, title_version))
 		req.params = {
