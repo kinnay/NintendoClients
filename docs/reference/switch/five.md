@@ -1,5 +1,5 @@
 
-# Module: <code>nintendo.five</code>
+# Module: <code>nintendo.switch.five</code>
 Provides a client for the [online play invitation server](https://github.com/kinnay/nintendo/wiki/Online-Play-Invitation-Server).
 
 <code>**class** [FiveError](#fiveerror)(Exception)</code><br>

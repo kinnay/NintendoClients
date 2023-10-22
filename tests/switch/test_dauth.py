@@ -1,5 +1,5 @@
 
-from nintendo import dauth
+from nintendo.switch import dauth
 from anynet import http
 import pytest
 

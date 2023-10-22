@@ -1,5 +1,5 @@
 
-from nintendo import dragons
+from nintendo.switch import dragons
 from anynet import http
 import pytest
 

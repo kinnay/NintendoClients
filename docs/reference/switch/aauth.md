@@ -1,5 +1,5 @@
 
-# Module: <code>nintendo.aauth</code>
+# Module: <code>nintendo.switch.aauth</code>
 Provides a client for the [application authentication server](https://github.com/kinnay/nintendo/wiki/AAuth-Server).
 
 <code>**class** [AAuthError](#aautherror)(Exception)</code><br>

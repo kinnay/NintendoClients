@@ -1,5 +1,5 @@
 
-from nintendo import dauth
+from nintendo.switch import common, dauth
 from anynet import tls, http
 import pkg_resources
 import base64
@@ -12,44 +12,6 @@ CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CLA
 
 
 USER_AGENT = "NintendoSDK Firmware/%s (platform:NX; did:%016x; eid:lp1)"
-
-FIRMWARE_VERSIONS = {
-	 900:  "9.0.0-4.0",
-	 901:  "9.0.1-1.0",
-	 910:  "9.1.0-1.0",
-	 920:  "9.2.0-1.0",
-	1000: "10.0.0-6.0",
-	1001: "10.0.1-1.0",
-	1002: "10.0.2-1.0",
-	1003: "10.0.3-1.0",
-	1004: "10.0.3-1.0",
-	1010: "10.1.0-1.0",
-	1011: "10.1.0-1.0",
-	1020: "10.2.0-1.0",
-	1100: "11.0.0-5.0",
-	1101: "11.0.1-1.0",
-	1200: "12.0.0-4.0",
-	1201: "12.0.1-1.0",
-	1202: "12.0.2-1.0",
-	1203: "12.0.3-1.0",
-	1210: "12.1.0-1.0",
-	1300: "13.0.0-4.0",
-	1310: "13.1.0-1.2",
-	1320: "13.2.0-1.0",
-	1321: "13.2.1-1.0",
-	1400: "14.0.0-4.0",
-	1410: "14.1.0-1.0",
-	1411: "14.1.1-1.0",
-	1412: "14.1.2-1.0",
-	1500: "15.0.0-4.0",
-	1501: "15.0.1-1.0",
-	1600: "16.0.0-3.0",
-	1601: "16.0.1-1.0",
-	1602: "16.0.2-1.0",
-	1603: "16.0.3-1.0",
-	1610: "16.1.0-1.0",
-	1700: "17.0.0-6.0",
-}
 
 LATEST_VERSION = 1700
 
@@ -86,7 +48,7 @@ class DragonsClient:
 		self.system_version = LATEST_VERSION
 		self.user_agent_nim = None
 		if self.device_id is not None:
-			self.user_agent_nim = USER_AGENT %(FIRMWARE_VERSIONS[LATEST_VERSION], self.device_id)
+			self.user_agent_nim = USER_AGENT %(common.FIRMWARE_VERSIONS[LATEST_VERSION], self.device_id)
 		self.user_agent_dauth = dauth.USER_AGENT[LATEST_VERSION]
 	
 	def set_request_callback(self, callback): self.request_callback = callback
@@ -100,12 +62,12 @@ class DragonsClient:
 		self.host_tigers = tigers
 	
 	def set_system_version(self, version):
-		if version not in FIRMWARE_VERSIONS:
+		if version not in common.FIRMWARE_VERSIONS:
 			raise ValueError("Unknown system version: %i" %version)
 		
 		self.system_version = version
 		if self.device_id is not None:
-			self.user_agent_nim = USER_AGENT %(FIRMWARE_VERSIONS[version], self.device_id)
+			self.user_agent_nim = USER_AGENT %(common.FIRMWARE_VERSIONS[version], self.device_id)
 		self.user_agent_dauth = dauth.USER_AGENT[version]
 	
 	async def request(self, req, host, device_token, *, account_id=None):

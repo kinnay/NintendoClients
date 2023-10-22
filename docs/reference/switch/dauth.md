@@ -1,5 +1,5 @@
 
-# Module: <code>nintendo.dauth</code>
+# Module: <code>nintendo.switch.dauth</code>
 Provides a client for the [device authentication server](https://github.com/kinnay/nintendo/wiki/DAuth-Server).
 
 <code>**class** [DAuthError](#dautherror)(Exception)</code><br>

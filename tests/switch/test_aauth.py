@@ -1,5 +1,5 @@
 
-from nintendo import aauth
+from nintendo.switch import aauth
 from anynet import http
 import pytest
 import struct

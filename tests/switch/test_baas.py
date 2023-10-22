@@ -1,5 +1,5 @@
 
-from nintendo import baas
+from nintendo.switch import baas
 from anynet import http
 import pytest
 import struct

@@ -18,6 +18,8 @@ This package is able to do everything that's required to access a game server. I
 	* https://dragons.hac.lp1.dragons.nintendo.net
 	* https://e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com
 	* https://app.lp1.five.nintendo.net
+	* https://sun.hac.lp1.d4c.nintendo.net
+	* https://atumn.hac.lp1.d4c.nintendo.net
 * Wii U:
 	* Game servers (`nex`)
 	* https://account.nintendo.net
@@ -62,12 +64,14 @@ Feel free to open a pull request or issue on [github](https://github.com/kinnay/
 	* [streams](reference/nex/streams.md)
 	* [subscriber](reference/nex/subscriber.md)
 	* [utility](reference/nex/utility.md)
-* [aauth](reference/aauth.md)
-* [baas](reference/baas.md)
-* [dauth](reference/dauth.md)
-* [dragons](reference/dragons.md)
-* [five](reference/five.md)
+* [switch](reference/switch.md)
+	* [aauth](reference/switch/aauth.md)
+	* [atumn](reference/switch/atumn.md)
+	* [baas](reference/switch/baas.md)
+	* [dauth](reference/switch/dauth.md)
+	* [dragons](reference/switch/dragons.md)
+	* [five](reference/switch/five.md)
+	* [sun](reference/switch/sun.md)
 * [miis](reference/miis.md)
 * [nasc](reference/nasc.md)
 * [nnas](reference/nnas.md)
-* [switch](reference/switch.md)

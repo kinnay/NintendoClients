@@ -1,5 +1,5 @@
 
-# Module: <code>nintendo.baas</code>
+# Module: <code>nintendo.switch.baas</code>
 Provides a client for the [BaaS server](https://github.com/kinnay/nintendo/wiki/BAAS-Server).
 
 <code>**class** [PresenceState](#presencestate)</code><br>

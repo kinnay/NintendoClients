@@ -1,5 +1,5 @@
 
-# Module: <code>nintendo.dragons</code>
+# Module: <code>nintendo.switch.dragons</code>
 Provides a client for the [dragons servers](https://github.com/kinnay/nintendo/wiki/Dragons-Servers).
 
 <code>**class** [DragonsError](#dragonserror)(Exception)</code><br>
