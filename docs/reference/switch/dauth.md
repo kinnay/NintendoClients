@@ -8,6 +8,20 @@ Provides a client for the [device authentication server](https://github.com/kinn
 <code>**class** [DAuthClient](#dauthclient)</code><br>
 <span class="docs">The `dauth` client.</span>
 
+## Global Constants
+`CLIENT_ID_SCSI: int = 0x146C8AC7B8A0DB52`<br>
+`CLIENT_ID_ATUM: int = 0x3117B250CAB38F45`<br>
+`CLIENT_ID_ESHOP: int = 0x41F4A6491028E3C4`<br>
+`CLIENT_ID_BCAT: int = 0x67BF9945B45248C6`<br>
+`CLIENT_ID_SATA: int = 0x6AC5A6873FE5F68C`<br>
+`CLIENT_ID_ACCOUNT: int = 0x81333C548B2E876D`<br>
+`CLIENT_ID_NPNS: int = 0x83B72B05DC3278D7`<br>
+`CLIENT_ID_BAAS: int = 0x8F849B5D34778D8E`<br>
+`CLIENT_ID_BEACH: int = 0x93AF0ACB26258DE9`<br>
+`CLIENT_ID_DRAGONS: int = 0xD5B6CAC2C1514C56`<br>
+`CLIENT_ID_PCTL: int = 0xDC656EA03B63CF68`<br>
+`CLIENT_ID_PREPO: int = 0xDF51C436BC01C437`
+
 ## DAuthError
 This exception is raised when the `dauth` server returns an error code. The following constants are defined in this class:
 
@@ -27,19 +41,6 @@ The error can be inspected using the following attributes:
 `message: str`
 
 ## DAuthClient
-`SCSI: int = 0x146C8AC7B8A0DB52`<br>
-`ATUM: int = 0x3117B250CAB38F45`<br>
-`ESHOP: int = 0x41F4A6491028E3C4`<br>
-`BCAT: int = 0x67BF9945B45248C6`<br>
-`SATA: int = 0x6AC5A6873FE5F68C`<br>
-`ACCOUNT: int = 0x81333C548B2E876D`<br>
-`NPNS: int = 0x83B72B05DC3278D7`<br>
-`BAAS: int = 0x8F849B5D34778D8E`<br>
-`BEACH: int = 0x93AF0ACB26258DE9`<br>
-`DRAGONS: int = 0xD5B6CAC2C1514C56`<br>
-`PCTL: int = 0xDC656EA03B63CF68`<br>
-`PREPO: int = 0xDF51C436BC01C437`
-
 <code>**def _\_init__**(keys: dict[str, bytes])</code><br>
 <span class="docs">Creates a new `dauth` client with the given keys. The `dauth` client requires the `aes_kek_generation_source` and `master_key_XX` keys.</span>
 
