@@ -7,6 +7,8 @@
 * Implemented a client for the sun server (system update metadata).
 * Implemented a client for the atumn server (system update content).
 
+*Released on 2023-10-29*
+
 ### 1.1.0
 * Added support for system version 17.0.0.
 * Added default values to `RankingOrderParam.offset` and `RankingOrderParam.count`.
