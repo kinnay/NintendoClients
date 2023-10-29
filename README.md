@@ -4,7 +4,7 @@
 This package implements a client for various 3DS, Wii U and Switch servers. Check out the [documentation](https://nintendoclients.readthedocs.io) for the list of servers that are currently supported.
 
 ### Installation
-This package requires Python 3.8 or later and can be installed with pip: `pip install nintendoclients`.
+This package requires Python 3.8 or later and can be installed with pip: `pip install nintendoclients`. This package uses [semantic versioning](https://semver.org/).
 
 ### Documentation
 * [Nintendo's servers and protocols](https://github.com/Kinnay/NintendoClients/wiki)
