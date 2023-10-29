@@ -80,7 +80,7 @@ async def test_dauth_1200():
 		client.set_host("localhost:12345")
 		client.set_system_version(1200)
 		client.set_context(None)
-		response = await client.device_token(client.BAAS)
+		response = await client.device_token(dauth.CLIENT_ID_BAAS)
 		token = response["device_auth_token"]
 		assert token == "device token"
 
@@ -113,7 +113,7 @@ async def test_dauth_1300():
 		client.set_host("localhost:12345")
 		client.set_system_version(1300)
 		client.set_context(None)
-		response = await client.device_token(client.BAAS)
+		response = await client.device_token(dauth.CLIENT_ID_BAAS)
 		token = response["device_auth_token"]
 		assert token == "device token"
 
