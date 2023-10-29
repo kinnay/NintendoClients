@@ -1,7 +1,7 @@
 
 ## Changelog
 
-### 2.0.0 (upcoming)
+### 2.0.0
 * **Breaking change:** moved all Switch-related clients into their own namespace. For example, `nintendo.dauth` is now `nintendo.switch.dauth`.
 * **Breaking change:** dauth client ids are now global constants instead of members of `DAuthClient`.
 * Implemented a client for the sun server (system update metadata).
