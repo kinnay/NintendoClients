@@ -3,7 +3,7 @@
 Provides a client for the [system update content server](https://github.com/kinnay/nintendo/wiki/Atumn-Server).
 
 <code>**class** [AtumnClient](#atumnclient)</code><br>
-<span class="docs">The `sun` client.</span>
+<span class="docs">The `atumn` client.</span>
 
 ## Atumn
 <code>**def _\_init__**(device_id: int)</code><br>
