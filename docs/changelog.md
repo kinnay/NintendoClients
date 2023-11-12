@@ -1,6 +1,11 @@
 
 ## Changelog
 
+### 2.0.1
+* **Bug fix**: added `nintendo.switch` to setup.py. The whole `nintendo.switch` folder was missing in the previous release.
+
+*Released on 2023-11-12*
+
 ### 2.0.0
 * **Breaking change:** moved all Switch-related clients into their own namespace. For example, `nintendo.dauth` is now `nintendo.switch.dauth`.
 * **Breaking change:** dauth client ids are now global constants instead of members of `DAuthClient`.
