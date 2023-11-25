@@ -205,7 +205,7 @@ class AAuthClient:
 		return time, ip
 	
 	async def challenge(self, device_token):
-		req = http.HTTPRequest.post("/v3/challenge")
+		req = http.HTTPRequest.post("/v%i/challenge" %self.api_version)
 		req.rawform = {
 			"&device_auth_token": device_token
 		}
@@ -268,5 +268,19 @@ class AAuthClient:
 			
 			req.form["cert"] = cert
 		
+		response = await self.request(req, True)
+		return response.json
+
+	async def auth_gamecard(self, title_id, title_version, device_token, cert, gvt):
+		req = http.HTTPRequest.post("/v%i/application_auth_token" %self.api_version)
+		req.form = {
+			"application_id": "%016x" %title_id,
+			"application_version": "%08x" %title_version,
+			"device_auth_token": device_token,
+			"media_type": "GAMECARD",
+			"gvt": base64.b64encode(gvt, b"-_").decode().rstrip("="),
+			"cert": base64.b64encode(cert, b"-_").decode().rstrip("=")
+		}
+
 		response = await self.request(req, True)
 		return response.json
