@@ -49,13 +49,16 @@ The error can be inspected using the following attributes:
 <span class="docs">Requests the current server time with `/v1/time`. Returns a tuple that contains the current server time and your public IP address.</span>
 
 <code>**async def challenge**(device_token: str) -> dict</code><br>
-<span class="docs">Requests a challenge from the `aauth` server. The device token can be obtained from the [`dauth server`](dauth.md).</span>
+<span class="docs">Requests a challenge from the `aauth` server. The device token can be obtained from the [`dauth server`](dauth.md). The challenge is used for gamecard authentication.</span>
 
 <code>**async def auth_system**(title_id: int, title_version: int, device_token: str) -> dict</code><br>
 <span class="docs">Requests an application token from the `aauth` server for a system title. The device token can be obtained from the [`dauth server`](dauth.md).</span>
 
 <code>**async def auth_digital**(title_id: int, title_version: int, device_token: str, cert: bytes | str) -> dict</code><br>
 <span class="docs">Requests an application token from the `aauth` server for a digital title. The device token can be obtained from the [`dauth server`](dauth.md). Prior to system version `15.0.0`, the `cert` parameter must contain the raw ticket (which can be dumped with nxdumptool). In system version `15.0.0` and later, it must contain a contents authorization token instead (which can be obtained from the [`dragons server`](dragons.md)).</span>
+
+<code>**async def auth_gamecard**(title_id: int, title_version: int, device_token: str, cert: bytes, gvt: bytes) -> dict</code><br>
+<span class="docs">Requests an application token from the `aauth` server for a gamecard. The device token can be obtained from the [`dauth server`](dauth.md). The certificate can be obtained with nxdumptool. The `gvt` parameter must contain the challenge response. Unless you have the [Lotus](https://switchbrew.org/wiki/Lotus3) encryption keys, the challenge cannot be solved offline, but EpicUsername12 made [a tool](https://github.com/EpicUsername12/nx-netauth-link) that solves the challenge on a real Switch.</span>
 
 <code>**async def auth_nocert**(title_id: int, title_version: int, device_token): str -> dict</code><br>
 <span class="docs">Requests an application token from the `aauth` server for a title for which no ticket was found on the Switch.<br><br><b><span style="color: red">WARNING:</span></b> Do not use `auth_nocert` on a production server, because it will immediately ban your Switch.</span>
