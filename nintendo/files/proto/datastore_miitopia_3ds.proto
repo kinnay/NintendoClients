@@ -1,0 +1,66 @@
+
+import datastore;
+
+/*** Enums ***/
+
+enum Gender {
+	MALE = 0,
+	FEMALE = 1,
+
+	ANY = 2
+}
+
+enum Category {
+	SINGING = 0,
+	SPORT = 1,
+	ACTING = 2,
+	COMEDY = 3,
+	MUSIC = 4,
+	MARTIAL_ARTS = 5,
+	DANCING = 6,
+	ADVENTURING = 7,
+	FILM_DIRECTING = 8,
+	COOKING = 9,
+	CHATTING = 10,
+	PUBLIC_SPEAKING = 11,
+	CRAFTWORK = 12,
+	DRAWING = 13,
+	STUDYING = 14,
+	WRITING = 15,
+	FASHION = 16,
+	DINING = 17,
+	NOT_TELLING = 18,
+
+	ANY = 0xFF
+}
+
+/*** Method parameters ***/
+
+struct MiiTubeSearchParam {
+	string name;
+	uint32 page = 0;
+	uint8 category = 0xFF;
+	uint8 gender = 2;
+	uint8 country;
+	uint8 search_type = 0;
+	uint8 result_option = 0;
+}
+
+struct MiiTubeMiiInfo {
+	DataStoreMetaInfo meta_info;
+	uint8 category;
+	uint8 ranking_type;
+}
+
+struct MiiTubeSearchResult {
+	list<MiiTubeMiiInfo> result;
+	uint32 count;
+	uint32 page;
+	bool has_next;
+}
+
+protocol DataStore_Miitopia_3DS : DataStore {
+	method(47) search_mii(MiiTubeSearchParam param) {
+		MiiTubeSearchResult search_result;
+	}
+}
