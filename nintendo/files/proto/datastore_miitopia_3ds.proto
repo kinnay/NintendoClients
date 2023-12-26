@@ -59,7 +59,7 @@ struct MiiTubeSearchResult {
 	bool has_next;
 }
 
-protocol DataStore_Miitopia_3DS : DataStore {
+protocol DataStore_Miitopia3DS : DataStore {
 	method(47) search_mii(MiiTubeSearchParam param) {
 		MiiTubeSearchResult search_result;
 	}

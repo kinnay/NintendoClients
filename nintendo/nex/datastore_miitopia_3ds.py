@@ -1440,7 +1440,7 @@ class MiiTubeSearchResult(common.Structure):
 		stream.bool(self.has_next)
 
 
-class DataStore_MiitopiaProtocol3DS:
+class DataStoreProtocolMiitopia3DS:
 	METHOD_PREPARE_GET_OBJECT_V1 = 1
 	METHOD_PREPARE_POST_OBJECT_V1 = 2
 	METHOD_COMPLETE_POST_OBJECT_V1 = 3
@@ -1492,13 +1492,13 @@ class DataStore_MiitopiaProtocol3DS:
 	PROTOCOL_ID = 0x73
 
 
-class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
+class DataStoreClientMiitopia3DS(DataStoreProtocolMiitopia3DS):
 	def __init__(self, client):
 		self.settings = client.settings
 		self.client = client
 	
 	async def prepare_get_object_v1(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.prepare_get_object_v1()")
+		logger.info("DataStoreClientMiitopia3DS.prepare_get_object_v1()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1509,11 +1509,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		info = stream.extract(DataStoreReqGetInfoV1)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.prepare_get_object_v1 -> done")
+		logger.info("DataStoreClientMiitopia3DS.prepare_get_object_v1 -> done")
 		return info
 	
 	async def prepare_post_object_v1(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.prepare_post_object_v1()")
+		logger.info("DataStoreClientMiitopia3DS.prepare_post_object_v1()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1524,11 +1524,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		info = stream.extract(DataStoreReqPostInfoV1)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.prepare_post_object_v1 -> done")
+		logger.info("DataStoreClientMiitopia3DS.prepare_post_object_v1 -> done")
 		return info
 	
 	async def complete_post_object_v1(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.complete_post_object_v1()")
+		logger.info("DataStoreClientMiitopia3DS.complete_post_object_v1()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1538,10 +1538,10 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.complete_post_object_v1 -> done")
+		logger.info("DataStoreClientMiitopia3DS.complete_post_object_v1 -> done")
 	
 	async def delete_object(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.delete_object()")
+		logger.info("DataStoreClientMiitopia3DS.delete_object()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1551,10 +1551,10 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.delete_object -> done")
+		logger.info("DataStoreClientMiitopia3DS.delete_object -> done")
 	
 	async def delete_objects(self, param, transactional):
-		logger.info("DataStore_MiitopiaClient3DS.delete_objects()")
+		logger.info("DataStoreClientMiitopia3DS.delete_objects()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(param, stream.add)
@@ -1566,11 +1566,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		results = stream.list(stream.result)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.delete_objects -> done")
+		logger.info("DataStoreClientMiitopia3DS.delete_objects -> done")
 		return results
 	
 	async def change_meta_v1(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.change_meta_v1()")
+		logger.info("DataStoreClientMiitopia3DS.change_meta_v1()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1580,10 +1580,10 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.change_meta_v1 -> done")
+		logger.info("DataStoreClientMiitopia3DS.change_meta_v1 -> done")
 	
 	async def change_metas_v1(self, data_ids, param, transactional):
-		logger.info("DataStore_MiitopiaClient3DS.change_metas_v1()")
+		logger.info("DataStoreClientMiitopia3DS.change_metas_v1()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(data_ids, stream.u64)
@@ -1596,11 +1596,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		results = stream.list(stream.result)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.change_metas_v1 -> done")
+		logger.info("DataStoreClientMiitopia3DS.change_metas_v1 -> done")
 		return results
 	
 	async def get_meta(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.get_meta()")
+		logger.info("DataStoreClientMiitopia3DS.get_meta()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1611,11 +1611,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		info = stream.extract(DataStoreMetaInfo)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_meta -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_meta -> done")
 		return info
 	
 	async def get_metas(self, data_ids, param):
-		logger.info("DataStore_MiitopiaClient3DS.get_metas()")
+		logger.info("DataStoreClientMiitopia3DS.get_metas()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(data_ids, stream.u64)
@@ -1629,11 +1629,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		obj.results = stream.list(stream.result)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_metas -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_metas -> done")
 		return obj
 	
 	async def prepare_update_object(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.prepare_update_object()")
+		logger.info("DataStoreClientMiitopia3DS.prepare_update_object()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1644,11 +1644,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		info = stream.extract(DataStoreReqUpdateInfo)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.prepare_update_object -> done")
+		logger.info("DataStoreClientMiitopia3DS.prepare_update_object -> done")
 		return info
 	
 	async def complete_update_object(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.complete_update_object()")
+		logger.info("DataStoreClientMiitopia3DS.complete_update_object()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1658,10 +1658,10 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.complete_update_object -> done")
+		logger.info("DataStoreClientMiitopia3DS.complete_update_object -> done")
 	
 	async def search_object(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.search_object()")
+		logger.info("DataStoreClientMiitopia3DS.search_object()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1672,11 +1672,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		result = stream.extract(DataStoreSearchResult)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.search_object -> done")
+		logger.info("DataStoreClientMiitopia3DS.search_object -> done")
 		return result
 	
 	async def get_notification_url(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.get_notification_url()")
+		logger.info("DataStoreClientMiitopia3DS.get_notification_url()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1687,11 +1687,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		info = stream.extract(DataStoreReqGetNotificationUrlInfo)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_notification_url -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_notification_url -> done")
 		return info
 	
 	async def get_new_arrived_notifications_v1(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.get_new_arrived_notifications_v1()")
+		logger.info("DataStoreClientMiitopia3DS.get_new_arrived_notifications_v1()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1704,11 +1704,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		obj.has_next = stream.bool()
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_new_arrived_notifications_v1 -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_new_arrived_notifications_v1 -> done")
 		return obj
 	
 	async def rate_object(self, target, param, fetch_ratings):
-		logger.info("DataStore_MiitopiaClient3DS.rate_object()")
+		logger.info("DataStoreClientMiitopia3DS.rate_object()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(target)
@@ -1721,11 +1721,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		info = stream.extract(DataStoreRatingInfo)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.rate_object -> done")
+		logger.info("DataStoreClientMiitopia3DS.rate_object -> done")
 		return info
 	
 	async def get_rating(self, target, access_password):
-		logger.info("DataStore_MiitopiaClient3DS.get_rating()")
+		logger.info("DataStoreClientMiitopia3DS.get_rating()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(target)
@@ -1737,11 +1737,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		rating = stream.extract(DataStoreRatingInfo)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_rating -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_rating -> done")
 		return rating
 	
 	async def get_ratings(self, data_ids, access_password):
-		logger.info("DataStore_MiitopiaClient3DS.get_ratings()")
+		logger.info("DataStoreClientMiitopia3DS.get_ratings()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(data_ids, stream.u64)
@@ -1755,11 +1755,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		obj.results = stream.list(stream.result)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_ratings -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_ratings -> done")
 		return obj
 	
 	async def reset_rating(self, target, update_password):
-		logger.info("DataStore_MiitopiaClient3DS.reset_rating()")
+		logger.info("DataStoreClientMiitopia3DS.reset_rating()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(target)
@@ -1770,10 +1770,10 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.reset_rating -> done")
+		logger.info("DataStoreClientMiitopia3DS.reset_rating -> done")
 	
 	async def reset_ratings(self, data_ids, transactional):
-		logger.info("DataStore_MiitopiaClient3DS.reset_ratings()")
+		logger.info("DataStoreClientMiitopia3DS.reset_ratings()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(data_ids, stream.u64)
@@ -1785,11 +1785,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		results = stream.list(stream.result)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.reset_ratings -> done")
+		logger.info("DataStoreClientMiitopia3DS.reset_ratings -> done")
 		return results
 	
 	async def get_specific_meta_v1(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.get_specific_meta_v1()")
+		logger.info("DataStoreClientMiitopia3DS.get_specific_meta_v1()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1800,11 +1800,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		infos = stream.list(DataStoreSpecificMetaInfoV1)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_specific_meta_v1 -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_specific_meta_v1 -> done")
 		return infos
 	
 	async def post_meta_binary(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.post_meta_binary()")
+		logger.info("DataStoreClientMiitopia3DS.post_meta_binary()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1815,11 +1815,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		data_id = stream.u64()
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.post_meta_binary -> done")
+		logger.info("DataStoreClientMiitopia3DS.post_meta_binary -> done")
 		return data_id
 	
 	async def touch_object(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.touch_object()")
+		logger.info("DataStoreClientMiitopia3DS.touch_object()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1829,10 +1829,10 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.touch_object -> done")
+		logger.info("DataStoreClientMiitopia3DS.touch_object -> done")
 	
 	async def get_rating_with_log(self, target, access_password):
-		logger.info("DataStore_MiitopiaClient3DS.get_rating_with_log()")
+		logger.info("DataStoreClientMiitopia3DS.get_rating_with_log()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(target)
@@ -1846,11 +1846,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		obj.log = stream.extract(DataStoreRatingLog)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_rating_with_log -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_rating_with_log -> done")
 		return obj
 	
 	async def prepare_post_object(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.prepare_post_object()")
+		logger.info("DataStoreClientMiitopia3DS.prepare_post_object()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1861,11 +1861,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		info = stream.extract(DataStoreReqPostInfo)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.prepare_post_object -> done")
+		logger.info("DataStoreClientMiitopia3DS.prepare_post_object -> done")
 		return info
 	
 	async def prepare_get_object(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.prepare_get_object()")
+		logger.info("DataStoreClientMiitopia3DS.prepare_get_object()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1876,11 +1876,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		info = stream.extract(DataStoreReqGetInfo)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.prepare_get_object -> done")
+		logger.info("DataStoreClientMiitopia3DS.prepare_get_object -> done")
 		return info
 	
 	async def complete_post_object(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.complete_post_object()")
+		logger.info("DataStoreClientMiitopia3DS.complete_post_object()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1890,10 +1890,10 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.complete_post_object -> done")
+		logger.info("DataStoreClientMiitopia3DS.complete_post_object -> done")
 	
 	async def get_new_arrived_notifications(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.get_new_arrived_notifications()")
+		logger.info("DataStoreClientMiitopia3DS.get_new_arrived_notifications()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1906,11 +1906,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		obj.has_next = stream.bool()
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_new_arrived_notifications -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_new_arrived_notifications -> done")
 		return obj
 	
 	async def get_specific_meta(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.get_specific_meta()")
+		logger.info("DataStoreClientMiitopia3DS.get_specific_meta()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -1921,11 +1921,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		infos = stream.list(DataStoreSpecificMetaInfo)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_specific_meta -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_specific_meta -> done")
 		return infos
 	
 	async def get_persistence_info(self, owner_id, slot_id):
-		logger.info("DataStore_MiitopiaClient3DS.get_persistence_info()")
+		logger.info("DataStoreClientMiitopia3DS.get_persistence_info()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.pid(owner_id)
@@ -1937,11 +1937,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		info = stream.extract(DataStorePersistenceInfo)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_persistence_info -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_persistence_info -> done")
 		return info
 	
 	async def get_persistence_infos(self, owner_id, slot_ids):
-		logger.info("DataStore_MiitopiaClient3DS.get_persistence_infos()")
+		logger.info("DataStoreClientMiitopia3DS.get_persistence_infos()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.pid(owner_id)
@@ -1955,11 +1955,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		obj.results = stream.list(stream.result)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_persistence_infos -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_persistence_infos -> done")
 		return obj
 	
 	async def perpetuate_object(self, persistence_slot_id, data_id, delete_last_object):
-		logger.info("DataStore_MiitopiaClient3DS.perpetuate_object()")
+		logger.info("DataStoreClientMiitopia3DS.perpetuate_object()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.u16(persistence_slot_id)
@@ -1971,10 +1971,10 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.perpetuate_object -> done")
+		logger.info("DataStoreClientMiitopia3DS.perpetuate_object -> done")
 	
 	async def unperpetuate_object(self, persistence_slot_id, delete_last_object):
-		logger.info("DataStore_MiitopiaClient3DS.unperpetuate_object()")
+		logger.info("DataStoreClientMiitopia3DS.unperpetuate_object()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.u16(persistence_slot_id)
@@ -1985,10 +1985,10 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.unperpetuate_object -> done")
+		logger.info("DataStoreClientMiitopia3DS.unperpetuate_object -> done")
 	
 	async def prepare_get_object_or_meta_binary(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.prepare_get_object_or_meta_binary()")
+		logger.info("DataStoreClientMiitopia3DS.prepare_get_object_or_meta_binary()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -2001,11 +2001,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		obj.additional_meta = stream.extract(DataStoreReqGetAdditionalMeta)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.prepare_get_object_or_meta_binary -> done")
+		logger.info("DataStoreClientMiitopia3DS.prepare_get_object_or_meta_binary -> done")
 		return obj
 	
 	async def get_password_info(self, data_id):
-		logger.info("DataStore_MiitopiaClient3DS.get_password_info()")
+		logger.info("DataStoreClientMiitopia3DS.get_password_info()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.u64(data_id)
@@ -2016,11 +2016,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		info = stream.extract(DataStorePasswordInfo)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_password_info -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_password_info -> done")
 		return info
 	
 	async def get_password_infos(self, data_ids):
-		logger.info("DataStore_MiitopiaClient3DS.get_password_infos()")
+		logger.info("DataStoreClientMiitopia3DS.get_password_infos()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(data_ids, stream.u64)
@@ -2033,11 +2033,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		obj.results = stream.list(stream.result)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_password_infos -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_password_infos -> done")
 		return obj
 	
 	async def get_metas_multiple_param(self, params):
-		logger.info("DataStore_MiitopiaClient3DS.get_metas_multiple_param()")
+		logger.info("DataStoreClientMiitopia3DS.get_metas_multiple_param()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(params, stream.add)
@@ -2050,11 +2050,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		obj.results = stream.list(stream.result)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_metas_multiple_param -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_metas_multiple_param -> done")
 		return obj
 	
 	async def complete_post_objects(self, data_ids):
-		logger.info("DataStore_MiitopiaClient3DS.complete_post_objects()")
+		logger.info("DataStoreClientMiitopia3DS.complete_post_objects()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(data_ids, stream.u64)
@@ -2064,10 +2064,10 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.complete_post_objects -> done")
+		logger.info("DataStoreClientMiitopia3DS.complete_post_objects -> done")
 	
 	async def change_meta(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.change_meta()")
+		logger.info("DataStoreClientMiitopia3DS.change_meta()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -2077,10 +2077,10 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.change_meta -> done")
+		logger.info("DataStoreClientMiitopia3DS.change_meta -> done")
 	
 	async def change_metas(self, data_ids, param, transactional):
-		logger.info("DataStore_MiitopiaClient3DS.change_metas()")
+		logger.info("DataStoreClientMiitopia3DS.change_metas()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(data_ids, stream.u64)
@@ -2093,11 +2093,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		results = stream.list(stream.result)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.change_metas -> done")
+		logger.info("DataStoreClientMiitopia3DS.change_metas -> done")
 		return results
 	
 	async def rate_objects(self, targets, param, transactional, fetch_ratings):
-		logger.info("DataStore_MiitopiaClient3DS.rate_objects()")
+		logger.info("DataStoreClientMiitopia3DS.rate_objects()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(targets, stream.add)
@@ -2113,11 +2113,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		obj.results = stream.list(stream.result)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.rate_objects -> done")
+		logger.info("DataStoreClientMiitopia3DS.rate_objects -> done")
 		return obj
 	
 	async def post_meta_binary_with_data_id(self, data_id, param):
-		logger.info("DataStore_MiitopiaClient3DS.post_meta_binary_with_data_id()")
+		logger.info("DataStoreClientMiitopia3DS.post_meta_binary_with_data_id()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.u64(data_id)
@@ -2128,10 +2128,10 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		stream = streams.StreamIn(data, self.settings)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.post_meta_binary_with_data_id -> done")
+		logger.info("DataStoreClientMiitopia3DS.post_meta_binary_with_data_id -> done")
 	
 	async def post_meta_binaries_with_data_id(self, data_ids, param, transactional):
-		logger.info("DataStore_MiitopiaClient3DS.post_meta_binaries_with_data_id()")
+		logger.info("DataStoreClientMiitopia3DS.post_meta_binaries_with_data_id()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(data_ids, stream.u64)
@@ -2144,11 +2144,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		results = stream.list(stream.result)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.post_meta_binaries_with_data_id -> done")
+		logger.info("DataStoreClientMiitopia3DS.post_meta_binaries_with_data_id -> done")
 		return results
 	
 	async def rate_object_with_posting(self, target, rate_param, post_param, fetch_ratings):
-		logger.info("DataStore_MiitopiaClient3DS.rate_object_with_posting()")
+		logger.info("DataStoreClientMiitopia3DS.rate_object_with_posting()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(target)
@@ -2162,11 +2162,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		info = stream.extract(DataStoreRatingInfo)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.rate_object_with_posting -> done")
+		logger.info("DataStoreClientMiitopia3DS.rate_object_with_posting -> done")
 		return info
 	
 	async def rate_objects_with_posting(self, targets, rate_param, post_param, transactional, fetch_ratings):
-		logger.info("DataStore_MiitopiaClient3DS.rate_objects_with_posting()")
+		logger.info("DataStoreClientMiitopia3DS.rate_objects_with_posting()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(targets, stream.add)
@@ -2183,11 +2183,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		obj.results = stream.list(stream.result)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.rate_objects_with_posting -> done")
+		logger.info("DataStoreClientMiitopia3DS.rate_objects_with_posting -> done")
 		return obj
 	
 	async def get_object_infos(self, data_ids):
-		logger.info("DataStore_MiitopiaClient3DS.get_object_infos()")
+		logger.info("DataStoreClientMiitopia3DS.get_object_infos()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(data_ids, stream.u64)
@@ -2200,11 +2200,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		obj.results = stream.list(stream.result)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.get_object_infos -> done")
+		logger.info("DataStoreClientMiitopia3DS.get_object_infos -> done")
 		return obj
 	
 	async def search_object_light(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.search_object_light()")
+		logger.info("DataStoreClientMiitopia3DS.search_object_light()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -2215,11 +2215,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		result = stream.extract(DataStoreSearchResult)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.search_object_light -> done")
+		logger.info("DataStoreClientMiitopia3DS.search_object_light -> done")
 		return result
 	
 	async def search_mii(self, param):
-		logger.info("DataStore_MiitopiaClient3DS.search_mii()")
+		logger.info("DataStoreClientMiitopia3DS.search_mii()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.add(param)
@@ -2230,11 +2230,11 @@ class DataStore_MiitopiaClient3DS(DataStore_MiitopiaProtocol3DS):
 		search_result = stream.extract(MiiTubeSearchResult)
 		if not stream.eof():
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
-		logger.info("DataStore_MiitopiaClient3DS.search_mii -> done")
+		logger.info("DataStoreClientMiitopia3DS.search_mii -> done")
 		return search_result
 
 
-class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
+class DataStoreServerMiitopia3DS(DataStoreProtocolMiitopia3DS):
 	def __init__(self):
 		self.methods = {
 			self.METHOD_PREPARE_GET_OBJECT_V1: self.handle_prepare_get_object_v1,
@@ -2293,11 +2293,11 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		if method_id in self.methods:
 			await self.methods[method_id](client, input, output)
 		else:
-			logger.warning("Unknown method called on DataStore_MiitopiaServer3DS: %i", method_id)
+			logger.warning("Unknown method called on DataStoreServerMiitopia3DS: %i", method_id)
 			raise common.RMCError("Core::NotImplemented")
 	
 	async def handle_prepare_get_object_v1(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.prepare_get_object_v1()")
+		logger.info("DataStoreServerMiitopia3DS.prepare_get_object_v1()")
 		#--- request ---
 		param = input.extract(DataStorePrepareGetParamV1)
 		response = await self.prepare_get_object_v1(client, param)
@@ -2308,7 +2308,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def handle_prepare_post_object_v1(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.prepare_post_object_v1()")
+		logger.info("DataStoreServerMiitopia3DS.prepare_post_object_v1()")
 		#--- request ---
 		param = input.extract(DataStorePreparePostParamV1)
 		response = await self.prepare_post_object_v1(client, param)
@@ -2319,19 +2319,19 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def handle_complete_post_object_v1(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.complete_post_object_v1()")
+		logger.info("DataStoreServerMiitopia3DS.complete_post_object_v1()")
 		#--- request ---
 		param = input.extract(DataStoreCompletePostParamV1)
 		await self.complete_post_object_v1(client, param)
 	
 	async def handle_delete_object(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.delete_object()")
+		logger.info("DataStoreServerMiitopia3DS.delete_object()")
 		#--- request ---
 		param = input.extract(DataStoreDeleteParam)
 		await self.delete_object(client, param)
 	
 	async def handle_delete_objects(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.delete_objects()")
+		logger.info("DataStoreServerMiitopia3DS.delete_objects()")
 		#--- request ---
 		param = input.list(DataStoreDeleteParam)
 		transactional = input.bool()
@@ -2343,13 +2343,13 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response, output.result)
 	
 	async def handle_change_meta_v1(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.change_meta_v1()")
+		logger.info("DataStoreServerMiitopia3DS.change_meta_v1()")
 		#--- request ---
 		param = input.extract(DataStoreChangeMetaParamV1)
 		await self.change_meta_v1(client, param)
 	
 	async def handle_change_metas_v1(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.change_metas_v1()")
+		logger.info("DataStoreServerMiitopia3DS.change_metas_v1()")
 		#--- request ---
 		data_ids = input.list(input.u64)
 		param = input.list(DataStoreChangeMetaParamV1)
@@ -2362,7 +2362,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response, output.result)
 	
 	async def handle_get_meta(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_meta()")
+		logger.info("DataStoreServerMiitopia3DS.get_meta()")
 		#--- request ---
 		param = input.extract(DataStoreGetMetaParam)
 		response = await self.get_meta(client, param)
@@ -2373,7 +2373,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def handle_get_metas(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_metas()")
+		logger.info("DataStoreServerMiitopia3DS.get_metas()")
 		#--- request ---
 		data_ids = input.list(input.u64)
 		param = input.extract(DataStoreGetMetaParam)
@@ -2389,7 +2389,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response.results, output.result)
 	
 	async def handle_prepare_update_object(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.prepare_update_object()")
+		logger.info("DataStoreServerMiitopia3DS.prepare_update_object()")
 		#--- request ---
 		param = input.extract(DataStorePrepareUpdateParam)
 		response = await self.prepare_update_object(client, param)
@@ -2400,13 +2400,13 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def handle_complete_update_object(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.complete_update_object()")
+		logger.info("DataStoreServerMiitopia3DS.complete_update_object()")
 		#--- request ---
 		param = input.extract(DataStoreCompleteUpdateParam)
 		await self.complete_update_object(client, param)
 	
 	async def handle_search_object(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.search_object()")
+		logger.info("DataStoreServerMiitopia3DS.search_object()")
 		#--- request ---
 		param = input.extract(DataStoreSearchParam)
 		response = await self.search_object(client, param)
@@ -2417,7 +2417,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def handle_get_notification_url(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_notification_url()")
+		logger.info("DataStoreServerMiitopia3DS.get_notification_url()")
 		#--- request ---
 		param = input.extract(DataStoreGetNotificationUrlParam)
 		response = await self.get_notification_url(client, param)
@@ -2428,7 +2428,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def handle_get_new_arrived_notifications_v1(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_new_arrived_notifications_v1()")
+		logger.info("DataStoreServerMiitopia3DS.get_new_arrived_notifications_v1()")
 		#--- request ---
 		param = input.extract(DataStoreGetNewArrivedNotificationsParam)
 		response = await self.get_new_arrived_notifications_v1(client, param)
@@ -2443,7 +2443,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.bool(response.has_next)
 	
 	async def handle_rate_object(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.rate_object()")
+		logger.info("DataStoreServerMiitopia3DS.rate_object()")
 		#--- request ---
 		target = input.extract(DataStoreRatingTarget)
 		param = input.extract(DataStoreRateObjectParam)
@@ -2456,7 +2456,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def handle_get_rating(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_rating()")
+		logger.info("DataStoreServerMiitopia3DS.get_rating()")
 		#--- request ---
 		target = input.extract(DataStoreRatingTarget)
 		access_password = input.u64()
@@ -2468,7 +2468,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def handle_get_ratings(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_ratings()")
+		logger.info("DataStoreServerMiitopia3DS.get_ratings()")
 		#--- request ---
 		data_ids = input.list(input.u64)
 		access_password = input.u64()
@@ -2484,14 +2484,14 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response.results, output.result)
 	
 	async def handle_reset_rating(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.reset_rating()")
+		logger.info("DataStoreServerMiitopia3DS.reset_rating()")
 		#--- request ---
 		target = input.extract(DataStoreRatingTarget)
 		update_password = input.u64()
 		await self.reset_rating(client, target, update_password)
 	
 	async def handle_reset_ratings(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.reset_ratings()")
+		logger.info("DataStoreServerMiitopia3DS.reset_ratings()")
 		#--- request ---
 		data_ids = input.list(input.u64)
 		transactional = input.bool()
@@ -2503,7 +2503,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response, output.result)
 	
 	async def handle_get_specific_meta_v1(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_specific_meta_v1()")
+		logger.info("DataStoreServerMiitopia3DS.get_specific_meta_v1()")
 		#--- request ---
 		param = input.extract(DataStoreGetSpecificMetaParamV1)
 		response = await self.get_specific_meta_v1(client, param)
@@ -2514,7 +2514,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response, output.add)
 	
 	async def handle_post_meta_binary(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.post_meta_binary()")
+		logger.info("DataStoreServerMiitopia3DS.post_meta_binary()")
 		#--- request ---
 		param = input.extract(DataStorePreparePostParam)
 		response = await self.post_meta_binary(client, param)
@@ -2525,13 +2525,13 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.u64(response)
 	
 	async def handle_touch_object(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.touch_object()")
+		logger.info("DataStoreServerMiitopia3DS.touch_object()")
 		#--- request ---
 		param = input.extract(DataStoreTouchObjectParam)
 		await self.touch_object(client, param)
 	
 	async def handle_get_rating_with_log(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_rating_with_log()")
+		logger.info("DataStoreServerMiitopia3DS.get_rating_with_log()")
 		#--- request ---
 		target = input.extract(DataStoreRatingTarget)
 		access_password = input.u64()
@@ -2547,7 +2547,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response.log)
 	
 	async def handle_prepare_post_object(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.prepare_post_object()")
+		logger.info("DataStoreServerMiitopia3DS.prepare_post_object()")
 		#--- request ---
 		param = input.extract(DataStorePreparePostParam)
 		response = await self.prepare_post_object(client, param)
@@ -2558,7 +2558,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def handle_prepare_get_object(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.prepare_get_object()")
+		logger.info("DataStoreServerMiitopia3DS.prepare_get_object()")
 		#--- request ---
 		param = input.extract(DataStorePrepareGetParam)
 		response = await self.prepare_get_object(client, param)
@@ -2569,13 +2569,13 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def handle_complete_post_object(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.complete_post_object()")
+		logger.info("DataStoreServerMiitopia3DS.complete_post_object()")
 		#--- request ---
 		param = input.extract(DataStoreCompletePostParam)
 		await self.complete_post_object(client, param)
 	
 	async def handle_get_new_arrived_notifications(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_new_arrived_notifications()")
+		logger.info("DataStoreServerMiitopia3DS.get_new_arrived_notifications()")
 		#--- request ---
 		param = input.extract(DataStoreGetNewArrivedNotificationsParam)
 		response = await self.get_new_arrived_notifications(client, param)
@@ -2590,7 +2590,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.bool(response.has_next)
 	
 	async def handle_get_specific_meta(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_specific_meta()")
+		logger.info("DataStoreServerMiitopia3DS.get_specific_meta()")
 		#--- request ---
 		param = input.extract(DataStoreGetSpecificMetaParam)
 		response = await self.get_specific_meta(client, param)
@@ -2601,7 +2601,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response, output.add)
 	
 	async def handle_get_persistence_info(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_persistence_info()")
+		logger.info("DataStoreServerMiitopia3DS.get_persistence_info()")
 		#--- request ---
 		owner_id = input.pid()
 		slot_id = input.u16()
@@ -2613,7 +2613,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def handle_get_persistence_infos(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_persistence_infos()")
+		logger.info("DataStoreServerMiitopia3DS.get_persistence_infos()")
 		#--- request ---
 		owner_id = input.pid()
 		slot_ids = input.list(input.u16)
@@ -2629,7 +2629,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response.results, output.result)
 	
 	async def handle_perpetuate_object(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.perpetuate_object()")
+		logger.info("DataStoreServerMiitopia3DS.perpetuate_object()")
 		#--- request ---
 		persistence_slot_id = input.u16()
 		data_id = input.u64()
@@ -2637,14 +2637,14 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		await self.perpetuate_object(client, persistence_slot_id, data_id, delete_last_object)
 	
 	async def handle_unperpetuate_object(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.unperpetuate_object()")
+		logger.info("DataStoreServerMiitopia3DS.unperpetuate_object()")
 		#--- request ---
 		persistence_slot_id = input.u16()
 		delete_last_object = input.bool()
 		await self.unperpetuate_object(client, persistence_slot_id, delete_last_object)
 	
 	async def handle_prepare_get_object_or_meta_binary(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.prepare_get_object_or_meta_binary()")
+		logger.info("DataStoreServerMiitopia3DS.prepare_get_object_or_meta_binary()")
 		#--- request ---
 		param = input.extract(DataStorePrepareGetParam)
 		response = await self.prepare_get_object_or_meta_binary(client, param)
@@ -2659,7 +2659,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response.additional_meta)
 	
 	async def handle_get_password_info(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_password_info()")
+		logger.info("DataStoreServerMiitopia3DS.get_password_info()")
 		#--- request ---
 		data_id = input.u64()
 		response = await self.get_password_info(client, data_id)
@@ -2670,7 +2670,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def handle_get_password_infos(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_password_infos()")
+		logger.info("DataStoreServerMiitopia3DS.get_password_infos()")
 		#--- request ---
 		data_ids = input.list(input.u64)
 		response = await self.get_password_infos(client, data_ids)
@@ -2685,7 +2685,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response.results, output.result)
 	
 	async def handle_get_metas_multiple_param(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_metas_multiple_param()")
+		logger.info("DataStoreServerMiitopia3DS.get_metas_multiple_param()")
 		#--- request ---
 		params = input.list(DataStoreGetMetaParam)
 		response = await self.get_metas_multiple_param(client, params)
@@ -2700,19 +2700,19 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response.results, output.result)
 	
 	async def handle_complete_post_objects(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.complete_post_objects()")
+		logger.info("DataStoreServerMiitopia3DS.complete_post_objects()")
 		#--- request ---
 		data_ids = input.list(input.u64)
 		await self.complete_post_objects(client, data_ids)
 	
 	async def handle_change_meta(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.change_meta()")
+		logger.info("DataStoreServerMiitopia3DS.change_meta()")
 		#--- request ---
 		param = input.extract(DataStoreChangeMetaParam)
 		await self.change_meta(client, param)
 	
 	async def handle_change_metas(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.change_metas()")
+		logger.info("DataStoreServerMiitopia3DS.change_metas()")
 		#--- request ---
 		data_ids = input.list(input.u64)
 		param = input.list(DataStoreChangeMetaParam)
@@ -2725,7 +2725,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response, output.result)
 	
 	async def handle_rate_objects(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.rate_objects()")
+		logger.info("DataStoreServerMiitopia3DS.rate_objects()")
 		#--- request ---
 		targets = input.list(DataStoreRatingTarget)
 		param = input.list(DataStoreRateObjectParam)
@@ -2743,14 +2743,14 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response.results, output.result)
 	
 	async def handle_post_meta_binary_with_data_id(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.post_meta_binary_with_data_id()")
+		logger.info("DataStoreServerMiitopia3DS.post_meta_binary_with_data_id()")
 		#--- request ---
 		data_id = input.u64()
 		param = input.extract(DataStorePreparePostParam)
 		await self.post_meta_binary_with_data_id(client, data_id, param)
 	
 	async def handle_post_meta_binaries_with_data_id(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.post_meta_binaries_with_data_id()")
+		logger.info("DataStoreServerMiitopia3DS.post_meta_binaries_with_data_id()")
 		#--- request ---
 		data_ids = input.list(input.u64)
 		param = input.list(DataStorePreparePostParam)
@@ -2763,7 +2763,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response, output.result)
 	
 	async def handle_rate_object_with_posting(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.rate_object_with_posting()")
+		logger.info("DataStoreServerMiitopia3DS.rate_object_with_posting()")
 		#--- request ---
 		target = input.extract(DataStoreRatingTarget)
 		rate_param = input.extract(DataStoreRateObjectParam)
@@ -2777,7 +2777,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def handle_rate_objects_with_posting(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.rate_objects_with_posting()")
+		logger.info("DataStoreServerMiitopia3DS.rate_objects_with_posting()")
 		#--- request ---
 		targets = input.list(DataStoreRatingTarget)
 		rate_param = input.list(DataStoreRateObjectParam)
@@ -2796,7 +2796,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response.results, output.result)
 	
 	async def handle_get_object_infos(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.get_object_infos()")
+		logger.info("DataStoreServerMiitopia3DS.get_object_infos()")
 		#--- request ---
 		data_ids = input.list(input.u64)
 		response = await self.get_object_infos(client, data_ids)
@@ -2811,7 +2811,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.list(response.results, output.result)
 	
 	async def handle_search_object_light(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.search_object_light()")
+		logger.info("DataStoreServerMiitopia3DS.search_object_light()")
 		#--- request ---
 		param = input.extract(DataStoreSearchParam)
 		response = await self.search_object_light(client, param)
@@ -2822,7 +2822,7 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def handle_search_mii(self, client, input, output):
-		logger.info("DataStore_MiitopiaServer3DS.search_mii()")
+		logger.info("DataStoreServerMiitopia3DS.search_mii()")
 		#--- request ---
 		param = input.extract(MiiTubeSearchParam)
 		response = await self.search_mii(client, param)
@@ -2833,190 +2833,190 @@ class DataStore_MiitopiaServer3DS(DataStore_MiitopiaProtocol3DS):
 		output.add(response)
 	
 	async def prepare_get_object_v1(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.prepare_get_object_v1 not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.prepare_get_object_v1 not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def prepare_post_object_v1(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.prepare_post_object_v1 not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.prepare_post_object_v1 not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def complete_post_object_v1(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.complete_post_object_v1 not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.complete_post_object_v1 not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def delete_object(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.delete_object not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.delete_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def delete_objects(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.delete_objects not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.delete_objects not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def change_meta_v1(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.change_meta_v1 not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.change_meta_v1 not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def change_metas_v1(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.change_metas_v1 not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.change_metas_v1 not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_meta(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_meta not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_meta not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_metas(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_metas not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_metas not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def prepare_update_object(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.prepare_update_object not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.prepare_update_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def complete_update_object(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.complete_update_object not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.complete_update_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def search_object(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.search_object not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.search_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_notification_url(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_notification_url not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_notification_url not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_new_arrived_notifications_v1(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_new_arrived_notifications_v1 not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_new_arrived_notifications_v1 not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def rate_object(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.rate_object not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.rate_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_rating(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_rating not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_rating not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_ratings(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_ratings not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_ratings not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def reset_rating(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.reset_rating not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.reset_rating not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def reset_ratings(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.reset_ratings not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.reset_ratings not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_specific_meta_v1(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_specific_meta_v1 not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_specific_meta_v1 not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def post_meta_binary(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.post_meta_binary not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.post_meta_binary not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def touch_object(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.touch_object not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.touch_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_rating_with_log(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_rating_with_log not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_rating_with_log not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def prepare_post_object(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.prepare_post_object not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.prepare_post_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def prepare_get_object(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.prepare_get_object not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.prepare_get_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def complete_post_object(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.complete_post_object not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.complete_post_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_new_arrived_notifications(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_new_arrived_notifications not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_new_arrived_notifications not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_specific_meta(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_specific_meta not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_specific_meta not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_persistence_info(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_persistence_info not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_persistence_info not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_persistence_infos(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_persistence_infos not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_persistence_infos not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def perpetuate_object(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.perpetuate_object not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.perpetuate_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def unperpetuate_object(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.unperpetuate_object not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.unperpetuate_object not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def prepare_get_object_or_meta_binary(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.prepare_get_object_or_meta_binary not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.prepare_get_object_or_meta_binary not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_password_info(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_password_info not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_password_info not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_password_infos(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_password_infos not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_password_infos not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_metas_multiple_param(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_metas_multiple_param not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_metas_multiple_param not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def complete_post_objects(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.complete_post_objects not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.complete_post_objects not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def change_meta(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.change_meta not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.change_meta not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def change_metas(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.change_metas not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.change_metas not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def rate_objects(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.rate_objects not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.rate_objects not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def post_meta_binary_with_data_id(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.post_meta_binary_with_data_id not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.post_meta_binary_with_data_id not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def post_meta_binaries_with_data_id(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.post_meta_binaries_with_data_id not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.post_meta_binaries_with_data_id not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def rate_object_with_posting(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.rate_object_with_posting not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.rate_object_with_posting not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def rate_objects_with_posting(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.rate_objects_with_posting not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.rate_objects_with_posting not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def get_object_infos(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.get_object_infos not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.get_object_infos not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def search_object_light(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.search_object_light not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.search_object_light not implemented")
 		raise common.RMCError("Core::NotImplemented")
 	
 	async def search_mii(self, *args):
-		logger.warning("DataStore_MiitopiaServer3DS.search_mii not implemented")
+		logger.warning("DataStoreServerMiitopia3DS.search_mii not implemented")
 		raise common.RMCError("Core::NotImplemented")
 

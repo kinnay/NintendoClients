@@ -1,13 +1,13 @@
 
 # Module: <code>nintendo.nex.datastore_miitopia_3ds</code>
 
-Provides a client and server for the `DataStore_MiitopiaProtocol3DS`. This page was generated automatically from `datastore_miitopia_3ds.proto`.
+Provides a client and server for the `DataStoreProtocolMiitopia3DS`. This page was generated automatically from `datastore_miitopia_3ds.proto`.
 
-<code>**class** [DataStore_MiitopiaClient3DS](#datastore_miitopiaclient3ds)</code><br>
-<span class="docs">The client for the `DataStore_MiitopiaProtocol3DS`.</span>
+<code>**class** [DataStoreClientMiitopia3DS](#datastoreclientmiitopia3ds)</code><br>
+<span class="docs">The client for the `DataStoreProtocolMiitopia3DS`.</span>
 
-<code>**class** [DataStore_MiitopiaServer3DS](#datastore_miitopiaserver3ds)</code><br>
-<span class="docs">The server for the `DataStore_MiitopiaProtocol3DS`.</span>
+<code>**class** [DataStoreServerMiitopia3DS](#datastoreservermiitopia3ds)</code><br>
+<span class="docs">The server for the `DataStoreProtocolMiitopia3DS`.</span>
 
 <code>**class** [Category](#category)</code><br>
 <code>**class** [Gender](#gender)</code><br>
@@ -61,9 +61,9 @@ Provides a client and server for the `DataStore_MiitopiaProtocol3DS`. This page 
 <code>**class** [MiiTubeSearchParam](#miitubesearchparam)([Structure](common.md))</code><br>
 <code>**class** [MiiTubeSearchResult](#miitubesearchresult)([Structure](common.md))</code><br>
 
-## DataStore_MiitopiaClient3DS
+## DataStoreClientMiitopia3DS
 <code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
-<span class="docs">Creates a new [`DataStore_MiitopiaClient3DS`](#datastore_miitopiaclient3ds).</span>
+<span class="docs">Creates a new [`DataStoreClientMiitopia3DS`](#datastoreclientmiitopia3ds).</span>
 
 <code>**async def prepare_get_object_v1**(param: [DataStorePrepareGetParamV1](#datastorepreparegetparamv1)) -> [DataStoreReqGetInfoV1](#datastorereqgetinfov1)</code><br>
 <span class="docs">Calls method `1` on the server.</span>
@@ -266,9 +266,9 @@ Provides a client and server for the `DataStore_MiitopiaProtocol3DS`. This page 
 <code>**async def search_mii**(param: [MiiTubeSearchParam](#miitubesearchparam)) -> [MiiTubeSearchResult](#miitubesearchresult)</code><br>
 <span class="docs">Calls method `47` on the server.</span>
 
-## DataStore_MiitopiaServer3DS
+## DataStoreServerMiitopia3DS
 <code>**def _\_init__**()</code><br>
-<span class="docs">Creates a new [`DataStore_MiitopiaServer3DS`](#datastore_miitopiaserver3ds).</span>
+<span class="docs">Creates a new [`DataStoreServerMiitopia3DS`](#datastoreservermiitopia3ds).</span>
 
 <code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
