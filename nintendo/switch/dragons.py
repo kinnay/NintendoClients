@@ -13,7 +13,7 @@ CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CLA
 
 USER_AGENT = "NintendoSDK Firmware/%s (platform:NX; did:%016x; eid:lp1)"
 
-LATEST_VERSION = 1700
+LATEST_VERSION = 1801
 
 
 class DragonsError(Exception):
