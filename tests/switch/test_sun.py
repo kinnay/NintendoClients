@@ -9,7 +9,7 @@ TEST_DEVICE_ID = 0x6265ca40780b1c0d
 SYSTEM_UPDATE_META_REQUEST = \
 	"GET /v1/system_update_meta?device_id=6265ca40780b1c0d HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
-	"User-Agent: NintendoSDK Firmware/17.0.0-6.0 (platform:NX; did:6265ca40780b1c0d; eid:lp1)\r\n" \
+	"User-Agent: NintendoSDK Firmware/18.0.1-1.0 (platform:NX; did:6265ca40780b1c0d; eid:lp1)\r\n" \
 	"Accept: application/json\r\n" \
 	"\r\n"
 

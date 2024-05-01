@@ -15,35 +15,35 @@ SYSTEM_UPDATE_HEAD_REQUEST = \
 	"HEAD /t/s/0100000000000816/1140851708?device_id=6265ca40780b1c0d HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
 	"Accept: */*\r\n" \
-	"User-Agent: NintendoSDK Firmware/17.0.0-6.0 (platform:NX; did:6265ca40780b1c0d; eid:lp1)\r\n" \
+	"User-Agent: NintendoSDK Firmware/18.0.1-1.0 (platform:NX; did:6265ca40780b1c0d; eid:lp1)\r\n" \
 	"\r\n"
 
 SYSTEM_UPDATE_GET_REQUEST = \
 	"GET /c/s/170ca33980ff8e9cdad31c6add0f38b6 HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
 	"Accept: */*\r\n" \
-	"User-Agent: NintendoSDK Firmware/17.0.0-6.0 (platform:NX; did:6265ca40780b1c0d; eid:lp1)\r\n" \
+	"User-Agent: NintendoSDK Firmware/18.0.1-1.0 (platform:NX; did:6265ca40780b1c0d; eid:lp1)\r\n" \
 	"\r\n"
 
 SYSTEM_TITLE_HEAD_REQUEST = \
 	"HEAD /t/a/0100000000000006/1140851648?device_id=6265ca40780b1c0d HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
 	"Accept: */*\r\n" \
-	"User-Agent: NintendoSDK Firmware/17.0.0-6.0 (platform:NX; did:6265ca40780b1c0d; eid:lp1)\r\n" \
+	"User-Agent: NintendoSDK Firmware/18.0.1-1.0 (platform:NX; did:6265ca40780b1c0d; eid:lp1)\r\n" \
 	"\r\n"
 
 SYSTEM_TITLE_GET_REQUEST = \
 	"GET /c/a/aa4c1492ab0ab849fbc1002eb3ecc784 HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
 	"Accept: */*\r\n" \
-	"User-Agent: NintendoSDK Firmware/17.0.0-6.0 (platform:NX; did:6265ca40780b1c0d; eid:lp1)\r\n" \
+	"User-Agent: NintendoSDK Firmware/18.0.1-1.0 (platform:NX; did:6265ca40780b1c0d; eid:lp1)\r\n" \
 	"\r\n"
 
 CONTENT_REQUEST = \
 	"GET /c/c/e3a44d36db9756202bef1dcd3bfb65ef HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
 	"Accept: */*\r\n" \
-	"User-Agent: NintendoSDK Firmware/17.0.0-6.0 (platform:NX; did:6265ca40780b1c0d; eid:lp1)\r\n" \
+	"User-Agent: NintendoSDK Firmware/18.0.1-1.0 (platform:NX; did:6265ca40780b1c0d; eid:lp1)\r\n" \
 	"\r\n"
 
 
