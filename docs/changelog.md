@@ -1,6 +1,13 @@
 
 ## Changelog
 
+### 2.1.0
+* Added support for system version 17.0.1, 18.0.0 and 18.0.1.
+* Added support for Switch gamecard authentication.
+* Added support for the data store protocol of Miitopia 3DS.
+
+*Released on 2024-05-04*
+
 ### 2.0.1
 * **Bug fix**: added `nintendo.switch` to setup.py. The whole `nintendo.switch` folder was missing in the previous release.
 
