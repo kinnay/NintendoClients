@@ -1,6 +1,11 @@
 
 ## Changelog
 
+### 2.2.0
+* Added support for system version 18.1.0.
+
+*Released on 2024-06-29*
+
 ### 2.1.0
 * Added support for system version 17.0.1, 18.0.0 and 18.0.1.
 * Added support for Switch gamecard authentication.
