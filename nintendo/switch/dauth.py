@@ -229,13 +229,15 @@ class DAuthClient:
 		self.context.set_authority(ca)
 		
 		self.host = "dauth-lp1.ndas.srv.nintendo.net"
-		self.user_agent = USER_AGENT[LATEST_VERSION]
-		self.system_digest = SYSTEM_VERSION_DIGEST[LATEST_VERSION]
-		self.key_generation = KEY_GENERATION[LATEST_VERSION]
-		self.api_version = API_VERSION[LATEST_VERSION]
 		
 		self.power_state = "FA"
 		self.region = 1
+
+		self.system_version = LATEST_VERSION
+		self.user_agent = USER_AGENT[self.system_version]
+		self.system_digest = SYSTEM_VERSION_DIGEST[self.system_version]
+		self.key_generation = KEY_GENERATION[self.system_version]
+		self.api_version = API_VERSION[self.system_version]
 		
 	def set_request_callback(self, callback): self.request_callback = callback
 	
@@ -250,18 +252,26 @@ class DAuthClient:
 	def set_system_version(self, version):
 		if version not in USER_AGENT:
 			raise ValueError("Unknown system version: %i" %version)
+		self.system_version = version
 		self.user_agent = USER_AGENT[version]
 		self.system_digest = SYSTEM_VERSION_DIGEST[version]
 		self.key_generation = KEY_GENERATION[version]
 		self.api_version = API_VERSION[version]
 		
 	async def request(self, req):
-		req.headers["Host"] = self.host
-		req.headers["User-Agent"] = self.user_agent
-		req.headers["Accept"] = "*/*"
-		req.headers["X-Nintendo-PowerState"] = self.power_state
-		req.headers["Content-Length"] = 0
-		req.headers["Content-Type"] = "application/x-www-form-urlencoded"
+		if self.system_version < 1800:
+			req.headers["Host"] = self.host
+			req.headers["User-Agent"] = self.user_agent
+			req.headers["Accept"] = "*/*"
+			req.headers["X-Nintendo-PowerState"] = self.power_state
+			req.headers["Content-Length"] = 0
+			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
+		else:
+			req.headers["Host"] = self.host
+			req.headers["Accept"] = "*/*"
+			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
+			req.headers["X-Nintendo-PowerState"] = self.power_state
+			req.headers["Content-Length"] = 0
 		
 		response = await self.request_callback(self.host, req, self.context)
 		if response.json and "errors" in response.json:

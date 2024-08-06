@@ -24,6 +24,15 @@ CHALLENGE_REQUEST_1300 = \
 	"Content-Type: application/x-www-form-urlencoded\r\n\r\n" \
 	"key_generation=13"
 
+CHALLENGE_REQUEST_1800 = \
+	"POST /v7/challenge HTTP/1.1\r\n" \
+	"Host: localhost:12345\r\n" \
+	"Accept: */*\r\n" \
+	"Content-Type: application/x-www-form-urlencoded\r\n" \
+	"X-Nintendo-PowerState: FA\r\n" \
+	"Content-Length: 17\r\n\r\n" \
+	"key_generation=17"
+
 TOKEN_REQUEST_1200 = \
 	"POST /v6/device_auth_token HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
@@ -49,6 +58,18 @@ TOKEN_REQUEST_1300 = \
 	"client_id=8f849b5d34778d8e&ist=false&key_generation=13&" \
 	"system_version=CusHY#000d0000#r1xneESd4PiTRYIhVIl0bK1ST5L5BUmv_uGPLqc4PPo=&" \
 	"mac=dGMjt0ShsDr-uNrsHtCB1g"
+
+TOKEN_REQUEST_1800 = \
+	"POST /v7/device_auth_token HTTP/1.1\r\n" \
+	"Host: localhost:12345\r\n" \
+	"Accept: */*\r\n" \
+	"Content-Type: application/x-www-form-urlencoded\r\n" \
+	"X-Nintendo-PowerState: FA\r\n" \
+	"Content-Length: 211\r\n\r\n" \
+	"challenge=TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=&" \
+	"client_id=8f849b5d34778d8e&ist=false&key_generation=17&" \
+	"system_version=CusHY#00120000#U531L4Si9RbhOVeyVppe18WHkJ0k4_KzrNtygsekMNo=&" \
+	"mac=c4SgqSjdfdNFoRM35ChrLw"
 
 
 @pytest.mark.anyio
@@ -112,6 +133,39 @@ async def test_dauth_1300():
 		client = dauth.DAuthClient(keys)
 		client.set_host("localhost:12345")
 		client.set_system_version(1300)
+		client.set_context(None)
+		response = await client.device_token(dauth.CLIENT_ID_BAAS)
+		token = response["device_auth_token"]
+		assert token == "device token"
+
+@pytest.mark.anyio
+async def test_dauth_1800():
+	async def handler(client, request):
+		if request.path == "/v7/challenge":
+			assert request.encode().decode() == CHALLENGE_REQUEST_1800
+			response = http.HTTPResponse(200)
+			response.json = {
+				"challenge": "TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=",
+				"data": "4SxW91vqVg6pz4CXMH2Ouw=="
+			}
+			return response
+		else:
+			assert request.encode().decode() == TOKEN_REQUEST_1800
+			response = http.HTTPResponse(200)
+			response.json = {
+				"device_auth_token": "device token"
+			}
+			return response
+	
+	async with http.serve(handler, "localhost", 12345):
+		keys = {
+			"aes_kek_generation_source": bytes.fromhex("1092ce3d2c208c250ebe248537f2df73"),
+			"master_key_10": bytes.fromhex("2fcb5dd5355a220a12eaeb8069bb75e1")
+		}
+		
+		client = dauth.DAuthClient(keys)
+		client.set_host("localhost:12345")
+		client.set_system_version(1800)
 		client.set_context(None)
 		response = await client.device_token(dauth.CLIENT_ID_BAAS)
 		token = response["device_auth_token"]

@@ -96,7 +96,8 @@ class DragonsClient:
 	
 	async def request_dauth(self, req, device_token, title_id):
 		req.headers["Host"] = self.host_dragons
-		req.headers["User-Agent"] = self.user_agent_dauth
+		if self.system_version < 1800:
+			req.headers["User-Agent"] = self.user_agent_dauth
 		req.headers["Accept"] = "*/*"
 		req.headers["Content-Type"] = "application/json"
 		req.headers["DeviceAuthorization"] = "Bearer " + device_token

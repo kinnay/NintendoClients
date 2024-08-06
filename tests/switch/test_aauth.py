@@ -28,6 +28,16 @@ TOKEN_REQUEST_1500 = \
 	"application_id=0100123001234000&application_version=00070000&" \
 	"device_auth_token=device.token&media_type=DIGITAL&cert=token.from.dragons"
 
+TOKEN_REQUEST_1800 = \
+	"POST /v4/application_auth_token HTTP/1.1\r\n" \
+	"Host: localhost:12345\r\n" \
+	"Accept: */*\r\n" \
+	"Content-Type: application/x-www-form-urlencoded\r\n" \
+	"X-Nintendo-PowerState: FA\r\n" \
+	"Content-Length: 134\r\n\r\n" \
+	"application_id=0100123001234000&application_version=00070000&" \
+	"device_auth_token=device.token&media_type=DIGITAL&cert=token.from.dragons"
+
 CHALLENGE_REQUEST = \
 	"POST /v3/challenge HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
@@ -89,6 +99,26 @@ async def test_aauth_1500():
 		client = aauth.AAuthClient()
 		client.set_host("localhost:12345")
 		client.set_system_version(1500)
+		client.set_context(None)
+		response = await client.auth_digital(
+			0x0100123001234000, 0x70000, "device.token", "token.from.dragons"
+		)
+		assert response["application_auth_token"] == "application token"
+
+@pytest.mark.anyio
+async def test_aauth_1800():
+	async def handler(client, request):
+		assert request.encode().decode() == TOKEN_REQUEST_1800
+		response = http.HTTPResponse(200)
+		response.json = {
+			"application_auth_token": "application token"
+		}
+		return response
+	
+	async with http.serve(handler, "localhost", 12345):
+		client = aauth.AAuthClient()
+		client.set_host("localhost:12345")
+		client.set_system_version(1800)
 		client.set_context(None)
 		response = await client.auth_digital(
 			0x0100123001234000, 0x70000, "device.token", "token.from.dragons"
