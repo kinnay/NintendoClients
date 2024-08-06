@@ -1,6 +1,11 @@
 
 ## Changelog
 
+### 2.2.1
+* Fixed the header order in the dauth flow for system version 18.0.0 and later.
+
+*Released on 2024-08-06*
+
 ### 2.2.0
 * Added support for system version 18.1.0.
 
