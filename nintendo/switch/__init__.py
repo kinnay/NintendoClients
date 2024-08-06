@@ -4,7 +4,6 @@ from Crypto.PublicKey import RSA
 from anynet import tls
 import hashlib
 import struct
-import os
 
 
 def load_keys(filename):
