@@ -1,13 +1,10 @@
 
-from nintendo.switch import common
 from anynet import tls, http
-import pkg_resources
+from nintendo import resources
+from nintendo.switch import common
 
 import logging
 logger = logging.getLogger(__name__)
-
-
-CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CLASS2_CA_G3.der")
 
 
 USER_AGENT = "NintendoSDK Firmware/%s (platform:NX; did:%016x; eid:lp1)"
@@ -21,7 +18,7 @@ class AtumnClient:
 		
 		self.request_callback = http.request
 		
-		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
+		ca = resources.certificate("CACERT_NINTENDO_CLASS2_CA_G3.der")
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
 		

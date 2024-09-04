@@ -1,13 +1,10 @@
 
-from nintendo.nex import common, kerberos, rmc, streams
 from anynet import http, tls
-import pkg_resources
-import secrets
+from nintendo import resources
+from nintendo.nex import common, kerberos, rmc, streams
 import hashlib
 import hmac
-
-
-CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CLASS2_CA_G3.der")
+import secrets
 
 
 class HppClient:
@@ -24,7 +21,7 @@ class HppClient:
 		
 		self.call_id = 1
 		
-		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
+		ca = resources.certificate("files/cert/CACERT_NINTENDO_CLASS2_CA_G3.der")
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
 

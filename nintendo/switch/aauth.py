@@ -5,15 +5,12 @@ from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
 from anynet import tls, http
-import pkg_resources
+from nintendo import resources
 import struct
 import base64
 
 import logging
 logger = logging.getLogger(__name__)
-
-
-CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CA_G3.der")
 
 
 RSA_MODULUS =  int(
@@ -142,7 +139,7 @@ class AAuthClient:
 	def __init__(self):
 		self.request_callback = http.request
 		
-		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
+		ca = resources.certificate("CACERT_NINTENDO_CA_G3.der")
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
 		

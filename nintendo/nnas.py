@@ -1,6 +1,6 @@
 
 from anynet import http, tls
-import pkg_resources
+from nintendo import resources
 import datetime
 import hashlib
 import struct
@@ -8,11 +8,6 @@ import base64
 
 import logging
 logger = logging.getLogger(__name__)
-
-
-CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CA_G3.der")
-CERT = pkg_resources.resource_filename("nintendo", "files/cert/WIIU_COMMON_1_CERT.der")
-KEY = pkg_resources.resource_filename("nintendo", "files/cert/WIIU_COMMON_1_RSA_KEY.der")
 
 
 def calc_password_hash(pid, password):
@@ -240,10 +235,10 @@ class Profile:
 class NNASClient:
 	def __init__(self):
 		self.url = "account.nintendo.net"
-		
-		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
-		cert = tls.TLSCertificate.load(CERT, tls.TYPE_DER)
-		key = tls.TLSPrivateKey.load(KEY, tls.TYPE_DER)
+
+		ca = resources.certificate("CACERT_NINTENDO_CA_G3.der")
+		cert = resources.certificate("WIIU_COMMON_1_CERT.der")
+		key = resources.private_key("WIIU_COMMON_1_RSA_KEY.der")
 		
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)

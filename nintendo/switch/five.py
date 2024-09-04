@@ -1,13 +1,11 @@
 
 from anynet import tls, http
+from nintendo import resources
 import base64
-import pkg_resources
 
 import logging
 logger = logging.getLogger(__name__)
 
-
-CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CA_G3.der")
 
 USER_AGENT = {
 	 900: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
@@ -80,7 +78,7 @@ class FiveClient:
 	def __init__(self):
 		self.request_callback = http.request
 		
-		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
+		ca = resources.certificate("CACERT_NINTENDO_CA_G3.der")
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
 		

@@ -2,14 +2,11 @@
 from Crypto.Hash import CMAC
 from Crypto.Cipher import AES
 from anynet import tls, http
-import pkg_resources
+from nintendo import resources
 import base64
 
 import logging
 logger = logging.getLogger(__name__)
-
-
-CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CA_G3.der")
 
 
 DAUTH_SOURCE = bytes.fromhex("8be45abcf987021523ca4f5e2300dbf0")
@@ -224,7 +221,7 @@ class DAuthClient:
 		
 		self.request_callback = http.request
 		
-		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
+		ca = resources.certificate("CACERT_NINTENDO_CA_G3.der")
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
 		

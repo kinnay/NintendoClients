@@ -1,17 +1,12 @@
 
 from anynet import http, tls
-import pkg_resources
+from nintendo import resources
 import datetime
 import secrets
 import base64
 
 import logging
 logger = logging.getLogger(__name__)
-
-
-CA = pkg_resources.resource_filename("nintendo", "files/cert/CACERT_NINTENDO_CA_G3.der")
-CERT = pkg_resources.resource_filename("nintendo", "files/cert/ctr-common-1-cert.der")
-KEY = pkg_resources.resource_filename("nintendo", "files/cert/ctr-common-1-key.der")
 
 
 MEDIA_TYPE_SYSTEM = 0
@@ -87,10 +82,10 @@ class LoginResponse:
 class NASCClient:
 	def __init__(self):
 		self.url = "nasc.nintendowifi.net"
-		
-		ca = tls.TLSCertificate.load(CA, tls.TYPE_DER)
-		cert = tls.TLSCertificate.load(CERT, tls.TYPE_DER)
-		key = tls.TLSPrivateKey.load(KEY, tls.TYPE_DER)
+
+		ca = resources.certificate("CACERT_NINTENDO_CA_G3.der")
+		cert = resources.certificate("ctr-common-1-cert.der")
+		key = resources.private_key("ctr-common-1-key.der")
 
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)

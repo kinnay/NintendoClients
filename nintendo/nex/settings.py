@@ -1,5 +1,5 @@
 
-import pkg_resources
+from nintendo import resources
 
 
 class Settings:
@@ -72,8 +72,7 @@ class Settings:
 		return copy
 
 	def load(self, name):
-		filename = pkg_resources.resource_filename("nintendo", "files/config/%s.cfg" %name)
-		with open(filename) as f:
+		with resources.open("files/config/%s.cfg" %name) as f:
 			linenum = 1
 			for line in f:
 				line = line.strip()
