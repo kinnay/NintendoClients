@@ -54,6 +54,7 @@ SYSTEM_VERSION_DIGEST = {
 	1800: "CusHY#00120000#U531L4Si9RbhOVeyVppe18WHkJ0k4_KzrNtygsekMNo=",
 	1801: "CusHY#00120001#chuxR_O35JFyJq7dIlT8yP1A-j1yBcF-iU4iVDjHt9g=",
 	1810: "CusHY#00120100#7pfwz-8raijuW2lv4UOi4Hukp-DuY898HEK6hEYUjSM=",
+	1900: "CusHY#00130000#x2jf5al2EkqJmdvmnTFaL6s4ic7X68N0dY9jnwwcL98=",
 }
 
 USER_AGENT = {
@@ -96,6 +97,7 @@ USER_AGENT = {
 	1800: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 18.3.0.0)",
 	1801: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 18.3.0.0)",
 	1810: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 18.3.0.0)",
+	1900: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 19.3.0.0)",
 }
 
 KEY_GENERATION = {
@@ -138,6 +140,7 @@ KEY_GENERATION = {
 	1800: 17,
 	1801: 17,
 	1810: 17,
+	1900: 19,
 }
 
 API_VERSION = {
@@ -180,9 +183,10 @@ API_VERSION = {
 	1800: 7,
 	1801: 7,
 	1810: 7,
+	1900: 7,
 }
 
-LATEST_VERSION = 1810
+LATEST_VERSION = 1900
 
 
 CLIENT_ID_SCSI = 0x146C8AC7B8A0DB52
