@@ -72,6 +72,7 @@ USER_AGENT = {
 	1800: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
 	1801: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
 	1810: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
+	1900: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)",
 }
 
 API_VERSION = {
@@ -114,9 +115,10 @@ API_VERSION = {
 	1800: 4,
 	1801: 4,
 	1810: 4,
+	1900: 5,
 }
 
-LATEST_VERSION = 1810
+LATEST_VERSION = 1900
 
 
 class AAuthError(Exception):
@@ -178,7 +180,7 @@ class AAuthClient:
 		else:
 			req.headers["Host"] = self.host
 			req.headers["Accept"] = "*/*"
-			req.headers["Content-Type"] = "application/x-www-form-urlencoded"	
+			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 			if use_power_state:
 				req.headers["X-Nintendo-PowerState"] = self.power_state
 			req.headers["Content-Length"] = 0
@@ -242,6 +244,9 @@ class AAuthClient:
 			"media_type": "NO_CERT"
 		}
 		
+		if self.api_version == 5:
+			req.form["auth_type"] = req.form.pop("media_type")
+		
 		response = await self.request(req, True)
 		return response.json
 
@@ -253,6 +258,9 @@ class AAuthClient:
 			"device_auth_token": device_token,
 			"media_type": "SYSTEM"
 		}
+
+		if self.api_version == 5:
+			req.form["auth_type"] = req.form.pop("media_type")
 
 		response = await self.request(req, True)
 		return response.json
@@ -281,10 +289,13 @@ class AAuthClient:
 			req.form["cert"] = base64.b64encode(encrypted_ticket, b"-_").decode().rstrip("=")
 			req.form["cert_key"] = base64.b64encode(encrypted_key, b"-_").decode().rstrip("=")
 		
-		elif self.api_version == 4:
+		elif self.api_version >= 4:
 			self.verify_token(cert)
 			
 			req.form["cert"] = cert
+			
+		if self.api_version == 5:
+			req.form["auth_type"] = req.form.pop("media_type")
 		
 		response = await self.request(req, True)
 		return response.json
@@ -299,6 +310,9 @@ class AAuthClient:
 			"gvt": base64.b64encode(gvt, b"-_").decode().rstrip("="),
 			"cert": base64.b64encode(cert, b"-_").decode().rstrip("=")
 		}
-
+		
+		if self.api_version == 5:
+			req.form["auth_type"] = req.form.pop("media_type")
+		
 		response = await self.request(req, True)
 		return response.json
