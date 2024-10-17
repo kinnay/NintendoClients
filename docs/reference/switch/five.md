@@ -54,5 +54,5 @@ The error can be inspected using the following attributes:
 <code>**async def mark_all_as_read**(access_token: str, user_id: int) -> None</code><br>
 <span class="docs">Marks all received invitations as read.</span>
 
-<code>**async def send_invitation**(access_token: str, receivers: list[int], application_id: int, application_group_id: int, application_data: bytes, messages: dict[str, str], application_id_match: bool = False) -> dict</code><br>
+<code>**async def send_invitation**(access_token: str, receivers: list[int], application_id: int, application_group_id: int, application_data: bytes, messages: dict[str, str], application_id_match: bool = False, acd_index: int = 0) -> dict</code><br>
 <span class="docs">Sends an online play invitation to at most 16 users. The application group id is usually the same as the application id (title id). The application data is game-specific and may contain at most 1024 bytes.</span>
