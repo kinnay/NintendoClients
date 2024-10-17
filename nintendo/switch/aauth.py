@@ -69,6 +69,7 @@ USER_AGENT = {
 	1800: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
 	1801: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
 	1810: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
+	1900: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)",
 }
 
 API_VERSION = {
@@ -111,9 +112,10 @@ API_VERSION = {
 	1800: 4,
 	1801: 4,
 	1810: 4,
+	1900: 5,
 }
 
-LATEST_VERSION = 1810
+LATEST_VERSION = 1900
 
 
 class AAuthError(Exception):
@@ -220,9 +222,11 @@ class AAuthClient:
 		return time, ip
 	
 	async def challenge(self, device_token):
+		param_name = "&device_auth_token" if self.system_version < 1800 else "device_auth_token"
+
 		req = http.HTTPRequest.post("/v%i/challenge" %self.api_version)
 		req.rawform = {
-			"&device_auth_token": device_token
+			param_name: device_token
 		}
 		
 		response = await self.request(req, False)
@@ -231,36 +235,42 @@ class AAuthClient:
 	# Warning: do not use auth_nocert on a production server.
 	# It will immediately ban your Switch.
 	async def auth_nocert(self, title_id, title_version, device_token):
+		auth_type = "media_type" if self.api_version < 5 else "auth_type"
+
 		req = http.HTTPRequest.post("/v%i/application_auth_token" %self.api_version)
 		req.form = {
 			"application_id": "%016x" %title_id,
 			"application_version": "%08x" %title_version,
 			"device_auth_token": device_token,
-			"media_type": "NO_CERT"
+			auth_type: "NO_CERT"
 		}
 		
 		response = await self.request(req, True)
 		return response.json
 
 	async def auth_system(self, title_id, title_version, device_token):
+		auth_type = "media_type" if self.api_version < 5 else "auth_type"
+
 		req = http.HTTPRequest.post("/v%i/application_auth_token" %self.api_version)
 		req.form = {
 			"application_id": "%016x" %title_id,
 			"application_version": "%08x" %title_version,
 			"device_auth_token": device_token,
-			"media_type": "SYSTEM"
+			auth_type: "SYSTEM"
 		}
 
 		response = await self.request(req, True)
 		return response.json
 
 	async def auth_digital(self, title_id, title_version, device_token, cert):
+		auth_type = "media_type" if self.api_version < 5 else "auth_type"
+
 		req = http.HTTPRequest.post("/v%i/application_auth_token" %self.api_version)
 		req.form = {
 			"application_id": "%016x" %title_id,
 			"application_version": "%08x" %title_version,
 			"device_auth_token": device_token,
-			"media_type": "DIGITAL"
+			auth_type: "DIGITAL"
 		}
 		
 		if self.api_version == 3:
@@ -278,7 +288,7 @@ class AAuthClient:
 			req.form["cert"] = base64.b64encode(encrypted_ticket, b"-_").decode().rstrip("=")
 			req.form["cert_key"] = base64.b64encode(encrypted_key, b"-_").decode().rstrip("=")
 		
-		elif self.api_version == 4:
+		elif self.api_version >= 4:
 			self.verify_token(cert)
 			
 			req.form["cert"] = cert
@@ -286,16 +296,22 @@ class AAuthClient:
 		response = await self.request(req, True)
 		return response.json
 
-	async def auth_gamecard(self, title_id, title_version, device_token, cert, gvt):
+	async def auth_gamecard(self, title_id, title_version, device_token, cert, gvt, challenge=None, challenge_src=None):
+		auth_type = "media_type" if self.api_version < 5 else "auth_type"
+
 		req = http.HTTPRequest.post("/v%i/application_auth_token" %self.api_version)
 		req.form = {
 			"application_id": "%016x" %title_id,
 			"application_version": "%08x" %title_version,
 			"device_auth_token": device_token,
-			"media_type": "GAMECARD",
+			auth_type: "GAMECARD",
 			"gvt": base64.b64encode(gvt, b"-_").decode().rstrip("="),
 			"cert": base64.b64encode(cert, b"-_").decode().rstrip("=")
 		}
+
+		if self.api_version >= 5:
+			req.form["challenge"] = challenge
+			req.form["challenge_src"] = challenge_src
 
 		response = await self.request(req, True)
 		return response.json

@@ -43,7 +43,7 @@ The error can be inspected using the following attributes:
 <span class="docs">Changes the content of the `X-Nintendo-PowerState` header. The default is `"FA"`.
 
 <code>**def set_system_version**(version: int) -> None</code></br>
-<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` up to `18.1.0` are supported.</span>
+<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` up to `19.0.0` are supported.</span>
 
 <code>**async def get_time**() -> tuple[int, str]</code><br>
 <span class="docs">Requests the current server time with `/v1/time`. Returns a tuple that contains the current server time and your public IP address.</span>

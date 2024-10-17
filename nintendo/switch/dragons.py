@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 USER_AGENT = "NintendoSDK Firmware/%s (platform:NX; did:%016x; eid:lp1)"
 
-LATEST_VERSION = 1810
+LATEST_VERSION = 1900
 
 
 class DragonsError(Exception):

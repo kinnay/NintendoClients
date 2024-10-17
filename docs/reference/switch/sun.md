@@ -31,7 +31,7 @@ Provides a client for the [system update meta server](https://github.com/kinnay/
 </span>
 
 <code>**def set_system_version**(version: int) -> None</code></br>
-<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` up to `18.1.0` are supported.</span>
+<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` up to `19.0.0` are supported.</span>
 
 <code>**async def system_update_meta**() -> dict</code><br>
 <span class="docs">Requests the latest system update metadata.</span>

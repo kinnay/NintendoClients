@@ -15,6 +15,16 @@ AUTHENTICATE_REQUEST = \
 	"Content-Type: application/x-www-form-urlencoded\r\n\r\n" \
 	"grantType=public_client&assertion=device.token"
 
+AUTHENTICATE_REQUEST_PENNE = \
+	"POST /1.0.0/application/token HTTP/1.1\r\n" \
+	"Host: localhost:12345\r\n" \
+	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)\r\n" \
+	"Accept: */*\r\n" \
+	"X-Nintendo-PowerState: FA\r\n" \
+	"Content-Length: 62\r\n" \
+	"Content-Type: application/x-www-form-urlencoded\r\n\r\n" \
+	"grantType=public_client&assertion=device.token&penneId=penneId"
+
 LOGIN_REQUEST = \
 	"POST /1.0.0/login HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
@@ -38,7 +48,7 @@ REGISTER_REQUEST = \
 	"Content-Type: application/x-www-form-urlencoded\r\n" \
 	"\r\n"
 
-UPDATE_PRESENCE_REQUEST = \
+UPDATE_PRESENCE_REQUEST_1500 = \
 	"PATCH /1.0.0/users/aaaaaaaaaaaaaaaa/device_accounts/bbbbbbbbbbbbbbbb HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
 	"User-Agent: libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 15.3.0.0; Add-on 15.3.0.0)\r\n" \
@@ -52,6 +62,21 @@ UPDATE_PRESENCE_REQUEST = \
 	'{"op":"add","path":"/presence/extras/friends/appInfo:appId","value":"010040600c5ce000"},' \
 	'{"op":"add","path":"/presence/extras/friends/appInfo:presenceGroupId","value":"010040600c5ce000"}]'
 
+UPDATE_PRESENCE_REQUEST_1900 = \
+	"PATCH /1.0.0/users/aaaaaaaaaaaaaaaa/device_accounts/bbbbbbbbbbbbbbbb HTTP/1.1\r\n" \
+	"Host: localhost:12345\r\n" \
+	"User-Agent: libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)\r\n" \
+	"Accept: */*\r\n" \
+	"Content-Type: application/json-patch+json\r\n" \
+	"Authorization: Bearer access.token\r\n" \
+	"Content-Length: 389\r\n" \
+	"\r\n" \
+	'[{"op":"replace","path":"/presence/state","value":"ONLINE"},' \
+	'{"op":"add","path":"/presence/extras/friends/appField","value":"{}"},' \
+	'{"op":"add","path":"/presence/extras/friends/appInfo:appId","value":"010040600c5ce000"},' \
+	'{"op":"add","path":"/presence/extras/friends/appInfo:acdIndex","value":0},' \
+	'{"op":"add","path":"/presence/extras/friends/appInfo:presenceGroupId","value":"010040600c5ce000"}]'
+
 GET_FRIENDS_REQUEST = \
 	"GET /2.0.0/users/aaaaaaaaaaaaaaaa/friends?count=300 HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
@@ -62,7 +87,7 @@ GET_FRIENDS_REQUEST = \
 	
 
 @pytest.mark.anyio
-async def test_authentication():
+async def test_authenticate():
 	async def handler(client, request):
 		assert request.encode().decode() == AUTHENTICATE_REQUEST
 		response = http.HTTPResponse(200)
@@ -77,6 +102,24 @@ async def test_authentication():
 		client.set_system_version(1200)
 		client.set_context(None)
 		response = await client.authenticate("device.token")
+		assert response["accessToken"] == "access.token"
+
+@pytest.mark.anyio
+async def test_authenticate_penne():
+	async def handler(client, request):
+		assert request.encode().decode() == AUTHENTICATE_REQUEST_PENNE
+		response = http.HTTPResponse(200)
+		response.json = {
+			"accessToken": "access.token"
+		}
+		return response
+	
+	async with http.serve(handler, "localhost", 12345):
+		client = baas.BAASClient()
+		client.set_host("localhost:12345")
+		client.set_system_version(1900)
+		client.set_context(None)
+		response = await client.authenticate("device.token", "penneId")
 		assert response["accessToken"] == "access.token"
 
 @pytest.mark.anyio
@@ -108,20 +151,36 @@ async def test_register():
 	async with http.serve(handler, "localhost", 12345):
 		client = baas.BAASClient()
 		client.set_host("localhost:12345")
-		client.set_system_version(1501)
+		client.set_system_version(1500)
 		client.set_context(None)
 		await client.register("access.token")
 
 @pytest.mark.anyio
-async def test_update_presence():
+async def test_update_presence_1500():
 	async def handler(client, request):
-		assert request.encode().decode() == UPDATE_PRESENCE_REQUEST
+		assert request.encode().decode() == UPDATE_PRESENCE_REQUEST_1500
 		return http.HTTPResponse(200)
 	
 	async with http.serve(handler, "localhost", 12345):
 		client = baas.BAASClient()
 		client.set_host("localhost:12345")
-		client.set_system_version(1501)
+		client.set_system_version(1500)
+		client.set_context(None)
+		await client.update_presence(
+			0xaaaaaaaaaaaaaaaa, 0xbbbbbbbbbbbbbbbb, "access.token",
+			baas.PresenceState.ONLINE, 0x010040600c5ce000, 0x010040600c5ce000
+		)
+
+@pytest.mark.anyio
+async def test_update_presence_1900():
+	async def handler(client, request):
+		assert request.encode().decode() == UPDATE_PRESENCE_REQUEST_1900
+		return http.HTTPResponse(200)
+	
+	async with http.serve(handler, "localhost", 12345):
+		client = baas.BAASClient()
+		client.set_host("localhost:12345")
+		client.set_system_version(1900)
 		client.set_context(None)
 		await client.update_presence(
 			0xaaaaaaaaaaaaaaaa, 0xbbbbbbbbbbbbbbbb, "access.token",
@@ -137,6 +196,6 @@ async def test_get_friends():
 	async with http.serve(handler, "localhost", 12345):
 		client = baas.BAASClient()
 		client.set_host("localhost:12345")
-		client.set_system_version(1501)
+		client.set_system_version(1500)
 		client.set_context(None)
 		await client.get_friends(0xaaaaaaaaaaaaaaaa, "access.token")

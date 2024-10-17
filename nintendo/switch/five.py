@@ -47,13 +47,14 @@ USER_AGENT = {
 	1800: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
 	1801: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
 	1810: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
+	1900: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)",
 }
 
-LATEST_VERSION = 1810
+LATEST_VERSION = 1900
 
 LANGUAGES = [
 	"en-US", "en-GB", "ja", "fr", "de", "es-419", "es", "it", "nl"
-	"fr-CA", "pt", "ru", "zh-Hans", "zh-Hant", "ko", "pt-BR", "dummy"
+	"fr-CA", "pt", "ru", "zh-Hans", "zh-Hant", "ko", "pt-BR"
 ]
 
 
@@ -83,6 +84,8 @@ class FiveClient:
 		self.context.set_authority(ca)
 		
 		self.host = "app.lp1.five.nintendo.net"
+		
+		self.system_version = LATEST_VERSION
 		self.user_agent = USER_AGENT[LATEST_VERSION]
 	
 	def set_request_callback(self, callback): self.request_callback = callback
@@ -92,6 +95,7 @@ class FiveClient:
 	def set_system_version(self, version):
 		if version not in USER_AGENT:
 			raise ValueError("Unknown system version")
+		self.system_version = version
 		self.user_agent = USER_AGENT[version]
 	
 	async def request(self, req, access_token):
@@ -155,7 +159,8 @@ class FiveClient:
 
 	async def send_invitation(
 		self, access_token, receivers, application_id, application_group_id,
-		application_data, messages, application_id_match=False
+		application_data, messages, application_id_match=False,
+		acd_index=0
 	):
 		# Sanity checks
 		if len(receivers) > 16:
@@ -172,8 +177,12 @@ class FiveClient:
 		req.json = {
 			"receiver_ids": ["%016x" %id for id in receivers],
 			"application_id": "%016x" %application_id,
-			"application_group_id": "%016x" %application_group_id
 		}
+
+		if self.system_version >= 1900:
+			req.json["acd_index"] = acd_index
+		
+		req.json["application_group_id"] = "%016x" %application_group_id
 		
 		if application_data:
 			req.json["application_data"] = base64.b64encode(application_data).decode()

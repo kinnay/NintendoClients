@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 USER_AGENT = "NintendoSDK Firmware/%s (platform:NX; did:%016x; eid:lp1)"
 
-LATEST_VERSION = 1810
+LATEST_VERSION = 1900
 
 
 class AtumnClient:
@@ -24,7 +24,6 @@ class AtumnClient:
 		
 		self.host = "atumn.hac.lp1.d4c.nintendo.net"
 		
-		self.system_version = LATEST_VERSION
 		self.user_agent = USER_AGENT %(common.FIRMWARE_VERSIONS[LATEST_VERSION], self.device_id)
 	
 	def set_request_callback(self, callback): self.request_callback = callback
@@ -37,8 +36,6 @@ class AtumnClient:
 	def set_system_version(self, version):
 		if version not in common.FIRMWARE_VERSIONS:
 			raise ValueError("Unknown system version: %i" %version)
-		
-		self.system_version = version
 		self.user_agent = USER_AGENT %(common.FIRMWARE_VERSIONS[version], self.device_id)
 	
 	async def request(self, req):

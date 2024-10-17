@@ -63,7 +63,7 @@ The error can be inspected using the following attributes:
 <span class="docs">Changes the server to which the HTTP requests are sent. The default is `dauth-lp1.ndas.srv.nintendo.net`.
 
 <code>**def set_system_version**(version: int) -> None</code></br>
-<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` is system version `10.0.2`. All system versions from `9.0.0` up to `18.1.0` are supported.</span>
+<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` is system version `10.0.2`. All system versions from `9.0.0` up to `19.0.0` are supported.</span>
 
 <code>**async def challenge**() -> dict</code><br>
 <span class="docs">Requests a challenge from the `dauth` server.</span>

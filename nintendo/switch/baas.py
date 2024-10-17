@@ -49,9 +49,10 @@ USER_AGENT = {
 	1800: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
 	1801: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
 	1810: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
+	1900: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)",
 }
 
-LATEST_VERSION = 1810
+LATEST_VERSION = 1900
 
 
 class PresenceState:
@@ -82,8 +83,10 @@ class BAASClient:
 		self.context = tls.TLSContext()
 		
 		self.host = "e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com"
-		self.user_agent = USER_AGENT[LATEST_VERSION]
 		self.power_state = "FA"
+
+		self.system_version = LATEST_VERSION
+		self.user_agent = USER_AGENT[LATEST_VERSION]
 	
 	def set_request_callback(self, callback): self.request_callback = callback
 	def set_context(self, context): self.context = context
@@ -94,6 +97,7 @@ class BAASClient:
 	def set_system_version(self, version):
 		if version not in USER_AGENT:
 			raise ValueError("Unknown system version")
+		self.system_version = version
 		self.user_agent = USER_AGENT[version]
 		
 	async def request(self, req, token, module, *, use_power_state=False):
@@ -129,17 +133,19 @@ class BAASClient:
 		response.raise_if_error()
 		return response
 	
-	async def authenticate(self, device_token):
+	async def authenticate(self, device_token, penne_id=None):
 		req = http.HTTPRequest.post("/1.0.0/application/token")
 		req.form = {
 			"grantType": "public_client",
 			"assertion": device_token
 		}
+		if self.system_version >= 1900 and penne_id is not None:
+			req.form["penneId"] = penne_id
 
 		response = await self.request(req, None, MODULE_ACCOUNT, use_power_state=True)
 		return response.json
 	
-	async def login(self, id, password, access_token, app_token=None, skip_verification=False):
+	async def login(self, id, password, access_token, app_token=None, na_country=None, skip_verification=False):
 		req = http.HTTPRequest.post("/1.0.0/login")
 		req.form = {
 			"id": "%016x" %id,
@@ -148,6 +154,12 @@ class BAASClient:
 		
 		if app_token:
 			req.form["appAuthNToken"] = app_token
+		
+		if self.system_version >= 1800:
+			if na_country is None:
+				raise ValueError("na_country parameter is required for system version 18.0.0 and later")
+			req.form["naCountry"] = na_country
+		
 		if skip_verification:
 			req.form["skipOp2Verification"] = "1"
 			
@@ -160,16 +172,19 @@ class BAASClient:
 		response = await self.request(req, access_token, MODULE_ACCOUNT)
 		return response.json
 	
-	async def update_presence(self, user_id, device_account_id, access_token, state, title_id, presence_group_id, app_fields={}):
+	async def update_presence(self, user_id, device_account_id, access_token, state, title_id, presence_group_id, app_fields={}, acd_index=0):
 		app_fields = json.dumps(app_fields, separators=(",", ":"))
 		
 		req = http.HTTPRequest.patch("/1.0.0/users/%016x/device_accounts/%016x" %(user_id, device_account_id))
 		req.json = [
 			{"op": "replace", "path": "/presence/state", "value": state},
 			{"op": "add", "path": "/presence/extras/friends/appField", "value": app_fields},
-			{"op": "add", "path": "/presence/extras/friends/appInfo:appId", "value": "%016x" %title_id},
-			{"op": "add", "path": "/presence/extras/friends/appInfo:presenceGroupId", "value": "%016x" %presence_group_id}
+			{"op": "add", "path": "/presence/extras/friends/appInfo:appId", "value": "%016x" %title_id}
 		]
+		if self.system_version >= 1900:
+			req.json.append({"op": "add", "path": "/presence/extras/friends/appInfo:acdIndex", "value": acd_index})
+		req.json.append({"op": "add", "path": "/presence/extras/friends/appInfo:presenceGroupId", "value": "%016x" %presence_group_id})
+
 		response = await self.request(req, access_token, MODULE_FRIENDS)
 		return response.json
 	
