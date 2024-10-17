@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-SYSTEM_VERSION = 1810 #18.1.0
+SYSTEM_VERSION = 1900 #19.0.0
 
 # You can get your user id and password from
 # su/baas/<guid>.dat in save folder 8000000000000010.
@@ -24,6 +24,7 @@ SYSTEM_VERSION = 1810 #18.1.0
 
 BAAS_USER_ID = 0x0123456789abcdef # 16 hex digits
 BAAS_PASSWORD = "..." # Should be 40 characters
+NA_COUNTRY = "JP" # Country of your Nintendo account
 
 # You can dump prod.keys with Lockpick_RCM and
 # PRODINFO from hekate (decrypt it if necessary)
@@ -129,7 +130,7 @@ async def main():
 	
 	# Log in on the baas server
 	response = await baas_client.login(
-		BAAS_USER_ID, BAAS_PASSWORD, access_token, app_token
+		BAAS_USER_ID, BAAS_PASSWORD, access_token, app_token, NA_COUNTRY
 	)
 	user_id = int(response["user"]["id"], 16)
 	id_token = response["idToken"]
