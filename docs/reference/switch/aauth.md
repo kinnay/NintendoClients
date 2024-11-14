@@ -43,7 +43,7 @@ The error can be inspected using the following attributes:
 <span class="docs">Changes the content of the `X-Nintendo-PowerState` header. The default is `"FA"`.
 
 <code>**def set_system_version**(version: int) -> None</code></br>
-<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` up to `19.0.0` are supported.</span>
+<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` up to `19.0.1` are supported.</span>
 
 <code>**async def get_time**() -> tuple[int, str]</code><br>
 <span class="docs">Requests the current server time with `/v1/time`. Returns a tuple that contains the current server time and your public IP address.</span>
@@ -59,7 +59,7 @@ The error can be inspected using the following attributes:
 
 <code>**async def auth_gamecard**(title_id: int, title_version: int, device_token: str, cert: bytes, gvt: bytes, challenge: str = None, challenge_src: str = None) -> dict</code><br>
 <span class="docs">Requests an application token from the `aauth` server for a gamecard. The device token can be obtained from the [`dauth server`](dauth.md). The certificate can be obtained with nxdumptool. The `gvt` parameter must contain the challenge response. Unless you have the [Lotus](https://switchbrew.org/wiki/Lotus3) encryption keys, the challenge cannot be solved offline, but EpicUsername12 made [a tool](https://github.com/EpicUsername12/nx-netauth-link) that solves the challenge on a real Switch.<br><br>
-The `challenge` and `challenge_src` parameters are required on system version 19.0.0 and later.</span>
+The `challenge` and `challenge_src` parameters are required on system version 19.0.1 and later.</span>
 
 <code>**async def auth_nocert**(title_id: int, title_version: int, device_token): str -> dict</code><br>
 <span class="docs">Requests an application token from the `aauth` server for a title for which no ticket was found on the Switch.<br><br><b><span style="color: red">WARNING:</span></b> Do not use `auth_nocert` on a production server, because it will immediately ban your Switch.</span>

@@ -70,6 +70,7 @@ USER_AGENT = {
 	1801: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
 	1810: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
 	1900: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)",
+	1901: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)",
 }
 
 API_VERSION = {
@@ -113,9 +114,10 @@ API_VERSION = {
 	1801: 4,
 	1810: 4,
 	1900: 5,
+	1901: 5,
 }
 
-LATEST_VERSION = 1900
+LATEST_VERSION = 1901
 
 
 class AAuthError(Exception):
