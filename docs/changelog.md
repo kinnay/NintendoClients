@@ -5,7 +5,9 @@
 * **Breaking change:** replaced `pkg_resources` by `importlib.resources`. This increases the minimum Python version to 3.11.
 * **Bug fix**: removed ampersand before `device_auth_token` parameter in aauth challenge requests for 18.0.0+.
 * **Bug fix**: added missing `naCountry` parameter to baas login requests for 18.0.0+.
-* Added support for system version 19.0.0.
+* Added support for system version 19.0.0 and 19.0.1.
+
+*Released on 2024-12-02*
 
 ### 2.2.1
 * Fixed the header order in the dauth flow for system version 18.0.0 and later.
