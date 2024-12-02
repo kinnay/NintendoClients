@@ -34,6 +34,8 @@ PATH_PRODINFO = "/path/to/PRODINFO"
 ELICENSE_ID = "..." # 32 hex digits
 NA_ID = 0x0123456789abcdef # 16 hex digits
 
+PENNE_ID = "..."
+
 CODE = "ABCDE" # Dodo code
 
 
@@ -88,7 +90,7 @@ async def main():
 	app_token = response["application_auth_token"]
 	
 	# Request an anonymous access token for baas
-	response = await baas_client.authenticate(device_token_baas)
+	response = await baas_client.authenticate(device_token_baas, PENNE_ID)
 	access_token = response["accessToken"]
 	
 	# Log in on the baas server
