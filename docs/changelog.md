@@ -1,6 +1,11 @@
 
 ## Changelog
 
+### 3.0.1
+* **Bug fix:** 19.0.1 support was missing in the previous release.
+
+*Released on 2024-12-02*
+
 ### 3.0.0
 * **Breaking change:** replaced `pkg_resources` by `importlib.resources`. This increases the minimum Python version to 3.11.
 * **Bug fix**: removed ampersand before `device_auth_token` parameter in aauth challenge requests for 18.0.0+.
