@@ -298,8 +298,12 @@ class DAuthClient:
 	
 	async def device_token(self, client_id):
 		challenge = await self.challenge()
+
+		data = challenge["data"]
+		if len(data) % 4 != 0:
+		    data += "=" * (4 - len(data) % 4)
 		
-		data = base64.b64decode(challenge["data"], "-_")
+		data = base64.b64decode(data, "-_")
 		
 		req = http.HTTPRequest.post("/v%i/device_auth_token" %self.api_version)
 		req.rawform = {
