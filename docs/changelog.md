@@ -1,6 +1,11 @@
 
 ## Changelog
 
+### 3.0.2
+* **Bug fix:** fixed base64 decoding of dauth challenge. This fixes a bug that caused dauth to fail after a recent server update.
+
+*Released on 2024-12-26*
+
 ### 3.0.1
 * **Bug fix:** 19.0.1 support was missing in the previous release.
 
