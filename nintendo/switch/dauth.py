@@ -323,7 +323,11 @@ class DAuthClient:
 	async def edge_token(self, client_id, vendor_id="akamai"):
 		challenge = await self.challenge()
 		
-		data = base64.b64decode(challenge["data"], "-_")
+		data = challenge["data"]
+		if len(data) % 4 != 0:
+		    data += "=" * (4 - len(data) % 4)
+		
+		data = base64.b64decode(data, "-_")
 		
 		req = http.HTTPRequest.post("/v%i/edge_token" %self.api_version)
 		req.rawform = {
