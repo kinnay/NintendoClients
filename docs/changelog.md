@@ -1,6 +1,11 @@
 
 ## Changelog
 
+### 3.0.3
+* **Bug fix:** fixed typo, changed `BANNED_DEIVCE` to `BANNED_DEVICE` in `DAuthError` class.
+
+*Released on 2024-12-28*
+
 ### 3.0.2
 * **Bug fix:** fixed base64 decoding of dauth challenge. This fixes a bug that caused dauth to fail after a recent server update.
 
