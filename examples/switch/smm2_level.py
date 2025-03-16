@@ -31,8 +31,12 @@ NA_COUNTRY = "JP" # Country of your Nintendo account
 PATH_KEYS = "/path/to/prod.keys"
 PATH_PRODINFO = "/path/to/PRODINFO"
 
-# These can be obtained by calling publish_device_linked_elicenses (see docs)
-# or with a mitm on your Switch (this is probably safer)
+# License information is stored encrypted in saved/<license owner id>
+# in save folder 80000000000000E4.
+
+# Alternatively, they can be obtained from the dragons server
+# by calling publish_device_linked_elicenses (see docs), or with
+# a mitm on your Switch.
 ELICENSE_ID = "..." # 32 hex digits
 NA_ID = 0x0123456789abcdef # 16 hex digits
 
