@@ -27,7 +27,7 @@ This exception is raised when the `dauth` server returns an error code. The foll
 
 `UNAUTHORIZED_DEVICE: int = 4`<br>
 `SYSTEM_UPDATE_REQUIRED: int = 7`<br>
-`BANNED_DEIVCE: int = 8`<br>
+`BANNED_DEVICE: int = 8`<br>
 `INTERNAL_SERVER_ERROR: int = 9`<br>
 `GENERIC: int = 14`<br>
 `CHALLENGE_EXPIRED: int = 15`<br>
