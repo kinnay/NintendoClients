@@ -78,11 +78,11 @@ async def main():
 	baas_client.set_system_version(SYSTEM_VERSION)
 	
 	# Request a device authentication token for dragons
-	response = await dauth_client.device_token(dauth.DRAGONS)
+	response = await dauth_client.device_token(dauth.CLIENT_ID_DRAGONS)
 	device_token_dragons = response["device_auth_token"]
 	
 	# Request a device authentication token for aauth and bass
-	response = await dauth_client.device_token(dauth.BAAS)
+	response = await dauth_client.device_token(dauth.CLIENT_ID_BAAS)
 	device_token_baas = response["device_auth_token"]
 	
 	# Request a contents authorization token from dragons
