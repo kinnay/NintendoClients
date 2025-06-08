@@ -51,9 +51,13 @@ USER_AGENT = {
 	1810: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
 	1900: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)",
 	1901: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)",
+	2000: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
+	2001: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
+	2010: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
+	2011: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
 }
 
-LATEST_VERSION = 1901
+LATEST_VERSION = 2011
 
 
 class PresenceState:
