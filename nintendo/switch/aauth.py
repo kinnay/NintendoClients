@@ -71,6 +71,10 @@ USER_AGENT = {
 	1810: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
 	1900: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)",
 	1901: "libcurl (nnHttp; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)",
+	2000: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
+	2001: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
+	2010: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
+	2011: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
 }
 
 API_VERSION = {
@@ -115,9 +119,13 @@ API_VERSION = {
 	1810: 4,
 	1900: 5,
 	1901: 5,
+	2000: 5,
+	2001: 5,
+	2010: 5,
+	2011: 5,
 }
 
-LATEST_VERSION = 1901
+LATEST_VERSION = 2011
 
 
 class AAuthError(Exception):
@@ -147,12 +155,16 @@ class AAuthClient:
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
 		
-		self.host = "aauth-lp1.ndas.srv.nintendo.net"
+		self.host = "aauth.hac.lp1.ndas.srv.nintendo.net"
 		self.power_state = "FA"
 
 		self.system_version = LATEST_VERSION
 		self.user_agent = USER_AGENT[self.system_version]
 		self.api_version = API_VERSION[self.system_version]
+		if self.api_version >= 5:
+			ca = resources.certificate("CACERT_NINTENDO_ROOT_CA_G4.der")
+			self.context = tls.TLSContext()
+			self.context.set_authority(ca)
 	
 	def set_request_callback(self, callback): self.request_callback = callback
 	def set_context(self, context): self.context = context
@@ -168,7 +180,7 @@ class AAuthClient:
 		self.api_version = API_VERSION[version]
 	
 	async def request(self, req, use_power_state):
-		if self.system_version < 1800:
+		if self.system_version < 1800 or self.system_version >= 2000:
 			req.headers["Host"] = self.host
 			req.headers["User-Agent"] = self.user_agent
 			req.headers["Accept"] = "*/*"
