@@ -65,6 +65,15 @@ CHALLENGE_REQUEST_1900 = \
 	"Content-Length: 30\r\n\r\n" \
 	"device_auth_token=device.token"
 
+CHALLENGE_REQUEST_2001 = \
+	"POST /v5/challenge HTTP/1.1\r\n" \
+	"Host: localhost:12345\r\n" \
+	"Accept: */*\r\n" \
+	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)\r\n" \
+	"Content-Type: application/x-www-form-urlencoded\r\n" \
+	"Content-Length: 30\r\n\r\n" \
+	"device_auth_token=device.token"
+
 GAMECARD_REQUEST_1300 = \
 	"POST /v3/application_auth_token HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
@@ -79,6 +88,16 @@ GAMECARD_REQUEST_1900 = \
 	"POST /v5/application_auth_token HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
 	"Accept: */*\r\n" \
+	"Content-Type: application/x-www-form-urlencoded\r\n" \
+	"X-Nintendo-PowerState: FA\r\n" \
+	"Content-Length: 179\r\n\r\n" \
+	"application_id=0100123001234000&application_version=00070000&device_auth_token=device.token&auth_type=GAMECARD&gvt=Z3Z0&cert=Y2VydA&challenge=challenge&challenge_src=challenge_src"
+
+GAMECARD_REQUEST_2000 = \
+	"POST /v5/application_auth_token HTTP/1.1\r\n" \
+	"Host: localhost:12345\r\n" \
+	"Accept: */*\r\n" \
+	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)\r\n" \
 	"Content-Type: application/x-www-form-urlencoded\r\n" \
 	"X-Nintendo-PowerState: FA\r\n" \
 	"Content-Length: 179\r\n\r\n" \
@@ -253,6 +272,29 @@ async def test_gamecard_1900():
 		client = aauth.AAuthClient()
 		client.set_host("localhost:12345")
 		client.set_system_version(1900)
+		client.set_context(None)
+		response = await client.auth_gamecard(
+			0x0100123001234000, 0x70000, "device.token", b"cert", b"gvt",
+			"challenge", "challenge_src"
+		)
+		assert response["application_auth_token"] == "application token"
+
+
+@pytest.mark.anyio
+async def test_gamecard_2000():
+	async def handler(client, request):
+		text = request.encode().decode()
+		assert text == GAMECARD_REQUEST_2000
+		response = http.HTTPResponse(200)
+		response.json = {
+			"application_auth_token": "application token"
+		}
+		return response
+	
+	async with http.serve(handler, "localhost", 12345):
+		client = aauth.AAuthClient()
+		client.set_host("localhost:12345")
+		client.set_system_version(2000)
 		client.set_context(None)
 		response = await client.auth_gamecard(
 			0x0100123001234000, 0x70000, "device.token", b"cert", b"gvt",

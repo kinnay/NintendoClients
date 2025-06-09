@@ -54,57 +54,13 @@ SYSTEM_VERSION_DIGEST = {
 	1810: "CusHY#00120100#7pfwz-8raijuW2lv4UOi4Hukp-DuY898HEK6hEYUjSM=",
 	1900: "CusHY#00130000#x2jf5al2EkqJmdvmnTFaL6s4ic7X68N0dY9jnwwcL98=",
 	1901: "CusHY#00130001#6I1eeoSqDdjA7eXPDrsWBbdM-VxVhveQYiG1oNfNSt0=",
-	2000: "00140000",
-	2001: "00140001",
-	2010: "00140100",
-	2011: "00140101",
 }
 
-FIRMWARE_REVISION = {
-	900: 	"4de65c071fd0869695b7629f75eb97b2551dbf2f",
-	901: 	"2a6263de2d9f790a0df759d365a8a971a2be1101",
-	910: 	"5914af412282e4b9c0ced8fc19b7d04f74490a48",
-	920: 	"f420eb7a1345c3d7067c1fc8b9b0989d030e1041",
-	1000: 	"0fa58d66530d710027dfcd6ecfd78ae4940cd7ec",
-	1001: 	"df6cdaee9e2a21e63d3f29485f682f72c0a3c6df",
-	1002: 	"f90143fa8bbc061d4f68c35f95f04f8080c0ecdc",
-	1003: 	"254bdca8851c49b707c91f407aa2ab06e6be39f8",
-	1004: 	"254bdca8851c49b707c91f407aa2ab06e6be39f8",
-	1010: 	"4f496dc60fa0ebb4e731a3ec355ea80d9d9e98e9",
-	1011: 	"4f496dc60fa0ebb4e731a3ec355ea80d9d9e98e9",
-	1020: 	"7bcaa2b57b032fe0f73944072a55fb4cff5b5eb6",
-	1100: 	"34197eba8810e2edd5e9dfcfbde7b340882e856d",
-	1101: 	"69103fcb2004dace877094c2f8c29e6113be5dbf",
-	1200: 	"97942e96fe34284d4820fdcc1e3818afe6fba88d",
-	1201: 	"c564464a2f47db6a84b98685cfbb3a2ee25b240a",
-	1202: 	"2b43ddacdd02c08245d3d77ba8c296a24f54ccdc",
-	1203: 	"0cb3bc4061383f14258be29e1382512630ef5874",
-	1210: 	"76b10c2dab7d3aa73fc162f8dff1655e6a21caf4",
-	1300: 	"9b87ee6cd509f49e7df100cae8b31bdcf628ebcb",
-	1310: 	"687351451968bf8d46d2abb927c0a1e3cb4025f0",
-	1320: 	"12047e7b29ae8263d4d498f7322a3ef20d73a73e",
-	1321: 	"6e99217a1ec1f19388cf40fadbb29990a18bfb06",
-	1400:	"4775bf5e4fef675c759e34a2c3005bd0206f9d62",
-	1410:	"43e2fb60ac6f1d3f08e445469f1aaeae01fae3ff",
-	1411:	"aacbee77373bad2823dc30571f0bc12eebb5db09",
-	1412:	"ad52f4983f7857a7bf0b9824de15cc4e92c5d2ab",
-	1500:	"064be9b3f0aabfda75944f03065d3a32f7523e67",
-	1600:	"be1a2ac25b07bcd6f16924127003bbeb1b46ca19",
-	1601:	"8b55ab2d7248f88a5cc35cfd0859e57a6d1b7e87",
-	1602:	"4aa80cec72bb25cdde406f00527df6ff53f1475c",
-	1603:	"479b0f2d1e187b9eef7661fca1f7fdb15f7c5d64",
-	1610:	"8c40cd350cdcf150593c0d31ff152586c6e7c7ee",
-	1700:	"d993bc431c51073d5a29a6c953d9f4008d6b68e8",
-	1701:	"30dd7d0584cd38e3a1db26a5719566d21d77110e",
-	1800:	"12dd67abcd6e05f44dc8a526e5af9c1f14202c8b",
-	1801:	"8cf56436d71e12b36c6481c52c5afdc24ed40da2",
-	1810:	"437857bcb1604c717ae3fe62d03ae1fcaa783264",
-	1900:	"52971eebbba7ab9e6e23d73753aa63e0c3794b16",
-	1901:	"835c78223df116284ef7e36e8441760edc81729c",
-	2000:	"7147e1386c9b6c15d8f14e6ed68c4b9a7f28fb9b",
-	2001:	"0b2540e5cd7498dd61f6caeca5136c73d9b1d21a",
-	2010:	"fa9b24a1d97b9adf5fe462f7f0ee97e6ed6294d0",
-	2011:	"9ffad64d79dd150490201461bdf66c8db963f57d",
+SYSTEM_VERSION_HEX = {
+	2000: "7147e1386c9b6c15d8f14e6ed68c4b9a7f28fb9b",
+	2001: "0b2540e5cd7498dd61f6caeca5136c73d9b1d21a",
+	2010: "fa9b24a1d97b9adf5fe462f7f0ee97e6ed6294d0",
+	2011: "9ffad64d79dd150490201461bdf66c8db963f57d",
 }
 
 USER_AGENT = {
@@ -149,7 +105,6 @@ USER_AGENT = {
 	1810: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 18.3.0.0)",
 	1900: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 19.3.0.0)",
 	1901: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 19.3.0.0)",
-	# i only found had the user agent for 20.0.1, but i assume the the others are the same
 	2000: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
 	2001: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
 	2010: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
@@ -256,17 +211,47 @@ LATEST_VERSION = 2011
 
 
 CLIENT_ID_SCSI = 0x146C8AC7B8A0DB52
+CLIENT_ID_ER = 0x16E96F76850156D1
 CLIENT_ID_ATUM = 0x3117B250CAB38F45
 CLIENT_ID_ESHOP = 0x41F4A6491028E3C4
 CLIENT_ID_BCAT = 0x67BF9945B45248C6
 CLIENT_ID_SATA = 0x6AC5A6873FE5F68C
+CLIENT_ID_ACCOUNT_APPLET = 0x75FE236362FF5F8B
 CLIENT_ID_ACCOUNT = 0x81333C548B2E876D
 CLIENT_ID_NPNS = 0x83B72B05DC3278D7
 CLIENT_ID_BAAS = 0x8F849B5D34778D8E
 CLIENT_ID_BEACH = 0x93AF0ACB26258DE9
+CLIENT_ID_SPROFILE = 0xBAD8156F44AC935A
 CLIENT_ID_DRAGONS = 0xD5B6CAC2C1514C56
+CLIENT_ID_SCSI_POLICY = 0xD98185ACB55994B4
 CLIENT_ID_PCTL = 0xDC656EA03B63CF68
 CLIENT_ID_PREPO = 0xDF51C436BC01C437
+CLIENT_ID_PENNE = 0xE58171FE439390CE
+
+
+PRELOADED_DEVICE_TOKENS = [
+	CLIENT_ID_BAAS,
+	CLIENT_ID_PCTL,
+	CLIENT_ID_BEACH,
+	CLIENT_ID_PREPO,
+	CLIENT_ID_ER,
+	CLIENT_ID_PENNE,
+	CLIENT_ID_ACCOUNT,
+	CLIENT_ID_ACCOUNT_APPLET,
+	CLIENT_ID_SCSI,
+	CLIENT_ID_DRAGONS,
+	CLIENT_ID_SPROFILE
+]
+
+PRELOADED_EDGE_TOKENS = [
+	(CLIENT_ID_BEACH, "akamai"),
+	(CLIENT_ID_BCAT, "akamai"),
+	(CLIENT_ID_SCSI_POLICY, "akamai"),
+	(CLIENT_ID_SCSI, "akamai"),
+	(CLIENT_ID_ESHOP, "akamai"),
+	(CLIENT_ID_ATUM, "akamai"),
+	(CLIENT_ID_ATUM, "fastly")
+]
 
 
 class DAuthError(Exception):
@@ -305,7 +290,7 @@ class DAuthClient:
 
 		self.system_version = LATEST_VERSION
 		self.user_agent = USER_AGENT[self.system_version]
-		self.system_digest = SYSTEM_VERSION_DIGEST[self.system_version]
+		self.system_version_hash = SYSTEM_VERSION_HEX[self.system_version]
 		self.key_generation = KEY_GENERATION[self.system_version]
 		self.api_version = API_VERSION[self.system_version]
 		
@@ -324,11 +309,12 @@ class DAuthClient:
 			raise ValueError("Unknown system version: %i" %version)
 		self.system_version = version
 		self.user_agent = USER_AGENT[version]
-		self.system_digest = SYSTEM_VERSION_DIGEST[version]
 		self.key_generation = KEY_GENERATION[version]
 		self.api_version = API_VERSION[version]
-		if self.api_version == 8:
-			self.fw_revision = FIRMWARE_REVISION[version];
+		if self.api_version < 8:
+			self.system_version_hash = SYSTEM_VERSION_DIGEST[version]
+		else:
+			self.system_version_hash = SYSTEM_VERSION_HEX[version]
 		
 	async def request(self, req):
 		if self.system_version < 1800:
@@ -338,25 +324,23 @@ class DAuthClient:
 			req.headers["X-Nintendo-PowerState"] = self.power_state
 			req.headers["Content-Length"] = 0
 			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
-			req.headers["X-Nintendo-Region"] = str(self.region)
 		elif self.system_version < 2000:
 			req.headers["Host"] = self.host
 			req.headers["Accept"] = "*/*"
 			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 			req.headers["X-Nintendo-PowerState"] = self.power_state
 			req.headers["Content-Length"] = 0
-			req.headers["X-Nintendo-Region"] = str(self.region)
 		else:
 			req.headers["Host"] = self.host
 			req.headers["Accept"] = "*/*"
 			req.headers["User-Agent"] = self.user_agent
-			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
+			if req.json:
+				req.headers["Content-Type"] = "application/json"
+			else:
+				req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 			req.headers["X-Nintendo-PowerState"] = self.power_state
 			req.headers["Content-Length"] = 0
-		# API v8 has jsons in some requests, but not all of them
-		# anynet should technically automatically set the Content-Type
-		if req.json:
-			req.headers["Content-Type"] = "application/json"
+		
 		response = await self.request_callback(self.host, req, self.context)
 		if response.json and "errors" in response.json:
 			logger.error("DAuth server returned errors:")
@@ -375,130 +359,99 @@ class DAuthClient:
 		response = await self.request(req)
 		return response.json
 	
-	async def device_token(self, client_id):
-		# I don't know yet if this url can still be called with API version 8, as I don't know what the request needs to look like
-		if self.api_version > 8:
-			raise ValueError("This method is only available for API version 7 and below.")
+	async def request_token(self, client_id, vendor_id="akamai", *, edge_token):
+		# This is a generic method to reduce code duplication between device_token and edge_token
+
+		if self.system_version >= 2000:
+			raise ValueError("This method is only available on system version 19.0.1 and below.")
 		
 		challenge = await self.challenge()
+		data = base64.b64decode(challenge["data"] + "==", "-_")
 
-		data = challenge["data"]
-		if len(data) % 4 != 0:
-			data += "=" * (4 - len(data) % 4)
+		path = "/v%i/device_auth_token" %self.api_version
+		if edge_token:
+			path = "/v%i/edge_token" %self.api_version
 		
-		data = base64.b64decode(data, "-_")
-		
-		req = http.HTTPRequest.post("/v%i/device_auth_token" %self.api_version)
+		req = http.HTTPRequest.post(path)
 		req.rawform = {
 			"challenge": challenge["challenge"],
 			"client_id": "%016x" %client_id,
 			"ist": "true" if self.region == 2 else "false",
 			"key_generation": self.key_generation,
-			"system_version": self.system_digest
+			"system_version": self.system_version_hash
 		}
-		string = http.formencode(req.rawform, False)
-		req.rawform["mac"] = self.calculate_mac(string, data)
-
-		response = await self.request(req)
-		return response.json
-		
-	async def device_tokens(self, client_ids: list):
-		if self.api_version < 8:
-			raise ValueError("This method is only available for API version 8 and above.")
-		
-		challenge = await self.challenge()
-
-		data = challenge["data"]
-		if len(data) % 4 != 0:
-			data += "=" * (4 - len(data) % 4)
-		
-		data = base64.b64decode(data, "-_")
-		
-		# tokenS (plural)
-		req = http.HTTPRequest.post("/v%i/device_auth_tokens" %self.api_version)
-		
-		# you can now request multiple client_ids at once, thats why they changed the format to json I guess
-		token_requests = [{"client_id": "%016x" %client_id} for client_id in client_ids]
-		form_data_for_mac_calculation = dict({
-			"challenge": challenge["challenge"],
-			"fw_revision": self.fw_revision,
-			"ist": "true" if self.region == 2 else "false",
-			"key_generation": self.key_generation,
-			"system_version": self.system_digest,
-			# token_requests has to be a json string without whitespace
-			"token_requests": json.dumps(token_requests, separators=(',', ':')),
-		})
-		# should be fine in this case...
-		req.json = form_data_for_mac_calculation.copy()
-		req.json.update({"token_requests": json.loads(form_data_for_mac_calculation["token_requests"])})
-		string = http.formencode(form_data_for_mac_calculation, False)
-		req.json["mac"] = self.calculate_mac(string, data)
-		
-		response = await self.request(req)
-		return response.json
-		
-	async def edge_token(self, client_id, vendor_id="akamai"):
-		# I don't know yet if this url can still be called with API version 8, as I don't know what the request needs to look like
-		if self.api_version > 8:
-			raise ValueError("This method is only available for API version 7 and below.")
-		
-		challenge = await self.challenge()
-		
-		data = challenge["data"]
-		if len(data) % 4 != 0:
-			data += "=" * (4 - len(data) % 4)
-		
-		data = base64.b64decode(data, "-_")
-		
-		req = http.HTTPRequest.post("/v%i/edge_token" %self.api_version)
-		req.rawform = {
-			"challenge": challenge["challenge"],
-			"client_id": "%016x" %client_id,
-			"ist": "true" if self.region == 2 else "false",
-			"key_generation": self.key_generation,
-			"system_version": self.system_digest
-		}
-		
-		if self.api_version == 7:
+		if self.api_version >= 7 and edge_token:
 			req.rawform["vendor_id"] = vendor_id
-		
+
 		string = http.formencode(req.rawform, False)
 		req.rawform["mac"] = self.calculate_mac(string, data)
-		
-		response = await self.request(req)
-		return response.json
-		
-	async def edge_tokens(self, client_ids: list, vendor_ids: list):
-		if self.api_version < 8:
-			raise ValueError("This method is only available for API version 8 and above.")
-		assert len(client_ids) == len(vendor_ids), "client_ids and vendor_ids must have the same length"
-		challenge = await self.challenge()
-		
-		data = challenge["data"]
-		if len(data) % 4 != 0:
-			data += "=" * (4 - len(data) % 4)
-		
-		data = base64.b64decode(data, "-_")
-		
-		req = http.HTTPRequest.post("/v%i/edge_tokens" %self.api_version)
-		token_requests = [{"client_id": "%016x" %client_id, "vendor_id": vendor_id} for client_id, vendor_id in zip(client_ids, vendor_ids)]
-		form_data_for_mac_calculation = dict({
-			"challenge": challenge["challenge"],
-			"fw_revision": self.fw_revision,
-			"ist": "true" if self.region == 2 else "false",
-			"key_generation": self.key_generation,
-			"system_version": self.system_digest,
-			# token_requests has to be a json string without whitespace
-			"token_requests": json.dumps(token_requests, separators=(',', ':')),
-		})
-		# should be fine in this case...
-		req.json = form_data_for_mac_calculation.copy()
-		req.json.update({"token_requests": json.loads(form_data_for_mac_calculation["token_requests"])})
-		string = http.formencode(form_data_for_mac_calculation, False)
-		req.json["mac"] = self.calculate_mac(string, data)
 
 		response = await self.request(req)
 		return response.json
+	
+	async def request_tokens(self, token_requests, *, edge_tokens):
+		# This is a generic method to reduce code duplication between device_tokens and edge_tokens
+
+		if self.system_version < 2000:
+			raise ValueError("This method is only available on system version 20.0.0 and above.")
+		
+		challenge = await self.challenge()
+		data = base64.b64decode(challenge["data"] + "==", "-_")
+
+		system_version = "00%02x%02x%02x" %(
+			self.system_version // 100,
+			(self.system_version // 10) % 10,
+			self.system_version % 10
+		)
+
+		form = {
+			"challenge": challenge["challenge"],
+			"fw_revision": self.system_version_hash,
+			"ist": "true" if self.region == 2 else "false",
+			"key_generation": self.key_generation,
+			"system_version": system_version,
+			"token_requests": json.dumps(token_requests, separators=(",", ":"))
+		}
+		string = http.formencode(form, False)
+		mac = self.calculate_mac(string, data)
+
+		path = "/v%i/device_auth_tokens" %self.api_version
+		if edge_tokens:
+			path = "/v%i/edge_tokens" %self.api_version
+
+		req = http.HTTPRequest.post(path)
+		req.json = {
+			"system_version": system_version,
+			"fw_revision": self.system_version_hash,
+			"ist": self.region == 2,
+			"token_requests": token_requests,
+			"key_generation": self.key_generation,
+			"challenge": challenge["challenge"],
+			"mac": mac
+		}
+
+		response = await self.request(req)
+		return response.json
+	
+	async def device_token(self, client_id):
+		return await self.request_token(client_id, edge_token=False)
+	
+	async def edge_token(self, client_id, vendor_id="akamai"):
+		return await self.request_token(client_id, vendor_id, edge_token=True)
+		
+	async def device_tokens(self, client_ids):
+		token_requests = [{"client_id": "%016x" %client_id} for client_id in client_ids]
+		return await self.request_tokens(token_requests, edge_tokens=False)
+	
+	async def edge_tokens(self, token_requests):
+		token_requests = [{"client_id": "%016x" %client_id, "vendor_id": vendor_id} for client_id, vendor_id in token_requests]
+		return await self.request_tokens(token_requests, edge_tokens=True)
+	
+	async def preload_device_tokens(self):
+		return await self.device_tokens(PRELOADED_DEVICE_TOKENS)
+	
+	async def preload_edge_tokens(self):
+		return await self.edge_tokens(PRELOADED_EDGE_TOKENS)
 		
 	def get_master_key(self):
 		keygen = self.key_generation

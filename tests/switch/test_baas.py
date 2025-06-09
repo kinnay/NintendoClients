@@ -5,7 +5,7 @@ import pytest
 import struct
 
 
-AUTHENTICATE_REQUEST = \
+AUTHENTICATE_REQUEST_1200 = \
 	"POST /1.0.0/application/token HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
 	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 12.3.0.0; Add-on 12.3.0.0)\r\n" \
@@ -15,7 +15,7 @@ AUTHENTICATE_REQUEST = \
 	"Content-Type: application/x-www-form-urlencoded\r\n\r\n" \
 	"grantType=public_client&assertion=device.token"
 
-AUTHENTICATE_REQUEST_PENNE = \
+AUTHENTICATE_REQUEST_1900 = \
 	"POST /1.0.0/application/token HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
 	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)\r\n" \
@@ -25,7 +25,17 @@ AUTHENTICATE_REQUEST_PENNE = \
 	"Content-Type: application/x-www-form-urlencoded\r\n\r\n" \
 	"grantType=public_client&assertion=device.token&penneId=penneId"
 
-LOGIN_REQUEST = \
+AUTHENTICATE_REQUEST_2000 = \
+	"POST /1.0.0/application/token HTTP/1.1\r\n" \
+	"Host: localhost:12345\r\n" \
+	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)\r\n" \
+	"Accept: */*\r\n" \
+	"X-Nintendo-PowerState: FA\r\n" \
+	"Content-Length: 62\r\n" \
+	"Content-Type: application/x-www-form-urlencoded\r\n\r\n" \
+	"grantType=public_client&assertion=device.token&penneId=penneId"
+
+LOGIN_REQUEST_1200 = \
 	"POST /1.0.0/login HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
 	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 12.3.0.0; Add-on 12.3.0.0)\r\n" \
@@ -37,6 +47,17 @@ LOGIN_REQUEST = \
 	"id=1234567890abcdef&" \
 	"password=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&" \
 	"appAuthNToken=app.token"
+
+LOGIN_REQUEST_2000 = \
+	"POST /1.0.0/login HTTP/1.1\r\n" \
+	"Host: localhost:12345\r\n" \
+	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)\r\n" \
+	"Accept: */*\r\n" \
+	"Authorization: Bearer access.token\r\n" \
+	"X-Nintendo-PowerState: FA\r\n" \
+	"Content-Length: 124\r\n" \
+	"Content-Type: application/x-www-form-urlencoded\r\n\r\n" \
+	"id=1234567890abcdef&password=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&appAuthNToken=app.token&naCountry=NL&isPersistent=true"
 
 REGISTER_REQUEST = \
 	"POST /1.0.0/users HTTP/1.1\r\n" \
@@ -87,9 +108,9 @@ GET_FRIENDS_REQUEST = \
 	
 
 @pytest.mark.anyio
-async def test_authenticate():
+async def test_authenticate_1200():
 	async def handler(client, request):
-		assert request.encode().decode() == AUTHENTICATE_REQUEST
+		assert request.encode().decode() == AUTHENTICATE_REQUEST_1200
 		response = http.HTTPResponse(200)
 		response.json = {
 			"accessToken": "access.token"
@@ -105,9 +126,9 @@ async def test_authenticate():
 		assert response["accessToken"] == "access.token"
 
 @pytest.mark.anyio
-async def test_authenticate_penne():
+async def test_authenticate_1900():
 	async def handler(client, request):
-		assert request.encode().decode() == AUTHENTICATE_REQUEST_PENNE
+		assert request.encode().decode() == AUTHENTICATE_REQUEST_1900
 		response = http.HTTPResponse(200)
 		response.json = {
 			"accessToken": "access.token"
@@ -123,9 +144,27 @@ async def test_authenticate_penne():
 		assert response["accessToken"] == "access.token"
 
 @pytest.mark.anyio
-async def test_login():
+async def test_authenticate_2000():
 	async def handler(client, request):
-		assert request.encode().decode() == LOGIN_REQUEST
+		assert request.encode().decode() == AUTHENTICATE_REQUEST_2000
+		response = http.HTTPResponse(200)
+		response.json = {
+			"accessToken": "access.token"
+		}
+		return response
+	
+	async with http.serve(handler, "localhost", 12345):
+		client = baas.BAASClient()
+		client.set_host("localhost:12345")
+		client.set_system_version(2000)
+		client.set_context(None)
+		response = await client.authenticate("device.token", "penneId")
+		assert response["accessToken"] == "access.token"
+
+@pytest.mark.anyio
+async def test_login_1200():
+	async def handler(client, request):
+		assert request.encode().decode() == LOGIN_REQUEST_1200
 		response = http.HTTPResponse(200)
 		response.json = {
 			"idToken": "id.token"
@@ -139,6 +178,26 @@ async def test_login():
 		client.set_context(None)
 		response = await client.login(
 			0x1234567890abcdef, "a" * 40, "access.token", "app.token"
+		)
+		assert response["idToken"] == "id.token"
+
+@pytest.mark.anyio
+async def test_login_2000():
+	async def handler(client, request):
+		assert request.encode().decode() == LOGIN_REQUEST_2000
+		response = http.HTTPResponse(200)
+		response.json = {
+			"idToken": "id.token"
+		}
+		return response
+	
+	async with http.serve(handler, "localhost", 12345):
+		client = baas.BAASClient()
+		client.set_host("localhost:12345")
+		client.set_system_version(2000)
+		client.set_context(None)
+		response = await client.login(
+			0x1234567890abcdef, "a" * 40, "access.token", "app.token", "NL"
 		)
 		assert response["idToken"] == "id.token"
 

@@ -115,6 +115,7 @@ class DragonsClient:
 		if self.device_id is not None:
 			self.user_agent_nim = USER_AGENT %(common.FIRMWARE_VERSIONS[version], self.device_id)
 		self.user_agent_dauth = dauth.USER_AGENT[version]
+		self.api_version = API_VERSION[self.system_version]
 	
 	async def request(self, req, host, device_token, *, account_id=None):
 		if self.user_agent_nim is None:

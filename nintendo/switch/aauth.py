@@ -151,36 +151,50 @@ class AAuthClient:
 	def __init__(self):
 		self.request_callback = http.request
 		
-		ca = resources.certificate("CACERT_NINTENDO_CA_G3.der")
-		self.context = tls.TLSContext()
-		self.context.set_authority(ca)
-		
-		self.host = "aauth.hac.lp1.ndas.srv.nintendo.net"
+		self.context_overridden = False
+		self.host_overridden = False
+
 		self.power_state = "FA"
 
-		self.system_version = LATEST_VERSION
-		self.user_agent = USER_AGENT[self.system_version]
-		self.api_version = API_VERSION[self.system_version]
-		if self.api_version >= 5:
-			ca = resources.certificate("CACERT_NINTENDO_ROOT_CA_G4.der")
-			self.context = tls.TLSContext()
-			self.context.set_authority(ca)
-	
+		self.set_system_version(LATEST_VERSION)
+
 	def set_request_callback(self, callback): self.request_callback = callback
-	def set_context(self, context): self.context = context
+
+	def set_context(self, context):
+		self.context = context
+		self.context_overridden = True
 	
-	def set_host(self, host): self.host = host
+	def set_host(self, host):
+		self.host = host
+		self.host_overridden = True
+	
 	def set_power_state(self, state): self.power_state = state
 	
 	def set_system_version(self, version):
 		if version not in USER_AGENT:
 			raise ValueError("Unknown system version")
+		
 		self.system_version = version
 		self.user_agent = USER_AGENT[version]
 		self.api_version = API_VERSION[version]
+
+		if version >= 2000:
+			caname = "CACERT_NINTENDO_ROOT_CA_G4.der"
+			host = "aauth.hac.lp1.ndas.srv.nintendo.net"
+		else:
+			caname = "CACERT_NINTENDO_CA_G3.der"
+			host = "aauth-lp1.ndas.srv.nintendo.net"
+		
+		if not self.context_overridden:
+			ca = resources.certificate(caname)
+			self.context = tls.TLSContext()
+			self.context.set_authority(ca)
+		
+		if not self.host_overridden:
+			self.host = host
 	
 	async def request(self, req, use_power_state):
-		if self.system_version < 1800 or self.system_version >= 2000:
+		if self.system_version < 1800:
 			req.headers["Host"] = self.host
 			req.headers["User-Agent"] = self.user_agent
 			req.headers["Accept"] = "*/*"
@@ -188,10 +202,18 @@ class AAuthClient:
 				req.headers["X-Nintendo-PowerState"] = self.power_state
 			req.headers["Content-Length"] = 0
 			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
-		else:
+		elif self.system_version < 2000:
 			req.headers["Host"] = self.host
 			req.headers["Accept"] = "*/*"
 			req.headers["Content-Type"] = "application/x-www-form-urlencoded"	
+			if use_power_state:
+				req.headers["X-Nintendo-PowerState"] = self.power_state
+			req.headers["Content-Length"] = 0
+		else:
+			req.headers["Host"] = self.host
+			req.headers["Accept"] = "*/*"
+			req.headers["User-Agent"] = self.user_agent
+			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 			if use_power_state:
 				req.headers["X-Nintendo-PowerState"] = self.power_state
 			req.headers["Content-Length"] = 0

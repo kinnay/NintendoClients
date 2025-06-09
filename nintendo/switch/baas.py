@@ -150,7 +150,7 @@ class BAASClient:
 		response = await self.request(req, None, MODULE_ACCOUNT, use_power_state=True)
 		return response.json
 	
-	async def login(self, id, password, access_token, app_token=None, na_country=None, skip_verification=False):
+	async def login(self, id, password, access_token, app_token=None, na_country=None, is_persistent=True, skip_verification=False):
 		req = http.HTTPRequest.post("/1.0.0/login")
 		req.form = {
 			"id": "%016x" %id,
@@ -164,6 +164,9 @@ class BAASClient:
 			if na_country is None:
 				raise ValueError("na_country parameter is required for system version 18.0.0 and later")
 			req.form["naCountry"] = na_country
+		
+		if self.system_version >= 2000:
+			req.form["isPersistent"] = "true" if is_persistent else "false"
 		
 		if skip_verification:
 			req.form["skipOp2Verification"] = "1"
