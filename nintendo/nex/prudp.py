@@ -250,7 +250,7 @@ class PRUDPMessageV0:
 					payload_size = stream.available() - 1
 			packet.payload = stream.read(payload_size)
 			
-			# Check packet checkusm
+			# Check packet checksum
 			end = stream.tell()
 			checksum_data = stream.get()[start : end]
 			expected_checksum = self.calc_checksum(checksum_data)
