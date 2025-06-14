@@ -150,7 +150,7 @@ class BAASClient:
 		response = await self.request(req, None, MODULE_ACCOUNT, use_power_state=True)
 		return response.json
 	
-	async def login(self, id, password, access_token, app_token=None, na_country=None, is_persistent=True, skip_verification=False):
+	async def login(self, id, password, access_token, app_token=None, na_country=None, skip_verification=False, is_persistent=True):
 		req = http.HTTPRequest.post("/1.0.0/login")
 		req.form = {
 			"id": "%016x" %id,
