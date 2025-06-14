@@ -5,6 +5,7 @@ from anynet import tls, http
 from nintendo import resources
 import base64
 import json
+import time
 
 import logging
 logger = logging.getLogger(__name__)
@@ -362,8 +363,11 @@ class DAuthClient:
 	async def request_token(self, client_id, vendor_id="akamai", *, edge_token):
 		# This is a generic method to reduce code duplication between device_token and edge_token
 
+		# On system version 20.0.0 and later, we use the new version of the API
+		# Note: in this case, you probably want to use one of the preload functions instead,
+		# to mimic the behavior of a real Switch.
 		if self.system_version >= 2000:
-			raise ValueError("This method is only available on system version 19.0.1 and below.")
+			return await self.request_tokens([(client_id, vendor_id)], edge_tokens=edge_token)
 		
 		challenge = await self.challenge()
 		data = base64.b64decode(challenge["data"] + "==", "-_")
@@ -473,3 +477,52 @@ class DAuthClient:
 		mac = CMAC.new(key, ciphermod=AES)
 		mac.update(form.encode())
 		return base64.b64encode(mac.digest(), b"-_").decode().rstrip("=")
+
+
+class DAuthCache:
+	def __init__(self, client, expiration=None):
+		self.client = client
+		self.expiration = expiration
+
+		self.device_tokens = {}
+		self.edge_tokens = {}
+	
+	async def device_token(self, client_id):
+		now = time.time()
+		if client_id in self.device_tokens and self.device_tokens[client_id][1] > now:
+			return self.device_tokens[client_id][0]
+		
+		if client_id in PRELOADED_DEVICE_TOKENS:
+			response = await self.client.preload_device_tokens()
+		else:
+			response = await self.client.device_tokens([client_id])
+		
+		for result in response["results"]:
+			if self.expiration is not None:
+				expiration = now + self.expiration
+			else:
+				expiration = now + result["expires_in"]
+			self.device_tokens[int(result["client_id"], 16)] = (result["device_auth_token"], expiration)
+
+		return self.device_tokens[client_id][0]
+
+	async def edge_token(self, client_id, vendor_id="akamai"):
+		now = time.time()
+		key = (client_id, vendor_id)
+		if key in self.edge_tokens and self.edge_tokens[key][1] > now:
+			return self.edge_tokens[key][0]
+		
+		if key in PRELOADED_EDGE_TOKENS:
+			response = await self.client.preload_edge_tokens()
+		else:
+			response = await self.client.edge_tokens([key])
+		
+		for result in response["results"]:
+			result_key = (int(result["client_id"], 16), result["vendor_id"])
+			if self.expiration is not None:
+				expiration = now + self.expiration
+			else:
+				expiration = now + result["expires_in"]
+			self.edge_tokens[result_key] = (result["dtoken"], expiration)
+		
+		return self.edge_tokens[key][0]
