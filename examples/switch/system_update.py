@@ -8,7 +8,7 @@ import struct
 import subprocess
 
 
-SYSTEM_VERSION = 1901 #19.0.1
+SYSTEM_VERSION = 2011 # 20.1.1
 
 # You can dump prod.keys with Lockpick_RCM and
 # PRODINFO from hekate (decrypt it if necessary)

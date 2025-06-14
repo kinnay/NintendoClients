@@ -11,7 +11,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-SYSTEM_VERSION = 1901 #19.0.1
+SYSTEM_VERSION = 2011 # 20.1.1
 
 # You can get your user id and password from
 # su/baas/<guid>.dat in save folder 8000000000000010.
@@ -67,6 +67,8 @@ async def main():
 	dauth_client = dauth.DAuthClient(keys)
 	dauth_client.set_certificate(cert, pkey)
 	dauth_client.set_system_version(SYSTEM_VERSION)
+
+	dauth_cache = dauth.DAuthCache(dauth_client)
 	
 	dragons_client = dragons.DragonsClient()
 	dragons_client.set_certificate(cert, pkey)
@@ -79,11 +81,11 @@ async def main():
 	baas_client.set_system_version(SYSTEM_VERSION)
 	
 	# Request a device authentication token for dragons
-	response = await dauth_client.device_token(dauth.CLIENT_ID_DRAGONS)
+	response = await dauth_cache.device_token(dauth.CLIENT_ID_DRAGONS)
 	device_token_dragons = response["device_auth_token"]
 	
 	# Request a device authentication token for aauth and bass
-	response = await dauth_client.device_token(dauth.CLIENT_ID_BAAS)
+	response = await dauth_cache.device_token(dauth.CLIENT_ID_BAAS)
 	device_token_baas = response["device_auth_token"]
 	
 	# Request a contents authorization token from dragons
