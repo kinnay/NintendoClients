@@ -143,9 +143,11 @@ class DragonsClient:
 	
 	async def request_dauth(self, req, device_token, title_id):
 		req.headers["Host"] = self.host_dragons
-		if self.system_version < 1800 or self.system_version >= 2000:
+		if self.system_version < 1800:
 			req.headers["User-Agent"] = self.user_agent_dauth
 		req.headers["Accept"] = "*/*"
+		if self.system_version >= 2000:
+			req.headers["User-Agent"] = self.user_agent_dauth
 		req.headers["Content-Type"] = "application/json"
 		req.headers["DeviceAuthorization"] = "Bearer " + device_token
 		req.headers["Nintendo-Application-Id"] = "%016x" %title_id
