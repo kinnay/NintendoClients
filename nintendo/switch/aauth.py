@@ -151,7 +151,9 @@ class AAuthClient:
 	def __init__(self):
 		self.request_callback = http.request
 		
+		self.context = tls.TLSContext()
 		self.context_overridden = False
+		
 		self.host_overridden = False
 
 		self.power_state = "FA"
@@ -163,6 +165,9 @@ class AAuthClient:
 	def set_context(self, context):
 		self.context = context
 		self.context_overridden = True
+	
+	def set_certificate(self, cert, key):
+		self.context.set_certificate(cert, key)
 	
 	def set_host(self, host):
 		self.host = host
@@ -187,7 +192,6 @@ class AAuthClient:
 		
 		if not self.context_overridden:
 			ca = resources.certificate(caname)
-			self.context = tls.TLSContext()
 			self.context.set_authority(ca)
 		
 		if not self.host_overridden:
