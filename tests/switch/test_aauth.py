@@ -65,7 +65,7 @@ CHALLENGE_REQUEST_1900 = \
 	"Content-Length: 30\r\n\r\n" \
 	"device_auth_token=device.token"
 
-CHALLENGE_REQUEST_2001 = \
+CHALLENGE_REQUEST_2000 = \
 	"POST /v5/challenge HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
 	"Accept: */*\r\n" \
@@ -230,6 +230,28 @@ async def test_challenge_1900():
 		client = aauth.AAuthClient()
 		client.set_host("localhost:12345")
 		client.set_system_version(1900)
+		client.set_context(None)
+		response = await client.challenge("device.token")
+		assert response["seed"] == "seed"
+
+
+@pytest.mark.anyio
+async def test_challenge_2000():
+	async def handler(client, request):
+		text = request.encode().decode()
+		assert text == CHALLENGE_REQUEST_2000
+		response = http.HTTPResponse(200)
+		response.json = {
+			"challenge": "challenge",
+			"challenge_src": "challenge_src",
+			"seed": "seed",
+		}
+		return response
+	
+	async with http.serve(handler, "localhost", 12345):
+		client = aauth.AAuthClient()
+		client.set_host("localhost:12345")
+		client.set_system_version(2000)
 		client.set_context(None)
 		response = await client.challenge("device.token")
 		assert response["seed"] == "seed"
