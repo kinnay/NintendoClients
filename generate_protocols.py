@@ -1281,7 +1281,7 @@ class DocsGenerator:
 		
 	def generate_struct(self, struct):
 		self.text += "## %s\n" %struct.name
-		self.text += "<code>**def _\_init__**()</code><br>\n"
+		self.text += "<code>**def _\\_init__**()</code><br>\n"
 		self.text += '<span class="docs">Creates a new `%s` instance.' %struct.name
 		self.text += " Required fields must be filled in manually.</span>\n\n"
 		self.text += "The following fields are defined in this class:<br>\n"
@@ -1306,7 +1306,7 @@ class DocsGenerator:
 	def generate_client(self, proto):
 		name = make_class_name(proto.name, "Client")
 		self.text += "## %s\n" %name
-		self.text += "<code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>\n"
+		self.text += "<code>**def _\\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>\n"
 		self.text += '<span class="docs">Creates a new [`%s`](#%s).</span>\n\n' %(name, name.lower())
 		
 		for method in proto.methods.values():
@@ -1329,7 +1329,7 @@ class DocsGenerator:
 	def generate_server(self, proto):
 		name = make_class_name(proto.name, "Server")
 		self.text += "## %s\n" %name
-		self.text += "<code>**def _\_init__**()</code><br>\n"
+		self.text += "<code>**def _\\_init__**()</code><br>\n"
 		self.text += '<span class="docs">Creates a new [`%s`](#%s).</span>\n\n' %(name, name.lower())
 		self.text += "<code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>\n"
 		self.text += '<span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>\n\n'
