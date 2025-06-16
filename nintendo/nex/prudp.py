@@ -22,6 +22,7 @@ TYPE_CONNECT = 1
 TYPE_DATA = 2
 TYPE_DISCONNECT = 3
 TYPE_PING = 4
+TYPE_USER = 5
 
 FLAG_ACK = 1
 FLAG_RELIABLE = 2
@@ -250,7 +251,7 @@ class PRUDPMessageV0:
 					payload_size = stream.available() - 1
 			packet.payload = stream.read(payload_size)
 			
-			# Check packet checkusm
+			# Check packet checksum
 			end = stream.tell()
 			checksum_data = stream.get()[start : end]
 			expected_checksum = self.calc_checksum(checksum_data)
