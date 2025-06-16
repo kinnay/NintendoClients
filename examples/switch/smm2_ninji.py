@@ -75,6 +75,7 @@ async def main():
 	dragons_client.set_system_version(SYSTEM_VERSION)
 	
 	aauth_client = aauth.AAuthClient()
+	aauth_client.set_certificate(cert, pkey)
 	aauth_client.set_system_version(SYSTEM_VERSION)
 	
 	baas_client = baas.BAASClient()
