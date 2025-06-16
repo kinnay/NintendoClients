@@ -10,49 +10,49 @@ logger = logging.getLogger(__name__)
 class AccountExtraInfo(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
+		self.local_friend_code = None
+		self.move_count = None
 		self.token = None
 	
 	def check_required(self, settings, version):
-		for field in ['unk1', 'unk2', 'token']:
+		for field in ['local_friend_code', 'move_count', 'token']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk1 = stream.u64()
-		self.unk2 = stream.u32()
+		self.local_friend_code = stream.u64()
+		self.move_count = stream.u32()
 		self.token = stream.string()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.u64(self.unk1)
-		stream.u32(self.unk2)
+		stream.u64(self.local_friend_code)
+		stream.u32(self.move_count)
 		stream.string(self.token)
 
 
 class FriendComment(common.Data):
 	def __init__(self):
 		super().__init__()
-		self.unk1 = None
+		self.pid = None
 		self.comment = None
-		self.unk2 = None
+		self.modified_at = None
 	
 	def check_required(self, settings, version):
-		for field in ['unk1', 'comment', 'unk2']:
+		for field in ['pid', 'comment', 'modified_at']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk1 = stream.u32()
+		self.pid = stream.u32()
 		self.comment = stream.string()
-		self.unk2 = stream.datetime()
+		self.modified_at = stream.datetime()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.u32(self.unk1)
+		stream.u32(self.pid)
 		stream.string(self.comment)
-		stream.datetime(self.unk2)
+		stream.datetime(self.modified_at)
 common.DataHolder.register(FriendComment, "FriendComment")
 
 
@@ -82,23 +82,23 @@ class FriendMii(common.Data):
 		super().__init__()
 		self.pid = None
 		self.mii = Mii()
-		self.unk1 = None
+		self.modified_at = None
 	
 	def check_required(self, settings, version):
-		for field in ['pid', 'unk1']:
+		for field in ['pid', 'modified_at']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
 		self.pid = stream.pid()
 		self.mii = stream.extract(Mii)
-		self.unk1 = stream.datetime()
+		self.modified_at = stream.datetime()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
 		stream.pid(self.pid)
 		stream.add(self.mii)
-		stream.datetime(self.unk1)
+		stream.datetime(self.modified_at)
 common.DataHolder.register(FriendMii, "FriendMii")
 
 
@@ -140,10 +140,10 @@ class FriendPersistentInfo(common.Data):
 		self.message = None
 		self.message_updated = None
 		self.friended = None
-		self.unk = None
+		self.last_online = None
 	
 	def check_required(self, settings, version):
-		for field in ['pid', 'region', 'country', 'area', 'language', 'platform', 'message', 'message_updated', 'friended', 'unk']:
+		for field in ['pid', 'region', 'country', 'area', 'language', 'platform', 'message', 'message_updated', 'friended', 'last_online']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -158,7 +158,7 @@ class FriendPersistentInfo(common.Data):
 		self.message = stream.string()
 		self.message_updated = stream.datetime()
 		self.friended = stream.datetime()
-		self.unk = stream.datetime()
+		self.last_online = stream.datetime()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
@@ -172,7 +172,7 @@ class FriendPersistentInfo(common.Data):
 		stream.string(self.message)
 		stream.datetime(self.message_updated)
 		stream.datetime(self.friended)
-		stream.datetime(self.unk)
+		stream.datetime(self.last_online)
 common.DataHolder.register(FriendPersistentInfo, "FriendPersistentInfo")
 
 
@@ -332,12 +332,12 @@ class MyProfile(common.Data):
 		self.area = None
 		self.language = None
 		self.platform = None
-		self.unk1 = None
-		self.unk2 = None
-		self.unk3 = None
+		self.local_friend_code_seed = None
+		self.mac_address = None
+		self.serial_number = None
 	
 	def check_required(self, settings, version):
-		for field in ['region', 'country', 'area', 'language', 'platform', 'unk1', 'unk2', 'unk3']:
+		for field in ['region', 'country', 'area', 'language', 'platform', 'local_friend_code_seed', 'mac_address', 'serial_number']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -347,9 +347,9 @@ class MyProfile(common.Data):
 		self.area = stream.u8()
 		self.language = stream.u8()
 		self.platform = stream.u8()
-		self.unk1 = stream.u64()
-		self.unk2 = stream.string()
-		self.unk3 = stream.string()
+		self.local_friend_code_seed = stream.u64()
+		self.mac_address = stream.string()
+		self.serial_number = stream.string()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
@@ -358,9 +358,9 @@ class MyProfile(common.Data):
 		stream.u8(self.area)
 		stream.u8(self.language)
 		stream.u8(self.platform)
-		stream.u64(self.unk1)
-		stream.string(self.unk2)
-		stream.string(self.unk3)
+		stream.u64(self.local_friend_code_seed)
+		stream.string(self.mac_address)
+		stream.string(self.serial_number)
 common.DataHolder.register(MyProfile, "MyProfile")
 
 
@@ -544,27 +544,27 @@ common.DataHolder.register(FriendRequest, "FriendRequest")
 class FriendRequestMessage(common.Data):
 	def __init__(self):
 		super().__init__()
+		self.friend_request_id = None
 		self.unk1 = None
 		self.unk2 = None
-		self.unk3 = None
 		self.message = None
-		self.unk4 = None
+		self.unk3 = None
 		self.string = None
 		self.game_key = GameKey()
 		self.datetime = None
 		self.expires = None
 	
 	def check_required(self, settings, version):
-		for field in ['unk1', 'unk2', 'unk3', 'message', 'unk4', 'string', 'datetime', 'expires']:
+		for field in ['friend_request_id', 'unk1', 'unk2', 'message', 'unk3', 'string', 'datetime', 'expires']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk1 = stream.u64()
+		self.friend_request_id = stream.u64()
+		self.unk1 = stream.u8()
 		self.unk2 = stream.u8()
-		self.unk3 = stream.u8()
 		self.message = stream.string()
-		self.unk4 = stream.u8()
+		self.unk3 = stream.u8()
 		self.string = stream.string()
 		self.game_key = stream.extract(GameKey)
 		self.datetime = stream.datetime()
@@ -572,11 +572,11 @@ class FriendRequestMessage(common.Data):
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.u64(self.unk1)
+		stream.u64(self.friend_request_id)
+		stream.u8(self.unk1)
 		stream.u8(self.unk2)
-		stream.u8(self.unk3)
 		stream.string(self.message)
-		stream.u8(self.unk4)
+		stream.u8(self.unk3)
 		stream.string(self.string)
 		stream.add(self.game_key)
 		stream.datetime(self.datetime)

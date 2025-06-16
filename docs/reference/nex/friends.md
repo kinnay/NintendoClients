@@ -402,8 +402,8 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: int</code><br>
-<code>unk2: int</code><br>
+<code>local_friend_code: int</code><br>
+<code>move_count: int</code><br>
 <code>token: str</code><br>
 </span><br>
 
@@ -435,9 +435,9 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: int</code><br>
+<code>pid: int</code><br>
 <code>comment: str</code><br>
-<code>unk2: [DateTime](common.md#datetime)</code><br>
+<code>modified_at: [DateTime](common.md#datetime)</code><br>
 </span><br>
 
 ## FriendInfo
@@ -472,7 +472,7 @@ The following fields are defined in this class:<br>
 <span class="docs">
 <code>pid: int</code><br>
 <code>mii: [Mii](#mii) = [Mii](#mii)()</code><br>
-<code>unk1: [DateTime](common.md#datetime)</code><br>
+<code>modified_at: [DateTime](common.md#datetime)</code><br>
 </span><br>
 
 ## FriendMiiList
@@ -502,7 +502,7 @@ The following fields are defined in this class:<br>
 <code>message: str</code><br>
 <code>message_updated: [DateTime](common.md#datetime)</code><br>
 <code>friended: [DateTime](common.md#datetime)</code><br>
-<code>unk: [DateTime](common.md#datetime)</code><br>
+<code>last_online: [DateTime](common.md#datetime)</code><br>
 </span><br>
 
 ## FriendPicture
@@ -554,11 +554,11 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
+<code>friend_request_id: int</code><br>
 <code>unk1: int</code><br>
 <code>unk2: int</code><br>
-<code>unk3: int</code><br>
 <code>message: str</code><br>
-<code>unk4: int</code><br>
+<code>unk3: int</code><br>
 <code>string: str</code><br>
 <code>game_key: [GameKey](#gamekey) = [GameKey](#gamekey)()</code><br>
 <code>datetime: [DateTime](common.md#datetime)</code><br>
@@ -623,9 +623,9 @@ The following fields are defined in this class:<br>
 <code>area: int</code><br>
 <code>language: int</code><br>
 <code>platform: int</code><br>
-<code>unk1: int</code><br>
-<code>unk2: str</code><br>
-<code>unk3: str</code><br>
+<code>local_friend_code_seed: int</code><br>
+<code>mac_address: str</code><br>
+<code>serial_number: str</code><br>
 </span><br>
 
 ## NNAInfo
