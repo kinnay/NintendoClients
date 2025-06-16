@@ -2,15 +2,15 @@
 // 3DS structures
 
 struct AccountExtraInfo {
-	uint64 unk1;
-	uint32 unk2;
+	uint64 local_friend_code;
+	uint32 move_count;
 	string token;
 }
 
 struct FriendComment : Data {
-	uint32 unk1;
+	uint32 pid;
 	string comment;
-	datetime unk2;
+	datetime modified_at;
 }
 
 struct FriendKey {
@@ -21,7 +21,7 @@ struct FriendKey {
 struct FriendMii : Data {
 	pid pid;
 	Mii mii;
-	datetime unk1;
+	datetime modified_at;
 }
 
 struct FriendMiiList : Data {
@@ -41,7 +41,7 @@ struct FriendPersistentInfo : Data {
 	string message;
 	datetime message_updated;
 	datetime friended;
-	datetime unk;
+	datetime last_online;
 }
 
 struct FriendPicture : Data {
@@ -86,9 +86,9 @@ struct MyProfile : Data {
 	uint8 area;
 	uint8 language;
 	uint8 platform;
-	uint64 unk1;
-	string unk2;
-	string unk3;
+	uint64 local_friend_code_seed;
+	string mac_address;
+	string serial_number;
 }
 
 struct NintendoPresence : Data {
@@ -140,11 +140,11 @@ struct FriendRequest : Data {
 }
 
 struct FriendRequestMessage : Data {
-	uint64 unk1;
+	uint64 friend_request_id;
+	uint8 unk1;
 	uint8 unk2;
-	uint8 unk3;
 	string message;
-	uint8 unk4;
+	uint8 unk3;
 	string string;
 	GameKey game_key;
 	datetime datetime;
@@ -212,8 +212,8 @@ struct PrincipalPreference : Data {
 }
 
 struct PrincipalRequestBlockSetting : Data {
-	uint32 unk1;
-	bool unk2;
+	uint32 pid;
+	bool blocked;
 }
 
 protocol Friends_V1 : 101 {
@@ -221,7 +221,7 @@ protocol Friends_V1 : 101 {
 	method update_mii(Mii mii) {}
 	method update_mii_list(MiiList mii_list) {}
 	method update_played_games(list<PlayedGame> played_games) {}
-	method update_preference(bool unk1, bool unk2, bool unk3) {}
+	method update_preference(bool show_online_status, bool show_current_title, bool block_friend_requests) {}
 	
 	method get_friend_mii(list<FriendKey> friends) {
 		list<FriendMii> miis;
