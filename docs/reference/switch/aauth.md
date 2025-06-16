@@ -34,16 +34,19 @@ The error can be inspected using the following attributes:
 <span class="docs">By default, requests are performed with [`http.request`](https://anynet.readthedocs.io/en/latest/reference/http). This method lets you provide a custom callback instead.</span>
 
 <code>**def set_context**(context: [TLSContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscontext)) -> None</code><br>
-<span class="docs">Changes the TLS context. By default, the server certificate is verified with `Nintendo CA - G3`.</span>
+<span class="docs">Changes the TLS context. By default, the server certificate is verified with `Nintendo CA - G3` or `Nintendo Root CA - G4`, depending on the specified system version.</span>
+
+<code>**def set_certificate**(cert: [TLSCertificate](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscertificate), key: [TLSPrivateKey](https://anynet.readthedocs.io/en/latest/reference/tls/#tlsprivatekey)) -> None</code>
+<span class="docs">Changes the client certificate of the current TLS context. When `aauth.hac.lp1.ndas.srv.nintendo.net` is used, which is the case on system version 20.0.0 and later, the server rejects all requests without a valid client certificate.</span>
 
 <code>**def set_host**(url: str) -> None</code><br>
-<span class="docs">Changes the server to which the HTTP requests are sent. The default is `aauth-lp1.ndas.srv.nintendo.net`.
+<span class="docs">Changes the server to which the HTTP requests are sent. The default is `aauth-lp1.ndas.srv.nintendo.net` or `aauth.hac.lp1.ndas.srv.nintendo.net`, depending on the specified system version.</span>
 
 <code>**def set_power_state**(state: str) -> None</code><br>
 <span class="docs">Changes the content of the `X-Nintendo-PowerState` header. The default is `"FA"`.
 
 <code>**def set_system_version**(version: int) -> None</code></br>
-<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` up to `19.0.1` are supported.</span>
+<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` up to `20.1.1` are supported.</span>
 
 <code>**async def get_time**() -> tuple[int, str]</code><br>
 <span class="docs">Requests the current server time with `/v1/time`. Returns a tuple that contains the current server time and your public IP address.</span>

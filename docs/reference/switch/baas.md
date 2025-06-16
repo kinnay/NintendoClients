@@ -42,16 +42,16 @@ Provides a client for the [BaaS server](https://github.com/kinnay/nintendo/wiki/
 <span class="docs">Changes the content of the `X-Nintendo-PowerState` header. The default is `"FA"`.
 
 <code>**def set_system_version**(version: int) -> None</code></br>
-<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` up to `19.0.1` are supported.</span>
+<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` up to `20.1.1` are supported.</span>
 
 <code>**async def authenticate**(device_token: str, penne_id: str = None) -> dict</code><br>
 <span class="docs">Requests an authorization token with `/1.0.0/application/token`. This method must be called before any other requests can be made. The device token can be obtained from the [`dauth server`](dauth.md).<br><br>
-The `penneId` parameter was added in system version 19.0.1.
+The `penneId` parameter was added in system version 19.0.0.
 </span>
 
-<code>**async def login**(id: int, password: str, access_token: str, app_token: str = None, na_country: str = None, skip_verification: bool = False) -> dict</code><br>
+<code>**async def login**(id: int, password: str, access_token: str, app_token: str = None, na_country: str = None, skip_verification: bool = False, is_persistent: bool = True) -> dict</code><br>
 <span class="docs">Logs in with the given user id and password, using `/1.0.0/login`. If an app token is provided, the server returns an id token that can be used to log in on a game server. App tokens can be obtained from the [`aauth server`](aauth.md). If `skip_verification` is `True` the client asks the server to skip NSO verification.<br><br>
-The `na_country` parameter is required in system version 18.0.0 and later.</span>
+The `na_country` parameter is required in system version 18.0.0 and later. The `is_persistent` parameter was added in system version 20.0.0.</span>
 
 <code>**async def register**(access_token: str) -> dict</code><br>
 <span class="docs">Registers a new device account on the `BaaS` server.</span>

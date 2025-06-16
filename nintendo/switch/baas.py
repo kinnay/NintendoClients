@@ -51,9 +51,13 @@ USER_AGENT = {
 	1810: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
 	1900: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)",
 	1901: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)",
+	2000: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
+	2001: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
+	2010: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
+	2011: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
 }
 
-LATEST_VERSION = 1901
+LATEST_VERSION = 2011
 
 
 class PresenceState:
@@ -146,7 +150,7 @@ class BAASClient:
 		response = await self.request(req, None, MODULE_ACCOUNT, use_power_state=True)
 		return response.json
 	
-	async def login(self, id, password, access_token, app_token=None, na_country=None, skip_verification=False):
+	async def login(self, id, password, access_token, app_token=None, na_country=None, skip_verification=False, is_persistent=True):
 		req = http.HTTPRequest.post("/1.0.0/login")
 		req.form = {
 			"id": "%016x" %id,
@@ -160,6 +164,9 @@ class BAASClient:
 			if na_country is None:
 				raise ValueError("na_country parameter is required for system version 18.0.0 and later")
 			req.form["naCountry"] = na_country
+		
+		if self.system_version >= 2000:
+			req.form["isPersistent"] = "true" if is_persistent else "false"
 		
 		if skip_verification:
 			req.form["skipOp2Verification"] = "1"

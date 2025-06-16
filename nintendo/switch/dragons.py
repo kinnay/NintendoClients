@@ -10,7 +10,55 @@ logger = logging.getLogger(__name__)
 
 USER_AGENT = "NintendoSDK Firmware/%s (platform:NX; did:%016x; eid:lp1)"
 
-LATEST_VERSION = 1901
+API_VERSION = {
+	 900: 1,
+	 901: 1,
+	 910: 1,
+	 920: 1,
+	1000: 1,
+	1001: 1,
+	1002: 1,
+	1003: 1,
+	1004: 1,
+	1010: 1,
+	1011: 1,
+	1020: 1,
+	1100: 1,
+	1101: 1,
+	1200: 1,
+	1201: 1,
+	1202: 1,
+	1203: 1,
+	1210: 1,
+	1300: 1,
+	1310: 1,
+	1320: 1,
+	1321: 1,
+	1400: 1,
+	1410: 1,
+	1411: 1,
+	1412: 1,
+	1500: 1,
+	1501: 1,
+	1600: 1,
+	1601: 1,
+	1602: 1,
+	1603: 1,
+	1610: 1,
+	1700: 1,
+	1701: 1,
+	1800: 1,
+	1801: 1,
+	1810: 1,
+	1900: 1,
+	1901: 1,
+	2000: 2,
+	2001: 2,
+	2010: 2,
+	2011: 2,
+}
+
+LATEST_VERSION = 2011
 
 
 class DragonsError(Exception):
@@ -47,6 +95,7 @@ class DragonsClient:
 		if self.device_id is not None:
 			self.user_agent_nim = USER_AGENT %(common.FIRMWARE_VERSIONS[LATEST_VERSION], self.device_id)
 		self.user_agent_dauth = dauth.USER_AGENT[LATEST_VERSION]
+		self.api_version = API_VERSION[self.system_version]
 	
 	def set_request_callback(self, callback): self.request_callback = callback
 	
@@ -66,6 +115,7 @@ class DragonsClient:
 		if self.device_id is not None:
 			self.user_agent_nim = USER_AGENT %(common.FIRMWARE_VERSIONS[version], self.device_id)
 		self.user_agent_dauth = dauth.USER_AGENT[version]
+		self.api_version = API_VERSION[self.system_version]
 	
 	async def request(self, req, host, device_token, *, account_id=None):
 		if self.user_agent_nim is None:
@@ -96,6 +146,8 @@ class DragonsClient:
 		if self.system_version < 1800:
 			req.headers["User-Agent"] = self.user_agent_dauth
 		req.headers["Accept"] = "*/*"
+		if self.system_version >= 2000:
+			req.headers["User-Agent"] = self.user_agent_dauth
 		req.headers["Content-Type"] = "application/json"
 		req.headers["DeviceAuthorization"] = "Bearer " + device_token
 		req.headers["Nintendo-Application-Id"] = "%016x" %title_id
@@ -109,7 +161,7 @@ class DragonsClient:
 		return response
 	
 	async def publish_elicense_archive(self, device_token, challenge, certificate, account_id):
-		req = http.HTTPRequest.post("/v1/elicense_archives/publish")
+		req = http.HTTPRequest.post("/v%i/elicense_archives/publish" %self.api_version)
 		req.json = {
 			"challenge": challenge,
 			"certificate": base64.b64encode(certificate).decode()
@@ -119,16 +171,16 @@ class DragonsClient:
 		return response.json
 	
 	async def report_elicense_archive(self, device_token, elicense_archive_id, account_id):
-		req = http.HTTPRequest.put("/v1/elicense_archives/%s/report" %elicense_archive_id)
+		req = http.HTTPRequest.put("/v%i/elicense_archives/%s/report" %(self.api_version, elicense_archive_id))
 		await self.request(req, self.host_dragons, device_token, account_id=account_id)
 	
 	async def publish_device_linked_elicenses(self, device_token):
-		req = http.HTTPRequest.post("/v1/rights/publish_device_linked_elicenses")
+		req = http.HTTPRequest.post("/v%i/rights/publish_device_linked_elicenses" %self.api_version)
 		response = await self.request(req, self.host_dragons, device_token)
 		return response.json
 	
 	async def exercise_elicense(self, device_token, elicense_ids, account_ids, current_account_id):
-		req = http.HTTPRequest.post("/v1/elicenses/exercise")
+		req = http.HTTPRequest.post("/v%i/elicenses/exercise" %self.api_version)
 		req.json = {
 			"elicense_ids": elicense_ids,
 			"account_ids": ["%016x" %i for i in account_ids]
@@ -139,7 +191,7 @@ class DragonsClient:
 		if self.system_version < 1500:
 			raise ValueError("contents_authorization_token_for_aauth was added in system version 15.0.0")
 		
-		req = http.HTTPRequest.post("/v1/contents_authorization_token_for_aauth/issue")
+		req = http.HTTPRequest.post("/v%i/contents_authorization_token_for_aauth/issue" %self.api_version)
 		req.json = {
 			"elicense_id": elicense_id,
 			"na_id": "%016x" %na_id

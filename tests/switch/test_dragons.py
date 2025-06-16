@@ -55,6 +55,17 @@ AAUTH_TOKEN_REQUEST_1800 = \
 	"\r\n" \
 	'{"elicense_id":"337c8aaef372df9c2c239ebaaf49f723","na_id":"72b0f0bdb31753d5"}'
 
+AAUTH_TOKEN_REQUEST_2000 = \
+	"POST /v2/contents_authorization_token_for_aauth/issue HTTP/1.1\r\n" \
+	"Host: localhost:12345\r\n" \
+	"Accept: */*\r\n" \
+	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)\r\n" \
+	"Content-Type: application/json\r\n" \
+	"DeviceAuthorization: Bearer device.token\r\n" \
+	"Nintendo-Application-Id: 010040600c5ce000\r\n" \
+	"Content-Length: 77\r\n\r\n" \
+	'{"elicense_id":"337c8aaef372df9c2c239ebaaf49f723","na_id":"72b0f0bdb31753d5"}'
+
 
 @pytest.mark.anyio
 async def test_publish_device_linked_elicenses():
@@ -125,6 +136,27 @@ async def test_contents_authorization_token_for_aauth_1800():
 		client = dragons.DragonsClient()
 		client.set_hosts("localhost:12345", None, None)
 		client.set_system_version(1800)
+		client.set_context(None)
+		response = await client.contents_authorization_token_for_aauth(
+			TEST_DEVICE_TOKEN, TEST_ELICENSE_ID, TEST_ACCOUNT_ID, TEST_APPLICATION_ID
+		)
+		assert response["contents_authorization_token"] == "auth token"
+
+
+@pytest.mark.anyio
+async def test_contents_authorization_token_for_aauth_2000():
+	async def handler(client, request):
+		assert request.encode().decode() == AAUTH_TOKEN_REQUEST_2000
+		response = http.HTTPResponse(200)
+		response.json = {
+			"contents_authorization_token": "auth token"
+		}
+		return response
+	
+	async with http.serve(handler, "localhost", 12345):
+		client = dragons.DragonsClient()
+		client.set_hosts("localhost:12345", None, None)
+		client.set_system_version(2000)
 		client.set_context(None)
 		response = await client.contents_authorization_token_for_aauth(
 			TEST_DEVICE_TOKEN, TEST_ELICENSE_ID, TEST_ACCOUNT_ID, TEST_APPLICATION_ID

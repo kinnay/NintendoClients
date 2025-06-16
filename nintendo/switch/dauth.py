@@ -4,6 +4,8 @@ from Crypto.Cipher import AES
 from anynet import tls, http
 from nintendo import resources
 import base64
+import json
+import time
 
 import logging
 logger = logging.getLogger(__name__)
@@ -55,6 +57,13 @@ SYSTEM_VERSION_DIGEST = {
 	1901: "CusHY#00130001#6I1eeoSqDdjA7eXPDrsWBbdM-VxVhveQYiG1oNfNSt0=",
 }
 
+SYSTEM_VERSION_HEX = {
+	2000: "7147e1386c9b6c15d8f14e6ed68c4b9a7f28fb9b",
+	2001: "0b2540e5cd7498dd61f6caeca5136c73d9b1d21a",
+	2010: "fa9b24a1d97b9adf5fe462f7f0ee97e6ed6294d0",
+	2011: "9ffad64d79dd150490201461bdf66c8db963f57d",
+}
+
 USER_AGENT = {
 	900:  "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 9.3.0.0)",
 	901:  "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 9.3.0.0)",
@@ -97,6 +106,10 @@ USER_AGENT = {
 	1810: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 18.3.0.0)",
 	1900: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 19.3.0.0)",
 	1901: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 19.3.0.0)",
+	2000: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
+	2001: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
+	2010: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
+	2011: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
 }
 
 KEY_GENERATION = {
@@ -140,7 +153,11 @@ KEY_GENERATION = {
 	1801: 17,
 	1810: 17,
 	1900: 19,
-	1901: 19
+	1901: 19,
+	2000: 20,
+	2001: 20,
+	2010: 20,
+	2011: 20,
 }
 
 API_VERSION = {
@@ -185,23 +202,57 @@ API_VERSION = {
 	1810: 7,
 	1900: 7,
 	1901: 7,
+	2000: 8,
+	2001: 8,
+	2010: 8,
+	2011: 8,
 }
 
-LATEST_VERSION = 1901
+LATEST_VERSION = 2011
 
 
 CLIENT_ID_SCSI = 0x146C8AC7B8A0DB52
+CLIENT_ID_ER = 0x16E96F76850156D1
 CLIENT_ID_ATUM = 0x3117B250CAB38F45
 CLIENT_ID_ESHOP = 0x41F4A6491028E3C4
 CLIENT_ID_BCAT = 0x67BF9945B45248C6
 CLIENT_ID_SATA = 0x6AC5A6873FE5F68C
+CLIENT_ID_ACCOUNT_APPLET = 0x75FE236362FF5F8B
 CLIENT_ID_ACCOUNT = 0x81333C548B2E876D
 CLIENT_ID_NPNS = 0x83B72B05DC3278D7
 CLIENT_ID_BAAS = 0x8F849B5D34778D8E
 CLIENT_ID_BEACH = 0x93AF0ACB26258DE9
+CLIENT_ID_SPROFILE = 0xBAD8156F44AC935A
 CLIENT_ID_DRAGONS = 0xD5B6CAC2C1514C56
+CLIENT_ID_SCSI_POLICY = 0xD98185ACB55994B4
 CLIENT_ID_PCTL = 0xDC656EA03B63CF68
 CLIENT_ID_PREPO = 0xDF51C436BC01C437
+CLIENT_ID_PENNE = 0xE58171FE439390CE
+
+
+PRELOADED_DEVICE_TOKENS = [
+	CLIENT_ID_BAAS,
+	CLIENT_ID_PCTL,
+	CLIENT_ID_BEACH,
+	CLIENT_ID_PREPO,
+	CLIENT_ID_ER,
+	CLIENT_ID_PENNE,
+	CLIENT_ID_ACCOUNT,
+	CLIENT_ID_ACCOUNT_APPLET,
+	CLIENT_ID_SCSI,
+	CLIENT_ID_DRAGONS,
+	CLIENT_ID_SPROFILE
+]
+
+PRELOADED_EDGE_TOKENS = [
+	(CLIENT_ID_BEACH, "akamai"),
+	(CLIENT_ID_BCAT, "akamai"),
+	(CLIENT_ID_SCSI_POLICY, "akamai"),
+	(CLIENT_ID_SCSI, "akamai"),
+	(CLIENT_ID_ESHOP, "akamai"),
+	(CLIENT_ID_ATUM, "akamai"),
+	(CLIENT_ID_ATUM, "fastly")
+]
 
 
 class DAuthError(Exception):
@@ -240,7 +291,7 @@ class DAuthClient:
 
 		self.system_version = LATEST_VERSION
 		self.user_agent = USER_AGENT[self.system_version]
-		self.system_digest = SYSTEM_VERSION_DIGEST[self.system_version]
+		self.system_version_hash = SYSTEM_VERSION_HEX[self.system_version]
 		self.key_generation = KEY_GENERATION[self.system_version]
 		self.api_version = API_VERSION[self.system_version]
 		
@@ -259,9 +310,12 @@ class DAuthClient:
 			raise ValueError("Unknown system version: %i" %version)
 		self.system_version = version
 		self.user_agent = USER_AGENT[version]
-		self.system_digest = SYSTEM_VERSION_DIGEST[version]
 		self.key_generation = KEY_GENERATION[version]
 		self.api_version = API_VERSION[version]
+		if self.api_version < 8:
+			self.system_version_hash = SYSTEM_VERSION_DIGEST[version]
+		else:
+			self.system_version_hash = SYSTEM_VERSION_HEX[version]
 		
 	async def request(self, req):
 		if self.system_version < 1800:
@@ -271,10 +325,20 @@ class DAuthClient:
 			req.headers["X-Nintendo-PowerState"] = self.power_state
 			req.headers["Content-Length"] = 0
 			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
-		else:
+		elif self.system_version < 2000:
 			req.headers["Host"] = self.host
 			req.headers["Accept"] = "*/*"
 			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
+			req.headers["X-Nintendo-PowerState"] = self.power_state
+			req.headers["Content-Length"] = 0
+		else:
+			req.headers["Host"] = self.host
+			req.headers["Accept"] = "*/*"
+			req.headers["User-Agent"] = self.user_agent
+			if req.json:
+				req.headers["Content-Type"] = "application/json"
+			else:
+				req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 			req.headers["X-Nintendo-PowerState"] = self.power_state
 			req.headers["Content-Length"] = 0
 		
@@ -296,56 +360,102 @@ class DAuthClient:
 		response = await self.request(req)
 		return response.json
 	
-	async def device_token(self, client_id):
-		challenge = await self.challenge()
+	async def request_token(self, client_id, vendor_id="akamai", *, edge_token):
+		# This is a generic method to reduce code duplication between device_token and edge_token
 
-		data = challenge["data"]
-		if len(data) % 4 != 0:
-		    data += "=" * (4 - len(data) % 4)
+		# On system version 20.0.0 and later, we use the new version of the API
+		# Note: in this case, you probably want to use one of the preload functions instead,
+		# to mimic the behavior of a real Switch.
+		if self.system_version >= 2000:
+			return await self.request_tokens([(client_id, vendor_id)], edge_tokens=edge_token)
 		
-		data = base64.b64decode(data, "-_")
-		
-		req = http.HTTPRequest.post("/v%i/device_auth_token" %self.api_version)
-		req.rawform = {
-			"challenge": challenge["challenge"],
-			"client_id": "%016x" %client_id,
-			"ist": "true" if self.region == 2 else "false",
-			"key_generation": self.key_generation,
-			"system_version": self.system_digest
-		}
-		
-		string = http.formencode(req.rawform, False)
-		req.rawform["mac"] = self.calculate_mac(string, data)
-		
-		response = await self.request(req)
-		return response.json
-		
-	async def edge_token(self, client_id, vendor_id="akamai"):
 		challenge = await self.challenge()
+		data = base64.b64decode(challenge["data"] + "==", "-_")
+
+		path = "/v%i/device_auth_token" %self.api_version
+		if edge_token:
+			path = "/v%i/edge_token" %self.api_version
 		
-		data = challenge["data"]
-		if len(data) % 4 != 0:
-		    data += "=" * (4 - len(data) % 4)
-		
-		data = base64.b64decode(data, "-_")
-		
-		req = http.HTTPRequest.post("/v%i/edge_token" %self.api_version)
+		req = http.HTTPRequest.post(path)
 		req.rawform = {
 			"challenge": challenge["challenge"],
 			"client_id": "%016x" %client_id,
 			"ist": "true" if self.region == 2 else "false",
 			"key_generation": self.key_generation,
-			"system_version": self.system_digest
+			"system_version": self.system_version_hash
 		}
-		
-		if self.api_version == 7:
+		if self.api_version >= 7 and edge_token:
 			req.rawform["vendor_id"] = vendor_id
-		
+
 		string = http.formencode(req.rawform, False)
 		req.rawform["mac"] = self.calculate_mac(string, data)
-		
+
 		response = await self.request(req)
 		return response.json
+	
+	async def request_tokens(self, token_requests, *, edge_tokens):
+		# This is a generic method to reduce code duplication between device_tokens and edge_tokens
+
+		if self.system_version < 2000:
+			raise ValueError("This method is only available on system version 20.0.0 and above.")
+		
+		challenge = await self.challenge()
+		data = base64.b64decode(challenge["data"] + "==", "-_")
+
+		system_version = "00%02x%02x%02x" %(
+			self.system_version // 100,
+			(self.system_version // 10) % 10,
+			self.system_version % 10
+		)
+
+		form = {
+			"challenge": challenge["challenge"],
+			"fw_revision": self.system_version_hash,
+			"ist": "true" if self.region == 2 else "false",
+			"key_generation": self.key_generation,
+			"system_version": system_version,
+			"token_requests": json.dumps(token_requests, separators=(",", ":"))
+		}
+		string = http.formencode(form, False)
+		mac = self.calculate_mac(string, data)
+
+		path = "/v%i/device_auth_tokens" %self.api_version
+		if edge_tokens:
+			path = "/v%i/edge_tokens" %self.api_version
+
+		req = http.HTTPRequest.post(path)
+		req.json = {
+			"system_version": system_version,
+			"fw_revision": self.system_version_hash,
+			"ist": self.region == 2,
+			"token_requests": token_requests,
+			"key_generation": self.key_generation,
+			"challenge": challenge["challenge"],
+			"mac": mac
+		}
+
+		response = await self.request(req)
+		return response.json
+	
+	async def device_token(self, client_id):
+		return await self.request_token(client_id, edge_token=False)
+	
+	async def edge_token(self, client_id, vendor_id="akamai"):
+		return await self.request_token(client_id, vendor_id, edge_token=True)
+		
+	async def device_tokens(self, client_ids):
+		token_requests = [{"client_id": "%016x" %client_id} for client_id in client_ids]
+		return await self.request_tokens(token_requests, edge_tokens=False)
+	
+	async def edge_tokens(self, token_requests):
+		token_requests = [{"client_id": "%016x" %client_id, "vendor_id": vendor_id} for client_id, vendor_id in token_requests]
+		return await self.request_tokens(token_requests, edge_tokens=True)
+	
+	async def preload_device_tokens(self):
+		return await self.device_tokens(PRELOADED_DEVICE_TOKENS)
+	
+	async def preload_edge_tokens(self):
+		return await self.edge_tokens(PRELOADED_EDGE_TOKENS)
 		
 	def get_master_key(self):
 		keygen = self.key_generation
@@ -367,3 +477,52 @@ class DAuthClient:
 		mac = CMAC.new(key, ciphermod=AES)
 		mac.update(form.encode())
 		return base64.b64encode(mac.digest(), b"-_").decode().rstrip("=")
+
+
+class DAuthCache:
+	def __init__(self, client, expiration=None):
+		self.client = client
+		self.expiration = expiration
+
+		self.device_tokens = {}
+		self.edge_tokens = {}
+	
+	async def device_token(self, client_id):
+		now = time.time()
+		if client_id in self.device_tokens and self.device_tokens[client_id][1] > now:
+			return self.device_tokens[client_id][0]
+		
+		if client_id in PRELOADED_DEVICE_TOKENS:
+			response = await self.client.preload_device_tokens()
+		else:
+			response = await self.client.device_tokens([client_id])
+		
+		for result in response["results"]:
+			if self.expiration is not None:
+				expiration = now + self.expiration
+			else:
+				expiration = now + result["expires_in"]
+			self.device_tokens[int(result["client_id"], 16)] = (result["device_auth_token"], expiration)
+
+		return self.device_tokens[client_id][0]
+
+	async def edge_token(self, client_id, vendor_id="akamai"):
+		now = time.time()
+		key = (client_id, vendor_id)
+		if key in self.edge_tokens and self.edge_tokens[key][1] > now:
+			return self.edge_tokens[key][0]
+		
+		if key in PRELOADED_EDGE_TOKENS:
+			response = await self.client.preload_edge_tokens()
+		else:
+			response = await self.client.edge_tokens([key])
+		
+		for result in response["results"]:
+			result_key = (int(result["client_id"], 16), result["vendor_id"])
+			if self.expiration is not None:
+				expiration = now + self.expiration
+			else:
+				expiration = now + result["expires_in"]
+			self.edge_tokens[result_key] = (result["dtoken"], expiration)
+		
+		return self.edge_tokens[key][0]
