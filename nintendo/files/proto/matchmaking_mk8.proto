@@ -1,0 +1,56 @@
+
+import matchmaking;
+
+struct SimpleSearchObject {
+    uint32 id;
+    pid owner;
+    list<uint32> attributes;
+    qbuffer metadata;
+    uint32 community_id;
+    string community_code;
+    SimpleSearchDateTimeAttribute datetime;
+}
+
+struct SimpleSearchDateTimeAttribute {
+    uint32 unk1;
+    uint32 unk2;
+    uint32 unk3;
+    uint32 unk4;
+    datetime start_time;
+    datetime end_time;
+}
+
+struct SimpleSearchParam {
+    uint32 unk1;
+    pid unk2;
+    list<SimpleSearchCondition> conditions;
+    string unk3;
+    ResultRange range;
+    datetime unk4;
+}
+
+struct SimpleSearchCondition {
+    uint32 value;
+    uint32 operator;
+}
+
+protocol MatchmakeExtension_MK8 : MatchmakeExtension {
+    method(36) create_simple_search_object(SimpleSearchObject object) {
+       uint32 id; 
+    }
+    
+    method update_simple_search_object(uint32 id, SimpleSearchObject object) {}
+    method delete_simple_search_object(uint32 id) {}
+
+    method search_simple_search_object(SimpleSearchParam param) {
+		list<SimpleSearchObject> objects;
+	}
+
+    method join_matchmake_session_with_extra_participants(uint32 gid, string join_message, bool ignore_blacklist, uint16 participation_count, uint32 extra_participants) {
+		buffer session_key;
+	}
+
+    method search_simple_search_object_by_object_ids(list<uint32> ids) {
+		list<SimpleSearchObject> objects;
+	}
+}
