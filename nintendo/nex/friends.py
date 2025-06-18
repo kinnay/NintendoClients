@@ -812,22 +812,22 @@ common.DataHolder.register(PrincipalPreference, "PrincipalPreference")
 class PrincipalRequestBlockSetting(common.Data):
 	def __init__(self):
 		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
+		self.pid = None
+		self.blocked = None
 	
 	def check_required(self, settings, version):
-		for field in ['unk1', 'unk2']:
+		for field in ['pid', 'blocked']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk1 = stream.u32()
-		self.unk2 = stream.bool()
+		self.pid = stream.u32()
+		self.blocked = stream.bool()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.u32(self.unk1)
-		stream.bool(self.unk2)
+		stream.u32(self.pid)
+		stream.bool(self.blocked)
 common.DataHolder.register(PrincipalRequestBlockSetting, "PrincipalRequestBlockSetting")
 
 
@@ -944,13 +944,13 @@ class FriendsClientV1(FriendsProtocolV1):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("FriendsClientV1.update_played_games -> done")
 	
-	async def update_preference(self, unk1, unk2, unk3):
+	async def update_preference(self, show_online_status, show_current_title, block_friend_requests):
 		logger.info("FriendsClientV1.update_preference()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
-		stream.bool(unk1)
-		stream.bool(unk2)
-		stream.bool(unk3)
+		stream.bool(show_online_status)
+		stream.bool(show_current_title)
+		stream.bool(block_friend_requests)
 		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_UPDATE_PREFERENCE, stream.get())
 		
 		#--- response ---
@@ -1646,10 +1646,10 @@ class FriendsServerV1(FriendsProtocolV1):
 	async def handle_update_preference(self, client, input, output):
 		logger.info("FriendsServerV1.update_preference()")
 		#--- request ---
-		unk1 = input.bool()
-		unk2 = input.bool()
-		unk3 = input.bool()
-		await self.update_preference(client, unk1, unk2, unk3)
+		show_online_status = input.bool()
+		show_current_title = input.bool()
+		block_friend_requests = input.bool()
+		await self.update_preference(client, show_online_status, show_current_title, block_friend_requests)
 	
 	async def handle_get_friend_mii(self, client, input, output):
 		logger.info("FriendsServerV1.get_friend_mii()")
