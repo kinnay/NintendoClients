@@ -60,7 +60,7 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def update_played_games**(played_games: list[[PlayedGame](#playedgame)]) -> None</code><br>
 <span class="docs">Calls method `4` on the server.</span>
 
-<code>**async def update_preference**(unk1: bool, unk2: bool, unk3: bool) -> None</code><br>
+<code>**async def update_preference**(show_online_status: bool, show_current_title: bool, block_friend_requests: bool) -> None</code><br>
 <span class="docs">Calls method `5` on the server.</span>
 
 <code>**async def get_friend_mii**(friends: list[[FriendKey](#friendkey)]) -> list[[FriendMii](#friendmii)]</code><br>
@@ -236,7 +236,7 @@ Provides a client and server for the `FriendsProtocolV1` and `FriendsProtocolV2`
 <code>**async def update_played_games**(client: [RMCClient](rmc.md#rmcclient), played_games: list[[PlayedGame](#playedgame)]) -> None</code><br>
 <span class="docs">Handler for method `4`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_preference**(client: [RMCClient](rmc.md#rmcclient), unk1: bool, unk2: bool, unk3: bool) -> None</code><br>
+<code>**async def update_preference**(client: [RMCClient](rmc.md#rmcclient), show_online_status: bool, show_current_title: bool, block_friend_requests: bool) -> None</code><br>
 <span class="docs">Handler for method `5`. This method should be overridden by a subclass.</span>
 
 <code>**async def get_friend_mii**(client: [RMCClient](rmc.md#rmcclient), friends: list[[FriendKey](#friendkey)]) -> list[[FriendMii](#friendmii)]</code><br>
@@ -744,7 +744,7 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: int</code><br>
-<code>unk2: bool</code><br>
+<code>pid: int</code><br>
+<code>blocked: bool</code><br>
 </span><br>
 
