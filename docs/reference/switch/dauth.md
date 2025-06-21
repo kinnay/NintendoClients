@@ -79,12 +79,10 @@ The error can be inspected using the following attributes:
 <span class="docs">Requests a challenge from the `dauth` server.</span>
 
 <code>**async def device_token**(client_id: int) -> dict</code><br>
-<span class="docs">Requests a device token from the `dauth` server. The challenge is done automatically.<br><br>
-<span style="color: red"><b>NOTE:</b></span> On system version 20.0.0 and later, it is recommended to use `preload_device_tokens` instead, which mimics the behavior of a real Switch.</span>
+<span class="docs">Requests a device token from the `dauth` server. The challenge is done automatically. This method is available up to system version 19.0.1.<br><br>
 
 <code>**async def edge_token**(client_id: int, vendor_id: str = "akamai") -> dict</code><br>
-<span class="docs">Requests an edge token from the `dauth` server. The challenge is done automatically.<br><br>
-<span style="color: red"><b>NOTE:</b></span> On system version 20.0.0 and later, it is recommended to use `preload_edge_tokens` instead, which mimics the behavior of a real Switch.</span>
+<span class="docs">Requests an edge token from the `dauth` server. The challenge is done automatically. This method is available up to system version 19.0.1.<br><br>
 
 <code>**async def device_tokens**(client_ids: list[int]) -> dict</code><br>
 <span class="docs">Requests a multiple device tokens from the `dauth` server. This method is available on system version 20.0.0 and later.</span>

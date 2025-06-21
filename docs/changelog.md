@@ -1,6 +1,11 @@
 
 ## Changelog
 
+### 4.0.2
+* Disable `device_token` and `edge_token` on system version 20.0.0 and later to avoid accidental usage.
+
+*Released on 2025-06-21*
+
 ### 4.0.1
 * **Bug fix:** using `device_token` or `edge_token` on system version 20.0.0 and later would send an invalid request to the server. This is now fixed.
 

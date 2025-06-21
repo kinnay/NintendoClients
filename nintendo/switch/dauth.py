@@ -367,15 +367,10 @@ class DAuthClient:
 	async def request_token(self, client_id, vendor_id="akamai", *, edge_token):
 		# This is a generic method to reduce code duplication between device_token and edge_token
 
-		# On system version 20.0.0 and later, we use the new version of the API
-		# Note: in this case, you probably want to use one of the preload functions instead,
-		# to mimic the behavior of a real Switch.
+		# Use one of the preload_* functions on system version 20.0.0 and later, to mimic the
+		# behavior of a real Switch.
 		if self.system_version >= 2000:
-			if edge_token:
-				token_requests = [{"client_id": "%016x" %client_id}]
-			else:
-				token_requests = [{"client_id": "%016x" %client_id, "vendor_id": vendor_id}]
-			return await self.request_tokens(token_requests, edge_tokens=edge_token)
+			raise ValueError("This method is only available up to system version 19.0.1")
 		
 		challenge = await self.challenge()
 		data = base64.b64decode(challenge["data"] + "==", "-_")
