@@ -1,7 +1,6 @@
 
 from nintendo.switch import five
 from anynet import http
-import contextlib
 import pytest
 
 

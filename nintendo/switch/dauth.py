@@ -62,6 +62,7 @@ SYSTEM_VERSION_HEX = {
 	2001: "0b2540e5cd7498dd61f6caeca5136c73d9b1d21a",
 	2010: "fa9b24a1d97b9adf5fe462f7f0ee97e6ed6294d0",
 	2011: "9ffad64d79dd150490201461bdf66c8db963f57d",
+	2015: "0605c36a7aa2535fb8989a0d133a0b96b0d97a12"
 }
 
 USER_AGENT = {
@@ -110,6 +111,7 @@ USER_AGENT = {
 	2001: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
 	2010: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
 	2011: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
+	2015: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
 }
 
 KEY_GENERATION = {
@@ -158,6 +160,7 @@ KEY_GENERATION = {
 	2001: 20,
 	2010: 20,
 	2011: 20,
+	2015: 20,
 }
 
 API_VERSION = {
@@ -206,9 +209,10 @@ API_VERSION = {
 	2001: 8,
 	2010: 8,
 	2011: 8,
+	2015: 8,
 }
 
-LATEST_VERSION = 2011
+LATEST_VERSION = 2015
 
 
 CLIENT_ID_SCSI = 0x146C8AC7B8A0DB52

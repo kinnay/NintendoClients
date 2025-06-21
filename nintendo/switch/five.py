@@ -49,9 +49,14 @@ USER_AGENT = {
 	1810: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 18.3.0.0; Add-on 18.3.0.0)",
 	1900: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)",
 	1901: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 19.3.0.0; Add-on 19.3.0.0)",
+	2000: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
+	2001: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
+	2010: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
+	2011: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
+	2015: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
 }
 
-LATEST_VERSION = 1901
+LATEST_VERSION = 2015
 
 LANGUAGES = [
 	"en-US", "en-GB", "ja", "fr", "de", "es-419", "es", "it", "nl"
@@ -128,16 +133,30 @@ class FiveClient:
 		return response
 	
 	async def get_unread_invitation_count(self, access_token, user_id):
-		req = http.HTTPRequest.get("/v1/users/%016x/invitations/inbox" %user_id)
-		req.params = {
-			"fields": "count",
-			"read": "false"
-		}
+		if self.system_version < 2000:
+			req = http.HTTPRequest.get("/v1/users/%016x/invitations/inbox" %user_id)
+			req.params = {
+				"fields": "count",
+				"read": "false"
+			}
+		else:
+			req = http.HTTPRequest.get("/v2/users/%016x/invitations/inbox" %user_id)
+			req.params = {
+				"fields": "count",
+				"read": "false",
+				"invitation_types": "friend"
+			}
 		response = await self.request(req, access_token)
 		return response.json["count"]
 	
 	async def get_inbox(self, access_token, user_id):
-		req = http.HTTPRequest.get("/v1/users/%016x/invitations/inbox" %user_id)
+		if self.system_version < 2000:
+			req = http.HTTPRequest.get("/v1/users/%016x/invitations/inbox" %user_id)
+		else:
+			req = http.HTTPRequest.get("/v2/users/%016x/invitations/inbox" %user_id)
+			req.params = {
+				"invitation_types": "friend"
+			}
 		response = await self.request(req, access_token)
 		return response.json
 
@@ -174,11 +193,20 @@ class FiveClient:
 		if len(application_data) > 0x400:
 			raise ValueError("Application data is too large")
 		
-		req = http.HTTPRequest.post("/v1/invitation_groups")
+		url = "/v1/invitation_groups"
+		if self.system_version >= 2000:
+			url = "/v2/invitation_groups"
+		
+		req = http.HTTPRequest.post(url)
+
 		req.json = {
 			"receiver_ids": ["%016x" %id for id in receivers],
-			"application_id": "%016x" %application_id,
 		}
+
+		if self.system_version >= 2000:
+			req.json["invitation_type"] = "friend"
+		
+		req.json["application_id"] = "%016x" %application_id
 
 		if self.system_version >= 1900:
 			req.json["acd_index"] = acd_index
