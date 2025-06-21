@@ -1,0 +1,31 @@
+
+import matchmaking;
+
+struct FriendUserParam {
+    string name;
+}
+
+struct FriendUserInfo {
+    uint64 pid;
+    string name;
+    uint32 presence;
+}
+
+protocol MatchmakeExtension_MHXX : MatchmakeExtension {
+    method(54) update_friend_user_profile(FriendUserParam param) {}
+
+    method get_friend_user_profiles(list<uint64> pids) {
+        list<FriendUserInfo> infos;
+    }
+
+    method get_friends() {
+        list<FriendUserInfo> infos;
+    }
+
+    method add_friends(list<uint64> pids) {}
+    method remove_friend(uint64 pid) {}
+
+    method find_community_by_owner(uint64 id, ResultRange range) {
+        list<PersistentGathering> lst_community;
+    }
+}
