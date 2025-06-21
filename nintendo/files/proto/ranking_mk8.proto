@@ -1,0 +1,36 @@
+
+import ranking;
+
+struct CompetitionRankingInfo {
+	uint32 id;
+	uint32 num_participants;
+	list<uint32> team_scores;
+}
+
+struct CompetitionRankingInfoGetParam {
+	uint8 rank_order;
+	ResultRange range;
+}
+
+struct CompetitionRankingUploadScoreParam {
+	uint32 id;
+	uint32 season_id;
+	uint32 unk3;
+	uint32 score;
+	uint8 team_id;
+	uint32 team_score;
+	bool is_first_upload;
+	qbuffer metadata;
+}
+
+protocol Ranking_MK8 : Ranking {
+	method(14) get_competition_ranking_score;
+	
+	method upload_competition_ranking_score(CompetitionRankingUploadScoreParam param) {
+		bool result;
+	}
+	
+	method get_competition_info(CompetitionRankingInfoGetParam param) {
+		list<CompetitionRankingInfo> info;
+	}
+}

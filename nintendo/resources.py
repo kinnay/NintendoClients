@@ -2,6 +2,7 @@
 from anynet import tls
 import importlib.resources
 
+
 def get(path):
 	return importlib.resources.files("nintendo").joinpath(path)
 
