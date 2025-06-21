@@ -1,8 +1,6 @@
 # Nintendo Clients
 > :warning: Keep in mind that Nintendo bans Switch devices that show suspicious behavior. This package tries to mimic the behavior of a real Switch as closely as possible, but using it is at your own risk. Make sure that you know what you are doing.
 
-> :warning: The way that the Switch requests device tokens has changed. On system version 20.0.0 and later, it is recommended to use one of the `preload_*` functions instead of requesting a specific device token from the server.
-
 This package implements a client for various 3DS, Wii U and Switch servers. Check out the [documentation](https://nintendoclients.readthedocs.io) for the list of servers that are currently supported.
 
 ### Installation
