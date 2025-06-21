@@ -1,6 +1,15 @@
 
 ## Changelog
 
+### 4.0.0
+* **Breaking change:** some unknown fields in the `nintendo.nex.friends` module were given a name. If you were using the placeholder names in your code, update your code to use the new names.
+* Added support for Switch system version 20.0.0 up to 20.1.5.
+* Added various client ids for dauth, such as `er`, `sprofile` and `penne`.
+* Implemented a dauth cache that mimics the preloading behavior that was introduced in 20.0.0.
+* Added support for the ranking and matchmaking protocols of Mario Kart 8 (Wii U).
+
+*Released on 2025-06-21*
+
 ### 3.0.3
 * **Bug fix:** fixed typo, changed `BANNED_DEIVCE` to `BANNED_DEVICE` in `DAuthError` class.
 
