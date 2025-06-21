@@ -1,6 +1,13 @@
 
 ## Changelog
 
+### 4.0.1
+* **Bug fix:** using `device_token` or `edge_token` on system version 20.0.0 and later would send an invalid request to the server. This is now fixed.
+
+<span style="color:red">**NOTE:**</span> It is recommended to use one of the `preload_*` functions or the `DAuthCache` class on system version 20.0.0 and later, to mimic the behavior of a real Switch.
+
+*Released on 2025-06-21*
+
 ### 4.0.0
 * **Breaking change:** some unknown fields in the `nintendo.nex.friends` module were given a name. If you were using the placeholder names in your code, update your code to use the new names.
 * Added support for Switch system version 20.0.0 up to 20.1.5.
