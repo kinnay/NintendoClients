@@ -236,9 +236,9 @@ class NNASClient:
 	def __init__(self):
 		self.url = "account.nintendo.net"
 
-		ca = resources.certificate("CACERT_NINTENDO_CA_G3.der")
-		cert = resources.certificate("WIIU_COMMON_1_CERT.der")
-		key = resources.private_key("WIIU_COMMON_1_RSA_KEY.der")
+		ca = resources.certificate("Nintendo_CA_G3.der")
+		cert = resources.certificate("Wii_U_Common_Prod_1.der")
+		key = resources.private_key("Wii_U_Common_Prod_1.key")
 		
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)

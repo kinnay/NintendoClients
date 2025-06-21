@@ -18,7 +18,7 @@ class AtumnClient:
 		
 		self.request_callback = http.request
 		
-		ca = resources.certificate("CACERT_NINTENDO_CLASS2_CA_G3.der")
+		ca = resources.certificate("Nintendo_Class_2_CA_G3.der")
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
 		

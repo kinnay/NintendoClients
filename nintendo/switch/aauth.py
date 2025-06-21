@@ -186,10 +186,10 @@ class AAuthClient:
 		self.api_version = API_VERSION[version]
 
 		if version >= 2000:
-			caname = "CACERT_NINTENDO_ROOT_CA_G4.der"
+			caname = "Nintendo_Root_CA_G4.der"
 			host = "aauth.hac.lp1.ndas.srv.nintendo.net"
 		else:
-			caname = "CACERT_NINTENDO_CA_G3.der"
+			caname = "Nintendo_CA_G3.der"
 			host = "aauth-lp1.ndas.srv.nintendo.net"
 		
 		if not self.context_overridden:

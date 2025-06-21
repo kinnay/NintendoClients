@@ -284,7 +284,7 @@ class DAuthClient:
 		
 		self.request_callback = http.request
 		
-		ca = resources.certificate("CACERT_NINTENDO_CA_G3.der")
+		ca = resources.certificate("Nintendo_CA_G3.der")
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
 		

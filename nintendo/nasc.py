@@ -83,9 +83,9 @@ class NASCClient:
 	def __init__(self):
 		self.url = "nasc.nintendowifi.net"
 
-		ca = resources.certificate("CACERT_NINTENDO_CA_G3.der")
-		cert = resources.certificate("ctr-common-1-cert.der")
-		key = resources.private_key("ctr-common-1-key.der")
+		ca = resources.certificate("Nintendo_CA_G3.der")
+		cert = resources.certificate("CTR_Common_Prod_1.der")
+		key = resources.private_key("CTR_Common_Prod_1.key")
 
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
