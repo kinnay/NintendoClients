@@ -371,7 +371,11 @@ class DAuthClient:
 		# Note: in this case, you probably want to use one of the preload functions instead,
 		# to mimic the behavior of a real Switch.
 		if self.system_version >= 2000:
-			return await self.request_tokens([(client_id, vendor_id)], edge_tokens=edge_token)
+			if edge_token:
+				token_requests = [{"client_id": "%016x" %client_id}]
+			else:
+				token_requests = [{"client_id": "%016x" %client_id, "vendor_id": vendor_id}]
+			return await self.request_tokens(token_requests, edge_tokens=edge_token)
 		
 		challenge = await self.challenge()
 		data = base64.b64decode(challenge["data"] + "==", "-_")
