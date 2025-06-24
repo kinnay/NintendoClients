@@ -33,7 +33,9 @@ class BackEndClient:
 			self.key_derivation = kerberos.KeyDerivationNew(1, 1)
 
 	@contextlib.asynccontextmanager
-	async def login(self, username, password=None, auth_info=None, servers=[]):
+	async def login(self, username, password=None, auth_info=None, servers=None):
+		if servers is None:
+			servers = []
 		if self.settings["nex.version"] < 40000:
 			result = await self.login_old(username, auth_info)
 		elif self.settings["nex.version"] < 40400:

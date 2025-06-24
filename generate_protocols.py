@@ -1279,10 +1279,10 @@ class CodeGenerator:
 			return "[%s]" % ", ".join(entries)
 		if type.name == "map":
 			items = []
-			for key, value in value.items():
+			for key, item_value in value.items():
 				key = self.make_constant(type.template[0], key)
-				value = self.make_constant(type.template[1], value)
-				items.append("%s: %s" % (key, value))
+				item_value = self.make_constant(type.template[1], item_value)
+				items.append("%s: %s" % (key, item_value))
 			return "{%s}" % ", ".join(items)
 
 		raise ValueError("Unknown type: %s" % type.name)
@@ -1624,10 +1624,10 @@ class DocsGenerator:
 			return "[%s]" % ", ".join(entries)
 		if type.name == "map":
 			items = []
-			for key, value in value.items():
+			for key, item_value in value.items():
 				key = self.format_constant(type.template[0], key)
-				value = self.format_constant(type.template[1], value)
-				items.append("%s: %s" % (key, value))
+				item_value = self.format_constant(type.template[1], item_value)
+				items.append("%s: %s" % (key, item_value))
 			return "{%s}" % ", ".join(items)
 
 		raise ValueError("Unknown type: %s" % type.name)

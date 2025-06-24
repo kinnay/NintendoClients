@@ -13,7 +13,7 @@ class KeyDerivationOld:
 
 	def derive_key(self, password, pid):
 		key = password
-		for i in range(self.base_count + pid % self.pid_count):
+		for _ in range(self.base_count + pid % self.pid_count):
 			key = hashlib.md5(key).digest()
 		return key
 
@@ -25,11 +25,11 @@ class KeyDerivationNew:
 
 	def derive_key(self, password, pid):
 		key = password
-		for i in range(self.base_count):
+		for _ in range(self.base_count):
 			key = hashlib.md5(key).digest()
 
 		key += struct.pack("<Q", pid)
-		for i in range(self.pid_count):
+		for _ in range(self.pid_count):
 			key = hashlib.md5(key).digest()
 
 		return key

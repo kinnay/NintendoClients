@@ -43,7 +43,7 @@ async def test_unimplemented_protocol():
 
 			auth = authentication.AuthenticationClient(client)
 			try:
-				result = await auth.get_name(12345)
+				await auth.get_name(12345)
 			except common.RMCError as e:
 				assert e.result().name() == "Core::NotImplemented"
 
@@ -54,7 +54,7 @@ async def test_logout_event():
 
 	server = AuthenticationServer()
 	async with rmc.serve(s, [server], HOST, 12345):
-		async with rmc.connect(s, HOST, 12345) as client:
+		async with rmc.connect(s, HOST, 12345) as _client:
 			assert not server.flag
 		await anyio.sleep(0.1)  # Wait a bit
 		assert server.flag

@@ -206,9 +206,11 @@ class BAASClient:
 		state,
 		title_id,
 		presence_group_id,
-		app_fields={},
+		app_fields=None,
 		acd_index=0,
 	):
+		if app_fields is None:
+			app_fields = {}
 		app_fields = json.dumps(app_fields, separators=(",", ":"))
 
 		req = http.HTTPRequest.patch(

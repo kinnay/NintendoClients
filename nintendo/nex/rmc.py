@@ -234,7 +234,6 @@ class RMCClient:
 					"Multiple exceptions occurred while handling a method call"
 				)
 
-				filtered = []
 				for exc in e.exceptions:
 					if not isinstance(exc, Exception):
 						raise
@@ -311,8 +310,10 @@ class RMCClient:
 
 @contextlib.asynccontextmanager
 async def connect(
-	settings, host, port, vport=1, context=None, credentials=None, servers=[]
+	settings, host, port, vport=1, context=None, credentials=None, servers=None
 ):
+	if servers is None:
+		servers = []
 	logger.debug("Connecting RMC client to %s:%i:%i", host, port, vport)
 	async with prudp.connect(
 		settings, host, port, vport, 10, context, credentials
