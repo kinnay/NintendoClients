@@ -13,7 +13,7 @@ def swap16(data, offs):
 def crc16(data):
 	hash = 0
 	for char in data:
-		for _ in range(8):
+		for i in range(8):
 			flag = hash & 0x8000
 			hash = (hash << 1) & 0xFFFF
 			if flag:

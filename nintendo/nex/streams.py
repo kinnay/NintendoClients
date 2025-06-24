@@ -102,7 +102,7 @@ class StreamIn(streams.StreamIn):
 
 	def map(self, keyfunc, valuefunc):
 		map = {}
-		for _ in range(self.u32()):
+		for i in range(self.u32()):
 			key = self.callback(keyfunc)
 			value = self.callback(valuefunc)
 			map[key] = value

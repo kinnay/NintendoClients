@@ -368,7 +368,7 @@ class PRUDPMessageV1:
 			if stream.read(2) != b"\xea\xd0":
 				raise ValueError("(V1) Invalid magic number")
 
-			_header = stream.peek(12)
+			header = stream.peek(12)
 
 			if stream.u8() != 1:
 				raise ValueError("(V1) Version check failed")
@@ -1165,13 +1165,13 @@ class PRUDPClient:
 
 	async def process_reliable(self, packet):
 		substream = packet.substream_id
-		for p in self.sliding_windows[substream].update(packet):
-			if p.type == TYPE_DATA:
-				self.fragment_buffers[substream] += self.payload_encoder.decode(p)
-				if p.fragment_id == 0:
+		for packet in self.sliding_windows[substream].update(packet):
+			if packet.type == TYPE_DATA:
+				self.fragment_buffers[substream] += self.payload_encoder.decode(packet)
+				if packet.fragment_id == 0:
 					await self.packets[substream].put(self.fragment_buffers[substream])
 					self.fragment_buffers[substream] = b""
-			elif p.type == TYPE_DISCONNECT:
+			elif packet.type == TYPE_DISCONNECT:
 				logger.info("Connection closed by other end point")
 				await self.cleanup()
 
@@ -1228,8 +1228,8 @@ class PRUDPClient:
 		self.scheduler.remove_all()
 		self.handshake_event.set()
 		self.close_event.set()
-		for q in self.packets:
-			await q.eof()
+		for queue in self.packets:
+			await queue.eof()
 		await self.unreliable_packets.eof()
 
 	async def close(self):
@@ -1239,7 +1239,7 @@ class PRUDPClient:
 		logger.debug("[%i] Closing PRUDP connection forcefully", self.local_session_id)
 
 		packet = PRUDPPacket(TYPE_DISCONNECT, 0)
-		for _ in range(3):
+		for i in range(3):
 			await self.send_packet(packet)
 		await self.cleanup()
 

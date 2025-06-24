@@ -70,10 +70,7 @@ def check_simple(version):
 	return check(handler, version)
 
 
-def check_request(expected_request, version, *, response=None):
-	if response is None:
-		response = {}
-
+def check_request(expected_request, version, *, response={}):
 	async def handler(client, request):
 		request.json_options["ensure_ascii"] = False
 

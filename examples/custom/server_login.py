@@ -11,7 +11,7 @@ async def main():
 	s.configure("ridfebb9", 20000)
 
 	async with backend.connect(s, "127.0.0.1", 1223) as be:
-		async with be.login_guest() as _client:
+		async with be.login_guest() as client:
 			pass
 
 

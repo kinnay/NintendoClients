@@ -23,7 +23,7 @@ OUTPUT_PATH = "/path/to/folder"
 
 async def retry(worker, n=3):
 	# If the download / connection fails, retry just in case
-	for _ in range(n):
+	for i in range(n):
 		try:
 			return await worker
 		except anyio.BrokenResourceError:
