@@ -1,0 +1,67 @@
+# Same as Black.
+line-length = 88
+
+# Assume Python 3.8+.
+target-version = "py38"
+
+[format]
+indent-style = "tab"
+
+[lint]
+select = [
+    "F",   # Pyflakes (errors)
+    "E9",  # pycodestyle (syntax errors)
+    "B",   # flake8-bugbear (potential bugs)
+]
+
+# Ignore rules that conflict with existing code style
+ignore = [
+    "W191",  # tab-indentation (project uses tabs)
+    "E501",  # line-too-long (allow existing long lines)
+    "W293",  # blank-line-with-whitespace
+    "W291",  # trailing-whitespace
+    "W292",  # missing-newline-at-end-of-file
+]
+
+fixable = ["ALL"]
+unfixable = []
+
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[lint.per-file-ignores]
+# Tests can use magic values, assertions, etc.
+"tests/**" = ["PLR2004", "S101", "T20"]
+# Examples can have print statements
+"examples/**" = ["T20"]
+
+[lint.isort]
+combine-as-imports = true
+split-on-trailing-comma = false
+
+[lint.flake8-quotes]
+inline-quotes = "double"
