@@ -1,6 +1,6 @@
-
 from nintendo import nnas, miis
 import anyio
+
 
 async def main():
 	nas = nnas.NNASClient()
@@ -12,11 +12,11 @@ async def main():
 
 	info = miis.MiiData.parse(mii.data)
 	print("Mii:")
-	print("\tBirthday: %i-%i" %(info.birth_day, info.birth_month))
+	print("\tBirthday: %i-%i" % (info.birth_day, info.birth_month))
 	print("\tCreator name:", info.creator_name)
 	print("\tMii color:", info.color)
-	print("\tMii size: %i%%" %(info.size / 128 * 100))
-	print("\tMii weight: %i%%" %(info.fatness / 128 * 100))
+	print("\tMii size: %i%%" % (info.size / 128 * 100))
+	print("\tMii weight: %i%%" % (info.fatness / 128 * 100))
 	print("\tGender:", ["Male", "Female"][info.gender])
 	print("\t----------")
 	print("\tBlush style:", info.blush_type)
@@ -76,6 +76,7 @@ async def main():
 
 	print("Images:")
 	for image in mii.images:
-		print("\t%s" %image.url)
+		print("\t%s" % image.url)
+
 
 anyio.run(main)

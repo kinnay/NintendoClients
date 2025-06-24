@@ -1,4 +1,3 @@
-
 from nintendo.switch import sun, atumn
 from nintendo import switch
 import anyio
@@ -8,7 +7,7 @@ import struct
 import subprocess
 
 
-SYSTEM_VERSION = 2015 # 20.1.5
+SYSTEM_VERSION = 2015  # 20.1.5
 
 # You can dump prod.keys with Lockpick_RCM and
 # PRODINFO from hekate (decrypt it if necessary)
@@ -31,53 +30,74 @@ async def retry(worker, n=3):
 			print("Retrying...")
 	raise Exception("Download failed!")
 
-async def download_content_metadata(atumn_client, title_id, title_version, *, system_update=False):
+
+async def download_content_metadata(
+	atumn_client, title_id, title_version, *, system_update=False
+):
 	# Download NCA
-	print("Downloading metadata NCA for title %016x..." %title_id)
-	data = await retry(atumn_client.download_content_metadata(title_id, title_version, system_update=system_update))
-	
+	print("Downloading metadata NCA for title %016x..." % title_id)
+	data = await retry(
+		atumn_client.download_content_metadata(
+			title_id, title_version, system_update=system_update
+		)
+	)
+
 	# Save data to file
-	nca_path = OUTPUT_PATH + "/metadata_nca/%016x.nca" %title_id
+	nca_path = OUTPUT_PATH + "/metadata_nca/%016x.nca" % title_id
 	with open(nca_path, "wb") as f:
 		f.write(data)
-	
+
 	# Extract CNMT from NCA
 	section0dir = OUTPUT_PATH + "/cnmt"
-	output = subprocess.check_output([PATH_HACTOOL, nca_path, "--section0dir", section0dir, "--disablekeywarns"])
-	return re.search("\nSaving .* to (.*)\\.\\.\\.\n", output.decode())[1] # Return the filename
+	output = subprocess.check_output(
+		[PATH_HACTOOL, nca_path, "--section0dir", section0dir, "--disablekeywarns"]
+	)
+	return re.search("\nSaving .* to (.*)\\.\\.\\.\n", output.decode())[
+		1
+	]  # Return the filename
+
 
 async def download_content(atumn_client, title_id, metadata_path):
 	# Parse the CNMT
 	with open(metadata_path, "rb") as f:
 		data = f.read()
-	
+
 	content_count = struct.unpack_from("<H", data, 0x10)[0]
-	if content_count == 0: return # Nothing to do
+	if content_count == 0:
+		return  # Nothing to do
 	elif content_count > 1:
 		raise ValueError("We currently assume that each title has no more than one NCA")
-	
+
 	# Download content NCA
 	content_id = data[0x40:0x50].hex()
 	content_size = struct.unpack_from("<I", data, 0x50)[0]
 
-	print("Downloading content NCA for title %016x... (%i bytes)" %(title_id, content_size))
+	print(
+		"Downloading content NCA for title %016x... (%i bytes)"
+		% (title_id, content_size)
+	)
 	data = await retry(atumn_client.download_content(content_id))
 
 	# Save data to file
-	nca_path = OUTPUT_PATH + "/content_nca/%016x.nca" %title_id
+	nca_path = OUTPUT_PATH + "/content_nca/%016x.nca" % title_id
 	with open(nca_path, "wb") as f:
 		f.write(data)
-	
+
 	# Unpacking content NCA
-	content_path = OUTPUT_PATH + "/titles/%016x" %title_id
+	content_path = OUTPUT_PATH + "/titles/%016x" % title_id
 	os.makedirs(content_path, exist_ok=True)
 
 	exefsdir = content_path + "/exefs"
 	romfsdir = content_path + "/romfs"
 
 	args = [
-		PATH_HACTOOL, nca_path, "--exefsdir", exefsdir,
-		"--romfsdir", romfsdir, "--disablekeywarns"
+		PATH_HACTOOL,
+		nca_path,
+		"--exefsdir",
+		exefsdir,
+		"--romfsdir",
+		romfsdir,
+		"--disablekeywarns",
 	]
 	subprocess.run(args, stdout=subprocess.DEVNULL)
 
@@ -87,17 +107,17 @@ async def download_content(atumn_client, title_id, metadata_path):
 		with open(npdm_path, "rb") as f:
 			name = f.read()[0x20:0x30].rstrip(b"\0").decode()
 			if name != "Application":
-				os.rename(content_path, OUTPUT_PATH + "/titles/%s" %name)
+				os.rename(content_path, OUTPUT_PATH + "/titles/%s" % name)
 
 
 async def main():
 	keys = switch.load_keys(PATH_KEYS)
-	
+
 	prodinfo = switch.ProdInfo(keys, PATH_PRODINFO)
 	device_cert = prodinfo.get_tls_cert()
 	device_cert_key = prodinfo.get_tls_key()
 	device_id = prodinfo.get_device_id()
-	
+
 	sun_client = sun.SunClient(device_id)
 	sun_client.set_system_version(SYSTEM_VERSION)
 	sun_client.set_certificate(device_cert, device_cert_key)
@@ -118,32 +138,36 @@ async def main():
 	title_version = response["system_update_metas"][0]["title_version"]
 
 	print("Latest system update:")
-	print("    Title id: %016x" %title_id)
-	print("    Title version: %i" %title_version)
+	print("    Title id: %016x" % title_id)
+	print("    Title version: %i" % title_version)
 	print()
 
 	# Download metadata NCA for the system update title
-	await download_content_metadata(atumn_client, title_id, title_version, system_update=True)
+	await download_content_metadata(
+		atumn_client, title_id, title_version, system_update=True
+	)
 
 	# Parse CNMT of the system update title
-	with open(OUTPUT_PATH + "/cnmt/SystemUpdate_%016x.cnmt" %title_id, "rb") as f:
+	with open(OUTPUT_PATH + "/cnmt/SystemUpdate_%016x.cnmt" % title_id, "rb") as f:
 		data = f.read()
-	
+
 	titles = []
 	metadata_count = struct.unpack_from("<H", data, 0x12)[0]
 	for i in range(metadata_count):
 		title_id, title_version = struct.unpack_from("<QI", data, 0x24 + i * 0x10)
 		titles.append((title_id, title_version))
-	
+
 	# Download and unpack remaining metadata NCAs
 	metadata_paths = {}
 	for title_id, title_version in titles:
-		metadata_path = await download_content_metadata(atumn_client, title_id, title_version)
+		metadata_path = await download_content_metadata(
+			atumn_client, title_id, title_version
+		)
 		metadata_paths[title_id] = metadata_path
-	
+
 	# Download and unpack content NCAs
 	for title_id, path in metadata_paths.items():
 		await download_content(atumn_client, title_id, path)
-		
+
 
 anyio.run(main)

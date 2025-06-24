@@ -1,4 +1,3 @@
-
 from Crypto.Util.Padding import pad
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
@@ -10,10 +9,11 @@ import struct
 import base64
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
-RSA_MODULUS =  int(
+RSA_MODULUS = int(
 	"2903599220185509629948246004681271806662185201109683699434876284"
 	"9306378942456577312580648895443616535088601867223713942187399041"
 	"4854872772034425863387471719375473684104853507768450203982749294"
@@ -30,10 +30,10 @@ RSA_EXPONENT = 65537
 
 
 USER_AGENT = {
-	 900: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
-	 901: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
-	 910: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
-	 920: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
+	900: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
+	901: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
+	910: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
+	920: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 9.3.0.0; Add-on 9.3.0.0)",
 	1000: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
 	1001: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
 	1002: "libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 10.4.0.0; Add-on 10.4.0.0)",
@@ -79,10 +79,10 @@ USER_AGENT = {
 }
 
 API_VERSION = {
-	 900: 3,
-	 901: 3,
-	 910: 3,
-	 920: 3,
+	900: 3,
+	901: 3,
+	910: 3,
+	920: 3,
 	1000: 3,
 	1001: 3,
 	1002: 3,
@@ -139,12 +139,12 @@ class AAuthError(Exception):
 	INTERNAL_SERVER_ERROR = 112
 	GENERIC = 118
 	REGION_MISMATCH = 121
-	
+
 	def __init__(self, response):
 		self.response = response
 		self.code = int(response.json["errors"][0]["code"])
 		self.message = response.json["errors"][0]["message"]
-	
+
 	def __str__(self):
 		return self.message
 
@@ -152,35 +152,37 @@ class AAuthError(Exception):
 class AAuthClient:
 	def __init__(self):
 		self.request_callback = http.request
-		
+
 		self.context = tls.TLSContext()
 		self.context_overridden = False
-		
+
 		self.host_overridden = False
 
 		self.power_state = "FA"
 
 		self.set_system_version(LATEST_VERSION)
 
-	def set_request_callback(self, callback): self.request_callback = callback
+	def set_request_callback(self, callback):
+		self.request_callback = callback
 
 	def set_context(self, context):
 		self.context = context
 		self.context_overridden = True
-	
+
 	def set_certificate(self, cert, key):
 		self.context.set_certificate(cert, key)
-	
+
 	def set_host(self, host):
 		self.host = host
 		self.host_overridden = True
-	
-	def set_power_state(self, state): self.power_state = state
-	
+
+	def set_power_state(self, state):
+		self.power_state = state
+
 	def set_system_version(self, version):
 		if version not in USER_AGENT:
 			raise ValueError("Unknown system version")
-		
+
 		self.system_version = version
 		self.user_agent = USER_AGENT[version]
 		self.api_version = API_VERSION[version]
@@ -191,14 +193,14 @@ class AAuthClient:
 		else:
 			caname = "Nintendo_CA_G3.der"
 			host = "aauth-lp1.ndas.srv.nintendo.net"
-		
+
 		if not self.context_overridden:
 			ca = resources.certificate(caname)
 			self.context.set_authority(ca)
-		
+
 		if not self.host_overridden:
 			self.host = host
-	
+
 	async def request(self, req, use_power_state):
 		if self.system_version < 1800:
 			req.headers["Host"] = self.host
@@ -211,7 +213,7 @@ class AAuthClient:
 		elif self.system_version < 2000:
 			req.headers["Host"] = self.host
 			req.headers["Accept"] = "*/*"
-			req.headers["Content-Type"] = "application/x-www-form-urlencoded"	
+			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
 			if use_power_state:
 				req.headers["X-Nintendo-PowerState"] = self.power_state
 			req.headers["Content-Length"] = 0
@@ -223,7 +225,7 @@ class AAuthClient:
 			if use_power_state:
 				req.headers["X-Nintendo-PowerState"] = self.power_state
 			req.headers["Content-Length"] = 0
-		
+
 		response = await self.request_callback(self.host, req, self.context)
 		if response.json and "errors" in response.json:
 			logger.error("AAuth server returned errors:")
@@ -232,7 +234,7 @@ class AAuthClient:
 			raise AAuthError(response)
 		response.raise_if_error()
 		return response
-	
+
 	def verify_ticket(self, ticket, title_id):
 		# Verify ticket, in case someone accidentally
 		# provides the wrong ticket
@@ -244,33 +246,33 @@ class AAuthClient:
 			raise ValueError("Ticket has different title id")
 		if struct.unpack_from(">Q", ticket, 0x2A8)[0] != ticket[0x285]:
 			raise ValueError("Ticket has inconsistent master key revision")
-	
+
 	def verify_token(self, token):
 		# Just a basic check, to make sure that people do not
 		# accidentally pass a ticket instead of a JWT
 		if not isinstance(token, str) or token.count(".") != 2:
 			raise ValueError("Cert must contain a valid JWT")
-	
+
 	async def get_time(self):
 		req = http.HTTPRequest.get("/v1/time")
 		req.headers["Host"] = self.host
 		req.headers["Accept"] = "*/*"
-		
+
 		response = await http.request(self.host, req, self.context)
 		response.raise_if_error()
-		
+
 		time = int(response.headers["X-NINTENDO-UNIXTIME"])
 		ip = response.headers["X-NINTENDO-GLOBAL-IP"]
 		return time, ip
-	
-	async def challenge(self, device_token):
-		param_name = "&device_auth_token" if self.system_version < 1800 else "device_auth_token"
 
-		req = http.HTTPRequest.post("/v%i/challenge" %self.api_version)
-		req.rawform = {
-			param_name: device_token
-		}
-		
+	async def challenge(self, device_token):
+		param_name = (
+			"&device_auth_token" if self.system_version < 1800 else "device_auth_token"
+		)
+
+		req = http.HTTPRequest.post("/v%i/challenge" % self.api_version)
+		req.rawform = {param_name: device_token}
+
 		response = await self.request(req, False)
 		return response.json
 
@@ -279,26 +281,26 @@ class AAuthClient:
 	async def auth_nocert(self, title_id, title_version, device_token):
 		auth_type = "media_type" if self.api_version < 5 else "auth_type"
 
-		req = http.HTTPRequest.post("/v%i/application_auth_token" %self.api_version)
+		req = http.HTTPRequest.post("/v%i/application_auth_token" % self.api_version)
 		req.form = {
-			"application_id": "%016x" %title_id,
-			"application_version": "%08x" %title_version,
+			"application_id": "%016x" % title_id,
+			"application_version": "%08x" % title_version,
 			"device_auth_token": device_token,
-			auth_type: "NO_CERT"
+			auth_type: "NO_CERT",
 		}
-		
+
 		response = await self.request(req, True)
 		return response.json
 
 	async def auth_system(self, title_id, title_version, device_token):
 		auth_type = "media_type" if self.api_version < 5 else "auth_type"
 
-		req = http.HTTPRequest.post("/v%i/application_auth_token" %self.api_version)
+		req = http.HTTPRequest.post("/v%i/application_auth_token" % self.api_version)
 		req.form = {
-			"application_id": "%016x" %title_id,
-			"application_version": "%08x" %title_version,
+			"application_id": "%016x" % title_id,
+			"application_version": "%08x" % title_version,
 			"device_auth_token": device_token,
-			auth_type: "SYSTEM"
+			auth_type: "SYSTEM",
 		}
 
 		response = await self.request(req, True)
@@ -307,48 +309,61 @@ class AAuthClient:
 	async def auth_digital(self, title_id, title_version, device_token, cert):
 		auth_type = "media_type" if self.api_version < 5 else "auth_type"
 
-		req = http.HTTPRequest.post("/v%i/application_auth_token" %self.api_version)
+		req = http.HTTPRequest.post("/v%i/application_auth_token" % self.api_version)
 		req.form = {
-			"application_id": "%016x" %title_id,
-			"application_version": "%08x" %title_version,
+			"application_id": "%016x" % title_id,
+			"application_version": "%08x" % title_version,
 			"device_auth_token": device_token,
-			auth_type: "DIGITAL"
+			auth_type: "DIGITAL",
 		}
-		
+
 		if self.api_version == 3:
 			self.verify_ticket(cert, title_id)
-			
+
 			plain_key = get_random_bytes(16)
-			
+
 			aes = AES.new(plain_key, AES.MODE_CBC, iv=bytes(16))
 			encrypted_ticket = aes.encrypt(pad(cert, 16))
-			
+
 			rsa_key = RSA.construct((RSA_MODULUS, RSA_EXPONENT))
 			rsa = PKCS1_OAEP.new(rsa_key, SHA256)
 			encrypted_key = rsa.encrypt(plain_key)
-		
-			req.form["cert"] = base64.b64encode(encrypted_ticket, b"-_").decode().rstrip("=")
-			req.form["cert_key"] = base64.b64encode(encrypted_key, b"-_").decode().rstrip("=")
-		
+
+			req.form["cert"] = (
+				base64.b64encode(encrypted_ticket, b"-_").decode().rstrip("=")
+			)
+			req.form["cert_key"] = (
+				base64.b64encode(encrypted_key, b"-_").decode().rstrip("=")
+			)
+
 		elif self.api_version >= 4:
 			self.verify_token(cert)
-			
+
 			req.form["cert"] = cert
-		
+
 		response = await self.request(req, True)
 		return response.json
 
-	async def auth_gamecard(self, title_id, title_version, device_token, cert, gvt, challenge=None, challenge_src=None):
+	async def auth_gamecard(
+		self,
+		title_id,
+		title_version,
+		device_token,
+		cert,
+		gvt,
+		challenge=None,
+		challenge_src=None,
+	):
 		auth_type = "media_type" if self.api_version < 5 else "auth_type"
 
-		req = http.HTTPRequest.post("/v%i/application_auth_token" %self.api_version)
+		req = http.HTTPRequest.post("/v%i/application_auth_token" % self.api_version)
 		req.form = {
-			"application_id": "%016x" %title_id,
-			"application_version": "%08x" %title_version,
+			"application_id": "%016x" % title_id,
+			"application_version": "%08x" % title_version,
 			"device_auth_token": device_token,
 			auth_type: "GAMECARD",
 			"gvt": base64.b64encode(gvt, b"-_").decode().rstrip("="),
-			"cert": base64.b64encode(cert, b"-_").decode().rstrip("=")
+			"cert": base64.b64encode(cert, b"-_").decode().rstrip("="),
 		}
 
 		if self.api_version >= 5:

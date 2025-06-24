@@ -1,4 +1,3 @@
-
 error_names = {
 	0x00010001: "Core::Unknown",
 	0x00010002: "Core::NotImplemented",
@@ -19,13 +18,10 @@ error_names = {
 	0x00010011: "Core::InvalidSequence",
 	0x00010012: "Core::SystemError",
 	0x00010013: "Core::Cancelled",
-	
 	0x00020001: "DDL::InvalidSignature",
 	0x00020002: "DDL::IncorrectVersion",
-	
 	0x00030001: "RendezVous::ConnectionFailure",
 	0x00030002: "RendezVous::NotAuthenticated",
-
 	0x00030064: "RendezVous::InvalidUsername",
 	0x00030065: "RendezVous::InvalidPassword",
 	0x00030066: "RendezVous::UsernameAlreadyExists",
@@ -44,7 +40,6 @@ error_names = {
 	0x00030073: "RendezVous::SessionVoid",
 	0x00030075: "RendezVous::DDLMismatch",
 	0x00030076: "RendezVous::InvalidConfiguration",
-	
 	0x000300C8: "RendezVous::SessionFull",
 	0x000300C9: "RendezVous::InvalidGatheringPassword",
 	0x000300CA: "RendezVous::WithoutParticipationPeriod",
@@ -72,7 +67,6 @@ error_names = {
 	0x000300E0: "RendezVous::AccountTemporarilyDisabled",
 	0x000300E1: "RendezVous::PartiallyServiceClosed",
 	0x000300E2: "RendezVous::ConnectionDisconnectedForConcurrentLogin",
-	
 	0x00040001: "PythonCore::Exception",
 	0x00040002: "PythonCore::TypeError",
 	0x00040003: "PythonCore::IndexError",
@@ -83,7 +77,6 @@ error_names = {
 	0x00040008: "PythonCore::OperationError",
 	0x00040009: "PythonCore::ConversionError",
 	0x0004000A: "PythonCore::ValidationError",
-	
 	0x00050001: "Transport::Unknown",
 	0x00050002: "Transport::ConnectionFailure",
 	0x00050003: "Transport::InvalidUrl",
@@ -116,7 +109,6 @@ error_names = {
 	0x0005001F: "Transport::PacketBufferFull",
 	0x00050020: "Transport::NatTraversalError",
 	0x00050021: "Transport::NatCheckError",
-	
 	0x00060001: "DOCore::StationNotReached",
 	0x00060002: "DOCore::TargetStationDisconnect",
 	0x00060003: "DOCore::LocalStationLeaving",
@@ -139,7 +131,6 @@ error_names = {
 	0x00060014: "DOCore::StationInconsitency",
 	0x00060015: "DOCore::AbnormalMasterState",
 	0x00060016: "DOCore::VersionMismatch",
-	
 	0x00650000: "FPD::NotInitialized",
 	0x00650001: "FPD::AlreadyInitialized",
 	0x00650002: "FPD::NotConnected",
@@ -183,7 +174,6 @@ error_names = {
 	0x0065002B: "FPD::NotificationNotFound",
 	0x0065002C: "FPD::PreferenceNotInitialized",
 	0x0065002D: "FPD::FriendRequestNotAllowed",
-	
 	0x00670001: "Ranking::NotInitialized",
 	0x00670002: "Ranking::InvalidArgument",
 	0x00670003: "Ranking::RegistrationError",
@@ -193,7 +183,6 @@ error_names = {
 	0x00670009: "Ranking::PermissionDenied",
 	0x0067000A: "Ranking::Unknown",
 	0x0067000B: "Ranking::NotImplemented",
-	
 	0x00680001: "Authentication::NASAuthenticateError",
 	0x00680002: "Authentication::TokenParseError",
 	0x00680003: "Authentication::HttpConnectionError",
@@ -218,7 +207,6 @@ error_names = {
 	0x00680016: "Authentication::NetworkServiceLicenseSystemError",
 	0x00680017: "Authentication::NetworkServiceLicenseError3",
 	0x00680018: "Authentication::NetworkServiceLicenseError4",
-	
 	0x00690001: "DataStore::Unknown",
 	0x00690002: "DataStore::InvalidArgument",
 	0x00690003: "DataStore::PermissionDenied",
@@ -232,7 +220,6 @@ error_names = {
 	0x0069000B: "DataStore::OperationNotAllowed",
 	0x0069000C: "DataStore::InvalidPassword",
 	0x0069000D: "DataStore::ValueNotEqual",
-	
 	0x006C0001: "ServiceItem::Unknown",
 	0x006C0002: "ServiceItem::InvalidArgument",
 	0x006C0003: "ServiceItem::EShopUnknownHttpError",
@@ -240,7 +227,6 @@ error_names = {
 	0x006C0005: "ServiceItem::NotOwned",
 	0x006C0006: "ServiceItem::InvalidLimitationType",
 	0x006C0007: "ServiceItem::ConsumptionRightShortage",
-	
 	0x006F0001: "MatchmakeReferee::Unknown",
 	0x006F0002: "MatchmakeReferee::InvalidArgument",
 	0x006F0003: "MatchmakeReferee::AlreadyExists",
@@ -250,16 +236,13 @@ error_names = {
 	0x006F0007: "MatchmakeReferee::RoundNotFound",
 	0x006F0008: "MatchmakeReferee::RoundArbitrated",
 	0x006F0009: "MatchmakeReferee::RoundNotArbitrated",
-	
 	0x00700001: "Subscriber::Unknown",
 	0x00700002: "Subscriber::InvalidArgument",
 	0x00700003: "Subscriber::OverLimit",
 	0x00700004: "Subscriber::PermissionDenied",
-	
 	0x00710001: "Ranking2::Unknown",
 	0x00710002: "Ranking2::InvalidArgument",
 	0x00710003: "Ranking2::InvalidScore",
-	
 	0x00720001: "SmartDeviceVoiceChat::Unknown",
 	0x00720002: "SmartDeviceVoiceChat::InvalidArgument",
 	0x00720003: "SmartDeviceVoiceChat::InvalidResponse",
@@ -280,16 +263,13 @@ error_names = {
 	0x00720012: "SmartDeviceVoiceChat::NetworkServiceLicenseRequired",
 	0x00720013: "SmartDeviceVoiceChat::AccountLibraryError",
 	0x00720014: "SmartDeviceVoiceChat::GameModeNotFound",
-	
 	0x00730001: "Screening::Unknown",
 	0x00730002: "Screening::InvalidArgument",
 	0x00730003: "Screening::NotFound",
-	
 	0x00740001: "Custom::Unknown",
-
 	0x00750001: "Ess::Unknown",
 	0x00750002: "Ess::GameSessionError",
-	0x00750003: "Ess::GameSessionMaintenance"
+	0x00750003: "Ess::GameSessionMaintenance",
 }
 
 error_codes = {name: code for code, name in error_names.items()}

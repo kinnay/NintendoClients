@@ -1,16 +1,15 @@
-
 from nintendo.switch import dauth, aauth, baas, dragons
-from nintendo.nex import backend, authentication, \
-	settings, datastore_smm2 as datastore
+from nintendo.nex import backend, authentication, settings, datastore_smm2 as datastore
 from nintendo import switch
 from anynet import http
 import anyio
 
 import logging
+
 logging.basicConfig(level=logging.INFO)
 
 
-SYSTEM_VERSION = 2015 # 20.1.5
+SYSTEM_VERSION = 2015  # 20.1.5
 
 # You can get your user id and password from
 # su/baas/<guid>.dat in save folder 8000000000000010.
@@ -22,9 +21,9 @@ SYSTEM_VERSION = 2015 # 20.1.5
 # Alternatively, you can set up a mitm on your Switch
 # and extract them from the request to /1.0.0/login
 
-BAAS_USER_ID = 0x0123456789abcdef # 16 hex digits
-BAAS_PASSWORD = "..." # Should be 40 characters
-NA_COUNTRY = "JP" # Country of your Nintendo account
+BAAS_USER_ID = 0x0123456789ABCDEF  # 16 hex digits
+BAAS_PASSWORD = "..."  # Should be 40 characters
+NA_COUNTRY = "JP"  # Country of your Nintendo account
 
 # You can dump prod.keys with Lockpick_RCM and
 # PRODINFO from hekate (decrypt it if necessary)
@@ -37,8 +36,8 @@ PATH_PRODINFO = "/path/to/PRODINFO"
 # Alternatively, they can be obtained from the dragons server
 # by calling publish_device_linked_elicenses (see docs), or with
 # a mitm on your Switch.
-ELICENSE_ID = "..." # 32 hex digits
-NA_ID = 0x0123456789abcdef # 16 hex digits
+ELICENSE_ID = "..."  # 32 hex digits
+NA_ID = 0x0123456789ABCDEF  # 16 hex digits
 
 PENNE_ID = "..."
 
@@ -54,7 +53,7 @@ NEX_VERSION = 40605
 CLIENT_VERSION = 60
 
 
-HOST = "g%08x-lp1.s.n.srv.nintendo.net" %GAME_SERVER_ID
+HOST = "g%08x-lp1.s.n.srv.nintendo.net" % GAME_SERVER_ID
 PORT = 443
 
 
@@ -63,17 +62,35 @@ GameStyles = ["SMB1", "SMB3", "SMW", "NSMBU", "SM3DW"]
 Difficulties = ["Easy", "Normal", "Expert", "Super expert"]
 
 CourseThemes = [
-	"Overworld", "Underground", "Castle", "Airship",
-	"Underwater", "Ghost house", "Snow", "Desert",
-	"Sky", "Forest"
+	"Overworld",
+	"Underground",
+	"Castle",
+	"Airship",
+	"Underwater",
+	"Ghost house",
+	"Snow",
+	"Desert",
+	"Sky",
+	"Forest",
 ]
 
 TagNames = [
-	"None", "Standard", "Puzzle solving", "Speedrun",
-	"Autoscroll", "Auto mario", "Short and sweet",
-	"Multiplayer versus", "Themed", "Music", "Art",
-	"Technical", "Shooter", "Boss battle",
-	"Single player", "Link"
+	"None",
+	"Standard",
+	"Puzzle solving",
+	"Speedrun",
+	"Autoscroll",
+	"Auto mario",
+	"Short and sweet",
+	"Multiplayer versus",
+	"Themed",
+	"Music",
+	"Art",
+	"Technical",
+	"Shooter",
+	"Boss battle",
+	"Single player",
+	"Link",
 ]
 
 
@@ -81,8 +98,8 @@ def format_time(milliseconds):
 	seconds = (milliseconds // 1000) % 60
 	minutes = (milliseconds // 1000) // 60
 	milliseconds = milliseconds % 1000
-	return "%02i:%02i.%03i" %(minutes, seconds, milliseconds)
-	
+	return "%02i:%02i.%03i" % (minutes, seconds, milliseconds)
+
 
 async def download_thumbnail(store, info, filename):
 	response = await store.get_req_get_info_headers_info(info.data_type)
@@ -95,48 +112,52 @@ async def download_thumbnail(store, info, filename):
 
 async def main():
 	keys = switch.load_keys(PATH_KEYS)
-	
+
 	info = switch.ProdInfo(keys, PATH_PRODINFO)
 	cert = info.get_tls_cert()
 	pkey = info.get_tls_key()
-	
+
 	dauth_client = dauth.DAuthClient(keys)
 	dauth_client.set_certificate(cert, pkey)
 	dauth_client.set_system_version(SYSTEM_VERSION)
 
 	dauth_cache = dauth.DAuthCache(dauth_client)
-	
+
 	dragons_client = dragons.DragonsClient()
 	dragons_client.set_certificate(cert, pkey)
 	dragons_client.set_system_version(SYSTEM_VERSION)
-	
+
 	aauth_client = aauth.AAuthClient()
 	aauth_client.set_certificate(cert, pkey)
 	aauth_client.set_system_version(SYSTEM_VERSION)
-	
+
 	baas_client = baas.BAASClient()
 	baas_client.set_system_version(SYSTEM_VERSION)
-	
+
 	# Request a device authentication token for dragons
 	response = await dauth_cache.device_token(dauth.CLIENT_ID_DRAGONS)
 	device_token_dragons = response["device_auth_token"]
-	
+
 	# Request a device authentication token for aauth and bass
 	response = await dauth_cache.device_token(dauth.CLIENT_ID_BAAS)
 	device_token_baas = response["device_auth_token"]
-	
+
 	# Request a contents authorization token from dragons
-	response = await dragons_client.contents_authorization_token_for_aauth(device_token_dragons, ELICENSE_ID, NA_ID, TITLE_ID)
+	response = await dragons_client.contents_authorization_token_for_aauth(
+		device_token_dragons, ELICENSE_ID, NA_ID, TITLE_ID
+	)
 	contents_token = response["contents_authorization_token"]
-	
+
 	# Request an application authentication token
-	response = await aauth_client.auth_digital(TITLE_ID, TITLE_VERSION, device_token_baas, contents_token)
+	response = await aauth_client.auth_digital(
+		TITLE_ID, TITLE_VERSION, device_token_baas, contents_token
+	)
 	app_token = response["application_auth_token"]
-	
+
 	# Request an anonymous access token for baas
 	response = await baas_client.authenticate(device_token_baas, PENNE_ID)
 	access_token = response["accessToken"]
-	
+
 	# Log in on the baas server
 	response = await baas_client.login(
 		BAAS_USER_ID, BAAS_PASSWORD, access_token, app_token, NA_COUNTRY
@@ -147,15 +168,15 @@ async def main():
 	# Set up authentication info for nex server
 	auth_info = authentication.AuthenticationInfo()
 	auth_info.token = id_token
-	auth_info.ngs_version = 4 #Switch
+	auth_info.ngs_version = 4  # Switch
 	auth_info.token_type = 2
-	
+
 	s = settings.load("switch")
 	s.configure(ACCESS_KEY, NEX_VERSION, CLIENT_VERSION)
 	async with backend.connect(s, HOST, PORT) as be:
 		async with be.login(str(user_id), auth_info=auth_info) as client:
 			store = datastore.DataStoreClientSMM2(client)
-			
+
 			param = datastore.GetUserOrCourseParam()
 			param.code = COURSE_ID
 			param.course_option = datastore.CourseOption.ALL
@@ -189,8 +210,12 @@ async def main():
 			print("\tLast active:", user.last_active)
 
 			# Download thumbnails
-			await download_thumbnail(store, course.one_screen_thumbnail, "thumbnail_onescreen.jpg")
-			await download_thumbnail(store, course.entire_thumbnail, "thumbnail_entire.jpg")
+			await download_thumbnail(
+				store, course.one_screen_thumbnail, "thumbnail_onescreen.jpg"
+			)
+			await download_thumbnail(
+				store, course.entire_thumbnail, "thumbnail_entire.jpg"
+			)
 
 			# Download level file
 			param = datastore.DataStorePrepareGetParam()
@@ -201,5 +226,6 @@ async def main():
 			response.raise_if_error()
 			with open("level.bin", "wb") as f:
 				f.write(response.body)
+
 
 anyio.run(main)
