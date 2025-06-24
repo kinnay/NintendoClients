@@ -20,6 +20,8 @@ ignore = [
     "W293",  # blank-line-with-whitespace
     "W291",  # trailing-whitespace
     "W292",  # missing-newline-at-end-of-file
+    "F841",  # 'local variable never used' errors
+    "F402",  # Overshadowed errors
 ]
 
 fixable = ["ALL"]
