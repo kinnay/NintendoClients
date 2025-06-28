@@ -32,6 +32,7 @@ jobs:
               run: |
                   pip install -e .
                   python3 setup.py install
+                  pip install trio==0.30.0
 
             - name: Run Pytest
               run: pytest --maxfail=1 --disable-warnings -q
