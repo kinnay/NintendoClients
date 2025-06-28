@@ -1,0 +1,28 @@
+name: Pytest
+
+on:
+    push:
+        branches: [master, main]
+    pull_request:
+        branches: [master, main]
+
+jobs:
+    pytest:
+        runs-on: ubuntu-latest
+        name: Check code quality with Pytest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Install Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install pytest
+
+            - name: Run Pytest
+              run: pytest --maxfail=1 --disable-warnings -q
