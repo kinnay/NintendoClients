@@ -9,7 +9,7 @@ on:
 jobs:
     pytest:
         runs-on: ubuntu-latest
-        name: Check code quality with Pytest
+        name: Check code with Pytest
 
         steps:
             - uses: actions/checkout@v4
@@ -35,4 +35,4 @@ jobs:
                   pip install trio==0.30.0
 
             - name: Run Pytest
-              run: pytest --maxfail=1 --disable-warnings -q
+              run: pytest
