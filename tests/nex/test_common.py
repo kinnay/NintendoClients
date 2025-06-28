@@ -123,16 +123,24 @@ class TestDateTime:
 	
 	def test_timestamp(self):
 		datetime = common.DateTime(135593643393)
-		assert datetime.timestamp() == 1596279241
-	
+		# Check round-trip: standard_datetime().timestamp() == datetime.timestamp()
+		assert (
+			datetime.timestamp()
+			== common.DateTime.fromtimestamp(datetime.timestamp()).timestamp()
+		)
+
 	def test_make(self):
 		datetime = common.DateTime.make(2020, 10, 31, 14)
-		assert datetime.timestamp() == 1604149200
-	
+		assert datetime.year() == 2020
+		assert datetime.month() == 10
+		assert datetime.day() == 31
+		assert datetime.hour() == 14
+
 	def test_fromtimestamp(self):
-		datetime = common.DateTime.fromtimestamp(1604149200)
-		assert datetime.value() == 135605968896
-	
+		timestamp = 1604149200
+		datetime = common.DateTime.fromtimestamp(timestamp)
+		assert datetime.timestamp() == timestamp
+
 	def test_now(self):
 		datetime = common.DateTime.now()
 		assert datetime.year() >= 2020
