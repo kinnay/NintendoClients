@@ -229,15 +229,15 @@ class DateTime:
 		return datetime.datetime(
 			self.year(), self.month(), self.day(),
 			self.hour(), self.minute(), self.second(),
-			tzinfo=datetime.timezone.utc
+			tzinfo=datetime.UTC
 		)
 	
 	def timestamp(self):
-		return int(self.standard_datetime().replace(tzinfo=None).timestamp())
+		return int(self.standard_datetime().timestamp())
 	
 	def __repr__(self):
 		return "%i-%i-%i %i:%02i:%02i" %(self.day(), self.month(), self.year(), self.hour(), self.minute(), self.second())
-		
+
 	@classmethod
 	def never(cls):
 		return cls(0)
@@ -252,7 +252,7 @@ class DateTime:
 		
 	@classmethod
 	def fromtimestamp(cls, timestamp):
-		dt = datetime.datetime.fromtimestamp(timestamp)
+		dt = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
 		return cls.make(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
 	
 	@classmethod
