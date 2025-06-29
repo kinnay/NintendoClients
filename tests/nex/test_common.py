@@ -123,15 +123,15 @@ class TestDateTime:
 	
 	def test_timestamp(self):
 		datetime = common.DateTime(135593643393)
-		assert datetime.timestamp() == 1596279241
+		assert datetime.timestamp() == 1596286441
 	
 	def test_make(self):
 		datetime = common.DateTime.make(2020, 10, 31, 14)
-		assert datetime.timestamp() == 1604149200
+		assert datetime.timestamp() == 1604152800
 	
 	def test_fromtimestamp(self):
 		datetime = common.DateTime.fromtimestamp(1604149200)
-		assert datetime.value() == 135605968896
+		assert datetime.value() == 135605964800
 	
 	def test_now(self):
 		datetime = common.DateTime.now()
