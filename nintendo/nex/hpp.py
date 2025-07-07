@@ -21,7 +21,7 @@ class HppClient:
 		
 		self.call_id = 1
 		
-		ca = resources.certificate("files/cert/Nintendo_Class_2_CA_G3.der")
+		ca = resources.certificate("Nintendo_Class_2_CA_G3.der")
 		self.context = tls.TLSContext()
 		self.context.set_authority(ca)
 
