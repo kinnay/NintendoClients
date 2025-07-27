@@ -48,6 +48,10 @@ struct CompetitionRankingUploadScoreParam {
 	qbuffer metadata;
 }
 
+struct ScorePack {
+	list<qbuffer> data;
+}
+
 protocol Ranking_MK8D : Ranking {
 	method(16) get_competition_ranking_score(CompetitionRankingGetScoreParam param) {
 		list<CompetitionRankingScoreInfo> info;
@@ -62,7 +66,11 @@ protocol Ranking_MK8D : Ranking {
 	}
 	
 	method upload_score_pack(RankingScoreData score_data, qbuffer metadata) {}
-	method get_score_pack;
+
+	method get_score_pack(list<pid> pids, uint32 unk) {
+		ScorePack result;
+	}
+
 	method execute_delete_score_job;
 	
 	method get_commmon_data_by_pid_list(list<pid> pids) {

@@ -27,6 +27,7 @@ Provides a client and server for the `RankingProtocolMK8D`. This page was genera
 <code>**class** [RankingResult](#rankingresult)([Structure](common.md))</code><br>
 <code>**class** [RankingScoreData](#rankingscoredata)([Structure](common.md))</code><br>
 <code>**class** [RankingStats](#rankingstats)([Structure](common.md))</code><br>
+<code>**class** [ScorePack](#scorepack)([Structure](common.md))</code><br>
 
 ## RankingClientMK8D
 <code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
@@ -88,6 +89,9 @@ Provides a client and server for the `RankingProtocolMK8D`. This page was genera
 
 <code>**async def upload_score_pack**(score_data: [RankingScoreData](#rankingscoredata), metadata: bytes) -> None</code><br>
 <span class="docs">Calls method `19` on the server.</span>
+
+<code>**async def get_score_pack**(pids: list[int], unk: int) -> [ScorePack](#scorepack)</code><br>
+<span class="docs">Calls method `20` on the server.</span>
 
 <code>**async def get_commmon_data_by_pid_list**(pids: list[int]) -> [CommonDataList](#commondatalist)</code><br>
 <span class="docs">Calls method `22` on the server.</span>
@@ -155,6 +159,9 @@ Provides a client and server for the `RankingProtocolMK8D`. This page was genera
 
 <code>**async def upload_score_pack**(client: [RMCClient](rmc.md#rmcclient), score_data: [RankingScoreData](#rankingscoredata), metadata: bytes) -> None</code><br>
 <span class="docs">Handler for method `19`. This method should be overridden by a subclass.</span>
+
+<code>**async def get_score_pack**(client: [RMCClient](rmc.md#rmcclient), pids: list[int], unk: int) -> [ScorePack](#scorepack)</code><br>
+<span class="docs">Handler for method `20`. This method should be overridden by a subclass.</span>
 
 <code>**async def get_commmon_data_by_pid_list**(client: [RMCClient](rmc.md#rmcclient), pids: list[int]) -> [CommonDataList](#commondatalist)</code><br>
 <span class="docs">Handler for method `22`. This method should be overridden by a subclass.</span>
@@ -355,5 +362,14 @@ The following fields are defined in this class:<br>
 The following fields are defined in this class:<br>
 <span class="docs">
 <code>stats: list[float]</code><br>
+</span><br>
+
+## ScorePack
+<code>**def _\_init__**()</code><br>
+<span class="docs">Creates a new `ScorePack` instance. Required fields must be filled in manually.</span>
+
+The following fields are defined in this class:<br>
+<span class="docs">
+<code>data: list[bytes]</code><br>
 </span><br>
 
