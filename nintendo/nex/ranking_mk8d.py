@@ -759,12 +759,12 @@ class RankingClientMK8D(RankingProtocolMK8D):
 			raise ValueError("Response is bigger than expected (got %i bytes, but only %i were read)" %(stream.size(), stream.tell()))
 		logger.info("RankingClientMK8D.upload_score_pack -> done")
 	
-	async def get_score_pack(self, pids, unk):
+	async def get_score_pack(self, pids, category):
 		logger.info("RankingClientMK8D.get_score_pack()")
 		#--- request ---
 		stream = streams.StreamOut(self.settings)
 		stream.list(pids, stream.pid)
-		stream.u32(unk)
+		stream.u32(category)
 		data = await self.client.request(self.PROTOCOL_ID, self.METHOD_GET_SCORE_PACK, stream.get())
 		
 		#--- response ---
@@ -1028,8 +1028,8 @@ class RankingServerMK8D(RankingProtocolMK8D):
 		logger.info("RankingServerMK8D.get_score_pack()")
 		#--- request ---
 		pids = input.list(input.pid)
-		unk = input.u32()
-		response = await self.get_score_pack(client, pids, unk)
+		category = input.u32()
+		response = await self.get_score_pack(client, pids, category)
 		
 		#--- response ---
 		if not isinstance(response, ScorePack):

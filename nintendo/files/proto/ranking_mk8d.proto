@@ -67,7 +67,7 @@ protocol Ranking_MK8D : Ranking {
 	
 	method upload_score_pack(RankingScoreData score_data, qbuffer metadata) {}
 
-	method get_score_pack(list<pid> pids, uint32 unk) {
+	method get_score_pack(list<pid> pids, uint32 category) {
 		ScorePack result;
 	}
 

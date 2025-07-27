@@ -90,7 +90,7 @@ Provides a client and server for the `RankingProtocolMK8D`. This page was genera
 <code>**async def upload_score_pack**(score_data: [RankingScoreData](#rankingscoredata), metadata: bytes) -> None</code><br>
 <span class="docs">Calls method `19` on the server.</span>
 
-<code>**async def get_score_pack**(pids: list[int], unk: int) -> [ScorePack](#scorepack)</code><br>
+<code>**async def get_score_pack**(pids: list[int], category: int) -> [ScorePack](#scorepack)</code><br>
 <span class="docs">Calls method `20` on the server.</span>
 
 <code>**async def get_commmon_data_by_pid_list**(pids: list[int]) -> [CommonDataList](#commondatalist)</code><br>
@@ -160,7 +160,7 @@ Provides a client and server for the `RankingProtocolMK8D`. This page was genera
 <code>**async def upload_score_pack**(client: [RMCClient](rmc.md#rmcclient), score_data: [RankingScoreData](#rankingscoredata), metadata: bytes) -> None</code><br>
 <span class="docs">Handler for method `19`. This method should be overridden by a subclass.</span>
 
-<code>**async def get_score_pack**(client: [RMCClient](rmc.md#rmcclient), pids: list[int], unk: int) -> [ScorePack](#scorepack)</code><br>
+<code>**async def get_score_pack**(client: [RMCClient](rmc.md#rmcclient), pids: list[int], category: int) -> [ScorePack](#scorepack)</code><br>
 <span class="docs">Handler for method `20`. This method should be overridden by a subclass.</span>
 
 <code>**async def get_commmon_data_by_pid_list**(client: [RMCClient](rmc.md#rmcclient), pids: list[int]) -> [CommonDataList](#commondatalist)</code><br>
