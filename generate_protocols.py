@@ -1,6 +1,5 @@
 
 import string
-import sys
 import os
 
 
