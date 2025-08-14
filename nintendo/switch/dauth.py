@@ -448,11 +448,25 @@ class DAuthClient:
 		
 	async def device_tokens(self, client_ids):
 		token_requests = [{"client_id": "%016x" %client_id} for client_id in client_ids]
-		return await self.request_tokens(token_requests, edge_tokens=False)
+		response = await self.request_tokens(token_requests, edge_tokens=False)
+
+		for result in response:
+			if "error" in result:
+				logger.error("  (%s) %s", result["error"]["code"], result["error"]["message"])
+				raise DAuthError(result["error"])
+
+		return response
 	
 	async def edge_tokens(self, token_requests):
 		token_requests = [{"client_id": "%016x" %client_id, "vendor_id": vendor_id} for client_id, vendor_id in token_requests]
-		return await self.request_tokens(token_requests, edge_tokens=True)
+		response = await self.request_tokens(token_requests, edge_tokens=True)
+
+		for result in response:
+			if "error" in result:
+				logger.error("  (%s) %s", result["error"]["code"], result["error"]["message"])
+				raise DAuthError(result["error"])
+
+		return response
 	
 	async def preload_device_tokens(self):
 		return await self.device_tokens(PRELOADED_DEVICE_TOKENS)
