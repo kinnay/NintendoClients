@@ -271,8 +271,14 @@ class DAuthError(Exception):
 	
 	def __init__(self, response):
 		self.response = response
-		self.code = int(response.json["errors"][0]["code"])
-		self.message = response.json["errors"][0]["message"]
+
+		if type(response) is dict:
+			# Returned in device_tokens and edge_tokens
+			self.code = int(response["code"])
+			self.message = response["message"]
+		else:
+			self.code = int(response.json["errors"][0]["code"])
+			self.message = response.json["errors"][0]["message"]
 	
 	def __str__(self):
 		return self.message
