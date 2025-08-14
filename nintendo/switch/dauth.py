@@ -450,7 +450,7 @@ class DAuthClient:
 		token_requests = [{"client_id": "%016x" %client_id} for client_id in client_ids]
 		response = await self.request_tokens(token_requests, edge_tokens=False)
 
-		for result in response:
+		for result in response["results"]:
 			if "error" in result:
 				logger.error("  (%s) %s", result["error"]["code"], result["error"]["message"])
 				raise DAuthError(result["error"])
@@ -461,7 +461,7 @@ class DAuthClient:
 		token_requests = [{"client_id": "%016x" %client_id, "vendor_id": vendor_id} for client_id, vendor_id in token_requests]
 		response = await self.request_tokens(token_requests, edge_tokens=True)
 
-		for result in response:
+		for result in response["results"]:
 			if "error" in result:
 				logger.error("  (%s) %s", result["error"]["code"], result["error"]["message"])
 				raise DAuthError(result["error"])
