@@ -269,16 +269,10 @@ class DAuthError(Exception):
 	WRONG_MAC = 16
 	BROKEN_DEVICE = 17
 	
-	def __init__(self, response):
+	def __init__(self, response, error):
 		self.response = response
-
-		if type(response) is dict:
-			# Returned in device_tokens and edge_tokens
-			self.code = int(response["code"])
-			self.message = response["message"]
-		else:
-			self.code = int(response.json["errors"][0]["code"])
-			self.message = response.json["errors"][0]["message"]
+		self.code = int(error["code"])
+		self.message = error["message"]
 	
 	def __str__(self):
 		return self.message
@@ -357,7 +351,7 @@ class DAuthClient:
 			logger.error("DAuth server returned errors:")
 			for error in response.json["errors"]:
 				logger.error("  (%s) %s", error["code"], error["message"])
-			raise DAuthError(response)
+			raise DAuthError(response, response.json["errors"][0])
 		response.raise_if_error()
 		return response
 		
@@ -444,6 +438,19 @@ class DAuthClient:
 		}
 
 		response = await self.request(req)
+
+		# Check if any errors have occurred
+		errors = []
+		for result in response.json["results"]:
+			if "error" in result:
+				errors.append(result["error"])
+		
+		if errors:
+			logger.error("DAuth server returned errors:")
+			for error in errors:
+				logger.error("  (%s) %s", error["code"], error["message"])
+			raise DAuthError(response, errors[0])
+
 		return response.json
 	
 	async def device_token(self, client_id):
