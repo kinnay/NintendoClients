@@ -269,10 +269,10 @@ class DAuthError(Exception):
 	WRONG_MAC = 16
 	BROKEN_DEVICE = 17
 	
-	def __init__(self, response):
+	def __init__(self, response, error):
 		self.response = response
-		self.code = int(response.json["errors"][0]["code"])
-		self.message = response.json["errors"][0]["message"]
+		self.code = int(error["code"])
+		self.message = error["message"]
 	
 	def __str__(self):
 		return self.message
@@ -351,7 +351,7 @@ class DAuthClient:
 			logger.error("DAuth server returned errors:")
 			for error in response.json["errors"]:
 				logger.error("  (%s) %s", error["code"], error["message"])
-			raise DAuthError(response)
+			raise DAuthError(response, response.json["errors"][0])
 		response.raise_if_error()
 		return response
 		
@@ -438,6 +438,19 @@ class DAuthClient:
 		}
 
 		response = await self.request(req)
+
+		# Check if any errors have occurred
+		errors = []
+		for result in response.json["results"]:
+			if "error" in result:
+				errors.append(result["error"])
+		
+		if errors:
+			logger.error("DAuth server returned errors:")
+			for error in errors:
+				logger.error("  (%s) %s", error["code"], error["message"])
+			raise DAuthError(response, errors[0])
+
 		return response.json
 	
 	async def device_token(self, client_id):
@@ -449,11 +462,11 @@ class DAuthClient:
 	async def device_tokens(self, client_ids):
 		token_requests = [{"client_id": "%016x" %client_id} for client_id in client_ids]
 		return await self.request_tokens(token_requests, edge_tokens=False)
-	
+
 	async def edge_tokens(self, token_requests):
 		token_requests = [{"client_id": "%016x" %client_id, "vendor_id": vendor_id} for client_id, vendor_id in token_requests]
 		return await self.request_tokens(token_requests, edge_tokens=True)
-	
+
 	async def preload_device_tokens(self):
 		return await self.device_tokens(PRELOADED_DEVICE_TOKENS)
 	

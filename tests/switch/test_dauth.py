@@ -214,7 +214,9 @@ async def test_dauth_2000():
 			return response
 		else:
 			assert request.encode().decode() == DEVICE_TOKEN_REQUEST_2000
-			return http.HTTPResponse(200)
+			response = http.HTTPResponse(200)
+			response.json = {"results": []}
+			return response
 	
 	async with http.serve(handler, "localhost", 12345):
 		keys = {
@@ -244,7 +246,9 @@ async def test_edge_token_2000():
 			return response
 		else:
 			assert request.encode().decode() == EDGE_TOKEN_REQUEST_2000
-			return http.HTTPResponse(200)
+			response = http.HTTPResponse(200)
+			response.json = {"results": []}
+			return response
 	
 	async with http.serve(handler, "localhost", 12345):
 		keys = {
