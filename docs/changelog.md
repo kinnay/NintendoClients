@@ -1,6 +1,14 @@
 
 ## Changelog
 
+### 4.1.0
+* Added support for Switch system version 20.2.0 up to 20.4.0.
+* Added support for the matchmaking protocol of Monster Hunter XX (3DS).
+* Implemented RankingClient::GetScorePack for MK8D.
+* Minor bug fixes.
+
+*Released on 2025-09-19*
+
 ### 4.0.2
 * Disable `device_token` and `edge_token` on system version 20.0.0 and later to avoid accidental usage.
 
