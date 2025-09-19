@@ -23,7 +23,7 @@ Provides a client for the [system update content server](https://github.com/kinn
 </span>
 
 <code>**def set_system_version**(version: int) -> None</code></br>
-<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` up to `20.1.5` are supported.</span>
+<span class="docs">Changes the system version that is emulated by the client. The system version should be given as a decimal integer. For example, `1002` indicates system version `10.0.2`. All system versions from `9.0.0` up to `20.4.0` are supported.</span>
 
 <code>**async def download_content_metadata**(title_id: int, title_version: int, *, system_update: bool = False) -> bytes</code><br>
 <span class="docs">Downloads the metadata NCA for the given title id and version. The `system_update` parameter should only be set to `True` for the system update title (`0100000000000816`).</span>

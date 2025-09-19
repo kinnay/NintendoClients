@@ -76,6 +76,9 @@ USER_AGENT = {
 	2010: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
 	2011: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
 	2015: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
+	2020: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
+	2030: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
+	2040: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
 }
 
 API_VERSION = {
@@ -125,9 +128,12 @@ API_VERSION = {
 	2010: 5,
 	2011: 5,
 	2015: 5,
+	2020: 5,
+	2030: 5,
+	2040: 5,
 }
 
-LATEST_VERSION = 2015
+LATEST_VERSION = 2040
 
 
 class AAuthError(Exception):

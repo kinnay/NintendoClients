@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 USER_AGENT = "NintendoSDK Firmware/%s (platform:NX; did:%016x; eid:lp1)"
 
-LATEST_VERSION = 2015
+LATEST_VERSION = 2040
 
 
 class AtumnClient:
