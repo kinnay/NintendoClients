@@ -4152,8 +4152,8 @@ class MatchmakeExtensionServerMK8(MatchmakeExtensionProtocolMK8):
 		response = await self.auto_matchmake_postpone(client, gathering, message)
 		
 		#--- response ---
-		if not isinstance(response, common.Data):
-			raise RuntimeError("Expected common.Data, got %s" %response.__class__.__name__)
+		if not isinstance(response, Gathering):
+			raise RuntimeError("Expected Gathering, got %s" %response.__class__.__name__)
 		output.anydata(response)
 	
 	async def handle_browse_matchmake_session(self, client, input, output):
@@ -4281,8 +4281,8 @@ class MatchmakeExtensionServerMK8(MatchmakeExtensionProtocolMK8):
 		response = await self.auto_matchmake_with_search_criteria_postpone(client, search_criteria, gathering, message)
 		
 		#--- response ---
-		if not isinstance(response, common.Data):
-			raise RuntimeError("Expected common.Data, got %s" %response.__class__.__name__)
+		if not isinstance(response, Gathering):
+			raise RuntimeError("Expected Gathering, got %s" %response.__class__.__name__)
 		output.anydata(response)
 	
 	async def handle_get_playing_session(self, client, input, output):
@@ -4459,8 +4459,8 @@ class MatchmakeExtensionServerMK8(MatchmakeExtensionProtocolMK8):
 		response = await self.auto_matchmake_with_gathering_id_postpone(client, gids, gathering, message)
 		
 		#--- response ---
-		if not isinstance(response, common.Data):
-			raise RuntimeError("Expected common.Data, got %s" %response.__class__.__name__)
+		if not isinstance(response, Gathering):
+			raise RuntimeError("Expected Gathering, got %s" %response.__class__.__name__)
 		output.anydata(response)
 	
 	async def handle_update_progress_score(self, client, input, output):

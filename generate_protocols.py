@@ -561,6 +561,11 @@ class Parser:
 		
 		if type.name in TEMPLATE_TYPES:
 			type.template = self.parse_template(stream, TEMPLATE_TYPES[type.name])
+
+		elif type.name == "anydata":
+			token = stream.peek()
+			if token.type == TYPE_SYMBOL and token.value == "<":
+				type.template = self.parse_template(stream, 1)
 			
 		return type
 	
@@ -1118,7 +1123,10 @@ class CodeGenerator:
 		if type.name == "datetime": return "common.DateTime"
 		if type.name == "stationurl": return "common.StationURL"
 		if type.name == "result": return "common.Result"
-		if type.name == "anydata": return "common.Data"
+		if type.name == "anydata":
+			if type.template:
+				return self.make_python_type(type.template[0])
+			return "common.Data"
 		if type.name == "ResultRange": return "common.ResultRange"
 		if type.name == "NotificationEvent": return "notification.NotificationEvent"
 		if type.name in self.file.structs: return type.name
@@ -1369,7 +1377,10 @@ class DocsGenerator:
 		if type.name == "datetime": return "[DateTime](common.md#datetime)"
 		if type.name == "stationurl": return "[StationURL](common.md#stationurl)"
 		if type.name == "result": return "[Result](common.md#result)"
-		if type.name == "anydata": return "[Data](common.md)"
+		if type.name == "anydata":
+			if type.template:
+				return self.format_type(type.template[0])
+			return "[Data](common.md)"
 		if type.name == "ResultRange": return "[ResultRange](common.md#resultrange)"
 		if type.name == "NotificationEvent": return "[NotificationEvent](notification.md#notificationevent)"
 		if type.name in self.file.structs: return "[%s](#%s)" %(type.name, type.name.lower())

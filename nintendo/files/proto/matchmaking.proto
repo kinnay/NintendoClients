@@ -212,7 +212,7 @@ struct SimpleCommunity {
 
 struct PlayingSession {
 	pid pid;
-	anydata gathering;
+	anydata<Gathering> gathering;
 }
 	
 struct SimplePlayingSession {
@@ -281,7 +281,7 @@ struct MatchmakeRefereeStatsInitParam {
 }
 
 protocol MatchMaking : 21 {
-	method register_gathering(anydata gathering) {
+	method register_gathering(anydata<Gathering> gathering) {
 		uint32 gid;
 	}
 	
@@ -293,7 +293,7 @@ protocol MatchMaking : 21 {
 		bool result;
 	}
 	
-	method update_gathering(anydata gathering) {
+	method update_gathering(anydata<Gathering> gathering) {
 		bool result;
 	}
 	
@@ -346,40 +346,40 @@ protocol MatchMaking : 21 {
 	}
 	
 	method find_by_type(string type, ResultRange range) {
-		list<anydata> gatherings;
+		list<anydata<Gathering>> gatherings;
 	}
 	
 	method find_by_description(string description, ResultRange range) {
-		list<anydata> gatherings;
+		list<anydata<Gathering>> gatherings;
 	}
 	
 	method find_by_description_regex(string regex, ResultRange range) {
-		list<anydata> gatherings;
+		list<anydata<Gathering>> gatherings;
 	}
 	
 	method find_by_id(list<uint32> ids) {
-		list<anydata> gatherings;
+		list<anydata<Gathering>> gatherings;
 	}
 	
 	method find_by_single_id(uint32 gid) {
 		bool result;
-		anydata gathering;
+		anydata<Gathering> gathering;
 	}
 	
 	method find_by_owner(pid owner, ResultRange range) {
-		list<anydata> gatherings;
+		list<anydata<Gathering>> gatherings;
 	}
 	
 	method find_by_participants(list<pid> pids) {
-		list<anydata> gatherings;
+		list<anydata<Gathering>> gatherings;
 	}
 	
 	method find_invitations(ResultRange range) {
-		list<anydata> gatherings;
+		list<anydata<Gathering>> gatherings;
 	}
 	
 	method find_by_sql_query(string query, ResultRange range) {
-		list<anydata> gatherings;
+		list<anydata<Gathering>> gatherings;
 	}
 	
 	method launch_session(uint32 gid, string url) {
@@ -431,7 +431,7 @@ protocol MatchMaking : 21 {
 	}
 	
 	method find_by_description_like(string description, ResultRange range) {
-		list<anydata> gatherings;
+		list<anydata<Gathering>> gatherings;
 	}
 	
 	method register_local_url(uint32 gid, stationurl url) {}
@@ -479,20 +479,20 @@ protocol MatchmakeExtension : 109 {
 	method close_participation(uint32 gid) {}
 	method open_participation(uint32 gid) {}
 	
-	method auto_matchmake_postpone(anydata gathering, string message) {
-		anydata gathering;
+	method auto_matchmake_postpone(anydata<Gathering> gathering, string message) {
+		anydata<Gathering> gathering;
 	}
 	
 	method browse_matchmake_session(MatchmakeSessionSearchCriteria search_criteria, ResultRange range) {
-		list<anydata> gatherings;
+		list<anydata<Gathering>> gatherings;
 	}
 	
 	method browse_matchmake_session_with_host_urls(MatchmakeSessionSearchCriteria search_criteria, ResultRange range) {
-		list<anydata> gatherings;
+		list<anydata<Gathering>> gatherings;
 		list<GatheringURLs> urls;
 	}
 	
-	method create_matchmake_session(anydata gathering, string description, uint16 num_participants) {
+	method create_matchmake_session(anydata<Gathering> gathering, string description, uint16 num_participants) {
 		uint32 gid;
 		buffer session_key;
 	}
@@ -515,13 +515,13 @@ protocol MatchmakeExtension : 109 {
 		list<NotificationEvent> notifications;
 	}
 	
-	method update_matchmake_session(anydata gathering) {}
+	method update_matchmake_session(anydata<Gathering> gathering) {}
 	
 	method auto_matchmake_with_search_criteria_postpone(
 		list<MatchmakeSessionSearchCriteria> search_criteria,
-		anydata gathering, string message
+		anydata<Gathering> gathering, string message
 	) {
-		anydata gathering;
+		anydata<Gathering> gathering;
 	}
 	
 	method get_playing_session(list<pid> pids) {
@@ -572,8 +572,8 @@ protocol MatchmakeExtension : 109 {
 		list<SimpleCommunity> communities;
 	}
 	
-	method auto_matchmake_with_gathering_id_postpone(list<uint32> gids, anydata gathering, string message) {
-		anydata joined_gathering;
+	method auto_matchmake_with_gathering_id_postpone(list<uint32> gids, anydata<Gathering> gathering, string message) {
+		anydata<Gathering> joined_gathering;
 	}
 	
 	method update_progress_score(uint32 gid, uint8 score) {}

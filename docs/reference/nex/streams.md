@@ -43,7 +43,7 @@ Extends [generic memory streams](https://anynet.readthedocs.io/en/latest/referen
 <code>**def add**(value: [Structure](common.md)) -> None</code><br>
 <span class="docs">Writes a `nex` structure into the stream.</span>
 
-<code>**def anydata**(value: [Data](common.md)) -> None</code><br>
+<code>**def anydata**(value: object) -> None</code><br>
 <span class="docs">Wraps a structure in a data holder and writes it into the stream.</span>
 
 <code>**def variant**(value: object) -> None</code><br>
@@ -89,8 +89,8 @@ Extends [generic memory streams](https://anynet.readthedocs.io/en/latest/referen
 <code>**def extract**(cls: Type[[Structure](common.md)]) -> [Structure](common.md)</code><br>
 <span class="docs">Reads a `nex` structure from the stream.</span>
 
-<code>**def anydata**() -> [Data](common.md)</code><br>
-<span class="docs">Reads a data holder from the stream and returns its [`Data`] object.</span>
+<code>**def anydata**() -> object</code><br>
+<span class="docs">Reads a data holder from the stream and returns its content, which is usually a subclass of [`Data`](common.md).</span>
 
 <code>**def variant**() -> object</code><br>
 <span class="docs">Reads a variant from the stream.</span>

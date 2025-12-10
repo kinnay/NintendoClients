@@ -63,7 +63,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**def _\_init__**(client: [RMCClient](rmc.md#rmcclient) / [HppClient](hpp.md#hppclient))</code><br>
 <span class="docs">Creates a new [`MatchMakingClient`](#matchmakingclient).</span>
 
-<code>**async def register_gathering**(gathering: [Data](common.md)) -> int</code><br>
+<code>**async def register_gathering**(gathering: [Gathering](#gathering)) -> int</code><br>
 <span class="docs">Calls method `1` on the server.</span>
 
 <code>**async def unregister_gathering**(gid: int) -> bool</code><br>
@@ -72,7 +72,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def unregister_gatherings**(gids: list[int]) -> bool</code><br>
 <span class="docs">Calls method `3` on the server.</span>
 
-<code>**async def update_gathering**(gathering: [Data](common.md)) -> bool</code><br>
+<code>**async def update_gathering**(gathering: [Gathering](#gathering)) -> bool</code><br>
 <span class="docs">Calls method `4` on the server.</span>
 
 <code>**async def invite**(gid: int, pids: list[int], message: str) -> bool</code><br>
@@ -111,36 +111,36 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def get_participants_urls**(gid: int) -> list[[StationURL](common.md#stationurl)]</code><br>
 <span class="docs">Calls method `16` on the server.</span>
 
-<code>**async def find_by_type**(type: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_type**(type: str, range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Calls method `17` on the server.</span>
 
-<code>**async def find_by_description**(description: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_description**(description: str, range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Calls method `18` on the server.</span>
 
-<code>**async def find_by_description_regex**(regex: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_description_regex**(regex: str, range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Calls method `19` on the server.</span>
 
-<code>**async def find_by_id**(ids: list[int]) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_id**(ids: list[int]) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Calls method `20` on the server.</span>
 
 <code>**async def find_by_single_id**(gid: int) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `21` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>result: bool</code><br>
-<code>gathering: [Data](common.md)</code><br>
+<code>gathering: [Gathering](#gathering)</code><br>
 </span>
 </span>
 
-<code>**async def find_by_owner**(owner: int, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_owner**(owner: int, range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Calls method `22` on the server.</span>
 
-<code>**async def find_by_participants**(pids: list[int]) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_participants**(pids: list[int]) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Calls method `23` on the server.</span>
 
-<code>**async def find_invitations**(range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def find_invitations**(range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Calls method `24` on the server.</span>
 
-<code>**async def find_by_sql_query**(query: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_sql_query**(query: str, range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Calls method `25` on the server.</span>
 
 <code>**async def launch_session**(gid: int, url: str) -> bool</code><br>
@@ -196,7 +196,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def migrate_gathering_ownership_v1**(gid: int, potential_owners: list[int]) -> bool</code><br>
 <span class="docs">Calls method `36` on the server.</span>
 
-<code>**async def find_by_description_like**(description: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_description_like**(description: str, range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Calls method `37` on the server.</span>
 
 <code>**async def register_local_url**(gid: int, url: [StationURL](common.md#stationurl)) -> None</code><br>
@@ -300,21 +300,21 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def open_participation**(gid: int) -> None</code><br>
 <span class="docs">Calls method `2` on the server.</span>
 
-<code>**async def auto_matchmake_postpone**(gathering: [Data](common.md), message: str) -> [Data](common.md)</code><br>
+<code>**async def auto_matchmake_postpone**(gathering: [Gathering](#gathering), message: str) -> [Gathering](#gathering)</code><br>
 <span class="docs">Calls method `3` on the server.</span>
 
-<code>**async def browse_matchmake_session**(search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def browse_matchmake_session**(search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Calls method `4` on the server.</span>
 
 <code>**async def browse_matchmake_session_with_host_urls**(search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](common.md#resultrange)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `5` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
-<code>gatherings: list[[Data](common.md)]</code><br>
+<code>gatherings: list[[Gathering](#gathering)]</code><br>
 <code>urls: list[[GatheringURLs](#gatheringurls)]</code><br>
 </span>
 </span>
 
-<code>**async def create_matchmake_session**(gathering: [Data](common.md), description: str, num_participants: int) -> [RMCResponse](common.md)</code><br>
+<code>**async def create_matchmake_session**(gathering: [Gathering](#gathering), description: str, num_participants: int) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Calls method `6` on the server. The RMC response has the following attributes:<br>
 <span class="docs">
 <code>gid: int</code><br>
@@ -343,10 +343,10 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def get_friend_notification_data_list**(types: list[int]) -> list[[NotificationEvent](notification.md#notificationevent)]</code><br>
 <span class="docs">Calls method `13` on the server.</span>
 
-<code>**async def update_matchmake_session**(gathering: [Data](common.md)) -> None</code><br>
+<code>**async def update_matchmake_session**(gathering: [Gathering](#gathering)) -> None</code><br>
 <span class="docs">Calls method `14` on the server.</span>
 
-<code>**async def auto_matchmake_with_search_criteria_postpone**(search_criteria: list[[MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)], gathering: [Data](common.md), message: str) -> [Data](common.md)</code><br>
+<code>**async def auto_matchmake_with_search_criteria_postpone**(search_criteria: list[[MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)], gathering: [Gathering](#gathering), message: str) -> [Gathering](#gathering)</code><br>
 <span class="docs">Calls method `15` on the server.</span>
 
 <code>**async def get_playing_session**(pids: list[int]) -> list[[PlayingSession](#playingsession)]</code><br>
@@ -405,7 +405,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def get_simple_community**(gids: list[int]) -> list[[SimpleCommunity](#simplecommunity)]</code><br>
 <span class="docs">Calls method `32` on the server.</span>
 
-<code>**async def auto_matchmake_with_gathering_id_postpone**(gids: list[int], gathering: [Data](common.md), message: str) -> [Data](common.md)</code><br>
+<code>**async def auto_matchmake_with_gathering_id_postpone**(gids: list[int], gathering: [Gathering](#gathering), message: str) -> [Gathering](#gathering)</code><br>
 <span class="docs">Calls method `33` on the server.</span>
 
 <code>**async def update_progress_score**(gid: int, score: int) -> None</code><br>
@@ -503,7 +503,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def logout**(client: [RMCClient](rmc.md#rmcclient)) -> None</code><br>
 <span class="docs">Called whenever a client is disconnected. May be overridden by a subclass.</span>
 
-<code>**async def register_gathering**(client: [RMCClient](rmc.md#rmcclient), gathering: [Data](common.md)) -> int</code><br>
+<code>**async def register_gathering**(client: [RMCClient](rmc.md#rmcclient), gathering: [Gathering](#gathering)) -> int</code><br>
 <span class="docs">Handler for method `1`. This method should be overridden by a subclass.</span>
 
 <code>**async def unregister_gathering**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> bool</code><br>
@@ -512,7 +512,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def unregister_gatherings**(client: [RMCClient](rmc.md#rmcclient), gids: list[int]) -> bool</code><br>
 <span class="docs">Handler for method `3`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_gathering**(client: [RMCClient](rmc.md#rmcclient), gathering: [Data](common.md)) -> bool</code><br>
+<code>**async def update_gathering**(client: [RMCClient](rmc.md#rmcclient), gathering: [Gathering](#gathering)) -> bool</code><br>
 <span class="docs">Handler for method `4`. This method should be overridden by a subclass.</span>
 
 <code>**async def invite**(client: [RMCClient](rmc.md#rmcclient), gid: int, pids: list[int], message: str) -> bool</code><br>
@@ -551,36 +551,36 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def get_participants_urls**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> list[[StationURL](common.md#stationurl)]</code><br>
 <span class="docs">Handler for method `16`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_type**(client: [RMCClient](rmc.md#rmcclient), type: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_type**(client: [RMCClient](rmc.md#rmcclient), type: str, range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Handler for method `17`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_description**(client: [RMCClient](rmc.md#rmcclient), description: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_description**(client: [RMCClient](rmc.md#rmcclient), description: str, range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Handler for method `18`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_description_regex**(client: [RMCClient](rmc.md#rmcclient), regex: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_description_regex**(client: [RMCClient](rmc.md#rmcclient), regex: str, range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Handler for method `19`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_id**(client: [RMCClient](rmc.md#rmcclient), ids: list[int]) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_id**(client: [RMCClient](rmc.md#rmcclient), ids: list[int]) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Handler for method `20`. This method should be overridden by a subclass.</span>
 
 <code>**async def find_by_single_id**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `21`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>result: bool</code><br>
-<code>gathering: [Data](common.md)</code><br>
+<code>gathering: [Gathering](#gathering)</code><br>
 </span>
 </span>
 
-<code>**async def find_by_owner**(client: [RMCClient](rmc.md#rmcclient), owner: int, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_owner**(client: [RMCClient](rmc.md#rmcclient), owner: int, range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Handler for method `22`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_participants**(client: [RMCClient](rmc.md#rmcclient), pids: list[int]) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_participants**(client: [RMCClient](rmc.md#rmcclient), pids: list[int]) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Handler for method `23`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_invitations**(client: [RMCClient](rmc.md#rmcclient), range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def find_invitations**(client: [RMCClient](rmc.md#rmcclient), range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Handler for method `24`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_sql_query**(client: [RMCClient](rmc.md#rmcclient), query: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_sql_query**(client: [RMCClient](rmc.md#rmcclient), query: str, range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Handler for method `25`. This method should be overridden by a subclass.</span>
 
 <code>**async def launch_session**(client: [RMCClient](rmc.md#rmcclient), gid: int, url: str) -> bool</code><br>
@@ -636,7 +636,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def migrate_gathering_ownership_v1**(client: [RMCClient](rmc.md#rmcclient), gid: int, potential_owners: list[int]) -> bool</code><br>
 <span class="docs">Handler for method `36`. This method should be overridden by a subclass.</span>
 
-<code>**async def find_by_description_like**(client: [RMCClient](rmc.md#rmcclient), description: str, range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def find_by_description_like**(client: [RMCClient](rmc.md#rmcclient), description: str, range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Handler for method `37`. This method should be overridden by a subclass.</span>
 
 <code>**async def register_local_url**(client: [RMCClient](rmc.md#rmcclient), gid: int, url: [StationURL](common.md#stationurl)) -> None</code><br>
@@ -749,21 +749,21 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def open_participation**(client: [RMCClient](rmc.md#rmcclient), gid: int) -> None</code><br>
 <span class="docs">Handler for method `2`. This method should be overridden by a subclass.</span>
 
-<code>**async def auto_matchmake_postpone**(client: [RMCClient](rmc.md#rmcclient), gathering: [Data](common.md), message: str) -> [Data](common.md)</code><br>
+<code>**async def auto_matchmake_postpone**(client: [RMCClient](rmc.md#rmcclient), gathering: [Gathering](#gathering), message: str) -> [Gathering](#gathering)</code><br>
 <span class="docs">Handler for method `3`. This method should be overridden by a subclass.</span>
 
-<code>**async def browse_matchmake_session**(client: [RMCClient](rmc.md#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](common.md#resultrange)) -> list[[Data](common.md)]</code><br>
+<code>**async def browse_matchmake_session**(client: [RMCClient](rmc.md#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](common.md#resultrange)) -> list[[Gathering](#gathering)]</code><br>
 <span class="docs">Handler for method `4`. This method should be overridden by a subclass.</span>
 
 <code>**async def browse_matchmake_session_with_host_urls**(client: [RMCClient](rmc.md#rmcclient), search_criteria: [MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria), range: [ResultRange](common.md#resultrange)) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `5`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
-<code>gatherings: list[[Data](common.md)]</code><br>
+<code>gatherings: list[[Gathering](#gathering)]</code><br>
 <code>urls: list[[GatheringURLs](#gatheringurls)]</code><br>
 </span>
 </span>
 
-<code>**async def create_matchmake_session**(client: [RMCClient](rmc.md#rmcclient), gathering: [Data](common.md), description: str, num_participants: int) -> [RMCResponse](common.md)</code><br>
+<code>**async def create_matchmake_session**(client: [RMCClient](rmc.md#rmcclient), gathering: [Gathering](#gathering), description: str, num_participants: int) -> [RMCResponse](common.md)</code><br>
 <span class="docs">Handler for method `6`. This method should be overridden by a subclass. The RMC response must have the following attributes:<br>
 <span class="docs">
 <code>gid: int</code><br>
@@ -792,10 +792,10 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def get_friend_notification_data_list**(client: [RMCClient](rmc.md#rmcclient), types: list[int]) -> list[[NotificationEvent](notification.md#notificationevent)]</code><br>
 <span class="docs">Handler for method `13`. This method should be overridden by a subclass.</span>
 
-<code>**async def update_matchmake_session**(client: [RMCClient](rmc.md#rmcclient), gathering: [Data](common.md)) -> None</code><br>
+<code>**async def update_matchmake_session**(client: [RMCClient](rmc.md#rmcclient), gathering: [Gathering](#gathering)) -> None</code><br>
 <span class="docs">Handler for method `14`. This method should be overridden by a subclass.</span>
 
-<code>**async def auto_matchmake_with_search_criteria_postpone**(client: [RMCClient](rmc.md#rmcclient), search_criteria: list[[MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)], gathering: [Data](common.md), message: str) -> [Data](common.md)</code><br>
+<code>**async def auto_matchmake_with_search_criteria_postpone**(client: [RMCClient](rmc.md#rmcclient), search_criteria: list[[MatchmakeSessionSearchCriteria](#matchmakesessionsearchcriteria)], gathering: [Gathering](#gathering), message: str) -> [Gathering](#gathering)</code><br>
 <span class="docs">Handler for method `15`. This method should be overridden by a subclass.</span>
 
 <code>**async def get_playing_session**(client: [RMCClient](rmc.md#rmcclient), pids: list[int]) -> list[[PlayingSession](#playingsession)]</code><br>
@@ -854,7 +854,7 @@ Provides a client and server for the `MatchMakingProtocol`, `MatchMakingProtocol
 <code>**async def get_simple_community**(client: [RMCClient](rmc.md#rmcclient), gids: list[int]) -> list[[SimpleCommunity](#simplecommunity)]</code><br>
 <span class="docs">Handler for method `32`. This method should be overridden by a subclass.</span>
 
-<code>**async def auto_matchmake_with_gathering_id_postpone**(client: [RMCClient](rmc.md#rmcclient), gids: list[int], gathering: [Data](common.md), message: str) -> [Data](common.md)</code><br>
+<code>**async def auto_matchmake_with_gathering_id_postpone**(client: [RMCClient](rmc.md#rmcclient), gids: list[int], gathering: [Gathering](#gathering), message: str) -> [Gathering](#gathering)</code><br>
 <span class="docs">Handler for method `33`. This method should be overridden by a subclass.</span>
 
 <code>**async def update_progress_score**(client: [RMCClient](rmc.md#rmcclient), gid: int, score: int) -> None</code><br>
@@ -1335,7 +1335,7 @@ The following fields are defined in this class:<br>
 The following fields are defined in this class:<br>
 <span class="docs">
 <code>pid: int</code><br>
-<code>gathering: [Data](common.md)</code><br>
+<code>gathering: [Gathering](#gathering)</code><br>
 </span><br>
 
 ## SimpleCommunity
