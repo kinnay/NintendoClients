@@ -5,6 +5,8 @@ This package implements a client for various 3DS, Wii U and Switch servers. Chec
 
 For Switch servers, the latest system version that is currently supported is **20.4.0**.
 
+For talk about research, feel free to join the [Discord server](https://discord.gg/x8np6Hhxwk) or open a [discussion](https://github.com/kinnay/NintendoClients/discussions) on GitHub.
+
 ### Installation
 This package requires Python 3.8 or later and can be installed with pip: `pip install nintendoclients`. This package uses [semantic versioning](https://semver.org/).
 
