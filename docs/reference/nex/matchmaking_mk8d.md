@@ -1249,6 +1249,8 @@ The following fields are defined in this class:<br>
 <code>matchmake_system: int = 0</code><br>
 <code>application_data: bytes = b""</code><br>
 <code>num_participants: int = 0</code><br>
+If 30000 <= `nex.version` < 40000:<br>
+<span class="docs">
 If `nex.version` >= 30500:<br>
 <span class="docs">
 <code>progress_score: int = 100</code><br>
@@ -1285,12 +1287,19 @@ If `revision` >= 3:<br>
 <code>system_password_enabled: bool = False</code><br>
 </span><br>
 </span><br>
+</span><br>
 If `nex.version` >= 40000:<br>
 <span class="docs">
-If `revision` >= 0:<br>
-<span class="docs">
+<code>progress_score: int = 100</code><br>
+<code>session_key: bytes = b""</code><br>
+<code>option: int = 0</code><br>
+<code>param: [MatchmakeParam](#matchmakeparam) = [MatchmakeParam](#matchmakeparam)()</code><br>
+<code>started_time: [DateTime](common.md#datetime) = [DateTime](common.md#datetime).never()</code><br>
+<code>user_password: str = ""</code><br>
+<code>refer_gid: int = 0</code><br>
+<code>user_password_enabled: bool = False</code><br>
+<code>system_password_enabled: bool = False</code><br>
 <code>codeword: str = ""</code><br>
-</span><br>
 </span><br>
 </span><br>
 

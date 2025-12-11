@@ -23,7 +23,7 @@ NAME_CHARS = NAME_HEAD_CHARS + string.digits
 
 NUMBER_CHARS = string.digits + string.ascii_lowercase
 
-SPECIAL_CHARS = "{}()[]<>:;,.=!#"
+SPECIAL_CHARS = "{}()[]<>:;,.-=!#"
 
 RESERVED_WORDS = [
 	"import", "protocol", "method", "struct", "enum",
@@ -347,17 +347,14 @@ class Condition:
 	REVISION = 1
 	
 	type = None
-	value = None
+	minimum = None
+	maximum = None
 	body = None
 
 
 class StructBody:
-	def __init__(self, scope=None):
+	def __init__(self):
 		self.fields = []
-		
-		self.scope = scope
-		if self.scope is None:
-			self.scope = Scope()
 	
 	def has_revision(self):
 		for field in self.fields:
@@ -369,9 +366,6 @@ class StructBody:
 		return False
 		
 	def add(self, field):
-		if isinstance(field, Variable):
-			if self.scope.add(field.name):
-				raise ValueError("Duplicate variable name in struct: %s" %field.name)
 		self.fields.append(field)
 
 
@@ -655,8 +649,8 @@ class Parser:
 		struct.body = self.parse_struct_body(stream)
 		return struct
 		
-	def parse_struct_body(self, stream, scope=None):
-		body = StructBody(scope)
+	def parse_struct_body(self, stream):
+		body = StructBody()
 		
 		stream.skip_symbol("{")
 		while True:
@@ -665,18 +659,18 @@ class Parser:
 				stream.skip_symbol("}")
 				return body
 			
-			body.add(self.parse_struct_item(stream, body.scope))
+			body.add(self.parse_struct_item(stream))
 	
-	def parse_struct_item(self, stream, scope):
+	def parse_struct_item(self, stream):
 		token = stream.peek()
 		if token.type == TYPE_RESERVED:
-			return self.parse_condition(stream, scope)
+			return self.parse_condition(stream)
 		
 		var = self.parse_variable(stream)
 		stream.skip_symbol(";")
 		return var
 			
-	def parse_condition(self, stream, scope):
+	def parse_condition(self, stream):
 		cond = Condition()
 		
 		token = stream.read_reserved()
@@ -685,8 +679,11 @@ class Parser:
 		else:
 			stream.error(token)
 		
-		cond.value = stream.parse_number()
-		cond.body = self.parse_struct_body(stream, scope)
+		cond.minimum = stream.parse_number()
+		if stream.check_symbol("-"):
+			cond.maximum = stream.parse_number()
+		
+		cond.body = self.parse_struct_body(stream)
 		return cond
 		
 	def parse_enum(self, stream):
@@ -838,22 +835,29 @@ class CodeGenerator:
 		stream.write_line("def __init__(self):")
 		stream.indent()
 		stream.write_line("super().__init__()")
-		self.generate_struct_init_body(stream, struct.body)
+		self.generate_struct_init_body(stream, struct.body, {})
 		stream.unindent()
 		stream.write_line()
 		
-	def generate_struct_init_body(self, stream, body):
+	def generate_struct_init_body(self, stream, body, defaults):
 		for field in body.fields:
 			if isinstance(field, Variable):
-				stream.write_line("self.%s = %s" %(field.name, self.make_constant(field.type, field.default)))
+				if field.name in defaults:
+					if defaults[field.name] != field.default:
+						raise ValueError("Duplicate variable name in struct with incompatible defaults: %s" %field.name)
+				else:
+					defaults[field.name] = field.default
+					stream.write_line("self.%s = %s" %(field.name, self.make_constant(field.type, field.default)))
+			
 			elif isinstance(field, Condition):
-				self.generate_struct_init_body(stream, field.body)
+				self.generate_struct_init_body(stream, field.body, defaults)
 	
 	def generate_if_statement(self, stream, cond, prefix=""):
-		if cond.type == Condition.VERSION:
-			stream.write_line('if %ssettings["nex.version"] >= %i:' %(prefix, cond.value))
+		field = f'{prefix}settings["nex.version"]' if cond.type == Condition.VERSION else "version"
+		if cond.maximum is None:
+			stream.write_line(f"if {field} >= {cond.minimum}:")
 		else:
-			stream.write_line("if version >= %i:" %cond.value)
+			stream.write_line(f"if {cond.minimum} <= {field} < {cond.maximum}:")
 	
 	def generate_struct_version(self, stream, struct):
 		if struct.body.has_revision():
@@ -869,7 +873,7 @@ class CodeGenerator:
 		for field in body.fields:
 			if isinstance(field, Condition):
 				if field.type == Condition.REVISION:
-					stream.write_line("version = %i" %field.value)
+					stream.write_line("version = %i" %field.minimum)
 				elif field.type == Condition.VERSION:
 					if field.body.has_revision():
 						self.generate_if_statement(stream, field)
@@ -1306,7 +1310,10 @@ class DocsGenerator:
 					Condition.VERSION: "nex.version",
 					Condition.REVISION: "revision"
 				}[field.type]
-				self.text += "If `%s` >= %i:<br>\n" %(type, field.value)
+				if field.maximum is None:
+					self.text += f"If `{type}` >= {field.minimum}:<br>\n"
+				else:
+					self.text += f"If {field.minimum} <= `{type}` < {field.maximum}:<br>\n"
 				self.generate_struct_body(field.body)
 		self.text += "</span><br>\n"
 		
