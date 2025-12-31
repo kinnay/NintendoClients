@@ -977,8 +977,8 @@ class SimpleSearchObject(common.Structure):
 		self.community_id = None
 		self.community_code = None
 		self.datetime = SimpleSearchDateTimeAttribute()
-		self.unk3 = None
-		self.unk4 = None
+		self.liveliness_rate = None
+		self.liveliness_update_time = None
 	
 	def max_version(self, settings):
 		version = 0
@@ -992,7 +992,7 @@ class SimpleSearchObject(common.Structure):
 				raise ValueError("No value assigned to required field: %s" %field)
 		if settings["nex.version"] >= 40000:
 			if version >= 1:
-				for field in ['unk3', 'unk4']:
+				for field in ['liveliness_rate', 'liveliness_update_time']:
 					if getattr(self, field) is None:
 						raise ValueError("No value assigned to required field: %s" %field)
 	
@@ -1006,8 +1006,8 @@ class SimpleSearchObject(common.Structure):
 		self.datetime = stream.extract(SimpleSearchDateTimeAttribute)
 		if stream.settings["nex.version"] >= 40000:
 			if version >= 1:
-				self.unk3 = stream.u32()
-				self.unk4 = stream.datetime()
+				self.liveliness_rate = stream.u32()
+				self.liveliness_update_time = stream.datetime()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
@@ -1020,8 +1020,8 @@ class SimpleSearchObject(common.Structure):
 		stream.add(self.datetime)
 		if stream.settings["nex.version"] >= 40000:
 			if version >= 1:
-				stream.u32(self.unk3)
-				stream.datetime(self.unk4)
+				stream.u32(self.liveliness_rate)
+				stream.datetime(self.liveliness_update_time)
 
 
 class SimpleSearchDateTimeAttribute(common.Structure):

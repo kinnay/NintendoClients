@@ -1434,8 +1434,8 @@ If `nex.version` >= 40000:<br>
 <span class="docs">
 If `revision` >= 1:<br>
 <span class="docs">
-<code>unk3: int</code><br>
-<code>unk4: [DateTime](common.md#datetime)</code><br>
+<code>liveliness_rate: int</code><br>
+<code>liveliness_update_time: [DateTime](common.md#datetime)</code><br>
 </span><br>
 </span><br>
 </span><br>

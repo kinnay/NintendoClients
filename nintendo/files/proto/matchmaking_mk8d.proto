@@ -21,8 +21,8 @@ struct SimpleSearchObject {
 	
 	nex 40000 {
 		revision 1 {
-			uint32 unk3;
-			datetime unk4;
+			uint32 liveliness_rate;
+			datetime liveliness_update_time;
 		}
 	}
 }
