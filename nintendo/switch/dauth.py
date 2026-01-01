@@ -66,6 +66,10 @@ SYSTEM_VERSION_HEX = {
 	2020: "ad939aa8ed828aa87f8ca9c6231bc76697298b8d",
 	2030: "c6061464f68281807f4780ae737392516d4813c7",
 	2040: "cc744ded0c0eb7b0a71917a97ec00926427cd652",
+	2050: "c7f472f9b64b7b0cba46a25e6a610f70613a4792",
+	2100: "f6b2425b6888a66590db104fc734891696e0ecb3",
+	2101: "066a75e6fab7316de34b88b60d229a0b2729e421",
+	2110: "0d7a6334ddc3d637f69ec3976b17a260efd68fd4",
 }
 
 USER_AGENT = {
@@ -118,6 +122,10 @@ USER_AGENT = {
 	2020: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
 	2030: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
 	2040: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
+	2050: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)",
+	2100: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 21.4.0.0)",
+	2101: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 21.4.0.0)",
+	2110: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 21.4.0.0)",
 }
 
 KEY_GENERATION = {
@@ -170,6 +178,10 @@ KEY_GENERATION = {
 	2020: 20,
 	2030: 20,
 	2040: 20,
+	2050: 20,
+	2100: 21,
+	2101: 21,
+	2110: 21,
 }
 
 API_VERSION = {
@@ -222,9 +234,13 @@ API_VERSION = {
 	2020: 8,
 	2030: 8,
 	2040: 8,
+	2050: 8,
+	2100: 8,
+	2101: 8,
+	2110: 8,
 }
 
-LATEST_VERSION = 2040
+LATEST_VERSION = 2110
 
 
 CLIENT_ID_SCSI = 0x146C8AC7B8A0DB52

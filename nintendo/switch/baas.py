@@ -59,9 +59,13 @@ USER_AGENT = {
 	2020: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
 	2030: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
 	2040: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
+	2050: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 20.5.4.0; Add-on 20.5.4.0)",
+	2100: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 21.4.0.0; Add-on 21.4.0.0)",
+	2101: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 21.4.0.0; Add-on 21.4.0.0)",
+	2110: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 21.4.0.0; Add-on 21.4.0.0)",
 }
 
-LATEST_VERSION = 2040
+LATEST_VERSION = 2110
 
 
 class PresenceState:
@@ -91,7 +95,7 @@ class BAASClient:
 		
 		self.context = tls.TLSContext()
 		
-		self.host = "e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com"
+		self.host = None
 		self.power_state = "FA"
 
 		self.system_version = LATEST_VERSION
@@ -99,6 +103,9 @@ class BAASClient:
 	
 	def set_request_callback(self, callback): self.request_callback = callback
 	def set_context(self, context): self.context = context
+	
+	def set_certificate(self, cert, key):
+		self.context.set_certificate(cert, key)
 	
 	def set_host(self, host): self.host = host
 	def set_power_state(self, state): self.power_state = state
@@ -108,6 +115,14 @@ class BAASClient:
 			raise ValueError("Unknown system version")
 		self.system_version = version
 		self.user_agent = USER_AGENT[version]
+	
+	def get_host(self, module):
+		if self.host:
+			return self.host
+		
+		if module == MODULE_ACCOUNT and self.system_version >= 2100:
+			return "m-lp1.baas.nintendo.com"
+		return "e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com"
 		
 	async def request(self, req, token, module, *, use_power_state=False):
 		# This is somewhat complicated because we want to
@@ -117,23 +132,35 @@ class BAASClient:
 			content_type = "application/json-patch+json" if req.method == "PATCH" else "application/json"
 		
 		req.headers["Host"] = self.host
-		req.headers["User-Agent"] = self.user_agent %module
-		req.headers["Accept"] = "*/*"
-		if module == MODULE_FRIENDS and req.json is not None:
-			req.headers["Content-Type"] = content_type
-		if token:
-			req.headers["Authorization"] = "Bearer " + token
-		if use_power_state:
-			req.headers["X-Nintendo-PowerState"] = self.power_state
-		
-		if req.method != "GET":
-			if req.json is None:
-				req.headers["Content-Length"] = 0
+		if module == MODULE_ACCOUNT and self.system_version >= 2100:
+			req.headers["Accept"] = "*/*"
+			req.headers["User-Agent"] = self.user_agent %module
+			if req.method != "GET":
 				req.headers["Content-Type"] = content_type
-			else:
-				if module != MODULE_FRIENDS:
-					req.headers["Content-Type"] = content_type
+			if token:
+				req.headers["Authorization"] = "Bearer " + token
+			if use_power_state:
+				req.headers["X-Nintendo-PowerState"] = self.power_state
+			if req.method != "GET":
 				req.headers["Content-Length"] = 0
+		else:
+			req.headers["User-Agent"] = self.user_agent %module
+			req.headers["Accept"] = "*/*"
+			if module == MODULE_FRIENDS and req.json is not None:
+				req.headers["Content-Type"] = content_type
+			if token:
+				req.headers["Authorization"] = "Bearer " + token
+			if use_power_state:
+				req.headers["X-Nintendo-PowerState"] = self.power_state
+			
+			if req.method != "GET":
+				if req.json is None:
+					req.headers["Content-Length"] = 0
+					req.headers["Content-Type"] = content_type
+				else:
+					if module != MODULE_FRIENDS:
+						req.headers["Content-Type"] = content_type
+					req.headers["Content-Length"] = 0
 		
 		response = await self.request_callback(self.host, req, self.context)
 		if response.json and "errorCode" in response.json:

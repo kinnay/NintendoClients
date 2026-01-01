@@ -11,7 +11,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-SYSTEM_VERSION = 2040 # 20.4.0
+SYSTEM_VERSION = 2110 # 21.1.0
 
 # You can get your user id and password from
 # su/baas/<guid>.dat in save folder 8000000000000010.
@@ -79,6 +79,7 @@ async def main():
 	aauth_client.set_system_version(SYSTEM_VERSION)
 	
 	baas_client = baas.BAASClient()
+	baas_client.set_certificate(cert, pkey)
 	baas_client.set_system_version(SYSTEM_VERSION)
 	
 	# Request a device authentication token for dragons
