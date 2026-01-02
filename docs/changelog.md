@@ -1,6 +1,12 @@
 
 ## Changelog
 
+### 4.2.0
+* **Bug fix:** fix `MatchmakeSession` structure being parsed incorrectly on Nintendo Switch.
+* **Bug fix:** make a distinction between `AnyDataHolder` and `GatheringHolder` structures in NEX.
+* Added support for Switch system version 20.5.0 up to 21.1.0.
+* Added names for previously unknown fields in the `SimpleSearchObject` structure of MK8D.
+
 ### 4.1.0
 * Added support for Switch system version 20.2.0 up to 20.4.0.
 * Added support for the matchmaking protocol of Monster Hunter XX (3DS).
