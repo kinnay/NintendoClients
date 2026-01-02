@@ -59,6 +59,17 @@ LOGIN_REQUEST_2000 = \
 	"Content-Type: application/x-www-form-urlencoded\r\n\r\n" \
 	"id=1234567890abcdef&password=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&appAuthNToken=app.token&naCountry=NL&isPersistent=true"
 
+LOGIN_REQUEST_2110 = \
+	"POST /1.0.0/login HTTP/1.1\r\n" \
+	"Host: localhost:12345\r\n" \
+	"Accept: */*\r\n" \
+	"User-Agent: libcurl (nnAccount; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 21.4.0.0; Add-on 21.4.0.0)\r\n" \
+	"Content-Type: application/x-www-form-urlencoded\r\n" \
+	"Authorization: Bearer access.token\r\n" \
+	"X-Nintendo-PowerState: FA\r\n" \
+	"Content-Length: 124\r\n\r\n" \
+	"id=1234567890abcdef&password=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&appAuthNToken=app.token&naCountry=NL&isPersistent=true"
+
 REGISTER_REQUEST = \
 	"POST /1.0.0/users HTTP/1.1\r\n" \
 	"Host: localhost:12345\r\n" \
@@ -195,6 +206,26 @@ async def test_login_2000():
 		client = baas.BAASClient()
 		client.set_host("localhost:12345")
 		client.set_system_version(2000)
+		client.set_context(None)
+		response = await client.login(
+			0x1234567890abcdef, "a" * 40, "access.token", "app.token", "NL"
+		)
+		assert response["idToken"] == "id.token"
+
+@pytest.mark.anyio
+async def test_login_2110():
+	async def handler(client, request):
+		assert request.encode().decode() == LOGIN_REQUEST_2110
+		response = http.HTTPResponse(200)
+		response.json = {
+			"idToken": "id.token"
+		}
+		return response
+	
+	async with http.serve(handler, "localhost", 12345):
+		client = baas.BAASClient()
+		client.set_host("localhost:12345")
+		client.set_system_version(2110)
 		client.set_context(None)
 		response = await client.login(
 			0x1234567890abcdef, "a" * 40, "access.token", "app.token", "NL"
