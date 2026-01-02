@@ -35,8 +35,11 @@ Provides a client for the [BaaS server](https://github.com/kinnay/nintendo/wiki/
 <code>**def set_context**(context: [TLSContext](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscontext)) -> None</code><br>
 <span class="docs">Changes the TLS context. By default, the server certificate is verified with default authorities.</span>
 
+<code>**def set_certificate**(cert: [TLSCertificate](https://anynet.readthedocs.io/en/latest/reference/tls/#tlscertificate), key: [TLSPrivateKey](https://anynet.readthedocs.io/en/latest/reference/tls/#tlsprivatekey)) -> None</code>
+<span class="docs">Changes the client certificate of the current TLS context. This is required on system version 21.0.0 and later, when `m-lp1.baas.nintendo.com` is contacted.</span>
+
 <code>**def set_host**(host: str) -> None</code><br>
-<span class="docs">Changes the server to which the HTTP requests are sent. The default is `e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com`.
+<span class="docs">Changes the server to which the HTTP requests are sent. By default, requests are sent to `e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com` or `m-lp1.baas.nintendo.com`, depending on the system version.
 
 <code>**def set_power_state**(state: str) -> None</code><br>
 <span class="docs">Changes the content of the `X-Nintendo-PowerState` header. The default is `"FA"`.
