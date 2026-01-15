@@ -63,9 +63,10 @@ USER_AGENT = {
 	2100: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 21.4.0.0; Add-on 21.4.0.0)",
 	2101: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 21.4.0.0; Add-on 21.4.0.0)",
 	2110: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 21.4.0.0; Add-on 21.4.0.0)",
+	2120: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 21.4.0.0; Add-on 21.4.0.0)",
 }
 
-LATEST_VERSION = 2110
+LATEST_VERSION = 2120
 
 
 class PresenceState:

@@ -64,9 +64,10 @@ API_VERSION = {
 	2100: 2,
 	2101: 2,
 	2110: 2,
+	2120: 2,
 }
 
-LATEST_VERSION = 2110
+LATEST_VERSION = 2120
 
 
 class DragonsError(Exception):

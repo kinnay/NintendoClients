@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 USER_AGENT = "NintendoSDK Firmware/%s (platform:NX; did:%016x; eid:lp1)"
 
-LATEST_VERSION = 2110
+LATEST_VERSION = 2120
 
 
 class SunError(Exception):
