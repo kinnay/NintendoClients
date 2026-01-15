@@ -7,8 +7,6 @@ For Switch servers, the latest system version that is currently supported is **2
 
 For talk about research, feel free to join the [Discord server](https://discord.gg/x8np6Hhxwk) or open a [discussion](https://github.com/kinnay/NintendoClients/discussions) on GitHub.
 
-Consider becoming a [sponsor](https://github.com/sponsors/kinnay).
-
 ### Installation
 This package requires Python 3.8 or later and can be installed with pip: `pip install nintendoclients`. This package uses [semantic versioning](https://semver.org/).
 
@@ -35,3 +33,8 @@ This package requires Python 3.8 or later and can be installed with pip: `pip in
 * **custom/**
     * **server.py:** Shows how to create a simple game server with both an authentication server and a secure server.
     * **server_login.py:** Logs in on a game server and disconnects immediately. This can be used to test custom servers.
+
+### Sponsorship
+Consider becoming a [sponsor](https://github.com/sponsors/kinnay) if you would like to support this project.
+
+If you become a sponsor, I will be able to spend more time on this project, which will lead to faster updates. In addition, you will be given priority for personal support and feature suggestions.
