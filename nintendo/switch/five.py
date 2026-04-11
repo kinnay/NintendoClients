@@ -62,9 +62,11 @@ USER_AGENT = {
 	2101: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 21.4.0.0; Add-on 21.4.0.0)",
 	2110: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 21.4.0.0; Add-on 21.4.0.0)",
 	2120: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 21.4.0.0; Add-on 21.4.0.0)",
+	2200: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 22.2.0.0; Add-on 22.2.0.0)",
+	2210: "libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 22.2.0.0; Add-on 22.2.0.0)",
 }
 
-LATEST_VERSION = 2120
+LATEST_VERSION = 2210
 
 LANGUAGES = [
 	"en-US", "en-GB", "ja", "fr", "de", "es-419", "es", "it", "nl"
