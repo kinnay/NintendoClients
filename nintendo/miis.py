@@ -3,13 +3,13 @@ from anynet import streams
 import struct
 
 
-def swap32(data, offs):
+def swap32(data: bytearray, offs: int) -> None:
 	struct.pack_into("<I", data, offs, struct.unpack_from(">I", data, offs)[0])
 
-def swap16(data, offs):
+def swap16(data: bytearray, offs: int) -> None:
 	struct.pack_into("<H", data, offs, struct.unpack_from(">H", data, offs)[0])
 
-def crc16(data):
+def crc16(data: bytes) -> int:
 	hash = 0
 	for char in data:
 		for i in range(8):
@@ -35,19 +35,117 @@ HairColors = [
 	
 	
 class MiiData:
-	#This struct contains tightly packed bit fields holding
-	#enough information to generate a model of this mii
+	"""
+	This struct contains tightly packed bit fields holding
+	enough information to generate a model of this mii on the Wii U
 	
-	#Names may contain all characters except '%' and '\'
-	#Most other fields are also limited to a range of
-	#values, as indicated by the comments behind them
+	Names may contain all characters except '%' and '\'
+	Most other fields are also limited to a range of
+	values, as indicated by the comments behind them
 
-	#If this struct contains invalid values the Wii U is likely
-	#going to crash when it tries to render the mii model
+	If this struct contains invalid values the Wii U is likely
+	going to crash when it tries to render the mii model
+	"""
+
+	birth_platform: int
+	unk1: int
+	unk2: int
+	unk3: int
+	font_region: int
+	region_move: int
+	unk4: int
+	copyable: bool
+	mii_version: int
+
+	author_id: list[int]
+	mii_id: list[int]
+
+	unk5: bytes
+
+	unk6: int
+	unk7: int
+	color: int
+	birth_day: int
+	birth_month: int
+	gender: int
+
+	mii_name: str
+	size: int
+	fatness: int
+
+	blush_type: int
+	face_style: int
+	face_color: int
+	face_type: int
+	local_only: bool
+	hair_mirrored: bool
+	hair_color: int
+	hair_type: int
+
+	eye_thickness: int
+	eye_scale: int
+	eye_color: int
+	eye_type: int
+	eye_height: int
+	eye_distance: int
+	eye_rotation: int
+
+	eyebrow_thickness: int
+	eyebrow_scale: int
+	eyebrow_color: int
+	eyebrow_type: int
+	eyebrow_height: int
+	eyebrow_distance: int
+	eyebrow_rotation: int
 	
-	def decode(self, stream):
+	nose_height: int
+	nose_scale: int
+	nose_type: int
+	mouth_thickness: int
+	mouth_scale: int
+	mouth_color: int
+	mouth_type: int
+
+	unk34: int
+	mustache_type: int
+	mouth_height: int
+	mustache_height: int
+	mustache_scale: int
+	beard_color: int
+	beard_type: int
+	
+	glass_height: int
+	glass_scale: int
+	glass_color: int
+	glass_type: int
+	unk43: int
+	mole_ypos: int
+	mole_xpos: int
+	mole_scale: int
+	mole_enabled: bool
+
+	creator_name: str
+
+	unk48: bytes
+
+	def __init__(self):
+		# We simply set all fields to zero in the constructor
+		self._decode(streams.StreamIn(bytes(0x60), ">"))
+
+	def build(self):
+		stream = streams.StreamOut(">")
+		self._encode(stream)
+		return stream.get()
+	
+	@classmethod
+	def parse(cls, data):
+		instance = cls()
+		instance._decode(streams.StreamIn(data, ">"))
+		return instance
+	
+	def _decode(self, stream: streams.StreamIn) -> None:
 		data = stream.read(0x60)
-		stream = streams.BitStreamIn(self.swap_endian(data), ">")
+		stream = streams.BitStreamIn(self._swap_endian(data), ">")
 
 		#FFLiMiiDataCore
 		self.birth_platform = stream.bits(4) #1 - 7
@@ -125,19 +223,19 @@ class MiiData:
 		self.mole_ypos = stream.bits(5) #0 - 30
 		self.mole_xpos = stream.bits(5) #0 - 16
 		self.mole_scale = stream.bits(4) #0 - 8
-		self.mole_enabled = stream.bit() #0 - 1
+		self.mole_enabled = bool(stream.bit()) #0 - 1
 		
 		#FFLiMiiDataOfficial
 		self.creator_name = stream.wchars(10).split("\0")[0]
 		
 		#FFLStoreData
 		self.unk48 = stream.read(2)
-		stream.u16() #CRC16 of this whole struct
+		stream.u16() # CRC16 of this whole struct
 		
 		if crc16(data) != 0:
 			raise ValueError("Mii data checksum not valid")
 		
-	def encode(self, outstream):
+	def _encode(self, outstream: streams.StreamOut) -> None:
 		stream = streams.BitStreamOut(">")
 
 		#FFLiMiiDataCore
@@ -224,11 +322,11 @@ class MiiData:
 		#FFLStoreData
 		stream.write(self.unk48)
 
-		data = self.swap_endian(stream.get())
+		data = self._swap_endian(stream.get())
 		outstream.write(data)
 		outstream.u16(crc16(data + b"\0\0"))
 		
-	def swap_endian(self, data):
+	def _swap_endian(self, data: bytes) -> bytes:
 		array = bytearray(data)
 		
 		#FFLiMiiDataCore
@@ -246,14 +344,3 @@ class MiiData:
 		swap16(array, 0x5C)
 		
 		return bytes(array)
-		
-	def build(self):
-		stream = streams.StreamOut(">")
-		self.encode(stream)
-		return stream.get()
-	
-	@classmethod
-	def parse(cls, data):
-		instance = cls()
-		instance.decode(streams.StreamIn(data, ">"))
-		return instance

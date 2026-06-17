@@ -14,11 +14,11 @@ MEDIA_TYPE_DIGITAL = 1
 MEDIA_TYPE_CARTRIDGE = 2
 
 
-def b64decode(text):
+def b64decode(text: str) -> bytes:
 	text = text.replace(".", "+").replace("-", "/").replace("*", "=")
 	return base64.b64decode(text)
 
-def b64encode(text):
+def b64encode(text: str | bytes) -> str:
 	# Convert to bytes if necessary
 	if isinstance(text, str):
 		text = text.encode()
@@ -26,13 +26,13 @@ def b64encode(text):
 	text = base64.b64encode(text).decode()
 	return text.replace("+", ".").replace("/", "-").replace("=", "*")
 
-def decode_form(form):
+def decode_form(form: dict[str, str]) -> dict[str, bytes]:
 	return {key: b64decode(value) for key, value in form.items()}
 
-def encode_form(form):
+def encode_form(form: dict[str, str | bytes]) -> dict[str, str]:
 	return {key: b64encode(value) for key, value in form.items()}
 
-def parse_date(text):
+def parse_date(text: str) -> datetime.datetime:
 	return datetime.datetime.strptime(text, "%Y%m%d%H%M%S")
 
 
@@ -46,7 +46,12 @@ def parse_date(text):
 #   125: game id is invalid
 
 class NASCError(Exception):
-	def __init__(self, status_code, form):
+	status_code: int
+	return_code: int | None
+	retry: bool
+	datetime: datetime.datetime
+
+	def __init__(self, status_code: int, form: dict[str, bytes]):
 		self.status_code = status_code
 		
 		returncd = form["returncd"].decode()
@@ -54,129 +59,167 @@ class NASCError(Exception):
 		self.retry = bool(int(form["retry"].decode()))
 		self.datetime = parse_date(form["datetime"].decode())
 	
-	def __str__(self):
+	def __str__(self) -> str:
 		if self.return_code is None:
 			return "NASC request failed with error code null"
 		return "NASC request failed with error code %i" %self.return_code
 
 
 class LoginResponse:
-	def __init__(self):
-		self.host = None
-		self.port = None
-		self.token = None
-		self.datetime = None
+	host: str
+	port: int
+	token: str
+	datetime: datetime.datetime
 
-	@classmethod
-	def parse(cls, form):
+	def __init__(self, form: dict[str, bytes]):
 		host, port = form["locator"].decode().split(":")
 		
-		inst = cls()
-		inst.host = host
-		inst.port = int(port)
-		inst.token = b64encode(form["token"])
-		inst.datetime = parse_date(form["datetime"].decode())
-		return inst
+		self.host = host
+		self.port = int(port)
+		self.token = b64encode(form["token"])
+		self.datetime = parse_date(form["datetime"].decode())
 
 
 class NASCClient:
+	_url: str
+
+	_context: tls.TLSContext
+
+	_sdk_version_major: int
+	_sdk_version_minor: int
+
+	_title_id: int | None
+	_title_version: int | None
+	_product_code: str
+	_maker_code: str
+	_media_type: int
+	_rom_id: bytes | None
+
+	_serial_number: str | None
+	_mac_address: str | None
+	_fcd_cert: bytes | None
+	_device_name: str
+	_unit_code: str
+
+	_bss_id: str
+	_ap_info: str
+
+	_region: int
+	_language: int
+
+	_pid: int | None
+	_pid_hmac: str | None
+	_password: str | None
+
+	_fpd_version: int
+	_environment: str
+
 	def __init__(self):
-		self.url = "nasc.nintendowifi.net"
+		self._url = "nasc.nintendowifi.net"
 
 		ca = resources.certificate("Nintendo_CA_G3.der")
 		cert = resources.certificate("CTR_Common_Prod_1.der")
 		key = resources.private_key("CTR_Common_Prod_1.key")
 
-		self.context = tls.TLSContext()
-		self.context.set_authority(ca)
-		self.context.set_certificate(cert, key)
+		self._context = tls.TLSContext()
+		self._context.set_authority(ca)
+		self._context.set_certificate(cert, key)
 		
-		self.sdk_version_major = 0
-		self.sdk_version_minor = 0
+		self._sdk_version_major = 0
+		self._sdk_version_minor = 0
 		
-		self.title_id = None
-		self.title_version = None
-		self.product_code = "----"
-		self.maker_code = "00"
-		self.media_type = MEDIA_TYPE_SYSTEM
-		self.rom_id = None
+		self._title_id = None
+		self._title_version = None
+		self._product_code = "----"
+		self._maker_code = "00"
+		self._media_type = MEDIA_TYPE_SYSTEM
+		self._rom_id = None
 		
-		self.serial_number = None
-		self.mac_address = None
-		self.fcd_cert = None
-		self.device_name = ""
-		self.unit_code = "2"
+		self._serial_number = None
+		self._mac_address = None
+		self._fcd_cert = None
+		self._device_name = ""
+		self._unit_code = "2"
 		
-		self.bss_id = secrets.token_hex(6)
-		self.ap_info = "01:0000000000"
+		self._bss_id = secrets.token_hex(6)
+		self._ap_info = "01:0000000000"
 		
-		self.region = 3
-		self.language = 2
+		self._region = 3
+		self._language = 2
 		
-		self.pid = None
-		self.pid_hmac = None
-		self.password = None
+		self._pid = None
+		self._pid_hmac = None
+		self._password = None
 		
-		self.fpd_version = 16
-		self.environment = "L1"
+		self._fpd_version = 16
+		self._environment = "L1"
 	
-	def set_context(self, context):
-		self.context = context
+	def set_context(self, context: tls.TLSContext) -> None:
+		self._context = context
 	
-	def set_url(self, url): self.url = url
+	def set_url(self, url: str) -> None:
+		self._url = url
 	
-	def set_sdk_version(self, major_version, minor_version):
-		self.sdk_major_version = major_version
-		self.sdk_minor_version = minor_version
+	def set_sdk_version(self, major_version: int, minor_version: int) -> None:
+		self._sdk_major_version = major_version
+		self._sdk_minor_version = minor_version
 	
 	def set_title(
-		self, title_id, title_version, product_code="----", maker_code="00",
-		media_type=MEDIA_TYPE_SYSTEM, rom_id=None
+		self, title_id: int, title_version: int, product_code: str = "----",
+		maker_code: str = "00", media_type: int = MEDIA_TYPE_SYSTEM,
+		rom_id: bytes | None = None
 	):
 		if media_type == MEDIA_TYPE_CARTRIDGE and rom_id is None:
 			raise ValueError("Rom ID is required for cartridge media type")
 		
-		self.title_id = title_id
-		self.title_version = title_version
-		self.product_code = product_code
-		self.maker_code = maker_code
-		self.media_type = media_type
-		self.rom_id = rom_id
+		self._title_id = title_id
+		self._title_version = title_version
+		self._product_code = product_code
+		self._maker_code = maker_code
+		self._media_type = media_type
+		self._rom_id = rom_id
 	
-	def set_device(self, serial_number, mac_address, fcd_cert, name="", unit_code="2"):
-		self.serial_number = serial_number
-		self.mac_address = mac_address
-		self.fcd_cert = fcd_cert
-		self.device_name = name
-		self.unit_code = unit_code
+	def set_device(
+		self, serial_number: str, mac_address: str, fcd_cert: bytes,
+		name: str = "", unit_code: str = "2"
+	) -> None:
+		self._serial_number = serial_number
+		self._mac_address = mac_address
+		self._fcd_cert = fcd_cert
+		self._device_name = name
+		self._unit_code = unit_code
 	
-	def set_network(self, bss_id, ap_info):
-		self.bss_id = bss_id
-		self.ap_info = ap_info
+	def set_network(self, bss_id: str, ap_info: str) -> None:
+		self._bss_id = bss_id
+		self._ap_info = ap_info
 	
-	def set_locale(self, region, language):
-		self.region = region
-		self.language = language
+	def set_locale(self, region: int, language: int) -> None:
+		self._region = region
+		self._language = language
 	
-	def set_user(self, pid, pid_hmac):
-		self.pid = pid
-		self.pid_hmac = pid_hmac
-		self.password = None
+	def set_user(self, pid: int, pid_hmac: str) -> None:
+		self._pid = pid
+		self._pid_hmac = pid_hmac
+		self._password = None
 		
-	def set_password(self, password):
-		self.pid = None
-		self.pid_hmac = None
-		self.password = password
+	def set_password(self, password: str) -> None:
+		self._pid = None
+		self._pid_hmac = None
+		self._password = password
 	
-	def set_fpd_version(self, version): self.fpd_version = version
-	def set_environment(self, environment): self.environment = environment
+	def set_fpd_version(self, version: int) -> None:
+		self._fpd_version = version
+	
+	def set_environment(self, environment: str) -> None:
+		self._environment = environment
 
-	async def request(self, req):
+	async def request(self, req: http.HTTPRequest) -> http.HTTPResponse:
 		# Apply Nintendo's custom base64 encoding
 		req.form = encode_form(req.form)
 		
-		# Must manually decode form here since server doesn't return correct content-type
-		response = await http.request(self.url, req, self.context)
+		# Must manually decode form here since server doesn't return correct
+		# content-type
+		response = await http.request(self._url, req, self._context)
 		response.form = decode_form(http.formdecode(response.text))
 		
 		return_code = response.form["returncd"].decode()
@@ -185,18 +228,23 @@ class NASCClient:
 		
 		return response
 
-	async def login(self, game_server_id, nickname=""):
-		if self.title_id is None:
+	async def login(
+		self, game_server_id: int, nickname: str = ""
+	) -> LoginResponse:
+		if self._title_id is None:
 			raise ValueError("Please configure the title (set_title)")
-		if self.serial_number is None:
+		if self._serial_number is None:
 			raise ValueError("Please configure the device (set_device)")
-		if self.pid is None and self.password is None:
-			raise ValueError("Please configure a user id or password (set_user / set_password)")
+		if self._pid is None and self._password is None:
+			raise ValueError(
+				"Please configure a user id or password " \
+				"(set_user / set_password)"
+			)
 		
 		req = http.HTTPRequest.post("/ac")
-		req.headers["Host"] = self.url
-		req.headers["X-GameId"] = "%08X" %game_server_id
-		req.headers["User-Agent"] = "CTR FPD/%04X" %self.fpd_version
+		req.headers["Host"] = self._url
+		req.headers["X-GameId"] = f"{game_server_id:08X}"
+		req.headers["User-Agent"] = f"CTR FPD/{self._fpd_version:04X}"
 		
 		# The real 3DS seems to add this header twice for some reason
 		req.headers.add("Content-Type", "application/x-www-form-urlencoded")
@@ -206,34 +254,35 @@ class NASCClient:
 		device_time = now.strftime("%y%m%d%H%M%S")
 
 		req.form = {}
-		req.form["gameid"] = "%08X" %game_server_id
-		req.form["sdkver"] = "%03i%03i" %(self.sdk_version_major, self.sdk_version_minor)
-		req.form["titleid"] = "%016X" %self.title_id
-		req.form["gamecd"] = self.product_code
-		req.form["gamever"] = "%04X" %self.title_version
-		req.form["mediatype"] = str(self.media_type)
-		if self.media_type == MEDIA_TYPE_CARTRIDGE:
-			req.form["romid"] = self.rom_id
-		req.form["makercd"] = self.maker_code
-		req.form["unitcd"] = self.unit_code
-		req.form["macadr"] = self.mac_address
-		req.form["bssid"] = self.bss_id
-		req.form["apinfo"] = self.ap_info
-		req.form["fcdcert"] = self.fcd_cert
-		req.form["devname"] = self.device_name.encode("utf-16-le")
-		req.form["servertype"] = self.environment
-		req.form["fpdver"] = "%04X" %self.fpd_version
+		req.form["gameid"] = f"{game_server_id:08X}"
+		req.form["sdkver"] = \
+			f"{self._sdk_version_major:03}{self._sdk_version_minor:03}"
+		req.form["titleid"] = f"{self._title_id:016X}"
+		req.form["gamecd"] = self._product_code
+		req.form["gamever"] = f"{self._title_version:04X}"
+		req.form["mediatype"] = str(self._media_type)
+		if self._media_type == MEDIA_TYPE_CARTRIDGE:
+			req.form["romid"] = self._rom_id
+		req.form["makercd"] = self._maker_code
+		req.form["unitcd"] = self._unit_code
+		req.form["macadr"] = self._mac_address
+		req.form["bssid"] = self._bss_id
+		req.form["apinfo"] = self._ap_info
+		req.form["fcdcert"] = self._fcd_cert
+		req.form["devname"] = self._device_name.encode("utf-16-le")
+		req.form["servertype"] = self._environment
+		req.form["fpdver"] = f"{self._fpd_version:04X}"
 		req.form["devtime"] = device_time
-		req.form["lang"] = "%02X" %self.language
-		req.form["region"] = "%02X" %self.region
-		req.form["csnum"] = self.serial_number
-		if self.pid_hmac is not None:
-			req.form["uidhmac"] = self.pid_hmac
-			req.form["userid"] = str(self.pid)
+		req.form["lang"] = f"{self._language:02X}"
+		req.form["region"] = f"{self._region:02X}"
+		req.form["csnum"] = self._serial_number
+		if self._pid_hmac is not None:
+			req.form["uidhmac"] = self._pid_hmac
+			req.form["userid"] = str(self._pid)
 		else:
-			req.form["passwd"] = self.password
+			req.form["passwd"] = self._password
 		req.form["action"] = "LOGIN"
 		req.form["ingamesn"] = nickname
 		
 		response = await self.request(req)
-		return LoginResponse.parse(response.form)
+		return LoginResponse(response.form)

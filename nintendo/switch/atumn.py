@@ -2,9 +2,13 @@
 from anynet import tls, http
 from nintendo import resources
 from nintendo.switch import common
+from typing import Awaitable, Callable
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+type RequestCallback = Callable[..., Awaitable[http.HTTPResponse]]
 
 
 USER_AGENT = "NintendoSDK Firmware/%s (platform:NX; did:%016x; eid:lp1)"
@@ -13,56 +17,77 @@ LATEST_VERSION = 2210
 
 
 class AtumnClient:
-	def __init__(self, device_id):
-		self.device_id = device_id
+	_device_id: int
+	_request_callback: RequestCallback
+	_context: tls.TLSContext
+	_host: str
+	_user_agent: str
+
+	def __init__(self, device_id: int):
+		self._device_id = device_id
 		
-		self.request_callback = http.request
+		self._request_callback = http.request
 		
 		ca = resources.certificate("Nintendo_Class_2_CA_G3.der")
-		self.context = tls.TLSContext()
-		self.context.set_authority(ca)
+		self._context = tls.TLSContext()
+		self._context.set_authority(ca)
 		
-		self.host = "atumn.hac.lp1.d4c.nintendo.net"
+		self._host = "atumn.hac.lp1.d4c.nintendo.net"
 		
-		self.user_agent = USER_AGENT %(common.FIRMWARE_VERSIONS[LATEST_VERSION], self.device_id)
+		self._user_agent = USER_AGENT %(
+			common.FIRMWARE_VERSIONS[LATEST_VERSION], self._device_id
+		)
 	
-	def set_request_callback(self, callback): self.request_callback = callback
+	def set_request_callback(self, callback: RequestCallback) -> None:
+		self._request_callback = callback
 	
-	def set_context(self, context): self.context = context
-	def set_certificate(self, cert, key): self.context.set_certificate(cert, key)
+	def set_context(self, context: tls.TLSContext) -> None:
+		self._context = context
 	
-	def set_host(self, host): self.host = host
+	def set_certificate(
+		self, cert: tls.TLSCertificate, key: tls.TLSPrivateKey
+	) -> None:
+		self._context.set_certificate(cert, key)
 	
-	def set_system_version(self, version):
+	def set_host(self, host: str) -> None:
+		self._host = host
+	
+	def set_system_version(self, version: int) -> None:
 		if version not in common.FIRMWARE_VERSIONS:
-			raise ValueError("Unknown system version: %i" %version)
-		self.user_agent = USER_AGENT %(common.FIRMWARE_VERSIONS[version], self.device_id)
-	
-	async def request(self, req):
-		req.headers["Host"] = self.host
-		req.headers["Accept"] = "*/*"
-		req.headers["User-Agent"] = self.user_agent
-		
-		response = await self.request_callback(self.host, req, self.context)
-		response.raise_if_error()
-		return response
+			raise ValueError(f"Unknown system version: {version}")
+		self._user_agent = USER_AGENT %(
+			common.FIRMWARE_VERSIONS[version], self._device_id
+		)
 
-	async def download_content_metadata(self, title_id, title_version, *, system_update=False):
+	async def download_content_metadata(
+		self, title_id: int, title_version: int, *, system_update: bool = False
+	) -> bytes:
 		content_type = "s" if system_update else "a"
 
-		req = http.HTTPRequest.head("/t/%c/%016x/%i" %(content_type, title_id, title_version))
+		req = http.HTTPRequest.head(
+			f"/t/{content_type}/{title_id:016x}/{title_version}"
+		)
 		req.params = {
-			"device_id": "%016x" %self.device_id
+			"device_id": f"{self._device_id:016x}"
 		}
 
-		response = await self.request(req)
+		response = await self._request(req)
 		content_id = response.headers["X-Nintendo-Content-ID"]
 
-		req = http.HTTPRequest.get("/c/%s/%s" %(content_type, content_id))
-		response = await self.request(req)
+		req = http.HTTPRequest.get(f"/c/{content_type}/{content_id}")
+		response = await self._request(req)
 		return response.body
 	
-	async def download_content(self, content_id):
-		req = http.HTTPRequest.get("/c/c/%s" %content_id)
-		response = await self.request(req)
+	async def download_content(self, content_id: str) -> bytes:
+		req = http.HTTPRequest.get(f"/c/c/{content_id}")
+		response = await self._request(req)
 		return response.body
+	
+	async def _request(self, req: http.HTTPRequest) -> http.HTTPResponse:
+		req.headers["Host"] = self._host
+		req.headers["Accept"] = "*/*"
+		req.headers["User-Agent"] = self._user_agent
+		
+		response = await self._request_callback(self._host, req, self._context)
+		response.raise_if_error()
+		return response

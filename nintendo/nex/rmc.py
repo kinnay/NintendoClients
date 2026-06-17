@@ -1,12 +1,19 @@
 
-from nintendo.nex import prudp, common, streams
-from anynet import util
+from anynet import tls, util
+from nintendo.nex import prudp, common, kerberos, settings, streams
+from typing import AsyncIterator, Self
+
+import anyio
+import anyio.abc
 import contextlib
 import struct
-import anyio
+import typing
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+Settings = settings.Settings
 
 
 class RMCResponse:
@@ -16,20 +23,32 @@ class RMCResponse:
 class RMCMessage:
 	REQUEST = 0
 	RESPONSE = 1
+
+	settings: Settings
+
+	mode: int
+	protocol: int
+	method: int
+	call_id: int
+	result: int
+	body: bytes
 	
-	def __init__(self, settings):
+	def __init__(self, settings: Settings):
 		self.settings = settings
 		
 		self.mode = RMCMessage.REQUEST
-		self.protocol = None
-		self.method = None
+		self.protocol = 0
+		self.method = 0
 		self.call_id = 0
-		self.error = -1
+		self.result = -1
 		self.body = b""
 		
-	@staticmethod
-	def prepare(settings, mode, protocol, method, call_id, body):
-		inst = RMCMessage(settings)
+	@classmethod
+	def prepare(
+		cls, settings: Settings, mode: int, protocol: int, method: int,
+		call_id: int, body: bytes
+	) -> Self:
+		inst = cls(settings)
 		inst.mode = mode
 		inst.protocol = protocol
 		inst.method = method
@@ -37,35 +56,44 @@ class RMCMessage:
 		inst.body = body
 		return inst
 		
-	@staticmethod
-	def request(settings, protocol, method, call_id, body):
-		return RMCMessage.prepare(
+	@classmethod
+	def request(
+		cls, settings: Settings, protocol: int, method: int,
+		call_id: int, body: bytes
+	) -> Self:
+		return cls.prepare(
 			settings, RMCMessage.REQUEST, protocol, method, call_id, body
 		)
 		
-	@staticmethod
-	def response(settings, protocol, method, call_id, body):
-		return RMCMessage.prepare(
+	@classmethod
+	def response(
+		cls, settings: Settings, protocol: int, method: int,
+		call_id: int, body: bytes
+	) -> Self:
+		return cls.prepare(
 			settings, RMCMessage.RESPONSE, protocol, method, call_id, body
 		)
 		
-	@staticmethod
-	def error(settings, protocol, method, call_id, error):
-		inst = RMCMessage(settings)
+	@classmethod
+	def error(
+		cls, settings: Settings, protocol: int, method: int,
+		call_id: int, error: int
+	) -> Self:
+		inst = cls(settings)
 		inst.mode = RMCMessage.RESPONSE
 		inst.protocol = protocol
 		inst.method = method
 		inst.call_id = call_id
-		inst.error = error
+		inst.result = error
 		return inst
 	
-	@staticmethod
-	def parse(settings, data):
-		inst = RMCMessage(settings)
+	@classmethod
+	def parse(cls, settings: Settings, data: bytes) -> Self:
+		inst = cls(settings)
 		inst.decode(data)
 		return inst
 		
-	def encode(self):
+	def encode(self) -> bytes:
 		stream = streams.StreamOut(self.settings)
 		
 		flag = 0x80 if self.mode == self.REQUEST else 0
@@ -80,9 +108,9 @@ class RMCMessage:
 			stream.u32(self.method)
 			stream.write(self.body)
 		else:
-			if self.error != -1 and self.error & 0x80000000:
+			if self.result != -1 and self.result & 0x80000000:
 				stream.bool(False)
-				stream.u32(self.error)
+				stream.u32(self.result)
 				stream.u32(self.call_id)
 			else:
 				stream.bool(True)
@@ -91,7 +119,7 @@ class RMCMessage:
 				stream.write(self.body)
 		return struct.pack("I", stream.size()) + stream.get()
 	
-	def decode(self, data):
+	def decode(self, data: bytes) -> None:
 		stream = streams.StreamIn(data, self.settings)
 		
 		length = stream.u32()
@@ -115,65 +143,88 @@ class RMCMessage:
 				self.method = stream.u32() & ~0x8000
 				self.body = stream.readall()
 			else:
-				self.error = stream.u32()
+				self.result = stream.u32()
 				self.call_id = stream.u32()
 				if not stream.eof():
 					raise ValueError("RMC error message is bigger than expected")
 
 
+class RMCHandler(typing.Protocol):
+	async def logout(self, client: RMCClient) -> None:
+		...
+	
+	async def handle(
+		self, client: RMCClient, method: int,
+		input: streams.StreamIn, output: streams.StreamOut
+	) -> None:
+		...
+
+
 class RMCClient:
-	def __init__(self, settings, client):
+	settings: settings.Settings
+
+	_client: prudp.PRUDPClient
+	_call_id: int
+
+	_servers: dict[int, RMCHandler]
+	_requests: dict[int, anyio.abc.Event]
+	_responses: dict[int, RMCMessage]
+
+	_closed: bool
+
+	def __init__(self, settings: Settings, client: prudp.PRUDPClient):
 		self.settings = settings.copy()
-		self.client = client
-		self.call_id = 1
+
+		self._client = client
+		self._call_id = 1
 		
-		if self.client.minor_version() >= 3:
+		if self._client.minor_version() >= 3:
 			self.settings["nex.struct_header"] = True
 		
-		self.servers = {}
-		self.requests = {}
-		self.responses = {}
+		self._servers = {}
+		self._requests = {}
+		self._responses = {}
 		
-		self.closed = False
+		self._closed = False
 
 	async def __aenter__(self): return self
 	async def __aexit__(self, typ, val, tb):
-		await self.cleanup()
+		await self._cleanup()
 	
-	def register_server(self, server):
-		if server.PROTOCOL_ID in self.servers:
+	def register_server(self, server) -> None:
+		if server.PROTOCOL_ID in self._servers:
 			raise ValueError("Server with protocol id %i already exists" %server.PROTOCOL_ID)
-		self.servers[server.PROTOCOL_ID] = server
+		self._servers[server.PROTOCOL_ID] = server
 	
-	async def cleanup(self):
-		if not self.closed:
-			self.closed = True
-			for event in self.requests.values():
+	async def _cleanup(self):
+		if not self._closed:
+			self._closed = True
+			for event in self._requests.values():
 				event.set()
 			
-			for server in self.servers.values():
+			for server in self._servers.values():
 				await server.logout(self)
 	
 	async def close(self):
-		if not self.closed:
-			await self.cleanup()
-			await self.client.close()
+		if not self._closed:
+			await self._cleanup()
+			await self._client.close()
 	
 	async def disconnect(self):
-		if not self.closed:
-			await self.cleanup()
-			await self.client.disconnect()
+		if not self._closed:
+			await self._cleanup()
+			await self._client.disconnect()
 	
-	async def start(self, servers):
+	async def start(self, servers: list[RMCHandler]) -> None:
 		for server in servers:
 			self.register_server(server)
 		
-		while not self.closed:
+		while not self._closed:
 			try:
-				data = await self.client.recv()
+				data = await self._client.recv()
 			except anyio.EndOfStream:
 				logger.info("Connection was closed")
-				await self.cleanup()
+				await self._cleanup()
 				return
 			
 			message = RMCMessage.parse(self.settings, data)
@@ -182,27 +233,28 @@ class RMCClient:
 					"Received RMC request: protocol=%i method=%i call=%i",
 					message.protocol, message.method, message.call_id
 				)
-				await self.handle_request(message)
+				await self._handle_request(message)
 			else:
 				logger.debug(
 					"Received RMC response: protocol=%i method=%s call=%i",
 					message.protocol, message.method, message.call_id
 				)
-				if message.call_id in self.requests:
-					self.responses[message.call_id] = message
-					event = self.requests.pop(message.call_id)
+				if message.call_id in self._requests:
+					self._responses[message.call_id] = message
+					event = self._requests.pop(message.call_id)
 					event.set()
 				else:
 					logger.warning("RMC response has invalid call id")
 	
-	async def handle_request(self, request):
+	async def _handle_request(self, request: RMCMessage) -> None:
 		input = streams.StreamIn(request.body, self.settings)
 		output = streams.StreamOut(self.settings)
 		
 		result = common.Result()
-		if request.protocol in self.servers:
+		if request.protocol in self._servers:
 			try:
-				await self.servers[request.protocol].handle(self, request.method, input, output)
+				server = self._servers[request.protocol]
+				await server.handle(self, request.method, input, output)
 			except common.RMCError as e:
 				logger.warning("RMC failed: %s" %e)
 				result = e.result()
@@ -213,18 +265,10 @@ class RMCClient:
 				elif isinstance(e, IndexError): result = common.Result.error("PythonCore::IndexError")
 				elif isinstance(e, MemoryError): result = common.Result.error("PythonCore::MemoryError")
 				elif isinstance(e, KeyError): result = common.Result.error("PythonCore::KeyError")
-				else: result = common.Result.error("PythonCore::Exception")
-			except anyio.ExceptionGroup as e:
-				logger.exception("Multiple exceptions occurred while handling a method call")
-				
-				filtered = []
-				for exc in e.exceptions:
-					if not isinstance(exc, Exception):
-						raise
-				
-				result = common.Result.error("PythonCore::Exception")
+				else:
+					result = common.Result.error("PythonCore::Exception")
 			
-			if getattr(self.servers[request.protocol], "NORESPONSE", False):
+			if getattr(self._servers[request.protocol], "NORESPONSE", False):
 				return
 		else:
 			logger.warning("Received RMC request with unimplemented protocol id: %i", request.protocol)
@@ -240,66 +284,83 @@ class RMCClient:
 				self.settings, request.protocol, request.method,
 				request.call_id, result.code()
 			)
-		await self.client.send(response.encode())
+		await self._client.send(response.encode())
 	
-	async def request(self, protocol, method, body, noresponse=False):
-		if self.closed:
+	async def request(
+		self, protocol: int, method: int, body: bytes,
+		noresponse: bool = False
+	) -> bytes:
+		if self._closed:
 			raise RuntimeError("RMC connection is closed")
 		
-		call_id = self.call_id
-		self.call_id = (self.call_id + 1) & 0xFFFFFFFF
+		call_id = self._call_id
+		self._call_id = (self._call_id + 1) & 0xFFFFFFFF
 		
 		if not noresponse:
 			event = anyio.Event()
-			self.requests[call_id] = event
+			self._requests[call_id] = event
 		
 		message = RMCMessage.request(self.settings, protocol, method, call_id, body)
-		await self.client.send(message.encode())
+		await self._client.send(message.encode())
 		
 		if not noresponse:
 			await event.wait()
 			
-			if self.closed:
+			if self._closed:
 				raise RuntimeError("RMC connection is closed")
 			
-			message = self.responses.pop(call_id)
-			if message.error != -1:
-				raise common.RMCError(message.error)
+			message = self._responses.pop(call_id)
+			if message.result != -1:
+				raise common.RMCError(message.result)
 			return message.body
+		
+		return b""
 	
-	def pid(self): return self.client.pid()
+	def pid(self) -> int | None:
+		return self._client.pid()
 	
-	def local_address(self):
-		return self.client.local_address()
-	def remote_address(self):
-		return self.client.remote_address()
+	def local_address(self) -> tuple[str, int]:
+		return self._client.local_address()
 	
-	def local_sid(self):
-		return self.client.local_sid()
-	def remote_sid(self):
-		return self.client.remote_sid()
+	def remote_address(self) -> tuple[str, int]:
+		return self._client.remote_address()
+	
+	def local_sid(self) -> int:
+		return self._client.local_sid()
+	
+	def remote_sid(self) -> int:
+		return self._client.remote_sid()
 
 
 @contextlib.asynccontextmanager
-async def connect(settings, host, port, vport=1, context=None, credentials=None, servers=[]):
+async def connect(
+	settings: Settings, host: str, port: int, vport: int = 1,
+	context: tls.TLSContext | None = None,
+	credentials: kerberos.Credentials | None = None,
+	servers: list[RMCHandler] = []
+) -> AsyncIterator[RMCClient]:
 	logger.debug("Connecting RMC client to %s:%i:%i", host, port, vport)
 	async with prudp.connect(settings, host, port, vport, 10, context, credentials) as client:
-		client = RMCClient(settings, client)
-		async with client:
+		rmc = RMCClient(settings, client)
+		async with rmc:
 			async with util.create_task_group() as group:
-				group.start_soon(client.start, servers)
-				yield client
+				group.start_soon(rmc.start, servers)
+				yield rmc
 	logger.debug("RMC client is closed")
 
 @contextlib.asynccontextmanager
-async def serve(settings, servers, host="", port=0, vport=1, context=None, key=None):
-	async def handle(client):
+async def serve(
+	settings: Settings, servers: list[RMCHandler], host: str = "",
+	port: int = 0, vport: int = 1, context: tls.TLSContext | None = None,
+	key: bytes | None = None
+) -> AsyncIterator[None]:
+	async def handle(client: prudp.PRUDPClient) -> None:
 		host, port = client.remote_address()
 		logger.debug("New RMC connection: %s:%i", host, port)
 		
-		client = RMCClient(settings, client)
-		async with client:
-			await client.start(servers)
+		rmc = RMCClient(settings, client)
+		async with rmc:
+			await rmc.start(servers)
 	
 	logger.info("Starting RMC server at %s:%i:%i", host, port, vport)
 	async with prudp.serve(handle, settings, host, port, vport, 10, context, key):
@@ -307,7 +368,10 @@ async def serve(settings, servers, host="", port=0, vport=1, context=None, key=N
 	logger.info("RMC server is closed")
 
 @contextlib.asynccontextmanager
-async def serve_on_transport(settings, servers, transport, port, key=None):
+async def serve_on_transport(
+	settings: Settings, servers: list[RMCHandler],
+	transport: prudp.PRUDPServerTransport, port: int, key: bytes | None = None
+) -> AsyncIterator[None]:
 	async def handle(client):
 		host, port = client.remote_address()
 		logger.debug("New RMC connection: %s:%i", host, port)

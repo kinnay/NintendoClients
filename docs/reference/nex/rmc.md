@@ -28,7 +28,7 @@ Provides a client and server for the RMC protocol. An alternative client that ca
 <code>**async def disconnect**() -> None</code><br>
 <span class="docs">Closes the connection gracefully by sending a reliable disconnect packet.</span>
 
-<code>**def pid**() -> int</code><br>
+<code>**def pid**() -> int | None</code><br>
 <span class="docs">Returns the user id of the connected client. Returns `None` if the client is connected without credentials.</span>
 
 <code>**def local_address**() -> tuple[str, int]</code><br>

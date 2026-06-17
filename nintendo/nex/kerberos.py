@@ -1,60 +1,71 @@
 
 from Crypto.Cipher import ARC4
-from nintendo.nex import streams
-import struct
-import secrets
+from dataclasses import dataclass
+from nintendo.nex import settings, streams
+from typing import Self
+
 import hashlib
 import hmac
+import secrets
+import struct
 
 
 class KeyDerivationOld:
-	def __init__(self, base_count = 65000, pid_count = 1024):
-		self.base_count = base_count
-		self.pid_count = pid_count
+	_base_count: int
+	_pid_count: int
+
+	def __init__(self, base_count: int = 65000, pid_count: int = 1024):
+		self._base_count = base_count
+		self._pid_count = pid_count
 		
-	def derive_key(self, password, pid):
+	def derive_key(self, password: bytes, pid: int) -> bytes:
 		key = password
-		for i in range(self.base_count + pid % self.pid_count):
+		for i in range(self._base_count + pid % self._pid_count):
 			key = hashlib.md5(key).digest()
 		return key
 		
 		
 class KeyDerivationNew:
-	def __init__(self, base_count = 1, pid_count = 1):
-		self.base_count = base_count
-		self.pid_count = pid_count
-		
-	def derive_key(self, password, pid):
+	_base_count: int
+	_pid_count: int
+
+	def __init__(self, base_count: int = 1, pid_count: int = 1):
+		self._base_count = base_count
+		self._pid_count = pid_count
+	
+	def derive_key(self, password: bytes, pid: int) -> bytes:
 		key = password
-		for i in range(self.base_count):
+		for i in range(self._base_count):
 			key = hashlib.md5(key).digest()
 			
 		key += struct.pack("<Q", pid)
-		for i in range(self.pid_count):
+		for i in range(self._pid_count):
 			key = hashlib.md5(key).digest()
 			
 		return key
 
 
 class KerberosEncryption:
-	def __init__(self, key):
-		self.key = key
+	_key: bytes
+
+	def __init__(self, key: bytes):
+		self._key = key
 		
-	def check(self, buffer):
+	def check(self, buffer: bytes) -> bool:
 		data = buffer[:-0x10]
 		checksum = buffer[-0x10:]
-		mac = hmac.new(self.key, data, digestmod=hashlib.md5)
-		return checksum == mac.digest()
+		mac = hmac.digest(self._key, data, "md5")
+		return checksum == mac
 		
-	def decrypt(self, buffer):
+	def decrypt(self, buffer: bytes) -> bytes:
 		if not self.check(buffer):
 			raise ValueError("Invalid Kerberos checksum (incorrect password)")
-		return ARC4.new(self.key).decrypt(buffer[:-0x10])
+		return ARC4.new(self._key).decrypt(buffer[:-0x10])
 		
-	def encrypt(self, buffer):
-		encrypted = ARC4.new(self.key).encrypt(buffer)
-		mac = hmac.new(self.key, encrypted, digestmod=hashlib.md5)
-		return encrypted + mac.digest()
+	def encrypt(self, buffer: bytes) -> bytes:
+		encrypted = ARC4.new(self._key).encrypt(buffer)
+		mac = hmac.digest(self._key, encrypted, "md5")
+		return encrypted + mac
 
 
 class ClientTicket:
@@ -64,9 +75,12 @@ class ClientTicket:
 		self.internal = b""
 	
 	@classmethod
-	def decrypt(cls, data, key, settings):
+	def decrypt(
+		cls, data: bytes, key: bytes, settings: settings.Settings
+	) -> Self:
 		kerberos = KerberosEncryption(key)
 		decrypted = kerberos.decrypt(data)
+
 		stream = streams.StreamIn(decrypted, settings)
 		
 		ticket = cls()
@@ -75,7 +89,7 @@ class ClientTicket:
 		ticket.internal = stream.buffer()
 		return ticket
 
-	def encrypt(self, key, settings):
+	def encrypt(self, key: bytes, settings: settings.Settings) -> bytes:
 		stream = streams.StreamOut(settings)
 		if settings["kerberos.key_size"] != len(self.session_key):
 			raise ValueError("Incorrect session_key size")
@@ -95,7 +109,9 @@ class ServerTicket:
 		self.session_key = None
 	
 	@classmethod
-	def decrypt(cls, data, key, settings):
+	def decrypt(
+		cls, data: bytes, key: bytes, settings: settings.Settings
+	) -> Self:
 		if settings["kerberos.ticket_version"] == 1:
 			stream = streams.StreamIn(data, settings)
 			ticket_key = stream.buffer()
@@ -113,7 +129,7 @@ class ServerTicket:
 		ticket.session_key = stream.read(settings["kerberos.key_size"])
 		return ticket
 
-	def encrypt(self, key, settings):
+	def encrypt(self, key: bytes, settings: settings.Settings) -> bytes:
 		stream = streams.StreamOut(settings)
 		stream.datetime(self.timestamp)
 		stream.pid(self.source)
@@ -139,8 +155,8 @@ class ServerTicket:
 		return encrypted
 
 
+@dataclass
 class Credentials:
-	def __init__(self, ticket, pid, cid):
-		self.ticket = ticket
-		self.pid = pid
-		self.cid = cid
+	ticket: ClientTicket
+	pid: int
+	cid: int

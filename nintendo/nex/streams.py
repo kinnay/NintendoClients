@@ -1,33 +1,43 @@
 
-from nintendo.nex import common
 from anynet import streams
+from nintendo.nex import common, settings
+from typing import Any, Callable
+
+
+List = list
+Settings = settings.Settings
 
 
 class StreamOut(streams.StreamOut):
-	def __init__(self, settings):
+	settings: Settings
+
+	def __init__(self, settings: Settings):
 		super().__init__("<")
 		self.settings = settings
 		
-	def pid(self, value):
+	def pid(self, value: int) -> None:
 		if self.settings["nex.pid_size"] == 8:
 			self.u64(value)
 		else:
 			self.u32(value)
 			
-	def result(self, result):
+	def result(self, result: common.Result) -> None:
 		self.u32(result.code())
 
-	def list(self, list, func):
+	def list[T](self, list: List[T], func: Callable[[T], None]) -> None:
 		self.u32(len(list))
 		self.repeat(list, func)
 		
-	def map(self, map, keyfunc, valuefunc):
+	def map[K, V](
+		self, map: dict[K, V], keyfunc: Callable[[K], None],
+		valuefunc: Callable[[V], None]
+	) -> None:
 		self.u32(len(map))
 		for key, value in map.items():
 			keyfunc(key)
 			valuefunc(value)
-		
-	def string(self, string):
+	
+	def string(self, string: str) -> None:
 		if string is None:
 			self.u16(0)
 		else:
@@ -35,29 +45,29 @@ class StreamOut(streams.StreamOut):
 			self.u16(len(data))
 			self.write(data)
 			
-	def stationurl(self, url):
+	def stationurl(self, url: common.StationURL) -> None:
 		self.string(str(url))
 	
-	def datetime(self, datetime):
+	def datetime(self, datetime: common.DateTime) -> None:
 		self.u64(datetime.value())
 		
-	def buffer(self, data):
+	def buffer(self, data: bytes) -> None:
 		self.u32(len(data))
 		self.write(data)
 		
-	def qbuffer(self, data):
+	def qbuffer(self, data: bytes) -> None:
 		self.u16(len(data))
 		self.write(data)
 		
-	def add(self, inst):
+	def add(self, inst: common.Structure) -> None:
 		inst.encode(self)
 		
-	def anydata(self, inst):
+	def anydata(self, inst: common.Data) -> None:
 		holder = common.DataHolder()
 		holder.data = inst
-		self.add(holder)
-		
-	def variant(self, value):
+		holder.encode(self)
+	
+	def variant(self, value: Any) -> None:
 		# We have to check for bool before int,
 		# because bool is a subclass of int
 		if value is None: self.u8(0)
@@ -85,22 +95,24 @@ class StreamOut(streams.StreamOut):
 		
 		
 class StreamIn(streams.StreamIn):
-	def __init__(self, data, settings):
+	def __init__(self, data: bytes, settings: settings.Settings):
 		super().__init__(data, "<")
 		self.settings = settings
 		
-	def pid(self):
+	def pid(self) -> int:
 		if self.settings["nex.pid_size"] == 8:
 			return self.u64()
 		return self.u32()
 		
-	def result(self):
+	def result(self) -> common.Result:
 		return common.Result(self.u32())
 
-	def list(self, func):
+	def list[T](self, func: Callable[[], T]) -> List[T]:
 		return self.repeat(func, self.u32())
 		
-	def map(self, keyfunc, valuefunc):
+	def map[K, V](
+		self, keyfunc: Callable[[], K], valuefunc: Callable[[], V]
+	) -> dict[K, V]:
 		map = {}
 		for i in range(self.u32()):
 			key = self.callback(keyfunc)
@@ -108,40 +120,46 @@ class StreamIn(streams.StreamIn):
 			map[key] = value
 		return map
 		
-	def repeat(self, func, count):
+	def repeat(self, func: Callable[[], Any], count: int) -> List[Any]:
 		return [self.callback(func) for i in range(count)]
 		
-	def callback(self, func):
+	def callback(self, func: Callable[[], Any]) -> Any:
 		if isinstance(func, type) and issubclass(func, common.Structure):
 			return self.extract(func)
 		return func()
 		
-	def string(self):
+	def string(self) -> str:
 		length = self.u16()
 		if length:
 			return self.read(length).decode("utf8")[:-1] #Remove null-terminator
+		return ""
 			
-	def stationurl(self):
+	def stationurl(self) -> common.StationURL:
 		return common.StationURL.parse(self.string())
 		
-	def datetime(self):
+	def datetime(self) -> common.DateTime:
 		return common.DateTime(self.u64())
 		
-	def buffer(self): return self.read(self.u32())
-	def qbuffer(self): return self.read(self.u16())
+	def buffer(self) -> bytes:
+		return self.read(self.u32())
+	
+	def qbuffer(self) -> bytes:
+		return self.read(self.u16())
 		
-	def substream(self):
+	def substream(self) -> StreamIn:
 		return StreamIn(self.buffer(), self.settings)
 	
-	def extract(self, cls):
+	def extract[T: common.Structure](self, cls: type[T]) -> T:
 		inst = cls()
 		inst.decode(self)
 		return inst
 		
-	def anydata(self):
-		return self.extract(common.DataHolder).data
-		
-	def variant(self):
+	def anydata(self) -> common.Structure:
+		data = common.DataHolder()
+		data.decode(self)
+		return data.data
+	
+	def variant(self) -> Any:
 		type = self.u8()
 		if type == 0: return None
 		elif type == 1: return self.s64()

@@ -1,14 +1,20 @@
 
 from Crypto.Hash import CMAC
 from Crypto.Cipher import AES
+
 from anynet import tls, http
 from nintendo import resources
+from typing import Any, Awaitable, Callable
+
 import base64
 import json
 import time
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+type RequestCallback = Callable[..., Awaitable[http.HTTPResponse]]
 
 
 DAUTH_SOURCE = bytes.fromhex("8be45abcf987021523ca4f5e2300dbf0")
@@ -308,85 +314,116 @@ class DAuthError(Exception):
 	CHALLENGE_EXPIRED = 15
 	WRONG_MAC = 16
 	BROKEN_DEVICE = 17
+
+	response: http.HTTPResponse
+	code: int
+	message: str
 	
-	def __init__(self, response, error):
+	def __init__(self, response: http.HTTPResponse, error: Any):
 		self.response = response
 		self.code = int(error["code"])
 		self.message = error["message"]
 	
-	def __str__(self):
+	def __str__(self) -> str:
 		return self.message
 
 
 class DAuthClient:
-	def __init__(self, keys):
-		self.keys = keys
+	_keys: dict[str, bytes]
+
+	_request_callback: RequestCallback
+
+	_context: tls.TLSContext
+	
+	_host: str
+
+	_power_state: str
+	_region: int
+
+	_system_version: int
+	_user_agent: str
+	_system_version_hash: str
+	_key_generation: int
+	_api_version: int
+
+	def __init__(self, keys: dict[str, bytes]):
+		self._keys = keys
 		
-		self.request_callback = http.request
+		self._request_callback = http.request
 		
 		ca = resources.certificate("Nintendo_CA_G3.der")
-		self.context = tls.TLSContext()
-		self.context.set_authority(ca)
+		self._context = tls.TLSContext()
+		self._context.set_authority(ca)
 		
-		self.host = "dauth-lp1.ndas.srv.nintendo.net"
+		self._host = "dauth-lp1.ndas.srv.nintendo.net"
 		
-		self.power_state = "FA"
-		self.region = 1
+		self._power_state = "FA"
+		self._region = 1
 
-		self.system_version = LATEST_VERSION
-		self.user_agent = USER_AGENT[self.system_version]
-		self.system_version_hash = SYSTEM_VERSION_HEX[self.system_version]
-		self.key_generation = KEY_GENERATION[self.system_version]
-		self.api_version = API_VERSION[self.system_version]
+		self._system_version = LATEST_VERSION
+		self._user_agent = USER_AGENT[self._system_version]
+		self._system_version_hash = SYSTEM_VERSION_HEX[self._system_version]
+		self._key_generation = KEY_GENERATION[self._system_version]
+		self._api_version = API_VERSION[self._system_version]
 		
-	def set_request_callback(self, callback): self.request_callback = callback
+	def set_request_callback(self, callback: RequestCallback) -> None:
+		self._request_callback = callback
 	
-	def set_context(self, context): self.context = context
-	def set_certificate(self, cert, key): self.context.set_certificate(cert, key)
+	def set_context(self, context: tls.TLSContext) -> None:
+		self._context = context
 	
-	def set_power_state(self, state): self.power_state = state
-	def set_platform_region(self, region): self.region = region
+	def set_certificate(
+		self, cert: tls.TLSCertificate, key: tls.TLSPrivateKey
+	) -> None:
+		self._context.set_certificate(cert, key)
 	
-	def set_host(self, host): self.host = host
+	def set_power_state(self, state: str) -> None:
+		self._power_state = state
 	
-	def set_system_version(self, version):
+	def set_platform_region(self, region: int) -> None:
+		self._region = region
+	
+	def set_host(self, host: str) -> None:
+		self._host = host
+	
+	def set_system_version(self, version: int) -> None:
 		if version not in USER_AGENT:
 			raise ValueError("Unknown system version: %i" %version)
-		self.system_version = version
-		self.user_agent = USER_AGENT[version]
-		self.key_generation = KEY_GENERATION[version]
-		self.api_version = API_VERSION[version]
-		if self.api_version < 8:
-			self.system_version_hash = SYSTEM_VERSION_DIGEST[version]
+		self._system_version = version
+		self._user_agent = USER_AGENT[version]
+		self._key_generation = KEY_GENERATION[version]
+		self._api_version = API_VERSION[version]
+		if self._api_version < 8:
+			self._system_version_hash = SYSTEM_VERSION_DIGEST[version]
 		else:
-			self.system_version_hash = SYSTEM_VERSION_HEX[version]
+			self._system_version_hash = SYSTEM_VERSION_HEX[version]
 		
-	async def request(self, req):
-		if self.system_version < 1800:
-			req.headers["Host"] = self.host
-			req.headers["User-Agent"] = self.user_agent
+	async def _request(self, req: http.HTTPRequest) -> http.HTTPResponse:
+		if self._system_version < 1800:
+			req.headers["Host"] = self._host
+			req.headers["User-Agent"] = self._user_agent
 			req.headers["Accept"] = "*/*"
-			req.headers["X-Nintendo-PowerState"] = self.power_state
+			req.headers["X-Nintendo-PowerState"] = self._power_state
 			req.headers["Content-Length"] = 0
 			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
-		elif self.system_version < 2000:
-			req.headers["Host"] = self.host
+		elif self._system_version < 2000:
+			req.headers["Host"] = self._host
 			req.headers["Accept"] = "*/*"
 			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
-			req.headers["X-Nintendo-PowerState"] = self.power_state
+			req.headers["X-Nintendo-PowerState"] = self._power_state
 			req.headers["Content-Length"] = 0
 		else:
-			req.headers["Host"] = self.host
+			req.headers["Host"] = self._host
 			req.headers["Accept"] = "*/*"
-			req.headers["User-Agent"] = self.user_agent
+			req.headers["User-Agent"] = self._user_agent
 			if req.json:
 				req.headers["Content-Type"] = "application/json"
 			else:
 				req.headers["Content-Type"] = "application/x-www-form-urlencoded"
-			req.headers["X-Nintendo-PowerState"] = self.power_state
+			req.headers["X-Nintendo-PowerState"] = self._power_state
 			req.headers["Content-Length"] = 0
 		
-		response = await self.request_callback(self.host, req, self.context)
+		response = await self._request_callback(self._host, req, self._context)
 		if response.json and "errors" in response.json:
 			logger.error("DAuth server returned errors:")
 			for error in response.json["errors"]:
@@ -395,89 +432,93 @@ class DAuthClient:
 		response.raise_if_error()
 		return response
 		
-	async def challenge(self):
-		req = http.HTTPRequest.post("/v%i/challenge" %self.api_version)
+	async def challenge(self) -> Any:
+		req = http.HTTPRequest.post("/v%i/challenge" %self._api_version)
 		req.form = {
-			"key_generation": self.key_generation
+			"key_generation": self._key_generation
 		}
 		
-		response = await self.request(req)
+		response = await self._request(req)
 		return response.json
 	
-	async def request_token(self, client_id, vendor_id="akamai", *, edge_token):
+	async def _request_token(
+		self, client_id: int, vendor_id: str = "akamai", *, edge_token: bool
+	) -> Any:
 		# This is a generic method to reduce code duplication between device_token and edge_token
 
 		# Use one of the preload_* functions on system version 20.0.0 and later, to mimic the
 		# behavior of a real Switch.
-		if self.system_version >= 2000:
+		if self._system_version >= 2000:
 			raise ValueError("This method is only available up to system version 19.0.1")
 		
 		challenge = await self.challenge()
 		data = base64.b64decode(challenge["data"] + "==", "-_")
 
-		path = "/v%i/device_auth_token" %self.api_version
+		path = "/v%i/device_auth_token" %self._api_version
 		if edge_token:
-			path = "/v%i/edge_token" %self.api_version
+			path = "/v%i/edge_token" %self._api_version
 		
 		req = http.HTTPRequest.post(path)
 		req.rawform = {
 			"challenge": challenge["challenge"],
-			"client_id": "%016x" %client_id,
-			"ist": "true" if self.region == 2 else "false",
-			"key_generation": self.key_generation,
-			"system_version": self.system_version_hash
+			"client_id": f"{client_id:016x}",
+			"ist": "true" if self._region == 2 else "false",
+			"key_generation": self._key_generation,
+			"system_version": self._system_version_hash
 		}
-		if self.api_version >= 7 and edge_token:
+		if self._api_version >= 7 and edge_token:
 			req.rawform["vendor_id"] = vendor_id
 
 		string = http.formencode(req.rawform, False)
-		req.rawform["mac"] = self.calculate_mac(string, data)
+		req.rawform["mac"] = self._calculate_mac(string, data)
 
-		response = await self.request(req)
+		response = await self._request(req)
 		return response.json
 	
-	async def request_tokens(self, token_requests, *, edge_tokens):
+	async def _request_tokens(
+		self, token_requests: Any, *, edge_tokens: bool
+	) -> Any:
 		# This is a generic method to reduce code duplication between device_tokens and edge_tokens
 
-		if self.system_version < 2000:
+		if self._system_version < 2000:
 			raise ValueError("This method is only available on system version 20.0.0 and above.")
 		
 		challenge = await self.challenge()
 		data = base64.b64decode(challenge["data"] + "==", "-_")
 
 		system_version = "00%02x%02x%02x" %(
-			self.system_version // 100,
-			(self.system_version // 10) % 10,
-			self.system_version % 10
+			self._system_version // 100,
+			(self._system_version // 10) % 10,
+			self._system_version % 10
 		)
 
 		form = {
 			"challenge": challenge["challenge"],
-			"fw_revision": self.system_version_hash,
-			"ist": "true" if self.region == 2 else "false",
-			"key_generation": self.key_generation,
+			"fw_revision": self._system_version_hash,
+			"ist": "true" if self._region == 2 else "false",
+			"key_generation": self._key_generation,
 			"system_version": system_version,
 			"token_requests": json.dumps(token_requests, separators=(",", ":"))
 		}
 		string = http.formencode(form, False)
-		mac = self.calculate_mac(string, data)
+		mac = self._calculate_mac(string, data)
 
-		path = "/v%i/device_auth_tokens" %self.api_version
+		path = "/v%i/device_auth_tokens" %self._api_version
 		if edge_tokens:
-			path = "/v%i/edge_tokens" %self.api_version
+			path = "/v%i/edge_tokens" %self._api_version
 
 		req = http.HTTPRequest.post(path)
 		req.json = {
 			"system_version": system_version,
-			"fw_revision": self.system_version_hash,
-			"ist": self.region == 2,
+			"fw_revision": self._system_version_hash,
+			"ist": self._region == 2,
 			"token_requests": token_requests,
-			"key_generation": self.key_generation,
+			"key_generation": self._key_generation,
 			"challenge": challenge["challenge"],
 			"mac": mac
 		}
 
-		response = await self.request(req)
+		response = await self._request(req)
 
 		# Check if any errors have occurred
 		errors = []
@@ -493,42 +534,49 @@ class DAuthClient:
 
 		return response.json
 	
-	async def device_token(self, client_id):
-		return await self.request_token(client_id, edge_token=False)
+	async def device_token(self, client_id: int) -> Any:
+		return await self._request_token(client_id, edge_token=False)
 	
-	async def edge_token(self, client_id, vendor_id="akamai"):
-		return await self.request_token(client_id, vendor_id, edge_token=True)
+	async def edge_token(
+		self, client_id: int, vendor_id: str = "akamai"
+	) -> Any:
+		return await self._request_token(client_id, vendor_id, edge_token=True)
 		
-	async def device_tokens(self, client_ids):
-		token_requests = [{"client_id": "%016x" %client_id} for client_id in client_ids]
-		return await self.request_tokens(token_requests, edge_tokens=False)
+	async def device_tokens(self, client_ids: list[int]) -> Any:
+		token_requests = [
+			{"client_id": f"{client_id:016x}"} for client_id in client_ids
+		]
+		return await self._request_tokens(token_requests, edge_tokens=False)
 
-	async def edge_tokens(self, token_requests):
-		token_requests = [{"client_id": "%016x" %client_id, "vendor_id": vendor_id} for client_id, vendor_id in token_requests]
-		return await self.request_tokens(token_requests, edge_tokens=True)
+	async def edge_tokens(self, token_requests: list[tuple[int, str]]) -> Any:
+		formatted_requests = [
+			{"client_id": f"{client_id:016x}", "vendor_id": vendor_id} for \
+				client_id, vendor_id in token_requests
+		]
+		return await self._request_tokens(formatted_requests, edge_tokens=True)
 
-	async def preload_device_tokens(self):
+	async def preload_device_tokens(self) -> Any:
 		return await self.device_tokens(PRELOADED_DEVICE_TOKENS)
 	
-	async def preload_edge_tokens(self):
+	async def preload_edge_tokens(self) -> Any:
 		return await self.edge_tokens(PRELOADED_EDGE_TOKENS)
 		
-	def get_master_key(self):
-		keygen = self.key_generation
+	def _get_master_key(self) -> bytes:
+		keygen = self._key_generation
 		keyname = "master_key_%02x" %(keygen - 1)
-		return self.keys[keyname]
+		return self._keys[keyname]
 	
-	def decrypt_key(self, key, kek):
+	def _decrypt_key(self, key: bytes, kek: bytes) -> bytes:
 		aes = AES.new(kek, AES.MODE_ECB)
 		return aes.decrypt(key)
 		
-	def calculate_mac(self, form, data):
-		kek_source = self.keys["aes_kek_generation_source"]
-		master_key = self.get_master_key()
+	def _calculate_mac(self, form: str, data: bytes) -> str:
+		kek_source = self._keys["aes_kek_generation_source"]
+		master_key = self._get_master_key()
 		
-		key = self.decrypt_key(kek_source, master_key)
-		key = self.decrypt_key(DAUTH_SOURCE, key)
-		key = self.decrypt_key(data, key)
+		key = self._decrypt_key(kek_source, master_key)
+		key = self._decrypt_key(DAUTH_SOURCE, key)
+		key = self._decrypt_key(data, key)
 		
 		mac = CMAC.new(key, ciphermod=AES)
 		mac.update(form.encode())
@@ -536,49 +584,58 @@ class DAuthClient:
 
 
 class DAuthCache:
-	def __init__(self, client, expiration=None):
-		self.client = client
-		self.expiration = expiration
+	_client: DAuthClient
+	_expiration: float | None
 
-		self.device_tokens = {}
-		self.edge_tokens = {}
+	_device_tokens: dict[int, tuple[str, float]]
+	_edge_tokens: dict[tuple[int, str], tuple[str, float]]
+
+	def __init__(self, client: DAuthClient, expiration: float | None = None):
+		self._client = client
+		self._expiration = expiration
+
+		self._device_tokens = {}
+		self._edge_tokens = {}
 	
-	async def device_token(self, client_id):
+	async def device_token(self, client_id: int) -> str:
 		now = time.time()
-		if client_id in self.device_tokens and self.device_tokens[client_id][1] > now:
-			return self.device_tokens[client_id][0]
+		if client_id in self._device_tokens and self._device_tokens[client_id][1] > now:
+			return self._device_tokens[client_id][0]
 		
 		if client_id in PRELOADED_DEVICE_TOKENS:
-			response = await self.client.preload_device_tokens()
+			response = await self._client.preload_device_tokens()
 		else:
-			response = await self.client.device_tokens([client_id])
+			response = await self._client.device_tokens([client_id])
 		
 		for result in response["results"]:
-			if self.expiration is not None:
-				expiration = now + self.expiration
+			if self._expiration is not None:
+				expiration = now + self._expiration
 			else:
 				expiration = now + result["expires_in"]
-			self.device_tokens[int(result["client_id"], 16)] = (result["device_auth_token"], expiration)
+			self._device_tokens[int(result["client_id"], 16)] = \
+				(result["device_auth_token"], expiration)
 
-		return self.device_tokens[client_id][0]
+		return self._device_tokens[client_id][0]
 
-	async def edge_token(self, client_id, vendor_id="akamai"):
+	async def edge_token(
+		self, client_id: int, vendor_id: str = "akamai"
+	) -> str:
 		now = time.time()
 		key = (client_id, vendor_id)
-		if key in self.edge_tokens and self.edge_tokens[key][1] > now:
-			return self.edge_tokens[key][0]
+		if key in self._edge_tokens and self._edge_tokens[key][1] > now:
+			return self._edge_tokens[key][0]
 		
 		if key in PRELOADED_EDGE_TOKENS:
-			response = await self.client.preload_edge_tokens()
+			response = await self._client.preload_edge_tokens()
 		else:
-			response = await self.client.edge_tokens([key])
+			response = await self._client.edge_tokens([key])
 		
 		for result in response["results"]:
 			result_key = (int(result["client_id"], 16), result["vendor_id"])
-			if self.expiration is not None:
-				expiration = now + self.expiration
+			if self._expiration is not None:
+				expiration = now + self._expiration
 			else:
 				expiration = now + result["expires_in"]
-			self.edge_tokens[result_key] = (result["dtoken"], expiration)
+			self._edge_tokens[result_key] = (result["dtoken"], expiration)
 		
-		return self.edge_tokens[key][0]
+		return self._edge_tokens[key][0]

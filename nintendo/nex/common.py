@@ -1,7 +1,10 @@
 
 from nintendo.nex.errors import error_names, error_codes
-from nintendo.nex import streams
-import datetime, time
+from nintendo.nex import settings, streams
+from typing import Self
+
+import datetime
+import time
 
 import logging
 logger = logging.getLogger(__name__)
@@ -9,66 +12,72 @@ logger = logging.getLogger(__name__)
 
 ERROR_MASK = 1 << 31
 
-class RMCError(Exception):
-	def __init__(self, code="Core::Unknown"):
-		self.res = Result.error(code)
-	
-	def __str__(self):
-		return str(self.res)
-	
-	def result(self):
-		return self.res
-		
-	def name(self):
-		return self.res.name()
-	
-	def code(self):
-		return self.res.code()
 
+class RMCError(Exception):
+	_result: Result
+
+	def __init__(self, code: str | int = "Core::Unknown"):
+		self._result = Result.error(code)
 	
+	def __str__(self) -> str:
+		return str(self._result)
+	
+	def result(self) -> Result:
+		return self._result
+		
+	def name(self) -> str:
+		return self._result.name()
+	
+	def code(self) -> int:
+		return self._result.code()
+
+
 class Result:
-	def __init__(self, code=0x10001):
-		self.error_code = code
+	_code: int
+
+	def __init__(self, code: int = 0x10001):
+		self._code = code
 	
 	def __str__(self):
-		return "%s (0x%08X)" %(self.name(), self.code())
+		return f"{self.name()} (0x{self.code():08X})"
 		
-	@staticmethod
-	def success(code="Core::Unknown"):
-		if type(code) == str:
+	@classmethod
+	def success(cls, code: str | int = "Core::Unknown") -> Self:
+		if isinstance(code, str):
 			code = error_codes[code]
-		return Result(code & ~ERROR_MASK)
+		return cls(code & ~ERROR_MASK)
 		
-	@staticmethod
-	def error(code="Core::Unknown"):
-		if type(code) == str:
+	@classmethod
+	def error(cls, code: str | int = "Core::Unknown") -> Self:
+		if isinstance(code, str):
 			code = error_codes[code]
-		return Result(code | ERROR_MASK)
+		return cls(code | ERROR_MASK)
 	
-	def is_success(self):
-		return not self.error_code & ERROR_MASK
+	def is_success(self) -> bool:
+		return not self._code & ERROR_MASK
 		
-	def is_error(self):
-		return bool(self.error_code & ERROR_MASK)
+	def is_error(self) -> bool:
+		return bool(self._code & ERROR_MASK)
 	
-	def code(self):
-		return self.error_code
+	def code(self) -> int:
+		return self._code
 		
-	def name(self):
+	def name(self) -> str:
 		if self.is_success():
 			return "success"
-		return error_names.get(self.error_code & ~ERROR_MASK, "unknown error")
+		return error_names.get(self._code & ~ERROR_MASK, "unknown error")
 		
-	def raise_if_error(self):
+	def raise_if_error(self) -> None:
 		if self.is_error():
-			raise RMCError(self.error_code)
+			raise RMCError(self._code)
 
 
 # Black magic going on here
 class Structure:
-	def max_version(self, settings): return 0
+	def max_version(self, settings: settings.Settings) -> int:
+		return 0
 			
-	def get_hierarchy(self):
+	def _get_hierarchy(self) -> list[type[Structure]]:
 		hierarchy = []
 		cls = self.__class__
 		while cls != Structure:
@@ -76,8 +85,8 @@ class Structure:
 			cls = cls.__bases__[0]
 		return hierarchy[::-1]
 	
-	def encode(self, stream):
-		hierarchy = self.get_hierarchy()
+	def encode(self, stream: streams.StreamOut) -> None:
+		hierarchy = self._get_hierarchy()
 		for cls in hierarchy:
 			if stream.settings["nex.struct_header"]:
 				version = cls.max_version(self, stream.settings)
@@ -90,8 +99,8 @@ class Structure:
 			else:
 				cls.save(self, stream, 0)
 
-	def decode(self, stream):
-		hierarchy = self.get_hierarchy()
+	def decode(self, stream: streams.StreamIn) -> None:
+		hierarchy = self._get_hierarchy()
 		for cls in hierarchy:
 			if stream.settings["nex.struct_header"]:
 				max_version = cls.max_version(self, stream.settings)
@@ -114,23 +123,30 @@ class Structure:
 			else:
 				cls.load(self, stream, 0)
 				
-	def load(self, stream, version): raise NotImplementedError("%s.load()" %self.__class__.__name__)
-	def save(self, stream, version): raise NotImplementedError("%s.save()" %self.__class__.__name__)
+	def load(self, stream: streams.StreamIn, version: int) -> None:
+		raise NotImplementedError("%s.load()" %self.__class__.__name__)
+	
+	def save(self, stream: streams.StreamOut, version: int) -> None:
+		raise NotImplementedError("%s.save()" %self.__class__.__name__)
 	
 	
 class Data(Structure):
-	def save(self, stream, version): pass
-	def load(self, stream, version): pass
+	def save(self, stream: streams.StreamOut, version: int) -> None:
+		pass
+
+	def load(self, stream: streams.StreamIn, version: int) -> None:
+		pass
 
 
 class DataHolder:
+	_object_map: dict[str, type[Structure]] = {}
 
-	object_map = {}
+	data: Structure
 
 	def __init__(self):
-		self.data = None
+		self.data = Data()
 		
-	def encode(self, stream):	
+	def encode(self, stream: streams.StreamOut):
 		stream.string(self.data.__class__.__name__)
 		
 		substream = streams.StreamOut(stream.settings)
@@ -139,19 +155,19 @@ class DataHolder:
 		stream.u32(len(substream.get()) + 4)
 		stream.buffer(substream.get())
 		
-	def decode(self, stream):
+	def decode(self, stream: streams.StreamIn) -> None:
 		name = stream.string()
 		substream = stream.substream().substream()
-		self.data = substream.extract(self.object_map[name])
+		self.data = substream.extract(self._object_map[name])
 		
 	@classmethod
-	def register(cls, object, name):
-		cls.object_map[name] = object
+	def register(cls, object: type[Structure], name: str) -> None:
+		cls._object_map[name] = object
 		
 		
 class NullData(Data):
-	def save(self, stream, version): pass
-	def load(self, stream, version): pass
+	def load(self, stream: streams.StreamIn, version: int) -> None: pass
+	def save(self, stream: streams.StreamOut, version: int) -> None: pass
 DataHolder.register(NullData, "NullData")
 		
 		
@@ -213,62 +229,73 @@ class StationURL:
 
 		
 class DateTime:
-	def __init__(self, value):
-		self.val = value
-		
-	def second(self): return self.val & 63
-	def minute(self): return (self.val >> 6) & 63
-	def hour(self): return (self.val >> 12) & 31
-	def day(self): return (self.val >> 17) & 31
-	def month(self): return (self.val >> 22) & 15
-	def year(self): return self.val >> 26
-	
-	def value(self): return self.val
+	_value: int
 
-	def standard_datetime(self):
+	def __init__(self, value: int):
+		self._value = value
+		
+	def second(self) -> int: return self._value & 63
+	def minute(self) -> int: return (self._value >> 6) & 63
+	def hour(self) -> int: return (self._value >> 12) & 31
+	def day(self) -> int: return (self._value >> 17) & 31
+	def month(self) -> int: return (self._value >> 22) & 15
+	def year(self) -> int: return self._value >> 26
+	
+	def value(self) -> int: return self._value
+
+	def standard_datetime(self) -> datetime.datetime:
 		return datetime.datetime(
 			self.year(), self.month(), self.day(),
 			self.hour(), self.minute(), self.second(),
 			tzinfo=datetime.UTC
 		)
 	
-	def timestamp(self):
+	def timestamp(self) -> int:
 		return int(self.standard_datetime().timestamp())
 	
-	def __repr__(self):
-		return "%i-%i-%i %i:%02i:%02i" %(self.day(), self.month(), self.year(), self.hour(), self.minute(), self.second())
+	def __repr__(self) -> str:
+		return "%i-%i-%i %i:%02i:%02i" %(
+			self.day(), self.month(), self.year(),
+			self.hour(), self.minute(), self.second()
+		)
 
 	@classmethod
-	def never(cls):
+	def never(cls) -> Self:
 		return cls(0)
 	
 	@classmethod
-	def future(cls):
+	def future(cls) -> Self:
 		return cls.make(9999, 12, 31, 23, 59, 59)
 		
 	@classmethod
-	def make(cls, year, month=1, day=1, hour=0, minute=0, second=0):
+	def make(
+		cls, year: int, month: int = 1, day: int = 1, hour: int = 0,
+		minute: int = 0, second: int = 0
+	) -> Self:
 		return cls(second | (minute << 6) | (hour << 12) | (day << 17) | (month << 22) | (year << 26))
 		
 	@classmethod
-	def fromtimestamp(cls, timestamp):
+	def fromtimestamp(cls, timestamp: float) -> Self:
 		dt = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
 		return cls.make(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
 	
 	@classmethod
-	def now(cls):
+	def now(cls) -> Self:
 		return cls.fromtimestamp(time.time())
 		
 		
 class ResultRange(Structure):
-	def __init__(self, offset=0, size=10):
+	offset: int
+	size: int
+
+	def __init__(self, offset: int = 0, size: int = 10):
 		self.offset = offset
 		self.size = size
 
-	def load(self, stream, version):
+	def load(self, stream: streams.StreamIn, version: int) -> None:
 		self.offset = stream.u32()
 		self.size = stream.u32()
 	
-	def save(self, stream, version):
+	def save(self, stream: streams.StreamOut, version: int) -> None:
 		stream.u32(self.offset)
 		stream.u32(self.size)

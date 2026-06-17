@@ -1,5 +1,5 @@
 
-from anynet import http, tls
+from anynet import http, tls, xml
 from nintendo import resources
 import datetime
 import hashlib
@@ -10,8 +10,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def calc_password_hash(pid, password):
-	data = struct.pack("<I", pid) + b"\x02\x65\x43\x46" + password.encode("ascii")
+def calc_password_hash(pid: int, password: str) -> str:
+	data = struct.pack("<I", pid)
+	data += b"\x02\x65\x43\x46"
+	data += password.encode("ascii")
 	return hashlib.sha256(data).hexdigest()
 
 
@@ -20,307 +22,327 @@ class NNASError(Exception):
 		self.status_code = status_code
 		self.errors = errors
 	
-	def __str__(self):
+	def __str__(self) -> str:
 		if self.errors:
-			return "Account request failed: %s" %self.errors
+			return f"Account request failed: {self.errors}"
 		else:
-			return "Account request failed with status %i" %self.status_code
+			return f"Account request failed with status {self.status_code}"
 
 
 class OAuth20:
-	def __init__(self):
-		self.token = None
-		self.refresh_token = None
-		self.expires_in = None
-	
-	@classmethod
-	def parse(cls, tree):
+	token: str
+	refresh_token: str
+	expires_in: int
+
+	def __init__(self, tree: xml.XMLTree):
 		access_token = tree["access_token"]
 		
-		inst = cls()
-		inst.token = access_token["token"].text
-		inst.refresh_token = access_token["refresh_token"].text
-		inst.expires_in = int(access_token["expires_in"].text)
-		return inst
+		self.token = access_token["token"].text
+		self.refresh_token = access_token["refresh_token"].text
+		self.expires_in = int(access_token["expires_in"].text)
 
 
 class NexToken:
-	def __init__(self):
-		self.host = None
-		self.port = None
-		self.pid = None
-		self.password = None
-		self.token = None
-	
-	@classmethod
-	def parse(cls, tree):
-		inst = cls()
-		inst.host = tree["host"].text
-		inst.port = int(tree["port"].text)
-		inst.pid = int(tree["pid"].text)
-		inst.password = tree["nex_password"].text
-		inst.token = tree["token"].text
-		return inst
+	host: str
+	port: int
+	pid: int
+	password: str
+	token: str
+
+	def __init__(self, tree: xml.XMLTree):
+		self.host = tree["host"].text
+		self.port = int(tree["port"].text)
+		self.pid = int(tree["pid"].text)
+		self.password = tree["nex_password"].text
+		self.token = tree["token"].text
 		
 		
 class MiiImage:
-	def __init__(self):
-		self.id = None
-		self.type = None
-		self.url = None
-		self.cached_url = None
-	
-	@classmethod
-	def parse(cls, image):
-		inst = cls()
-		inst.cached_url = image["cached_url"].text
-		inst.id = int(image["id"].text)
-		inst.url = image["url"].text
-		inst.type = image["type"].text
-		return inst
+	id: int
+	type: str
+	url: str
+	cached_url: str
+
+	def __init__(self, image: xml.XMLTree):
+		self.id = int(image["id"].text)
+		self.type = image["type"].text
+		self.url = image["url"].text
+		self.cached_url = image["cached_url"].text
 		
 
 class Mii:
-	def __init__(self):
-		self.data = None
-		self.id = None
-		self.name = None
-		self.images = None
-		self.primary = None
-		self.pid = None
-		self.nnid = None
+	data: bytes
+	id: int
+	name: str
+	images: list[MiiImage]
+	primary: bool
+	pid: int
+	nnid: str
 	
-	@classmethod
-	def parse(cls, mii):
-		inst = cls()
-		inst.data = base64.b64decode(mii["data"].text)
-		inst.id = int(mii["id"].text)
-		inst.name = mii["name"].text
-		inst.images = [MiiImage.parse(image) for image in mii["images"]]
-		inst.primary = mii["primary"].text == "Y"
-		inst.pid = int(mii["pid"].text)
-		inst.nnid = mii["user_id"].text
-		return inst
+	def __init__(self, mii: xml.XMLTree):
+		self.data = base64.b64decode(mii["data"].text)
+		self.id = int(mii["id"].text)
+		self.name = mii["name"].text
+		self.images = [MiiImage(image) for image in mii["images"]]
+		self.primary = mii["primary"].text == "Y"
+		self.pid = int(mii["pid"].text)
+		self.nnid = mii["user_id"].text
 
 
 class Account:
-	def __init__(self):
-		self.domain = None
-		self.type = None
-		self.username = None
+	domain: str
+	type: str
+	username: str
 	
-	@classmethod
-	def parse(cls, account):
-		inst = cls()
-		inst.domain = account["domain"].text
-		inst.type = account["type"].text
-		inst.username = account["username"].text
-		return inst
+	def __init__(self, account: xml.XMLTree):
+		self.domain = account["domain"].text
+		self.type = account["type"].text
+		self.username = account["username"].text
 		
 		
 class DeviceAttribute:
-	def __init__(self):
-		self.created_date = None
-		self.name = None
-		self.value = None
+	created_date: datetime.datetime
+	name: str
+	value: str
 	
-	@classmethod
-	def parse(cls, attribute):
-		inst = cls()
-		inst.created_date = datetime.datetime.fromisoformat(attribute["created_date"].text)
-		inst.name = attribute["name"].text
-		inst.value = attribute["value"].text
-		return inst
+	def __init__(self, attribute: xml.XMLTree):
+		self.created_date = datetime.datetime.fromisoformat(
+			attribute["created_date"].text
+		)
+		self.name = attribute["name"].text
+		self.value = attribute["value"].text
 		
 		
 class Email:
-	def __init__(self):
-		self.address = None
-		self.id = None
-		self.parent = None
-		self.primary = None
-		self.reachable = None
-		self.type = None
-		self.validated = None
-		self.validated_date = None
-	
-	@classmethod
-	def parse(cls, email):
-		inst = cls()
-		inst.address = email["address"].text
-		inst.id = int(email["id"].text)
-		inst.parent = email["parent"].text == "Y"
-		inst.primary = email["primary"].text == "Y"
-		inst.reachable = email["reachable"].text == "Y"
-		inst.type = email["type"].text
-		inst.validated = email["validated"].text == "Y"
-		inst.validated_date = datetime.datetime.fromisoformat(email["validated_date"].text)
-		return inst
+	id: int
+	address: str
+	primary: bool
+	parent: bool
+	reachable: bool
+	type: str
+	validated: bool
+	vlaidated_date: datetime.datetime
+
+	def __init__(self, email: xml.XMLTree):
+		self.id = int(email["id"].text)
+		self.address = email["address"].text
+		self.parent = email["parent"].text == "Y"
+		self.primary = email["primary"].text == "Y"
+		self.reachable = email["reachable"].text == "Y"
+		self.type = email["type"].text
+		self.validated = email["validated"].text == "Y"
+		self.validated_date = datetime.datetime.fromisoformat(
+			email["validated_date"].text
+		)
 
 
 class ProfileMii:
-	def __init__(self):
-		self.id = None
-		self.data = None
-		self.status = None
-		self.hash = None
-		self.images = None
-		self.name = None
-		self.primary = None
+	id: int
+	name: str
+	data: bytes
+	primary: bool
+	status: str
+	hash: str
+	images: list[MiiImage]
 	
-	@classmethod
-	def parse(cls, mii):
-		inst = cls()
-		inst.status = mii["status"].text
-		inst.data = base64.b64decode(mii["data"].text)
-		inst.id = int(mii["id"].text)
-		inst.hash = mii["mii_hash"].text
-		inst.images = [MiiImage.parse(image) for image in mii["mii_images"]]
-		inst.name = mii["name"].text
-		inst.primary = mii["primary"].text == "Y"
-		return inst
+	def __init__(self, mii: xml.XMLTree):
+		self.status = mii["status"].text
+		self.data = base64.b64decode(mii["data"].text)
+		self.id = int(mii["id"].text)
+		self.hash = mii["mii_hash"].text
+		self.images = [MiiImage(image) for image in mii["mii_images"]]
+		self.name = mii["name"].text
+		self.primary = mii["primary"].text == "Y"
 
 
 class Profile:
-	def __init__(self):
-		self.accounts = None
-		self.active_flag = None
-		self.birth_date = None
-		self.country = None
-		self.create_date = None
-		self.device_attributes = None
-		self.forgot_pw_email_sent = None
-		self.gender = None
-		self.language = None
-		self.updated = None
-		self.marketing_flag = None
-		self.off_device_flag = None
-		self.pid = None
-		self.email = None
-		self.mii = None
-		self.region = None
-		self.temporary_password_expiration = None
-		self.tz_name = None
-		self.nnid = None
-		self.utc_offset = None
-	
-	@classmethod
-	def parse(cls, profile):
-		inst = cls()
-		inst.accounts = [Account.parse(account) for account in profile["accounts"]]
-		inst.active_flag = profile["active_flag"] == "Y"
-		inst.birth_date = datetime.date.fromisoformat(profile["birth_date"].text)
-		inst.country = profile["country"].text
-		inst.create_date = datetime.datetime.fromisoformat(profile["create_date"].text)
-		inst.device_attributes = [DeviceAttribute.parse(attrib) for attrib in profile["device_attributes"]]
+	accounts: list[Account]
+	active_flag: bool
+	birth_date: datetime.datetime
+	country: str
+	create_date: datetime.datetime
+	device_attributes: list[DeviceAttribute]
+	forgot_pw_email_sent: datetime.datetime
+	gender: str
+	language: str
+	updated: datetime.datetime
+	marketing_flag: bool
+	off_device_flag: bool
+	pid: int
+	email: Email
+	mii: ProfileMii
+	region: int
+	temporary_password_expiration: datetime.datetime
+	tz_name: str
+	nnid: str
+	utc_offset: int
+
+	def __init__(self, profile: xml.XMLTree):
+		self.accounts = [Account(account) for account in profile["accounts"]]
+		self.active_flag = profile["active_flag"] == "Y"
+		self.birth_date = \
+			datetime.datetime.fromisoformat(profile["birth_date"].text)
+		self.country = profile["country"].text
+		self.create_date = \
+			datetime.datetime.fromisoformat(profile["create_date"].text)
+		self.device_attributes = [
+			DeviceAttribute(attrib) for attrib in profile["device_attributes"]
+		]
 		if "forgot_pw_email_sent" in profile:
-			inst.forgot_pw_email_sent = datetime.datetime.fromisoformat(profile["forgot_pw_email_sent"].text)
-		inst.gender = profile["gender"].text
-		inst.language = profile["language"].text
-		inst.updated = datetime.datetime.fromisoformat(profile["updated"].text)
-		inst.marketing_flag = profile["marketing_flag"].text == "Y"
-		inst.off_device_flag = profile["off_device_flag"].text == "Y"
-		inst.pid = int(profile["pid"].text)
-		inst.email = Email.parse(profile["email"])
-		inst.mii = ProfileMii.parse(profile["mii"])
-		inst.region = int(profile["region"].text)
+			self.forgot_pw_email_sent = datetime.datetime.fromisoformat(
+				profile["forgot_pw_email_sent"].text
+			)
+		self.gender = profile["gender"].text
+		self.language = profile["language"].text
+		self.updated = datetime.datetime.fromisoformat(profile["updated"].text)
+		self.marketing_flag = profile["marketing_flag"].text == "Y"
+		self.off_device_flag = profile["off_device_flag"].text == "Y"
+		self.pid = int(profile["pid"].text)
+		self.email = Email(profile["email"])
+		self.mii = ProfileMii(profile["mii"])
+		self.region = int(profile["region"].text)
 		if "temporary_password_expiration" in profile:
-			inst.temporary_password_expiration = datetime.datetime.fromisoformat(profile["temporary_password_expiration"].text)
-		inst.tz_name = profile["tz_name"].text
-		inst.nnid = profile["user_id"].text
-		inst.utc_offset = int(profile["utc_offset"].text)
-		return inst
+			self.temporary_password_expiration = \
+				datetime.datetime.fromisoformat(
+					profile["temporary_password_expiration"].text
+				)
+		self.tz_name = profile["tz_name"].text
+		self.nnid = profile["user_id"].text
+		self.utc_offset = int(profile["utc_offset"].text)
 
 
 class NNASClient:
+	_url: str
+	_context: tls.TLSContext
+
+	_client_id: str
+	_client_secret: str
+
+	_platform_id: int
+	_device_type: int
+
+	_device_id: int | None
+	_serial_number: str | None
+	_system_version: int
+	_device_cert: str | None
+
+	_region: int
+	_country: str
+	_language: str
+
+	_fpd_version: int
+	_environment: str
+
+	_title_id: int | None
+	_title_version: int | None
+
 	def __init__(self):
-		self.url = "account.nintendo.net"
+		self._url = "account.nintendo.net"
 
 		ca = resources.certificate("Nintendo_CA_G3.der")
 		cert = resources.certificate("Wii_U_Common_Prod_1.der")
 		key = resources.private_key("Wii_U_Common_Prod_1.key")
 		
-		self.context = tls.TLSContext()
-		self.context.set_authority(ca)
-		self.context.set_certificate(cert, key)
+		self._context = tls.TLSContext()
+		self._context.set_authority(ca)
+		self._context.set_certificate(cert, key)
 		
-		self.client_id = "a2efa818a34fa16b8afbc8a74eba3eda"
-		self.client_secret = "c91cdb5658bd4954ade78533a339cf9a"
+		self._client_id = "a2efa818a34fa16b8afbc8a74eba3eda"
+		self._client_secret = "c91cdb5658bd4954ade78533a339cf9a"
 		
-		self.platform_id = 1
-		self.device_type = 2
+		self._platform_id = 1
+		self._device_type = 2
 		
-		self.device_id = None
-		self.serial_number = None
-		self.system_version = 0x260
-		self.device_cert = None
+		self._device_id = None
+		self._serial_number = None
+		self._system_version = 0x260
+		self._device_cert = None
 		
-		self.region = 4
-		self.country = "NL"
-		self.language = "en"
+		self._region = 4
+		self._country = "NL"
+		self._language = "en"
 		
-		self.fpd_version = 0
-		self.environment = "L1"
+		self._fpd_version = 0
+		self._environment = "L1"
 		
-		self.title_id = None
-		self.title_version = None
+		self._title_id = None
+		self._title_version = None
 		
-	def set_context(self, context):
-		self.context = context
+	def set_context(self, context: tls.TLSContext) -> None:
+		self._context = context
 	
-	def set_url(self, url): self.url = url
+	def set_url(self, url: str) -> None:
+		self._url = url
 	
-	def set_client_id(self, client_id): self.client_id = client_id
-	def set_client_secret(self, client_secret): self.client_secret = client_secret
+	def set_client_id(self, client_id: str) -> None:
+		self._client_id = client_id
 	
-	def set_platform_id(self, platform_id): self.platform_id = platform_id
-	def set_device_type(self, device_type): self.device_type = device_type
+	def set_client_secret(self, client_secret: str) -> None:
+		self._client_secret = client_secret
 	
-	def set_device(self, device_id, serial_number, system_version, cert=None):
-		self.device_id = device_id
-		self.serial_number = serial_number
-		self.system_version = system_version
-		self.device_cert = cert
+	def set_platform_id(self, platform_id: int) -> None:
+		self._platform_id = platform_id
+	
+	def set_device_type(self, device_type: int) -> None:
+		self._device_type = device_type
+	
+	def set_device(
+		self, device_id: int, serial_number: str, system_version: int,
+		cert: str | None = None
+	) -> None:
+		self._device_id = device_id
+		self._serial_number = serial_number
+		self._system_version = system_version
+		self._device_cert = cert
 		
-	def set_locale(self, region, country, language):
-		self.region = region
-		self.country = country
-		self.language = language
+	def set_locale(self, region: int, country: str, language: str) -> None:
+		self._region = region
+		self._country = country
+		self._language = language
 		
-	def set_fpd_version(self, version): self.fpd_version = version
-	def set_environment(self, environment): self.environment = environment
+	def set_fpd_version(self, version: int) -> None:
+		self._fpd_version = version
 	
-	def set_title(self, title_id, title_version):
-		self.title_id = title_id
-		self.title_version = title_version
+	def set_environment(self, environment: str) -> None:
+		self._environment = environment
 	
-	def prepare(self, req, auth=None, cert=None):
-		req.headers["Host"] = self.url
-		req.headers["X-Nintendo-Platform-ID"] = self.platform_id
-		req.headers["X-Nintendo-Device-Type"] = self.device_type
+	def set_title(self, title_id: int, title_version: int) -> None:
+		self._title_id = title_id
+		self._title_version = title_version
+	
+	def prepare(
+		self, req: http.HTTPRequest, auth: str | None = None,
+		cert: str | None = None
+	) -> None:
+		req.headers["Host"] = self._url
+		req.headers["X-Nintendo-Platform-ID"] = self._platform_id
+		req.headers["X-Nintendo-Device-Type"] = self._device_type
 		
-		if self.device_id is not None:
-			req.headers["X-Nintendo-Device-ID"] = self.device_id
-		if self.serial_number is not None:
-			req.headers["X-Nintendo-Serial-Number"] = self.serial_number
+		if self._device_id is not None:
+			req.headers["X-Nintendo-Device-ID"] = self._device_id
+		if self._serial_number is not None:
+			req.headers["X-Nintendo-Serial-Number"] = self._serial_number
 			
-		req.headers["X-Nintendo-System-Version"] = "%04X" %self.system_version
-		req.headers["X-Nintendo-Region"] = self.region
-		req.headers["X-Nintendo-Country"] = self.country
-		req.headers["Accept-Language"] = self.language
+		req.headers["X-Nintendo-System-Version"] = f"{self._system_version:04X}"
+		req.headers["X-Nintendo-Region"] = self._region
+		req.headers["X-Nintendo-Country"] = self._country
+		req.headers["Accept-Language"] = self._language
 		
-		req.headers["X-Nintendo-Client-ID"] = self.client_id
-		req.headers["X-Nintendo-Client-Secret"] = self.client_secret
+		req.headers["X-Nintendo-Client-ID"] = self._client_id
+		req.headers["X-Nintendo-Client-Secret"] = self._client_secret
 			
 		req.headers["Accept"] = "*/*"
-		req.headers["X-Nintendo-FPD-Version"] = "%04X" %self.fpd_version
-		req.headers["X-Nintendo-Environment"] = self.environment
+		req.headers["X-Nintendo-FPD-Version"] = f"{self._fpd_version:04X}"
+		req.headers["X-Nintendo-Environment"] = self._environment
 		
-		if self.title_id is not None:
-			req.headers["X-Nintendo-Title-ID"] = "%016X" %self.title_id
-			req.headers["X-Nintendo-Unique-ID"] = "%05X" %((self.title_id >> 8) & 0xFFFFF)
-		if self.title_version is not None:
-			req.headers["X-Nintendo-Application-Version"] = "%04X" %self.title_version
+		if self._title_id is not None:
+			unique_id = (self._title_id >> 8) & 0xFFFFF
+			req.headers["X-Nintendo-Title-ID"] = f"{self._title_id:016X}"
+			req.headers["X-Nintendo-Unique-ID"] = f"{unique_id:05X}"
+		
+		if self._title_version is not None:
+			req.headers["X-Nintendo-Application-Version"] = \
+				f"{self._title_version:04X}"
 			
 		if cert is not None:
 			req.headers["X-Nintendo-Device-Cert"] = cert
@@ -328,16 +350,22 @@ class NNASClient:
 		if auth is not None:
 			req.headers["Authorization"] = "Bearer " + auth
 			
-	async def request(self, req):
-		response = await http.request(self.url, req, self.context)
+	async def request(self, req: http.HTTPRequest) -> xml.XMLTree:
+		response = await http.request(self._url, req, self._context)
 		if response.error():
-			logger.error("Account request returned status code %i\n%s", response.status_code, response.text)
-			raise NNASError(response.status_code, response.xml)
+			status_code = response.status_code
+			logger.error(
+				f"Account request returned status code {status_code}\n" \
+				f"{response.text}"
+			)
+			raise NNASError(status_code, response.xml)
 		return response.xml
 		
-	async def login(self, username, password, password_type=None):
+	async def login(
+		self, username: str, password: str, password_type: str | None = None
+	) -> OAuth20:
 		req = http.HTTPRequest.post("/v1/api/oauth20/access_token/generate")
-		self.prepare(req, cert=self.device_cert)
+		self.prepare(req, cert=self._device_cert)
 		
 		req.form = {
 			"grant_type": "password",
@@ -349,20 +377,22 @@ class NNASClient:
 			req.form["password_type"] = password_type
 		
 		response = await self.request(req)
-		return OAuth20.parse(response)
+		return OAuth20(response)
 	
-	async def get_nex_token(self, access_token, game_server_id):
+	async def get_nex_token(
+		self, access_token: str, game_server_id: int
+	) -> NexToken:
 		req = http.HTTPRequest.get("/v1/api/provider/nex_token/@me")
 		req.params = {
-			"game_server_id": "%08X" %game_server_id
+			"game_server_id": f"{game_server_id:08X}"
 		}
 		
 		self.prepare(req, access_token)
 		
 		response = await self.request(req)
-		return NexToken.parse(response)
+		return NexToken(response)
 	
-	async def get_service_token(self, access_token, client_id):
+	async def get_service_token(self, access_token: str, client_id: str) -> str:
 		req = http.HTTPRequest.get("/v1/api/provider/service_token/@me")
 		req.params = {
 			"client_id": client_id
@@ -373,16 +403,16 @@ class NNASClient:
 		response = await self.request(req)
 		return response["token"].text
 	
-	async def get_profile(self, access_token):
+	async def get_profile(self, access_token: str) -> Profile:
 		req = http.HTTPRequest.get("/v1/api/people/@me/profile")
 		self.prepare(req, access_token)
 		
 		response = await self.request(req)
-		return Profile.parse(response)
+		return Profile(response)
 		
 	#The following functions can be used without logging in
 		
-	async def get_miis(self, pids):
+	async def get_miis(self, pids: list[int]) -> list[Mii]:
 		req = http.HTTPRequest.get("/v1/api/miis")
 		req.params = {
 			"pids": ",".join([str(pid) for pid in pids])
@@ -391,9 +421,9 @@ class NNASClient:
 		self.prepare(req)
 		
 		response = await self.request(req)
-		return [Mii.parse(mii) for mii in response]
+		return [Mii(mii) for mii in response]
 	
-	async def get_pids(self, nnids):
+	async def get_pids(self, nnids: list[str]) -> dict[str, int]:
 		req = http.HTTPRequest.get("/v1/api/admin/mapped_ids")
 		req.params = {
 			"input_type": "user_id",
@@ -403,9 +433,12 @@ class NNASClient:
 		self.prepare(req)
 		
 		response = await self.request(req)
-		return {id["in_id"].text: int(id["out_id"].text) for id in response if id["out_id"].text}
+		return {
+			id["in_id"].text: int(id["out_id"].text) for id in response if \
+				id["out_id"].text
+		}
 		
-	async def get_nnids(self, pids):
+	async def get_nnids(self, pids: list[int]) -> dict[int, str]:
 		req = http.HTTPRequest.get("/v1/api/admin/mapped_ids")
 		req.params = {
 			"input_type": "pid",
@@ -415,8 +448,16 @@ class NNASClient:
 		self.prepare(req)
 		
 		response = await self.request(req)
-		return {int(id["in_id"].text): id["out_id"].text for id in response if id["out_id"].text}
+		return {
+			int(id["in_id"].text): id["out_id"].text for id in response if \
+				id["out_id"].text
+		}
 	
-	async def get_mii(self, pid): return (await self.get_miis([pid]))[0]
-	async def get_pid(self, nnid): return (await self.get_pids([nnid]))[nnid]
-	async def get_nnid(self, pid): return (await self.get_nnids([pid]))[pid]
+	async def get_mii(self, pid: int) -> Mii:
+		return (await self.get_miis([pid]))[0]
+	
+	async def get_pid(self, nnid: str) -> int:
+		return (await self.get_pids([nnid]))[nnid]
+	
+	async def get_nnid(self, pid: int) -> str:
+		return (await self.get_nnids([pid]))[pid]

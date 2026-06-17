@@ -6,7 +6,7 @@ import hashlib
 import struct
 
 
-def load_keys(filename):
+def load_keys(filename: str) -> dict[str, bytes]:
 	with open(filename) as f:
 		lines = f.readlines()
 	
@@ -24,7 +24,7 @@ table = [
 	0xA001, 0x6C00, 0x7800, 0xB401, 0x5000, 0x9C01, 0x8801, 0x4400
 ]
 
-def crc16(data):
+def crc16(data: bytes) -> int:
 	hash = 0x55AA
 	for byte in data:
 		r = table[hash & 0xF]
@@ -36,43 +36,43 @@ def crc16(data):
 
 
 class ProdInfo:
-	def __init__(self, keys, filename):
-		self.keys = keys
+	_keys: dict[str, bytes]
+	_data: bytes
+
+	def __init__(self, keys: dict[str, bytes], filename: str):
+		self._keys = keys
 		with open(filename, "rb") as f:
-			self.data = f.read()
-			
-	def check(self, offset, size):
-		end = offset + size - 2
-		
-		expected = struct.unpack_from("<H", self.data, end)[0]
-		if crc16(self.data[offset : end]) != expected:
-			raise ValueError("CRC16 check failed")
+			self._data = f.read()
 	
-	def get_device_id(self):
-		self.check(0x2A90, 0x250)
-		return int(self.data[0x2B56:0x2B66], 16)
+	def get_device_id(self) -> int:
+		self._check(0x2A90, 0x250)
+		return int(self._data[0x2B56:0x2B66], 16)
 	
-	def get_tls_cert(self):
-		self.check(0xAD0, 0x10)
+	def get_tls_cert(self) -> tls.TLSCertificate:
+		self._check(0xAD0, 0x10)
 		
-		length = struct.unpack_from("<I", self.data, 0xAD0)[0]
+		length = struct.unpack_from("<I", self._data, 0xAD0)[0]
 		if length > 0x800:
 			raise ValueError("TLS certificate is too big")
 			
-		data = self.data[0xAE0 : 0xAE0 + length]
+		data = self._data[0xAE0 : 0xAE0 + length]
 		hash = hashlib.sha256(data).digest()
-		if hash != self.data[0x12E0 : 0x1300]:
+		if hash != self._data[0x12E0 : 0x1300]:
 			raise ValueError("SHA256 check failed")
 		
 		return tls.TLSCertificate.parse(data, tls.TYPE_DER)
 		
-	def get_tls_key(self):
-		self.check(0x3AE0, 0x140)
+	def get_tls_key(self) -> tls.TLSPrivateKey:
+		self._check(0x3AE0, 0x140)
 		
-		initial = self.data[0x3AE0 : 0x3AF0]
-		cipher = self.data[0x3AF0 : 0x3BF0]
-		
-		kek = self.keys["ssl_rsa_kek_personalized"] if "ssl_rsa_kek_personalized" in self.keys else self.keys["ssl_rsa_kek"]
+		initial = self._data[0x3AE0 : 0x3AF0]
+		cipher = self._data[0x3AF0 : 0x3BF0]
+
+		if "ssl_rsa_kek_personalized" in self._keys:
+			kek = self._keys["ssl_rsa_kek_personalized"]
+		else:
+			kek = self._keys["ssl_rsa_kek"]
+
 		aes = AES.new(kek, AES.MODE_CTR, nonce=b"", initial_value=initial)
 		d = int.from_bytes(aes.decrypt(cipher), "big")
 		
@@ -81,3 +81,10 @@ class ProdInfo:
 		rsa = RSA.construct((pubkey.n, pubkey.e, d))
 		der = rsa.export_key("DER")
 		return tls.TLSPrivateKey.parse(der, tls.TYPE_DER)
+	
+	def _check(self, offset: int, size: int) -> None:
+		end = offset + size - 2
+		
+		expected = struct.unpack_from("<H", self._data, end)[0]
+		if crc16(self._data[offset : end]) != expected:
+			raise ValueError("CRC16 check failed")

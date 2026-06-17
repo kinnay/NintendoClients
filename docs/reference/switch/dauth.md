@@ -79,10 +79,10 @@ The error can be inspected using the following attributes:
 <span class="docs">Requests a challenge from the `dauth` server.</span>
 
 <code>**async def device_token**(client_id: int) -> dict</code><br>
-<span class="docs">Requests a device token from the `dauth` server. The challenge is done automatically. This method is available up to system version 19.0.1.<br><br>
+<span class="docs">Requests a device token from the `dauth` server. The challenge is done automatically. This method is available up to system version 19.0.1.</span>
 
 <code>**async def edge_token**(client_id: int, vendor_id: str = "akamai") -> dict</code><br>
-<span class="docs">Requests an edge token from the `dauth` server. The challenge is done automatically. This method is available up to system version 19.0.1.<br><br>
+<span class="docs">Requests an edge token from the `dauth` server. The challenge is done automatically. This method is available up to system version 19.0.1.</span>
 
 <code>**async def device_tokens**(client_ids: list[int]) -> dict</code><br>
 <span class="docs">Requests a multiple device tokens from the `dauth` server. This method is available on system version 20.0.0 and later.</span>
@@ -97,11 +97,11 @@ The error can be inspected using the following attributes:
 <span class="docs">Requests all edge tokens that are preloaded by the Switch at once. This method is available on system version 20.0.0 and later.</span>
 
 ## DAuthCache
-<code>**def _\_init__**(client: [DAuthClient](#dauthclient), expiration=None)</code><br>
+<code>**def _\_init__**(client: [DAuthClient](#dauthclient), expiration: float | None = None)</code><br>
 <span class="docs">Creates a new dauth cache for the given client. If `expiration` is provided, tokens are discarded after the given number of seconds. Otherwise, the `expires_in` field that is returned by the server is used.</span>
 
-<code>**async def device_token**(client_id: int) -> dict</code><br>
+<code>**async def device_token**(client_id: int) -> str</code><br>
 <span class="docs">Returns a device token from the cache or requests it from the dauth server if it is not present in the cache.</span>
 
-<code>**async def edge_token**(client_id: int, vendor_id: str = "akamai") -> dict</code><br>
+<code>**async def edge_token**(client_id: int, vendor_id: str = "akamai") -> str</code><br>
 <span class="docs">Returns an edge token from the cache or requests it from the dauth server if it is not present in the cache.</span>

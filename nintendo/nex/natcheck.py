@@ -1,5 +1,5 @@
 
-from anynet import util
+from anynet import udp, util
 import struct
 
 
@@ -7,7 +7,7 @@ PRIMARY_ADDRESS = "nncs1-lp1.n.n.srv.nintendo.net"
 PRIMARY_PORT = 10025
 
 
-async def detect_external_address(socket):
+async def detect_external_address(socket: udp.UDPSocket) -> tuple[str, int]:
 	message = struct.pack(">IIII", 1, 0, 0, 0)
 	await socket.send(message, (PRIMARY_ADDRESS, PRIMARY_PORT))
 	
