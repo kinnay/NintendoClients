@@ -8,7 +8,7 @@ For Switch servers, the latest system version that is currently supported is **2
 For talk about research, feel free to join the [Discord server](https://discord.gg/x8np6Hhxwk) or open a [discussion](https://github.com/kinnay/NintendoClients/discussions) on GitHub.
 
 ### Installation
-This package requires Python 3.8 or later and can be installed with pip: `pip install nintendoclients`. This package uses [semantic versioning](https://semver.org/).
+This package requires Python 3.14 or later and can be installed with pip: `pip install nintendoclients`. This package uses [semantic versioning](https://semver.org/).
 
 ### Documentation
 * [Nintendo's servers and protocols](https://github.com/Kinnay/NintendoClients/wiki)
