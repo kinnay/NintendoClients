@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-SYSTEM_VERSION = 2210 # 22.1.0
+SYSTEM_VERSION = 2250 # 22.5.0
 
 # You can get your user id and password from
 # su/baas/<guid>.dat in save folder 8000000000000010.
