@@ -77,7 +77,7 @@ class Settings:
 	def reset(self) -> None:
 		self.load("default")
 	
-	def copy(self) -> Settings:
+	def copy(self) -> "Settings":
 		copy = Settings()
 		copy._settings = self._settings.copy()
 		return copy

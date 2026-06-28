@@ -14,7 +14,7 @@ ERROR_MASK = 1 << 31
 
 
 class RMCError(Exception):
-	_result: Result
+	_result: "Result"
 
 	def __init__(self, code: str | int = "Core::Unknown"):
 		self._result = Result.error(code)
@@ -22,7 +22,7 @@ class RMCError(Exception):
 	def __str__(self) -> str:
 		return str(self._result)
 	
-	def result(self) -> Result:
+	def result(self) -> "Result":
 		return self._result
 		
 	def name(self) -> str:
@@ -77,7 +77,7 @@ class Structure:
 	def max_version(self, settings: settings.Settings) -> int:
 		return 0
 			
-	def _get_hierarchy(self) -> list[type[Structure]]:
+	def _get_hierarchy(self) -> list[type["Structure"]]:
 		hierarchy = []
 		cls = self.__class__
 		while cls != Structure:
@@ -85,7 +85,7 @@ class Structure:
 			cls = cls.__bases__[0]
 		return hierarchy[::-1]
 	
-	def encode(self, stream: streams.StreamOut) -> None:
+	def encode(self, stream: "streams.StreamOut") -> None:
 		hierarchy = self._get_hierarchy()
 		for cls in hierarchy:
 			if stream.settings["nex.struct_header"]:
@@ -99,7 +99,7 @@ class Structure:
 			else:
 				cls.save(self, stream, 0)
 
-	def decode(self, stream: streams.StreamIn) -> None:
+	def decode(self, stream: "streams.StreamIn") -> None:
 		hierarchy = self._get_hierarchy()
 		for cls in hierarchy:
 			if stream.settings["nex.struct_header"]:
@@ -123,18 +123,18 @@ class Structure:
 			else:
 				cls.load(self, stream, 0)
 				
-	def load(self, stream: streams.StreamIn, version: int) -> None:
+	def load(self, stream: "streams.StreamIn", version: int) -> None:
 		raise NotImplementedError("%s.load()" %self.__class__.__name__)
 	
-	def save(self, stream: streams.StreamOut, version: int) -> None:
+	def save(self, stream: "streams.StreamOut", version: int) -> None:
 		raise NotImplementedError("%s.save()" %self.__class__.__name__)
 	
 	
 class Data(Structure):
-	def save(self, stream: streams.StreamOut, version: int) -> None:
+	def save(self, stream: "streams.StreamOut", version: int) -> None:
 		pass
 
-	def load(self, stream: streams.StreamIn, version: int) -> None:
+	def load(self, stream: "streams.StreamIn", version: int) -> None:
 		pass
 
 
@@ -146,7 +146,7 @@ class DataHolder:
 	def __init__(self):
 		self.data = Data()
 		
-	def encode(self, stream: streams.StreamOut):
+	def encode(self, stream: "streams.StreamOut"):
 		stream.string(self.data.__class__.__name__)
 		
 		substream = streams.StreamOut(stream.settings)
@@ -155,7 +155,7 @@ class DataHolder:
 		stream.u32(len(substream.get()) + 4)
 		stream.buffer(substream.get())
 		
-	def decode(self, stream: streams.StreamIn) -> None:
+	def decode(self, stream: "streams.StreamIn") -> None:
 		name = stream.string()
 		substream = stream.substream().substream()
 		self.data = substream.extract(self._object_map[name])
@@ -166,8 +166,8 @@ class DataHolder:
 		
 		
 class NullData(Data):
-	def load(self, stream: streams.StreamIn, version: int) -> None: pass
-	def save(self, stream: streams.StreamOut, version: int) -> None: pass
+	def load(self, stream: "streams.StreamIn", version: int) -> None: pass
+	def save(self, stream: "streams.StreamOut", version: int) -> None: pass
 DataHolder.register(NullData, "NullData")
 		
 		
@@ -292,10 +292,10 @@ class ResultRange(Structure):
 		self.offset = offset
 		self.size = size
 
-	def load(self, stream: streams.StreamIn, version: int) -> None:
+	def load(self, stream: "streams.StreamIn", version: int) -> None:
 		self.offset = stream.u32()
 		self.size = stream.u32()
 	
-	def save(self, stream: streams.StreamOut, version: int) -> None:
+	def save(self, stream: "streams.StreamOut", version: int) -> None:
 		stream.u32(self.offset)
 		stream.u32(self.size)
