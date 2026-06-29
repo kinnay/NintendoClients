@@ -21,7 +21,7 @@ class StreamOut(streams.StreamOut):
 		else:
 			self.u32(value)
 			
-	def result(self, result: common.Result) -> None:
+	def result(self, result: "common.Result") -> None:
 		self.u32(result.code())
 
 	def list[T](self, list: List[T], func: Callable[[T], None]) -> None:
@@ -45,10 +45,10 @@ class StreamOut(streams.StreamOut):
 			self.u16(len(data))
 			self.write(data)
 			
-	def stationurl(self, url: common.StationURL) -> None:
+	def stationurl(self, url: "common.StationURL") -> None:
 		self.string(str(url))
 	
-	def datetime(self, datetime: common.DateTime) -> None:
+	def datetime(self, datetime: "common.DateTime") -> None:
 		self.u64(datetime.value())
 		
 	def buffer(self, data: bytes) -> None:
@@ -59,10 +59,10 @@ class StreamOut(streams.StreamOut):
 		self.u16(len(data))
 		self.write(data)
 		
-	def add(self, inst: common.Structure) -> None:
+	def add(self, inst: "common.Structure") -> None:
 		inst.encode(self)
 		
-	def anydata(self, inst: common.Data) -> None:
+	def anydata(self, inst: "common.Data") -> None:
 		holder = common.DataHolder()
 		holder.data = inst
 		holder.encode(self)
@@ -104,7 +104,7 @@ class StreamIn(streams.StreamIn):
 			return self.u64()
 		return self.u32()
 		
-	def result(self) -> common.Result:
+	def result(self) -> "common.Result":
 		return common.Result(self.u32())
 
 	def list[T](self, func: Callable[[], T]) -> List[T]:
@@ -134,10 +134,10 @@ class StreamIn(streams.StreamIn):
 			return self.read(length).decode("utf8")[:-1] #Remove null-terminator
 		return ""
 			
-	def stationurl(self) -> common.StationURL:
+	def stationurl(self) -> "common.StationURL":
 		return common.StationURL.parse(self.string())
 		
-	def datetime(self) -> common.DateTime:
+	def datetime(self) -> "common.DateTime":
 		return common.DateTime(self.u64())
 		
 	def buffer(self) -> bytes:
@@ -146,7 +146,7 @@ class StreamIn(streams.StreamIn):
 	def qbuffer(self) -> bytes:
 		return self.read(self.u16())
 		
-	def substream(self) -> StreamIn:
+	def substream(self) -> "StreamIn":
 		return StreamIn(self.buffer(), self.settings)
 	
 	def extract[T: common.Structure](self, cls: type[T]) -> T:
@@ -154,7 +154,7 @@ class StreamIn(streams.StreamIn):
 		inst.decode(self)
 		return inst
 		
-	def anydata(self) -> common.Structure:
+	def anydata(self) -> "common.Structure":
 		data = common.DataHolder()
 		data.decode(self)
 		return data.data

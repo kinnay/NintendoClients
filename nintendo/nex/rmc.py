@@ -150,11 +150,11 @@ class RMCMessage:
 
 
 class RMCHandler(typing.Protocol):
-	async def logout(self, client: RMCClient) -> None:
+	async def logout(self, client: "RMCClient") -> None:
 		...
 	
 	async def handle(
-		self, client: RMCClient, method: int,
+		self, client: "RMCClient", method: int,
 		input: streams.StreamIn, output: streams.StreamOut
 	) -> None:
 		...

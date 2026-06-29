@@ -1409,7 +1409,7 @@ class PRUDPPortTable[T]:
 
 class PRUDPServerStream:
 	_settings: settings.Settings
-	_transport: PRUDPServerTransport
+	_transport: "PRUDPServerTransport"
 	_handler: Callable[[PRUDPClient], Awaitable[None]]
 	_key: bytes | None
 	_group: anyio.abc.TaskGroup
@@ -1428,7 +1428,7 @@ class PRUDPServerStream:
 	_clients: dict[tuple[tuple[str, int], int, int], PRUDPClient]
 
 	def __init__(
-		self, settings: settings.Settings, transport: PRUDPServerTransport,
+		self, settings: settings.Settings, transport: "PRUDPServerTransport",
 		handler: Callable[[PRUDPClient], Awaitable[None]], key: bytes | None,
 		group: anyio.abc.TaskGroup, disconnect_timeout: float | None,
 		address: tuple[str, int], port: int, type: int
