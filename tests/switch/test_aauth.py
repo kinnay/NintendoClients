@@ -103,6 +103,16 @@ GAMECARD_REQUEST_2000 = \
 	"Content-Length: 179\r\n\r\n" \
 	"application_id=0100123001234000&application_version=00070000&device_auth_token=device.token&auth_type=GAMECARD&gvt=Z3Z0&cert=Y2VydA&challenge=challenge&challenge_src=challenge_src"
 
+SYSTEM_REQUEST_2300 = \
+	"POST /v5/application_auth_token HTTP/1.1\r\n" \
+	"Host: localhost:12345\r\n" \
+	"Accept: */*\r\n" \
+	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 23.3.0.0)\r\n" \
+	"Content-Type: application/x-www-form-urlencoded\r\n" \
+	"X-Nintendo-PowerState: FA\r\n" \
+	"Content-Length: 108\r\n\r\n" \
+	"application_id=0100000000001014&application_version=00000000&device_auth_token=device.token&auth_type=SYSTEM"
+
 
 CERT = struct.pack("<I", 0x10004) + bytes(0x29C)
 CERT += struct.pack(">Q", 0x0100123001234000)
@@ -321,6 +331,28 @@ async def test_gamecard_2000():
 		response = await client.auth_gamecard(
 			0x0100123001234000, 0x70000, "device.token", b"cert", b"gvt",
 			"challenge", "challenge_src"
+		)
+		assert response["application_auth_token"] == "application token"
+
+
+@pytest.mark.anyio
+async def test_system_2300():
+	async def handler(client, request):
+		text = request.encode().decode()
+		assert text == SYSTEM_REQUEST_2300
+		response = http.HTTPResponse(200)
+		response.json = {
+			"application_auth_token": "application token"
+		}
+		return response
+	
+	async with http.serve(handler, "localhost", 12345):
+		client = aauth.AAuthClient()
+		client.set_host("localhost:12345")
+		client.set_system_version(2300)
+		client.set_context(None)
+		response = await client.auth_system(
+			0x0100000000001014, 0, "device.token"
 		)
 		assert response["application_auth_token"] == "application token"
 

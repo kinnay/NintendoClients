@@ -13,7 +13,7 @@ type RequestCallback = Callable[..., Awaitable[http.HTTPResponse]]
 
 USER_AGENT = "NintendoSDK Firmware/%s (platform:NX; did:%016x; eid:lp1)"
 
-LATEST_VERSION = 2250
+LATEST_VERSION = 2301
 
 
 class SunError(Exception):

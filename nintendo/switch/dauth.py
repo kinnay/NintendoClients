@@ -80,6 +80,8 @@ SYSTEM_VERSION_HEX = {
 	2200: "da42070c4ad25840c9ee25344bde9d0a8584f5a9",
 	2210: "1927752d2a83389d84e6d31c4c91710e04fa69aa",
 	2250: "ae93061abbc7791fcf8d2f7e7b7b2d62163af697",
+	2300: "c2663accb7490a6ccfe9bc4dfd120ca215490525",
+	2301: "198d3f45b4044350ef6de12b8803f8774518800c",
 }
 
 USER_AGENT = {
@@ -140,6 +142,8 @@ USER_AGENT = {
 	2200: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 22.2.0.0)",
 	2210: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 22.2.0.0)",
 	2250: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 22.2.0.0)",
+	2300: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 23.3.0.0)",
+	2301: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 23.3.0.0)",
 }
 
 KEY_GENERATION = {
@@ -200,6 +204,8 @@ KEY_GENERATION = {
 	2200: 22,
 	2210: 22,
 	2250: 22,
+	2300: 23,
+	2301: 23,
 }
 
 API_VERSION = {
@@ -260,9 +266,11 @@ API_VERSION = {
 	2200: 8,
 	2210: 8,
 	2250: 8,
+	2300: 8,
+	2301: 8,
 }
 
-LATEST_VERSION = 2250
+LATEST_VERSION = 2301
 
 
 CLIENT_ID_SCSI = 0x146C8AC7B8A0DB52
@@ -282,32 +290,44 @@ CLIENT_ID_SCSI_POLICY = 0xD98185ACB55994B4
 CLIENT_ID_PCTL = 0xDC656EA03B63CF68
 CLIENT_ID_PREPO = 0xDF51C436BC01C437
 CLIENT_ID_PENNE = 0xE58171FE439390CE
+CLIENT_ID_PEGASUS = 0xE95FDDF58447F117
 
 
-PRELOADED_DEVICE_TOKENS = [
-	CLIENT_ID_BAAS,
-	CLIENT_ID_PCTL,
-	CLIENT_ID_BEACH,
-	CLIENT_ID_PREPO,
-	CLIENT_ID_ER,
-	CLIENT_ID_PENNE,
-	CLIENT_ID_ACCOUNT,
-	CLIENT_ID_ACCOUNT_APPLET,
-	CLIENT_ID_SCSI,
-	CLIENT_ID_DRAGONS,
-	CLIENT_ID_SPROFILE
-]
+def preloaded_device_tokens(version: int) -> list[int]:
+	client_ids = [
+		CLIENT_ID_BAAS,
+		CLIENT_ID_PCTL,
+		CLIENT_ID_BEACH,
+		CLIENT_ID_PREPO,
+		CLIENT_ID_ER,
+		CLIENT_ID_PENNE,
+		CLIENT_ID_ACCOUNT,
+		CLIENT_ID_ACCOUNT_APPLET,
+		CLIENT_ID_SCSI,
+		CLIENT_ID_DRAGONS,
+		CLIENT_ID_SPROFILE
+	]
+	if version >= 2300:
+		client_ids.append(0x93C7E7DCE26642AA) # Unknown purpose
+	return client_ids
 
-PRELOADED_EDGE_TOKENS = [
-	(CLIENT_ID_BEACH, "akamai"),
-	(CLIENT_ID_BCAT, "akamai"),
-	(CLIENT_ID_SCSI_POLICY, "akamai"),
-	(CLIENT_ID_SCSI, "akamai"),
-	(CLIENT_ID_ESHOP, "akamai"),
-	(CLIENT_ID_ATUM, "akamai"),
-	(CLIENT_ID_ATUM, "fastly")
-]
 
+def preloaded_edge_tokens(version: int) -> list[tuple[int, str]]:
+	client_ids = [
+		(CLIENT_ID_BEACH, "akamai"),
+		(CLIENT_ID_BCAT, "akamai"),
+		(CLIENT_ID_SCSI_POLICY, "akamai"),
+		(CLIENT_ID_SCSI, "akamai"),
+		(CLIENT_ID_ESHOP, "akamai"),
+		(CLIENT_ID_ATUM, "akamai"),
+		(CLIENT_ID_ATUM, "fastly")
+	]
+	if version >= 2300:
+		client_ids.append((CLIENT_ID_ATUM, "cloudfront"))
+	if version >= 2200:
+		client_ids.append((CLIENT_ID_PEGASUS, "akamai"))
+	return client_ids
+	
 
 class DAuthError(Exception):
 	UNAUTHORIZED_DEVICE = 4
@@ -401,6 +421,9 @@ class DAuthClient:
 			self._system_version_hash = SYSTEM_VERSION_DIGEST[version]
 		else:
 			self._system_version_hash = SYSTEM_VERSION_HEX[version]
+
+	def system_version(self) -> int:
+		return self._system_version
 		
 	async def _request(self, req: http.HTTPRequest) -> http.HTTPResponse:
 		if self._system_version < 1800:
@@ -560,10 +583,12 @@ class DAuthClient:
 		return await self._request_tokens(formatted_requests, edge_tokens=True)
 
 	async def preload_device_tokens(self) -> Any:
-		return await self.device_tokens(PRELOADED_DEVICE_TOKENS)
+		requests = preloaded_device_tokens(self._system_version)
+		return await self.device_tokens(requests)
 	
 	async def preload_edge_tokens(self) -> Any:
-		return await self.edge_tokens(PRELOADED_EDGE_TOKENS)
+		requests = preloaded_edge_tokens(self._system_version)
+		return await self.edge_tokens(requests)
 		
 	def _get_master_key(self) -> bytes:
 		keygen = self._key_generation
@@ -605,8 +630,9 @@ class DAuthCache:
 		now = time.time()
 		if client_id in self._device_tokens and self._device_tokens[client_id][1] > now:
 			return self._device_tokens[client_id][0]
-		
-		if client_id in PRELOADED_DEVICE_TOKENS:
+
+		preloads = preloaded_device_tokens(self._client.system_version())
+		if client_id in preloads:
 			response = await self._client.preload_device_tokens()
 		else:
 			response = await self._client.device_tokens([client_id])
@@ -628,8 +654,9 @@ class DAuthCache:
 		key = (client_id, vendor_id)
 		if key in self._edge_tokens and self._edge_tokens[key][1] > now:
 			return self._edge_tokens[key][0]
-		
-		if key in PRELOADED_EDGE_TOKENS:
+
+		preloads = preloaded_edge_tokens(self._client.system_version())
+		if key in preloads:
 			response = await self._client.preload_edge_tokens()
 		else:
 			response = await self._client.edge_tokens([key])

@@ -13,6 +13,15 @@ Authorization: Bearer access token
 
 """
 
+UNREAD_INVITATION_COUNT_REQUEST_2200 = \
+"""GET /v2/users/aaaaaaaaaaaaaaaa/invitations/inbox?fields=count&read=false&invitation_types=friend HTTP/1.1
+Host: localhost:12345
+User-Agent: libcurl (nnFriends; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 22.2.0.0; Add-on 22.2.0.0)
+Accept: */*
+Authorization: Bearer access token
+
+"""
+
 GET_INBOX_REQUEST = \
 """GET /v1/users/aaaaaaaaaaaaaaaa/invitations/inbox HTTP/1.1
 Host: localhost:12345
@@ -83,6 +92,10 @@ def check_request(expected_request, version, *, response={}):
 
 @check_request(UNREAD_INVITATION_COUNT_REQUEST, 1501, response={"count": 0})
 async def test_get_unread_invitation_count(client):
+	await client.get_unread_invitation_count("access token", 0xaaaaaaaaaaaaaaaa)
+
+@check_request(UNREAD_INVITATION_COUNT_REQUEST_2200, 2200, response={"count": 0})
+async def test_get_unread_invitation_count_2200(client):
 	await client.get_unread_invitation_count("access token", 0xaaaaaaaaaaaaaaaa)
 
 @check_request(GET_INBOX_REQUEST, 1501)

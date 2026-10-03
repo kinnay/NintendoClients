@@ -5,108 +5,130 @@ import pytest
 
 
 CHALLENGE_REQUEST_1200 = \
-	"POST /v6/challenge HTTP/1.1\r\n" \
-	"Host: localhost:12345\r\n" \
-	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 12.3.0.0)\r\n" \
-	"Accept: */*\r\n" \
-	"X-Nintendo-PowerState: FA\r\n" \
-	"Content-Length: 17\r\n" \
-	"Content-Type: application/x-www-form-urlencoded\r\n\r\n" \
-	"key_generation=11"
+"""POST /v6/challenge HTTP/1.1
+Host: localhost:12345
+User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 12.3.0.0)
+Accept: */*
+X-Nintendo-PowerState: FA
+Content-Length: 17
+Content-Type: application/x-www-form-urlencoded
+
+key_generation=11"""
 	
 CHALLENGE_REQUEST_1300 = \
-	"POST /v7/challenge HTTP/1.1\r\n" \
-	"Host: localhost:12345\r\n" \
-	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 13.3.0.0)\r\n" \
-	"Accept: */*\r\n" \
-	"X-Nintendo-PowerState: FA\r\n" \
-	"Content-Length: 17\r\n" \
-	"Content-Type: application/x-www-form-urlencoded\r\n\r\n" \
-	"key_generation=13"
+"""POST /v7/challenge HTTP/1.1
+Host: localhost:12345
+User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 13.3.0.0)
+Accept: */*
+X-Nintendo-PowerState: FA
+Content-Length: 17
+Content-Type: application/x-www-form-urlencoded
+
+key_generation=13"""
 
 CHALLENGE_REQUEST_1800 = \
-	"POST /v7/challenge HTTP/1.1\r\n" \
-	"Host: localhost:12345\r\n" \
-	"Accept: */*\r\n" \
-	"Content-Type: application/x-www-form-urlencoded\r\n" \
-	"X-Nintendo-PowerState: FA\r\n" \
-	"Content-Length: 17\r\n\r\n" \
-	"key_generation=17"
+"""POST /v7/challenge HTTP/1.1
+Host: localhost:12345
+Accept: */*
+Content-Type: application/x-www-form-urlencoded
+X-Nintendo-PowerState: FA
+Content-Length: 17
+
+key_generation=17"""
 
 CHALLENGE_REQUEST_2000 = \
-	"POST /v8/challenge HTTP/1.1\r\n" \
-	"Host: localhost:12345\r\n" \
-	"Accept: */*\r\n" \
-	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)\r\n" \
-	"Content-Type: application/x-www-form-urlencoded\r\n" \
-	"X-Nintendo-PowerState: FA\r\n" \
-	"Content-Length: 17\r\n\r\n" \
-	"key_generation=20"
+"""POST /v8/challenge HTTP/1.1
+Host: localhost:12345
+Accept: */*
+User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)
+Content-Type: application/x-www-form-urlencoded
+X-Nintendo-PowerState: FA
+Content-Length: 17
+
+key_generation=20"""
+
+CHALLENGE_REQUEST_2301 = \
+"""POST /v8/challenge HTTP/1.1
+Host: localhost:12345
+Accept: */*
+User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 23.3.0.0)
+Content-Type: application/x-www-form-urlencoded
+X-Nintendo-PowerState: FA
+Content-Length: 17
+
+key_generation=23"""
 
 TOKEN_REQUEST_1200 = \
-	"POST /v6/device_auth_token HTTP/1.1\r\n" \
-	"Host: localhost:12345\r\n" \
-	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 12.3.0.0)\r\n" \
-	"Accept: */*\r\n" \
-	"X-Nintendo-PowerState: FA\r\n" \
-	"Content-Length: 211\r\n" \
-	"Content-Type: application/x-www-form-urlencoded\r\n\r\n" \
-	"challenge=vaNgVZZH7gUse0y3t8Cksuln-TAVtvBmcD-ow59qp0E=&" \
-	"client_id=8f849b5d34778d8e&ist=false&key_generation=11&" \
-	"system_version=CusHY#000c0000#C-BynYNPXdQJNBZjx02Hizi8lRUSIKLwPGa5p8EY1uo=&" \
-	"mac=xRB_6mgnNqrnF9DRsEpYMg"
+"""POST /v6/device_auth_token HTTP/1.1
+Host: localhost:12345
+User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 12.3.0.0)
+Accept: */*
+X-Nintendo-PowerState: FA
+Content-Length: 211
+Content-Type: application/x-www-form-urlencoded
+
+challenge=vaNgVZZH7gUse0y3t8Cksuln-TAVtvBmcD-ow59qp0E=&client_id=8f849b5d34778d8e&ist=false&key_generation=11&system_version=CusHY#000c0000#C-BynYNPXdQJNBZjx02Hizi8lRUSIKLwPGa5p8EY1uo=&mac=xRB_6mgnNqrnF9DRsEpYMg"""
 	
 DEVICE_TOKEN_REQUEST_1300 = \
-	"POST /v7/device_auth_token HTTP/1.1\r\n" \
-	"Host: localhost:12345\r\n" \
-	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 13.3.0.0)\r\n" \
-	"Accept: */*\r\n" \
-	"X-Nintendo-PowerState: FA\r\n" \
-	"Content-Length: 211\r\n" \
-	"Content-Type: application/x-www-form-urlencoded\r\n\r\n" \
-	"challenge=TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=&" \
-	"client_id=8f849b5d34778d8e&ist=false&key_generation=13&" \
-	"system_version=CusHY#000d0000#r1xneESd4PiTRYIhVIl0bK1ST5L5BUmv_uGPLqc4PPo=&" \
-	"mac=dGMjt0ShsDr-uNrsHtCB1g"
+"""POST /v7/device_auth_token HTTP/1.1
+Host: localhost:12345
+User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 13.3.0.0)
+Accept: */*
+X-Nintendo-PowerState: FA
+Content-Length: 211
+Content-Type: application/x-www-form-urlencoded
+
+challenge=TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=&client_id=8f849b5d34778d8e&ist=false&key_generation=13&system_version=CusHY#000d0000#r1xneESd4PiTRYIhVIl0bK1ST5L5BUmv_uGPLqc4PPo=&mac=dGMjt0ShsDr-uNrsHtCB1g"""
 
 DEVICE_TOKEN_REQUEST_1800 = \
-	"POST /v7/device_auth_token HTTP/1.1\r\n" \
-	"Host: localhost:12345\r\n" \
-	"Accept: */*\r\n" \
-	"Content-Type: application/x-www-form-urlencoded\r\n" \
-	"X-Nintendo-PowerState: FA\r\n" \
-	"Content-Length: 211\r\n\r\n" \
-	"challenge=TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=&" \
-	"client_id=8f849b5d34778d8e&ist=false&key_generation=17&" \
-	"system_version=CusHY#00120000#U531L4Si9RbhOVeyVppe18WHkJ0k4_KzrNtygsekMNo=&" \
-	"mac=c4SgqSjdfdNFoRM35ChrLw"
+"""POST /v7/device_auth_token HTTP/1.1
+Host: localhost:12345
+Accept: */*
+Content-Type: application/x-www-form-urlencoded
+X-Nintendo-PowerState: FA
+Content-Length: 211
+
+challenge=TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=&client_id=8f849b5d34778d8e&ist=false&key_generation=17&system_version=CusHY#00120000#U531L4Si9RbhOVeyVppe18WHkJ0k4_KzrNtygsekMNo=&mac=c4SgqSjdfdNFoRM35ChrLw"""
 
 DEVICE_TOKEN_REQUEST_2000 = \
-	"POST /v8/device_auth_tokens HTTP/1.1\r\n" \
-	"Host: localhost:12345\r\n" \
-	"Accept: */*\r\n" \
-	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)\r\n" \
-	"Content-Type: application/json\r\n" \
-	"X-Nintendo-PowerState: FA\r\n" \
-	"Content-Length: 293\r\n\r\n" \
-	'{"system_version":"00140000","fw_revision":"7147e1386c9b6c15d8f14e6ed68c4b9a7f28fb9b","ist":false,"token_requests":[{"client_id":"8f849b5d34778d8e"},{"client_id":"dc656ea03b63cf68"}],"key_generation":20,"challenge":"TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=","mac":"49YDQDn9UTq6iQGMdW5B8Q"}'
+"""POST /v8/device_auth_tokens HTTP/1.1
+Host: localhost:12345
+Accept: */*
+User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)
+Content-Type: application/json
+X-Nintendo-PowerState: FA
+Content-Length: 293
+
+{"system_version":"00140000","fw_revision":"7147e1386c9b6c15d8f14e6ed68c4b9a7f28fb9b","ist":false,"token_requests":[{"client_id":"8f849b5d34778d8e"},{"client_id":"dc656ea03b63cf68"}],"key_generation":20,"challenge":"TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=","mac":"49YDQDn9UTq6iQGMdW5B8Q"}"""
+
+DEVICE_TOKEN_REQUEST_2301 = \
+"""POST /v8/device_auth_tokens HTTP/1.1
+Host: localhost:12345
+Accept: */*
+User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 23.3.0.0)
+Content-Type: application/json
+X-Nintendo-PowerState: FA
+Content-Length: 623
+
+{"system_version":"00170001","fw_revision":"198d3f45b4044350ef6de12b8803f8774518800c","ist":false,"token_requests":[{"client_id":"8f849b5d34778d8e"},{"client_id":"dc656ea03b63cf68"},{"client_id":"93af0acb26258de9"},{"client_id":"df51c436bc01c437"},{"client_id":"16e96f76850156d1"},{"client_id":"e58171fe439390ce"},{"client_id":"81333c548b2e876d"},{"client_id":"75fe236362ff5f8b"},{"client_id":"146c8ac7b8a0db52"},{"client_id":"d5b6cac2c1514c56"},{"client_id":"bad8156f44ac935a"},{"client_id":"93c7e7dce26642aa"}],"key_generation":23,"challenge":"TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=","mac":"spFH7CRxsDxgB5o9E5qGTw"}"""
 
 EDGE_TOKEN_REQUEST_2000 = \
-	"POST /v8/edge_tokens HTTP/1.1\r\n" \
-	"Host: localhost:12345\r\n" \
-	"Accept: */*\r\n" \
-	"User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)\r\n" \
-	"Content-Type: application/json\r\n" \
-	"X-Nintendo-PowerState: FA\r\n" \
-	"Content-Length: 335\r\n\r\n" \
-	'{"system_version":"00140000","fw_revision":"7147e1386c9b6c15d8f14e6ed68c4b9a7f28fb9b","ist":false,"token_requests":[{"client_id":"93af0acb26258de9","vendor_id":"akamai"},{"client_id":"67bf9945b45248c6","vendor_id":"akamai"}],"key_generation":20,"challenge":"TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=","mac":"bB8LFaSTRsZtrWQD9Ew1-Q"}'
+"""POST /v8/edge_tokens HTTP/1.1
+Host: localhost:12345
+Accept: */*
+User-Agent: libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 20.5.4.0)
+Content-Type: application/json
+X-Nintendo-PowerState: FA
+Content-Length: 335
+
+{"system_version":"00140000","fw_revision":"7147e1386c9b6c15d8f14e6ed68c4b9a7f28fb9b","ist":false,"token_requests":[{"client_id":"93af0acb26258de9","vendor_id":"akamai"},{"client_id":"67bf9945b45248c6","vendor_id":"akamai"}],"key_generation":20,"challenge":"TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=","mac":"bB8LFaSTRsZtrWQD9Ew1-Q"}"""
 
 
 @pytest.mark.anyio
 async def test_dauth_1200():
 	async def handler(client, request):
 		if request.path == "/v6/challenge":
-			assert request.encode().decode() == CHALLENGE_REQUEST_1200
+			assert request.encode().decode() == CHALLENGE_REQUEST_1200.replace("\n", "\r\n")
 			response = http.HTTPResponse(200)
 			response.json = {
 				"challenge": "vaNgVZZH7gUse0y3t8Cksuln-TAVtvBmcD-ow59qp0E=",
@@ -114,7 +136,7 @@ async def test_dauth_1200():
 			}
 			return response
 		else:
-			assert request.encode().decode() == TOKEN_REQUEST_1200
+			assert request.encode().decode() == TOKEN_REQUEST_1200.replace("\n", "\r\n")
 			response = http.HTTPResponse(200)
 			response.json = {
 				"device_auth_token": "device token"
@@ -139,7 +161,7 @@ async def test_dauth_1200():
 async def test_dauth_1300():
 	async def handler(client, request):
 		if request.path == "/v7/challenge":
-			assert request.encode().decode() == CHALLENGE_REQUEST_1300
+			assert request.encode().decode() == CHALLENGE_REQUEST_1300.replace("\n", "\r\n")
 			response = http.HTTPResponse(200)
 			response.json = {
 				"challenge": "TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=",
@@ -147,7 +169,7 @@ async def test_dauth_1300():
 			}
 			return response
 		else:
-			assert request.encode().decode() == DEVICE_TOKEN_REQUEST_1300
+			assert request.encode().decode() == DEVICE_TOKEN_REQUEST_1300.replace("\n", "\r\n")
 			response = http.HTTPResponse(200)
 			response.json = {
 				"device_auth_token": "device token"
@@ -172,7 +194,7 @@ async def test_dauth_1300():
 async def test_dauth_1800():
 	async def handler(client, request):
 		if request.path == "/v7/challenge":
-			assert request.encode().decode() == CHALLENGE_REQUEST_1800
+			assert request.encode().decode() == CHALLENGE_REQUEST_1800.replace("\n", "\r\n")
 			response = http.HTTPResponse(200)
 			response.json = {
 				"challenge": "TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=",
@@ -180,7 +202,7 @@ async def test_dauth_1800():
 			}
 			return response
 		else:
-			assert request.encode().decode() == DEVICE_TOKEN_REQUEST_1800
+			assert request.encode().decode() == DEVICE_TOKEN_REQUEST_1800.replace("\n", "\r\n")
 			response = http.HTTPResponse(200)
 			response.json = {
 				"device_auth_token": "device token"
@@ -205,7 +227,7 @@ async def test_dauth_1800():
 async def test_dauth_2000():
 	async def handler(client, request):
 		if request.path == "/v8/challenge":
-			assert request.encode().decode() == CHALLENGE_REQUEST_2000
+			assert request.encode().decode() == CHALLENGE_REQUEST_2000.replace("\n", "\r\n")
 			response = http.HTTPResponse(200)
 			response.json = {
 				"challenge": "TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=",
@@ -213,7 +235,7 @@ async def test_dauth_2000():
 			}
 			return response
 		else:
-			assert request.encode().decode() == DEVICE_TOKEN_REQUEST_2000
+			assert request.encode().decode() == DEVICE_TOKEN_REQUEST_2000.replace("\n", "\r\n")
 			response = http.HTTPResponse(200)
 			response.json = {"results": []}
 			return response
@@ -234,10 +256,10 @@ async def test_dauth_2000():
 		])
 
 @pytest.mark.anyio
-async def test_edge_token_2000():
+async def test_dauth_2301():
 	async def handler(client, request):
 		if request.path == "/v8/challenge":
-			assert request.encode().decode() == CHALLENGE_REQUEST_2000
+			assert request.encode().decode() == CHALLENGE_REQUEST_2301.replace("\n", "\r\n")
 			response = http.HTTPResponse(200)
 			response.json = {
 				"challenge": "TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=",
@@ -245,7 +267,36 @@ async def test_edge_token_2000():
 			}
 			return response
 		else:
-			assert request.encode().decode() == EDGE_TOKEN_REQUEST_2000
+			assert request.encode().decode() == DEVICE_TOKEN_REQUEST_2301.replace("\n", "\r\n")
+			response = http.HTTPResponse(200)
+			response.json = {"results": []}
+			return response
+	
+	async with http.serve(handler, "localhost", 12345):
+		keys = {
+			"aes_kek_generation_source": bytes.fromhex("1092ce3d2c208c250ebe248537f2df73"),
+			"master_key_16": bytes.fromhex("f09f742cf07cceb584410e13c507e27e")
+		}
+		
+		client = dauth.DAuthClient(keys)
+		client.set_host("localhost:12345")
+		client.set_system_version(2301)
+		client.set_context(None)
+		await client.preload_device_tokens()
+
+@pytest.mark.anyio
+async def test_edge_token_2000():
+	async def handler(client, request):
+		if request.path == "/v8/challenge":
+			assert request.encode().decode() == CHALLENGE_REQUEST_2000.replace("\n", "\r\n")
+			response = http.HTTPResponse(200)
+			response.json = {
+				"challenge": "TzJ0EB3EvsWvQI5aPj15uaNVH9paGdsWB4l-eI5uzW0=",
+				"data": "4SxW91vqVg6pz4CXMH2Ouw=="
+			}
+			return response
+		else:
+			assert request.encode().decode() == EDGE_TOKEN_REQUEST_2000.replace("\n", "\r\n")
 			response = http.HTTPResponse(200)
 			response.json = {"results": []}
 			return response

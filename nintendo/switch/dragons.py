@@ -73,9 +73,11 @@ API_VERSION = {
 	2200: 2,
 	2210: 2,
 	2250: 2,
+	2300: 2,
+	2301: 2,
 }
 
-LATEST_VERSION = 2250
+LATEST_VERSION = 2301
 
 
 class DragonsError(Exception):
@@ -186,7 +188,9 @@ class DragonsClient:
 			req.headers["Content-Length"] = 0
 		else:
 			req.headers["Content-Length"] = 0
-			req.headers["Content-Type"] = "application/x-www-form-urlencoded"
+			if self._system_version < 1700:
+				req.headers["Content-Type"] = \
+					"application/x-www-form-urlencoded"
 		
 		response = await self._request_callback(host, req, self._context)
 		if response.error() and response.json:

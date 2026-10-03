@@ -93,6 +93,8 @@ USER_AGENT = {
 	2200: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 22.2.0.0)",
 	2210: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 22.2.0.0)",
 	2250: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 22.2.0.0)",
+	2300: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 23.3.0.0)",
+	2301: "libcurl (nnDauth; 16f4553f-9eee-4e39-9b61-59bc7c99b7c8; SDK 23.3.0.0)",
 }
 
 API_VERSION = {
@@ -153,9 +155,11 @@ API_VERSION = {
 	2200: 5,
 	2210: 5,
 	2250: 5,
+	2300: 5,
+	2301: 5,
 }
 
-LATEST_VERSION = 2250
+LATEST_VERSION = 2301
 
 
 class AAuthError(Exception):
