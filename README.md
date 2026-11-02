@@ -3,7 +3,7 @@
 
 This package implements a client for various 3DS, Wii U and Switch servers. Check out the [documentation](https://nintendoclients.readthedocs.io) for the list of servers that are currently supported.
 
-For Switch servers, the latest system version that is currently supported is **22.5.0**.
+For Switch servers, the latest system version that is currently supported is **23.0.1**.
 
 For talk about research, feel free to join the [Discord server](https://discord.gg/x8np6Hhxwk) or open a [discussion](https://github.com/kinnay/NintendoClients/discussions) on GitHub.
 
