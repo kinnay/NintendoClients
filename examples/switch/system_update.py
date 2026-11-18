@@ -11,7 +11,7 @@ import subprocess
 # This is the system version that is advertised to the server in the user agent
 # header. It is not the system version that is downloaded from the server. The
 # script currently always downloads the latest system version from the server.
-SYSTEM_VERSION = 2301 # 23.0.1
+SYSTEM_VERSION = 2350 # 23.5.0
 
 # You can dump prod.keys with Lockpick_RCM and
 # PRODINFO from hekate (decrypt it if necessary)
