@@ -1,6 +1,11 @@
 
 ## Changelog
 
+### 5.2.0
+* Added support for Switch system version 23.5.0.
+
+*Released on 2026-11-19*
+
 ### 5.1.0
 * Added support for Switch system version 23.0.0 and 23.0.1.
 
