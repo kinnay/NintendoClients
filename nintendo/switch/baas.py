@@ -69,14 +69,15 @@ USER_AGENT = {
 	2101: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 21.4.0.0; Add-on 21.4.0.0)",
 	2110: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 21.4.0.0; Add-on 21.4.0.0)",
 	2120: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 21.4.0.0; Add-on 21.4.0.0)",
-	2220: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 22.2.0.0; Add-on 22.2.0.0)",
+	2200: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 22.2.0.0; Add-on 22.2.0.0)",
 	2210: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 22.2.0.0; Add-on 22.2.0.0)",
 	2250: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 22.2.0.0; Add-on 22.2.0.0)",
 	2300: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 23.3.0.0; Add-on 23.3.0.0)",
 	2301: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 23.3.0.0; Add-on 23.3.0.0)",
+	2350: "libcurl (%s; 789f928b-138e-4b2f-afeb-1acae821d897; SDK 23.3.0.0; Add-on 23.3.0.0)",
 }
 
-LATEST_VERSION = 2301
+LATEST_VERSION = 2350
 
 
 class PresenceState:
