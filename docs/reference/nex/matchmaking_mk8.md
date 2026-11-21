@@ -1360,12 +1360,12 @@ The following fields are defined in this class:<br>
 
 The following fields are defined in this class:<br>
 <span class="docs">
-<code>unk1: int</code><br>
-<code>unk2: int</code><br>
+<code>id: int</code><br>
+<code>owner: int</code><br>
 <code>conditions: list[[SimpleSearchCondition](#simplesearchcondition)]</code><br>
-<code>unk3: str</code><br>
+<code>code: str</code><br>
 <code>range: [ResultRange](common.md#resultrange) = [ResultRange](common.md#resultrange)()</code><br>
-<code>unk4: [DateTime](common.md#datetime)</code><br>
+<code>datetime: [DateTime](common.md#datetime)</code><br>
 </span><br>
 
 ## UpdateMatchmakeSessionParam
