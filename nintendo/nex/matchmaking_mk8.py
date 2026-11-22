@@ -1320,15 +1320,15 @@ class SimpleSearchDateTimeAttribute(common.Structure):
 class SimpleSearchParam(common.Structure):
 	def __init__(self):
 		super().__init__()
-		self.unk1 = None
-		self.unk2 = None
+		self.id = None
+		self.owner = None
 		self.conditions = None
-		self.unk3 = None
+		self.code = None
 		self.range = common.ResultRange()
-		self.unk4 = None
+		self.datetime = None
 	
 	def __key(self):
-		return (self.unk1, self.unk2, self.conditions, self.unk3, self.range, self.unk4, )
+		return (self.id, self.owner, self.conditions, self.code, self.range, self.datetime, )
 	
 	def __hash__(self):
 		return hash(common.make_hashable(self.__key()))
@@ -1338,26 +1338,26 @@ class SimpleSearchParam(common.Structure):
 			return NotImplemented
 		return self.__key() == other.__key()
 	def check_required(self, settings, version):
-		for field in ['unk1', 'unk2', 'conditions', 'unk3', 'unk4']:
+		for field in ['id', 'owner', 'conditions', 'code', 'datetime']:
 			if getattr(self, field) is None:
 				raise ValueError("No value assigned to required field: %s" %field)
 	
 	def load(self, stream, version):
-		self.unk1 = stream.u32()
-		self.unk2 = stream.pid()
+		self.id = stream.u32()
+		self.owner = stream.pid()
 		self.conditions = stream.list(SimpleSearchCondition)
-		self.unk3 = stream.string()
+		self.code = stream.string()
 		self.range = stream.extract(common.ResultRange)
-		self.unk4 = stream.datetime()
+		self.datetime = stream.datetime()
 	
 	def save(self, stream, version):
 		self.check_required(stream.settings, version)
-		stream.u32(self.unk1)
-		stream.pid(self.unk2)
+		stream.u32(self.id)
+		stream.pid(self.owner)
 		stream.list(self.conditions, stream.add)
-		stream.string(self.unk3)
+		stream.string(self.code)
 		stream.add(self.range)
-		stream.datetime(self.unk4)
+		stream.datetime(self.datetime)
 
 
 class SimpleSearchCondition(common.Structure):

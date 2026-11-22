@@ -21,12 +21,12 @@ struct SimpleSearchDateTimeAttribute {
 }
 
 struct SimpleSearchParam {
-    uint32 unk1;
-    pid unk2;
+    uint32 id;
+    pid owner;
     list<SimpleSearchCondition> conditions;
-    string unk3;
+    string code;
     ResultRange range;
-    datetime unk4;
+    datetime datetime;
 }
 
 struct SimpleSearchCondition {
