@@ -1,5 +1,39 @@
 
+enum ReportCategory {
+    INVALID = 0,
+    MIN = 1,
+    PERSONAL = 1,
+    CRIMINAL = 2,
+    IMMORAL = 3,
+    HARASSMENT = 4,
+    COMMERCIAL = 5,
+    SEXUALLY_EXPLICIT = 6,
+    OTHER = 7,
+    MAX = 7
+}
+
+struct ScreeningDataStoreContentParam {
+    uint64 data_id;
+    uint64 content_data_id;
+    string ugc_type;
+    string language;
+    string search_key;
+}
+
+struct ScreeningUgcViolationParam {
+    uint32 category;
+    string reason;
+    list<ScreeningContextInfo> context;
+    uint64 screenshot_data_id;
+}
+
+struct ScreeningContextInfo {
+    string key;
+    string value;
+}
+
 protocol Screening : 124 {
-    method report_data_store_content;
+    method report_data_store_content(ScreeningDataStoreContentParam content_param, ScreeningUgcViolationParam violation_param) {}
+
     method report_user;
 }
